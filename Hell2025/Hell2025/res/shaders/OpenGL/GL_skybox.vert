@@ -1,41 +1,19 @@
-#version 450 core
-layout (location = 0) in vec3 aPos;
+#version 460 core
+#include "../common/util.glsl"
+#include "../common/types.glsl"
 
-uniform mat4 model;
-uniform int playerIndex;
+layout (location = 0) in vec3 vPos;
 
-struct CameraData {
-    mat4 projection;
-    mat4 projectionInverse;
-    mat4 view;
-    mat4 viewInverse;
-	float viewportWidth;
-	float viewportHeight;
-    float viewportOffsetX;
-    float viewportOffsetY;
-	float clipSpaceXMin;
-    float clipSpaceXMax;
-    float clipSpaceYMin;
-    float clipSpaceYMax;
-	float finalImageColorContrast;
-    float finalImageColorR;
-    float finalImageColorG;
-    float finalImageColorB;
-};
-
-layout(std430, binding = 16) readonly buffer CameraDataArray {
-    CameraData cameraDataArray[];
+readonly restrict layout(std430, binding = 2) buffer viewportDataBuffer {
+	ViewportData viewportData[];
 };
 
 out vec3 TexCoords;
-uniform mat4 projection;
-uniform mat4 view;
 
 void main() {
-
-	//mat4 projection = cameraDataArray[playerIndex].projection;
-	//mat4 view = cameraDataArray[playerIndex].view;
-
-    TexCoords = aPos;
-    gl_Position = projection * view * model * vec4(aPos, 1.0);
+    TexCoords = vPos;
+    int viewportIndex = gl_BaseInstance;
+	mat4 projectionView = viewportData[viewportIndex].skyboxProjectionView;	
+    vec3 viewPos = viewportData[viewportIndex].inverseView[3].xyz;
+    gl_Position = projectionView * vec4((vPos * 8) + viewPos, 1.0);
 }

@@ -29,6 +29,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <ctype.h>
+#include <iostream>
 
 using namespace CMP;
 
@@ -999,4 +1000,65 @@ void SaveDDSFile(const char* pszFile, CMP_Texture& texture) {
     } // DDSet
 
     fclose(pFile);
+}
+
+void SaveDDSFileWithMipmaps(const char* pszFile, CMP_MipSet& mipSet) {
+    FILE* pFile = fopen(pszFile, "wb");
+    if (!pFile) {
+        std::cout << "[ERROR] Failed to open file for writing: " << pszFile << "\n";
+        return;
+    }
+
+    fwrite(&DDS_HEADER, sizeof(DWORD), 1, pFile); // DDS magic number
+
+    // Setup DDSD2 header
+    DDSD2 ddsd2;
+    memset(&ddsd2, 0, sizeof(DDSD2));
+    ddsd2.dwSize = sizeof(DDSD2);
+    ddsd2.dwFlags = DDSD_CAPS | DDSD_WIDTH | DDSD_HEIGHT | DDSD_PIXELFORMAT | DDSD_MIPMAPCOUNT | DDSD_LINEARSIZE;
+    ddsd2.dwWidth = mipSet.m_nWidth;
+    ddsd2.dwHeight = mipSet.m_nHeight;
+    ddsd2.dwMipMapCount = mipSet.m_nMipLevels;
+    ddsd2.dwLinearSize = mipSet.m_pMipLevelTable[0][0].m_dwLinearSize;
+
+    ddsd2.ddpfPixelFormat.dwSize = sizeof(DDPIXELFORMAT);
+    ddsd2.ddsCaps.dwCaps = DDSCAPS_TEXTURE | DDSCAPS_COMPLEX | DDSCAPS_MIPMAP;
+
+    switch (mipSet.m_format) {
+    case CMP_FORMAT_BC1:
+        ddsd2.ddpfPixelFormat.dwFourCC = FOURCC_DXT1;
+        break;
+    case CMP_FORMAT_BC2:
+        ddsd2.ddpfPixelFormat.dwFourCC = FOURCC_DXT3;
+        break;
+    case CMP_FORMAT_BC3:
+        ddsd2.ddpfPixelFormat.dwFourCC = FOURCC_DXT5;
+        break;
+    case CMP_FORMAT_BC4:
+        ddsd2.ddpfPixelFormat.dwFourCC = FOURCC_ATI1N;
+        break;
+    case CMP_FORMAT_BC5:
+        ddsd2.ddpfPixelFormat.dwFourCC = FOURCC_ATI2N_XY;
+        break;
+    default:
+        std::cerr << "[ERROR] Unsupported format for DDS file.\n";
+        fclose(pFile);
+        return;
+    }
+
+    fwrite(&ddsd2, sizeof(DDSD2), 1, pFile);
+
+    // Write mip levels
+    for (int mipLevel = 0; mipLevel < mipSet.m_nMipLevels; ++mipLevel) {
+        CMP_MipLevel* mip = GetMipLevel(&mipSet, 0, mipLevel);
+        if (!mip || !mip->m_pbData) {
+            std::cerr << "[ERROR] Invalid mip level data at level " << mipLevel << ".\n";
+            fclose(pFile);
+            return;
+        }
+        fwrite(mip->m_pbData, mip->m_dwLinearSize, 1, pFile);
+    }
+
+    fclose(pFile);
+    std::cout << "[INFO] DDS file with mipmaps saved: " << pszFile << "\n";
 }

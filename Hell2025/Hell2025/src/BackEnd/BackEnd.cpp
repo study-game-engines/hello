@@ -1,327 +1,364 @@
 #include "BackEnd.h"
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
 #include <iostream>
 #include <string>
-#include "../API/OpenGL/GL_backEnd.h"
-#include "../API/OpenGL/GL_renderer.h"
-#include "../API/Vulkan/VK_backEnd.h"
-#include "../Core/AssetManager.h"
-#include "../Core/Audio.h"
-#include "../Editor/CSG.h"
-#include "../Editor/Gizmo.hpp"
-#include "../Game/WeaponManager.h"
-#include "../Input/Input.h"
-#include "../Input/InputMulti.h"
-#include "../Physics/Physics.h"
-#include "../Pathfinding/Pathfinding2.h"
+#include "API/OpenGL/GL_backEnd.h"
+#include "API/OpenGL/Renderer/GL_renderer.h"
+#include "API/Vulkan/VK_backEnd.h"
+#include "AssetManagement/AssetManager.h"
+#include "Config/Config.h"
+#include "Core/Audio.h"
+#include "Core/Debug.h"
+#include "Core/Game.h"
+#include "Editor/Editor.h"
+#include "Editor/Gizmo.h"
+#include "ImGui/EditorImgui.h"
+#include "ImGui/ImGuiBackend.h"
+#include "Input/Input.h"
+#include "Input/InputMulti.h"
+#include "Modelling/Clipping.h"
+#include "Modelling/Unused/Modelling.h"
+#include "Physics/Physics.h"
+#include "Renderer/Renderer.h"
+#include "Renderer/RenderDataManager.h"
+#include "UI/UIBackEnd.h"
+#include "Viewport/ViewportManager.h"
+#include "Weapon/WeaponManager.h"
+#include "World/World.h"
+
+#include "GLFWIntegration.h"
+
+#define NOMINMAX
+#ifdef _WIN32
+#include <windows.h>
+#include <tlhelp32.h>
+#endif
+
+// Prevent accidentally selecting integrated GPU
+extern "C" {
+    __declspec(dllexport) unsigned __int32 AmdPowerXpressRequestHighPerformance = 0x1;
+    __declspec(dllexport) unsigned __int32 NvOptimusEnablement = 0x1;
+}
 
 namespace BackEnd {
+    API g_api = API::UNDEFINED;
+    int g_presentTargetWidth = 0;
+    int g_presentTargetHeight = 0;
+    bool g_renderDocFound = false;
 
-    API _api = API::UNDEFINED;
-    GLFWwindow* _window = NULL;
-    WindowedMode _windowedMode = WindowedMode::WINDOWED;
-    GLFWmonitor* _monitor;
-    const GLFWvidmode* _mode;
-    bool _forceCloseWindow = false;
-    bool _windowHasFocus = true;
-    int _windowedWidth = 0;
-    int _windowedHeight = 0;
-    int _fullscreenWidth = 0;
-    int _fullscreenHeight = 0;
-    int _currentWindowWidth = 0;
-    int _currentWindowHeight = 0;
-    int _presentTargetWidth = 0;
-    int _presentTargetHeight = 0;
+    void CheckForRenderDoc();
+    void UpdateLazyKeypresses();
 
-    void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-    void window_focus_callback(GLFWwindow* window, int focused);
+    bool Init(API api, WindowedMode windowMode) {
+        g_api = api;
+        CheckForRenderDoc();
 
-
-    ////////////////////
-    //                //
-    //      Core      //
-
-    void Init(API api) {
-
-        _api = api;
-
+        Config::Init();
+        if (!GLFWIntegration::Init(api, windowMode)) {
+            return false;
+        }
         if (GetAPI() == API::OPENGL) {
-            // Nothing required
+            OpenGLBackEnd::Init();
+            OpenGLRenderer::Init();
         }
         else if (GetAPI() == API::VULKAN) {
-            VulkanBackEnd::CreateVulkanInstance();
+            if (!VulkanBackEnd::Init()) {
+                return false;
+            }
         }
-
-      //  int width = 1920 * 0.75f;// 1.5f;
-      //  int height = 1080 * 0.75f;//1.5f;
-        int width = 1920 * 1.5f;
-        int height = 1080* 1.5f;
-        
-        glfwInit();
-        glfwSetErrorCallback([](int error, const char* description) { std::cout << "GLFW Error (" << std::to_string(error) << "): " << description << "\n";});
-
-        if (GetAPI() == API::OPENGL) {
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
-            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-            glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
-        }
-        else if (GetAPI() == API::VULKAN) {
-            glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-            glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-        }
-        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-        glfwWindowHint(GLFW_FOCUS_ON_SHOW, GLFW_TRUE);
-
-        // Resolution and window size
-        _monitor = glfwGetPrimaryMonitor();
-        _mode = glfwGetVideoMode(_monitor);
-        glfwWindowHint(GLFW_RED_BITS, _mode->redBits);
-        glfwWindowHint(GLFW_GREEN_BITS, _mode->greenBits);
-        glfwWindowHint(GLFW_BLUE_BITS, _mode->blueBits);
-        glfwWindowHint(GLFW_REFRESH_RATE, _mode->refreshRate);
-        glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
-        _fullscreenWidth = _mode->width;
-        _fullscreenHeight = _mode->height;
-        _windowedWidth = width;
-        _windowedHeight = height;
-        CreateGLFWWindow(WindowedMode::WINDOWED);
-        if (_window == NULL) {
-            std::cout << "Failed to create GLFW window\n";
-            glfwTerminate();
-            return;
-        }
-        glfwSetFramebufferSizeCallback(_window, framebuffer_size_callback);
-        glfwSetWindowFocusCallback(_window, window_focus_callback);
-
-        if (GetAPI() == API::OPENGL) {
-            AssetManager::ExportNewAndModifiedModels();
-            AssetManager::FindAssetPaths();
-        }
-
-        if (GetAPI() == API::OPENGL) {
-            glfwMakeContextCurrent(_window);
-            OpenGLBackEnd::InitMinimum();
-            OpenGLRenderer::InitMinimum();
-            Gizmo::Init();
-            glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
-        }
-        else if (GetAPI() == API::VULKAN) {
-            VulkanBackEnd::InitMinimum();
-            // VulkanRenderer minimum init is tangled in the above function
-        }
-        AssetManager::LoadFont();
-
-        if (GetAPI() == API::VULKAN) {
-            AssetManager::FindAssetPaths();
-        }
-
-        // Init sub-systems
-        Input::Init();
+        AssetManager::Init();
+        UIBackEnd::Init();
         Audio::Init();
-        Physics::Init();
+        Input::Init(BackEnd::GetWindowPointer());
         InputMulti::Init();
-        CSG::Init();
-        Pathfinding2::Init();
+        Gizmo::Init();
+        ViewportManager::Init();
+        Editor::Init();
+        //EditorImGui::Init();
         WeaponManager::Init();
-        glfwShowWindow(BackEnd::GetWindowPointer());
+        Physics::Init();
+        ImGuiBackEnd::Init();
+
+        Clipping::Init();
+        Modelling::Init();
+
+        glfwShowWindow(static_cast<GLFWwindow*>(BackEnd::GetWindowPointer()));
+        return true;
     }
 
     void BeginFrame() {
-        glfwPollEvents();
+        GLFWIntegration::BeginFrame(g_api);
+        RenderDataManager::BeginFrame();
+        if (GetAPI() == API::OPENGL) {
+            OpenGLBackEnd::BeginFrame();
+            OpenGLBackEnd::UpdateTextureBaking();
+        }
+        else if (GetAPI() == API::VULKAN) {
+            //VulkanBackEnd::BeginFrame();
+        }
+        //Physics::ClearCollisionReports();
+
+        if (!GLFWIntegration::WindowHasFocus()) {
+            InputMulti::ResetState();
+        }
+        Game::BeginFrame();
+        World::BeginFrame();
+        Physics::BeginFrame();
+    }
+
+    void UpdateGame() {
+
+        const Resolutions& resolutions = Config::GetResolutions();
+
+        float deltaTime = Game::GetDeltaTime();
+
+        ViewportManager::Update();
+        //EditorImGui::Update();
+        Editor::Update(deltaTime);
+        Game::Update();
+
+        Physics::UpdateAllRigidDynamics(deltaTime);
+        Physics::UpdateActiveRigidDynamicAABBList();
+        Physics::UpdateHeightFields();
+
+        World::Update(deltaTime);
+
+        Clipping::Update();
+        Modelling::Update();
+
+        // Mouse picking
+        float textureWidth = resolutions.gBuffer.x;
+        float textureHeight = resolutions.gBuffer.y;
+        float aspectX = textureWidth / (float)BackEnd::GetCurrentWindowWidth();
+        float aspectY = textureHeight / (float)BackEnd::GetCurrentWindowHeight();
+        int x = Input::GetMouseX() * aspectX;
+        int y = textureHeight - (Input::GetMouseY() * aspectY);
+        BackEnd::UpdateMousePicking(x, y);
+
+        Debug::Update();
+        UIBackEnd::Update();
+        RenderDataManager::Update();
+        ImGuiBackEnd::Update();
     }
 
     void EndFrame() {
-
-        // OpenGL
-        if (GetAPI() == API::OPENGL) {
-            glfwSwapBuffers(_window);
-        }
-        // Vulkan
-        else if (GetAPI() == API::VULKAN){
-
-        }
+        GLFWIntegration::EndFrame(g_api);
+        UIBackEnd::EndFrame();
+        Debug::EndFrame();
+        InputMulti::ResetMouseOffsets();
     }
 
     void UpdateSubSystems() {
         Input::Update();
+        InputMulti::Update();
         Audio::Update();
-        //Scene::Update();
+        UpdateLazyKeypresses();
     }
 
     void CleanUp() {
-        if (GetWindowMode() == WindowedMode::FULLSCREEN) {
-            ToggleFullscreen();
-        }
-        glfwTerminate();
+        GLFWIntegration::Destroy();
     }
 
-    ///////////////////
-    //               //
-    //      API      //
-
     void SetAPI(API api) {
-        _api = api;
+        g_api = api;
+    }
+
+    void SetPresentTargetSize(int width, int height) {
+        g_presentTargetWidth = width;
+        g_presentTargetHeight = height;
     }
 
     const API GetAPI() {
-        return _api;
+        return g_api;
+    }
+
+    void SetCursor(int cursor) {
+        GLFWIntegration::SetCursor(cursor);
     }
 
     // Window
-    GLFWwindow* GetWindowPointer() {
-        return _window;
+    void* GetWindowPointer() {
+        return GLFWIntegration::GetWindowPointer();;
     }
 
-    void SetWindowPointer(GLFWwindow* window) {
-        _window = window;
+    const WindowedMode& GetWindowedMode() {
+        return GLFWIntegration::GetWindowedMode();
     }
 
-    void CreateGLFWWindow(const WindowedMode& windowedMode) {
-        if (windowedMode == WindowedMode::WINDOWED) {
-            _currentWindowWidth = _windowedWidth;
-            _currentWindowHeight = _windowedHeight;
-            _window = glfwCreateWindow(_windowedWidth, _windowedHeight, "Unloved", NULL, NULL);
-            glfwSetWindowPos(_window, 0, 0);
-        }
-        else if (windowedMode == WindowedMode::FULLSCREEN) {
-            _currentWindowWidth = _fullscreenWidth;
-            _currentWindowHeight = _fullscreenHeight;
-            _window = glfwCreateWindow(_fullscreenWidth, _fullscreenHeight, "Unloved", _monitor, NULL);
-        }
-        _windowedMode = windowedMode;
+    void BackEnd::SetWindowedMode(const WindowedMode& windowedMode) {
+        GLFWIntegration::SetWindowedMode(windowedMode);
     }
 
-    void SetWindowedMode(const WindowedMode& windowedMode) {
-        if (windowedMode == WindowedMode::WINDOWED) {
-            _currentWindowWidth = _windowedWidth;
-            _currentWindowHeight = _windowedHeight;
-            glfwSetWindowMonitor(_window, nullptr, 0, 0, _windowedWidth, _windowedHeight, _mode->refreshRate);
-            glfwSetWindowPos(_window, 0, 0);
-        }
-        //else if (windowedMode == WindowedMode::FULLSCREEN) {
-        //    _currentWindowWidth = _fullscreenWidth;
-        //    _currentWindowHeight = _fullscreenHeight;
-        //    glfwSetWindowMonitor(_window, _monitor, 0, 0, _fullscreenWidth, _fullscreenHeight, _mode->refreshRate);
-        //}
-        else if (windowedMode == WindowedMode::FULLSCREEN) {
-            _currentWindowWidth = _fullscreenWidth;
-            _currentWindowHeight = _fullscreenHeight;
-            glfwSetWindowMonitor(_window, nullptr, 0, 0, _fullscreenWidth-1, _fullscreenHeight-1, _mode->refreshRate);
-            glfwSetWindowPos(_window, 0, 0);
-        }
-        _windowedMode = windowedMode;
+    void BackEnd::ToggleFullscreen() {
+        GLFWIntegration::ToggleFullscreen();
     }
 
-    void ToggleFullscreen() {
-        if (_windowedMode == WindowedMode::WINDOWED) {
-            SetWindowedMode(WindowedMode::FULLSCREEN);
-        }
-        else {
-            SetWindowedMode(WindowedMode::WINDOWED);
-        }
-        if (GetAPI() == API::OPENGL) {
-            //OpenGLBackEnd::HandleFrameBufferResized();
-        }
-        else {
-            VulkanBackEnd::HandleFrameBufferResized();
-        }
+    void BackEnd::ForceCloseWindow() {
+        GLFWIntegration::ForceCloseWindow();
     }
 
-    void ForceCloseWindow() {
-        _forceCloseWindow = true;
+    bool BackEnd::WindowIsOpen() {
+        return GLFWIntegration::WindowIsOpen();
     }
 
-    bool WindowHasFocus() {
-        return _windowHasFocus;
+    bool BackEnd::WindowHasFocus() {
+        return GLFWIntegration::WindowHasFocus();
     }
 
-    bool WindowHasNotBeenForceClosed() {
-        return !_forceCloseWindow;
+    bool BackEnd::WindowHasNotBeenForceClosed() {
+        return GLFWIntegration::WindowHasNotBeenForceClosed();
     }
 
-    int GetWindowedWidth() {
-        return _windowedWidth;
+    bool BackEnd::WindowIsMinimized() {
+        return GLFWIntegration::WindowIsMinimized();
     }
 
-    int GetWindowedHeight() {
-        return _windowedHeight;
+    int BackEnd::GetWindowedWidth() {
+        return GLFWIntegration::GetWindowedWidth();
     }
 
-    int GetFullScreenWidth() {
-        return _fullscreenWidth;
+    int BackEnd::GetWindowedHeight() {
+        return GLFWIntegration::GetWindowedHeight();
     }
 
-    int GetFullScreenHeight() {
-        return _fullscreenHeight;
+    int BackEnd::GetCurrentWindowWidth() {
+        return GLFWIntegration::GetCurrentWindowWidth();
     }
 
-    int GetCurrentWindowWidth() {
-        return _currentWindowWidth;
+    int BackEnd::GetCurrentWindowHeight() {
+        return GLFWIntegration::GetCurrentWindowHeight();
     }
 
-    int GetCurrentWindowHeight() {
-        return _currentWindowHeight;
+    int BackEnd::GetFullScreenWidth() {
+        return GLFWIntegration::GetFullScreenWidth();
     }
 
-    bool WindowIsOpen() {
-        return !(glfwWindowShouldClose(_window) || _forceCloseWindow);
-    }
-
-    bool WindowIsMinimized() {
-        int width = 0;
-        int height = 0;
-        glfwGetFramebufferSize(_window, &width, &height);
-        return (width == 0 || height == 0);
-    }
-
-    const WindowedMode& GetWindowMode() {
-        return _windowedMode;
-    }
-
-    //////////////////////////////
-    //                          //
-    //      Render Targets      //
-
-    void SetPresentTargetSize(int width, int height) {
-        _presentTargetWidth = width;
-        _presentTargetHeight = height;
-        if (GetAPI() == API::OPENGL) {
-            //OpenGLBackEnd::SetPresentTargetSize(width, height);
-        }
-        else {
-            //VulkanBackEnd::SetPresentTargetSize(width, height);
-        }
+    int BackEnd::GetFullScreenHeight() {
+        return GLFWIntegration::GetFullScreenHeight();
     }
 
     int GetPresentTargetWidth() {
-        return _presentTargetWidth;
+        return g_presentTargetWidth;
     }
 
     int GetPresentTargetHeight() {
-        return _presentTargetHeight;
+        return g_presentTargetHeight;
     }
 
-
-    /////////////////////////
-    //                     //
-    //      Callbacks      //
-
-    void framebuffer_size_callback(GLFWwindow* /*window*/, int width, int height) {
-        if (GetAPI() == API::OPENGL) {
-
+    void UpdateMousePicking(int x, int y) {
+        if (g_api == API::OPENGL) {
+            OpenGLBackEnd::UpdateMousePicking(x, y);
         }
-        else {
-            VulkanBackEnd::MarkFrameBufferAsResized();
+        if (g_api == API::VULKAN) {
+            // TODO: VulkanBackEnd::UpdateMousePicking(x, y);
         }
     }
 
-    void window_focus_callback(GLFWwindow* /*window*/, int focused) {
-        if (focused) {
-            BackEnd::_windowHasFocus = true;
+    uint16_t GetMousePickR() {
+        switch (g_api) {
+        case API::OPENGL: return OpenGLBackEnd::GetMousePickR();
+        case API::VULKAN: return 0; // TODO
+        default: return 0;
         }
-        else {
-            BackEnd::_windowHasFocus = false;
+    }
+
+    uint16_t GetMousePickG() {
+        switch (g_api) {
+        case API::OPENGL: return OpenGLBackEnd::GetMousePickG();
+        case API::VULKAN: return 0; // TODO
+        default: return 0;
+        }
+    }
+
+    void CheckForRenderDoc() {
+        #ifdef _WIN32
+        HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, GetCurrentProcessId());
+        if (snapshot == INVALID_HANDLE_VALUE) {
+            g_renderDocFound = false;
+        }
+
+        MODULEENTRY32 moduleEntry;
+        moduleEntry.dwSize = sizeof(MODULEENTRY32);
+        bool found = false;
+        if (Module32First(snapshot, &moduleEntry)) {
+            do {
+                std::wstring wmodule(moduleEntry.szModule);
+                std::string moduleName(wmodule.begin(), wmodule.end());
+
+                if (moduleName.find("renderdoc.dll") != std::string::npos) {
+                    found = true;
+                    break;
+                }
+            } while (Module32Next(snapshot, &moduleEntry));
+        }
+        CloseHandle(snapshot);
+
+        g_renderDocFound = found;
+        #else
+        g_renderDocActive = false;
+        #endif
+    }
+
+    bool RenderDocFound() {
+        return g_renderDocFound;
+    }
+
+    void UpdateLazyKeypresses() {
+
+        if (ImGuiBackEnd::HasKeyboardFocus()) {
+            return;
+        }
+
+        if (Input::KeyPressed(HELL_KEY_H)) {
+            Renderer::HotloadShaders();
+        }
+        if (Input::KeyPressed(HELL_KEY_ESCAPE)) {
+            BackEnd::ForceCloseWindow();
+        }
+        if (Input::KeyPressed(HELL_KEY_G)) {
+            BackEnd::ToggleFullscreen();
+        }
+        if (Input::KeyPressed(HELL_KEY_Y)) {
+            Audio::PlayAudio(AUDIO_SELECT, 1.00f);
+            Renderer::NextRendererOverrideState();
+        }
+        if (Input::KeyPressed(HELL_KEY_GRAVE_ACCENT)) {
+            Audio::PlayAudio(AUDIO_SELECT, 1.00f);
+            Debug::ToggleDebugText();
+        }
+        if (!Editor::IsEditorOpen()) {
+            if (Input::KeyPressed(HELL_KEY_V)) {
+                Game::NextSplitScreenMode();
+            }
+            if (Input::KeyPressed(HELL_KEY_1) && Game::GetLocalPlayerCount() >= 1) {
+                Game::SetPlayerKeyboardAndMouseIndex(0, 0, 0);
+                Game::SetPlayerKeyboardAndMouseIndex(1, 1, 1);
+                Game::SetPlayerKeyboardAndMouseIndex(2, 1, 1);
+                Game::SetPlayerKeyboardAndMouseIndex(3, 1, 1);
+            }
+            if (Input::KeyPressed(HELL_KEY_2) && Game::GetLocalPlayerCount() >= 2) {
+                Game::SetPlayerKeyboardAndMouseIndex(0, 1, 1);
+                Game::SetPlayerKeyboardAndMouseIndex(1, 0, 0);
+                Game::SetPlayerKeyboardAndMouseIndex(2, 1, 1);
+                Game::SetPlayerKeyboardAndMouseIndex(3, 1, 1);
+            }
+            if (Input::KeyPressed(HELL_KEY_3) && Game::GetLocalPlayerCount() >= 3) {
+                Game::SetPlayerKeyboardAndMouseIndex(0, 1, 1);
+                Game::SetPlayerKeyboardAndMouseIndex(1, 1, 1);
+                Game::SetPlayerKeyboardAndMouseIndex(2, 0, 0);
+                Game::SetPlayerKeyboardAndMouseIndex(3, 1, 1);
+            }
+            if (Input::KeyPressed(HELL_KEY_4) && Game::GetLocalPlayerCount() >= 4) {
+                Game::SetPlayerKeyboardAndMouseIndex(0, 1, 1);
+                Game::SetPlayerKeyboardAndMouseIndex(1, 1, 1);
+                Game::SetPlayerKeyboardAndMouseIndex(2, 1, 1);
+                Game::SetPlayerKeyboardAndMouseIndex(3, 0, 0);
+            }
+            if (Input::KeyPressed(HELL_KEY_B)) {
+                Audio::PlayAudio(AUDIO_SELECT, 1.00f);
+                Renderer::NextDebugLineRenderMode();
+            }
         }
     }
 }
-

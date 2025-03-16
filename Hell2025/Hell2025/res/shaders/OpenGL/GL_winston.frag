@@ -1,14 +1,13 @@
 
-// By Tokyospliff
+// By Tokyospliff ©
+//
+// All rights reserved 2025 till forever
 
-#version 330 core
+#version 450 core
 
-out vec4 FragCol;
+layout (location = 0) out vec4 FinalLightingOut;
 
-in vec3 normal;
-in vec3 viewDir;
-
-uniform sampler2D depthTexture;
+layout (binding = 0) uniform sampler2D DepthTexture;
 
 uniform vec3 color;
 uniform float alpha;
@@ -16,6 +15,8 @@ uniform float alpha;
 uniform vec2 screensize;
 uniform float near;
 uniform float far;
+in vec3 normal;
+in vec3 viewDir;
 
 float LinearizeDepth(float depth) {
 	float zNdc = 2 * depth - 1;
@@ -30,7 +31,7 @@ void main666() {
 
 void main() {
 
-	// - Rim lighting -
+	// - Job: Rim lighting -
 	vec3 viewAngle = normalize(-viewDir);
 
 	// The more orthogonal the camera is to the fragment, the stronger the rim light.
@@ -43,7 +44,7 @@ void main() {
 	// - Create the intersection line -
 	// Turn frag coord from screenspace -> NDC, which corresponds to the UV
 	vec2 depthUV = gl_FragCoord.xy / screensize;
-	float sceneDepth = texture(depthTexture, depthUV).r;
+	float sceneDepth = texture(DepthTexture, depthUV).r;
 	float bubbleDepth = LinearizeDepth(gl_FragCoord.z);
 
 	float distance = abs(bubbleDepth - sceneDepth); // linear difference in depth 
@@ -56,5 +57,5 @@ void main() {
 
 	vec4 bubbleBase = vec4(color, alpha);
 
-	FragCol = bubbleBase + intersection + rim;
+	FinalLightingOut = bubbleBase + intersection + rim;
 }

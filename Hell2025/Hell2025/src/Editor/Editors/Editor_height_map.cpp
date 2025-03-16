@@ -1,0 +1,380 @@
+#include "Editor/Editor.h"
+
+#include "Core/Audio.h"
+#include "Core/JSON.h"
+#include "Editor/Gizmo.h"
+#include "Input/Input.h"
+#include "ImGui/EditorImgui.h"
+#include "Renderer/Renderer.h"
+#include "World/MapManager.h"
+#include "World/SectorManager.h"
+#include "World/World.h"
+#include "Viewport/ViewportManager.h"
+#include "World/HeightMapManager.h"
+
+#include "Imgui/ImguiBackEnd.h"
+#include <ImGui/imgui.h>
+
+namespace Editor {
+
+    struct HeightMapEditorEditorImguiElements {
+        EditorUI::FileMenu fileMenu;
+        EditorUI::LeftPanel leftPanel;
+        EditorUI::CollapsingHeader rendererSettingsHeader;
+        EditorUI::CollapsingHeader heightMapPropertiesHeader;
+        EditorUI::StringInput heightMapNameInput;
+        EditorUI::DropDown heightMapDropwDownN;
+        EditorUI::DropDown heightMapDropwDownS;
+        EditorUI::DropDown heightMapDropwDownE;
+        EditorUI::DropDown heightMapDropwDownW;
+        EditorUI::DropDown heightMapDropwDownNE;
+        EditorUI::DropDown heightMapDropwDownNW;
+        EditorUI::DropDown heightMapDropwDownSE;
+        EditorUI::DropDown heightMapDropwDownSW;
+        EditorUI::CheckBox drawGrass;
+        EditorUI::CheckBox drawWater;
+        EditorUI::NewFileWindow newFileWindow;
+        EditorUI::OpenFileWindow openFileWindow;
+        EditorUI::IntegerInput test;
+        EditorUI::FloatSliderInput test2;
+    } g_heightMapEditorImguiElements;
+
+    void InitHeightMapEditorFileMenu();
+    void InitHeightMapEditorPropertiesElements();
+    void ReconfigureHeightMapEditorImGuiElements();
+
+    void InitHeightMapEditor() {
+        InitHeightMapEditorFileMenu();
+        InitHeightMapEditorPropertiesElements();
+    }
+
+    void InitHeightMapEditorFileMenu() {
+        HeightMapEditorEditorImguiElements& elements = g_heightMapEditorImguiElements;
+
+        EditorUI::FileMenuNode& file = elements.fileMenu.AddMenuNode("File", nullptr);
+        file.AddChild("New", []() { ShowNewHeightMapWindow(); }, "F2");
+        file.AddChild("Open", []() { ShowOpenHeightMapWindow(); }, "F3");
+        file.AddChild("Save", []() { Callbacks::SaveHeightMaps(); }, "Ctrl+S");
+        file.AddChild("Revert", nullptr);
+        file.AddChild("Delete", nullptr);
+        file.AddChild("Duplicate", nullptr);
+        file.AddChild("Quit", &Callbacks::QuitProgram, "Esc");
+
+        EditorUI::FileMenuNode& editor = elements.fileMenu.AddMenuNode("Editor");
+        editor.AddChild("House", &Callbacks::OpenHouseEditor, "F4");
+        editor.AddChild("Sector", &Callbacks::OpenSectorEditor, "F5");
+        editor.AddChild("Height Map", &Callbacks::OpenHeightMapEditor, "F6");
+        editor.AddChild("Map", &Callbacks::OpenMapEditor, "F7");
+        editor.AddChild("Weapons", &Callbacks::OpenWeaponsEditor, "F8");
+    }
+
+    void InitHeightMapEditorPropertiesElements() {
+        HeightMapEditorEditorImguiElements& elements = g_heightMapEditorImguiElements;
+        elements.rendererSettingsHeader.SetTitle("Renderer Settings");
+        elements.drawGrass.SetText("Draw Grass");
+        elements.drawWater.SetText("Draw Water");
+        elements.heightMapPropertiesHeader.SetTitle("Height Map Properties");
+        elements.heightMapNameInput.SetLabel("Name");
+        elements.heightMapDropwDownN.SetText("Height Map N");
+        elements.heightMapDropwDownS.SetText("Height Map S");
+        elements.heightMapDropwDownE.SetText("Height Map E");
+        elements.heightMapDropwDownW.SetText("Height Map W");
+        elements.heightMapDropwDownNE.SetText("Height Map NE");
+        elements.heightMapDropwDownNW.SetText("Height Map NW");
+        elements.heightMapDropwDownSE.SetText("Height Map SE");
+        elements.heightMapDropwDownSW.SetText("Height Map SW");
+        elements.test.SetText("Integer Test");
+        elements.test.SetRange(-1, 10);
+        elements.test.SetValue(8);
+        elements.test2.SetText("Slider Test");
+        elements.test2.SetRange(-1.0f, 10.0f);
+        elements.test2.SetValue(8.0f);
+
+        elements.newFileWindow.SetTitle("New Height Map");
+        elements.newFileWindow.SetCallback(Callbacks::NewHeightMap);
+        elements.openFileWindow.SetTitle("Open Height Map");
+        elements.openFileWindow.SetPath("res/height_maps/");
+        elements.openFileWindow.SetCallback(Callbacks::OpenHeightMap);
+    }
+
+    void ReconfigureHeightMapEditorImGuiElements() {
+        //std::cout << "ReconfigureHeightMapEditorImGuiElements()\n";
+
+        HeightMapEditorEditorImguiElements& elements = g_heightMapEditorImguiElements;
+
+        // Update name input with height map name
+        elements.heightMapNameInput.SetText(SectorManager::GetSectorHeightMapName("HeightMapEditor_Center"));
+
+        // Height map neighbor drop downs
+        std::vector<std::string> heightMaps = { "None" };
+        heightMaps.insert(heightMaps.end(), HeightMapManager::GetHeigthMapNames().begin(), HeightMapManager::GetHeigthMapNames().end());
+
+        // First zero set all heightmaps to none
+        elements.heightMapDropwDownN.SetOptions(heightMaps);
+        //elements.heightMapDropwDownN.SetCurrentOption("None");
+        elements.heightMapDropwDownS.SetOptions(heightMaps);
+        //elements.heightMapDropwDownS.SetCurrentOption("None");
+        elements.heightMapDropwDownE.SetOptions(heightMaps);
+        //elements.heightMapDropwDownE.SetCurrentOption("None");
+        elements.heightMapDropwDownW.SetOptions(heightMaps);
+        //elements.heightMapDropwDownW.SetCurrentOption("None");
+        elements.heightMapDropwDownNE.SetOptions(heightMaps);
+        //elements.heightMapDropwDownNE.SetCurrentOption("None");
+        elements.heightMapDropwDownNW.SetOptions(heightMaps);
+        //elements.heightMapDropwDownNW.SetCurrentOption("None");
+        elements.heightMapDropwDownSE.SetOptions(heightMaps);
+        //elements.heightMapDropwDownSE.SetCurrentOption("None");
+        elements.heightMapDropwDownSW.SetOptions(heightMaps);
+        //elements.heightMapDropwDownSW.SetCurrentOption("None");
+
+        MapCreateInfo* mapCreateInfo = MapManager::GetHeightMapEditorMapCreateInfo();
+        if (mapCreateInfo) {
+
+
+            // Now iterate the sector locations, and add the actual heightmaps
+            //int mapWidth = World::GetMapWidth();
+            //int mapDepth = World::GetMapDepth();
+            //for (auto it = mapCreateInfo->sectorLocations.begin(); it != mapCreateInfo->sectorLocations.end(); ) {
+            //    const std::string& sectorName = it->second;
+            //    const std::string& heightMapName = SectorManager::GetSectorHeightMapName(sectorName);
+            //
+            //    if (sectorName == "HeightMapEditor_N") {
+            //        elements.heightMapDropwDownN.SetCurrentOption(heightMapName);
+            //    }
+            //    if (sectorName == "HeightMapEditor_NE") {
+            //        elements.heightMapDropwDownNE.SetCurrentOption(heightMapName);
+            //    }
+            //    if (sectorName == "HeightMapEditor_NW") {
+            //        elements.heightMapDropwDownNW.SetCurrentOption(heightMapName);
+            //    }
+            //    if (sectorName == "HeightMapEditor_S") {
+            //        elements.heightMapDropwDownS.SetCurrentOption(heightMapName);
+            //    }
+            //    if (sectorName == "HeightMapEditor_SE") {
+            //        elements.heightMapDropwDownSE.SetCurrentOption(heightMapName);
+            //    }
+            //    if (sectorName == "HeightMapEditor_SW") {
+            //        elements.heightMapDropwDownSW.SetCurrentOption(heightMapName);
+            //    }
+            //    if (sectorName == "HeightMapEditor_E") {
+            //        elements.heightMapDropwDownE.SetCurrentOption(heightMapName);
+            //    }
+            //    if (sectorName == "HeightMapEditor_W") {
+            //        elements.heightMapDropwDownW.SetCurrentOption(heightMapName);
+            //    }
+            //    it++;
+            //}
+        }
+
+
+        RendererSettings& renderSettings = Renderer::GetCurrentRendererSettings();
+        elements.drawGrass.SetState(renderSettings.drawGrass);
+    }
+
+    void CreateHeigthMapEditorImGuiElements() {
+        HeightMapEditorEditorImguiElements& elements = g_heightMapEditorImguiElements;
+        elements.fileMenu.CreateImguiElements();
+        elements.leftPanel.BeginImGuiElement();
+
+        // Renderer settings
+        if (elements.rendererSettingsHeader.CreateImGuiElement()) {
+            if (elements.drawGrass.CreateImGuiElements()) {
+                RendererSettings& renderSettings = Renderer::GetCurrentRendererSettings();
+                renderSettings.drawGrass = elements.drawGrass.GetState();
+            }
+            if (elements.drawWater.CreateImGuiElements()) {
+                std::cout << elements.drawWater.GetState();
+            }
+            ImGui::Dummy(ImVec2(0.0f, 10.0f));
+        }
+
+        // Height map properties
+        if (elements.heightMapPropertiesHeader.CreateImGuiElement()) {
+            elements.heightMapNameInput.CreateImGuiElement();
+            //elements.test.CreateImGuiElements();
+            //elements.test2.CreateImGuiElements();
+
+            bool reloadRequired = false;
+
+            // Iterate each sector in the current map, and store any heightmap name in the disabled options list
+            //std::vector<std::string> disabledOptions;
+            //MapCreateInfo* mapCreateInfo = MapManager::GetHeightMapEditorMapCreateInfo();
+            //if (mapCreateInfo) {
+            //    for (auto it = mapCreateInfo->sectorLocations.begin(); it != mapCreateInfo->sectorLocations.end(); ) {
+            //        const std::string& sectorName = it->second;
+            //        const std::string& heightMapName = SectorManager::GetSectorHeightMapName(sectorName);
+            //        if (heightMapName != "None") {
+            //            disabledOptions.push_back(heightMapName);
+            //        }
+            //        it++;
+            //    }
+            //}
+            //
+            //if (Input::KeyPressed(HELL_KEY_I)) {                
+            //    std::cout << "\n";
+            //    for (auto& str : disabledOptions) {
+            //        std::cout << str << "\n";
+            //    }
+            //}
+            //
+            //if (elements.heightMapDropwDownN.CreateImGuiElements(disabledOptions)) {
+            //    SectorCreateInfo* sectorCreateInfo = SectorManager::GetSectorCreateInfoByName("HeightMapEditor_N");
+            //    sectorCreateInfo->heightMapName = elements.heightMapDropwDownN.GetSelectedOptionText();
+            //    reloadRequired = true;
+            //}
+            //if (elements.heightMapDropwDownS.CreateImGuiElements(disabledOptions)) {
+            //    SectorCreateInfo* sectorCreateInfo = SectorManager::GetSectorCreateInfoByName("HeightMapEditor_S");
+            //    sectorCreateInfo->heightMapName = elements.heightMapDropwDownS.GetSelectedOptionText();
+            //    reloadRequired = true;
+            //}
+            //if (elements.heightMapDropwDownE.CreateImGuiElements(disabledOptions)) {
+            //    SectorCreateInfo* sectorCreateInfo = SectorManager::GetSectorCreateInfoByName("HeightMapEditor_E");
+            //    sectorCreateInfo->heightMapName = elements.heightMapDropwDownE.GetSelectedOptionText();
+            //    reloadRequired = true;
+            //}
+            //if (elements.heightMapDropwDownW.CreateImGuiElements(disabledOptions)) {
+            //    SectorCreateInfo* sectorCreateInfo = SectorManager::GetSectorCreateInfoByName("HeightMapEditor_W");
+            //    sectorCreateInfo->heightMapName = elements.heightMapDropwDownW.GetSelectedOptionText();
+            //    reloadRequired = true;
+            //}
+            //if (elements.heightMapDropwDownNW.CreateImGuiElements(disabledOptions)) {
+            //    SectorCreateInfo* sectorCreateInfo = SectorManager::GetSectorCreateInfoByName("HeightMapEditor_NW");
+            //    sectorCreateInfo->heightMapName = elements.heightMapDropwDownNW.GetSelectedOptionText();
+            //    reloadRequired = true;
+            //}
+            //if (elements.heightMapDropwDownNE.CreateImGuiElements(disabledOptions)) {
+            //    SectorCreateInfo* sectorCreateInfo = SectorManager::GetSectorCreateInfoByName("HeightMapEditor_NE");
+            //    sectorCreateInfo->heightMapName = elements.heightMapDropwDownNE.GetSelectedOptionText();
+            //    reloadRequired = true;
+            //}
+            //if (elements.heightMapDropwDownSW.CreateImGuiElements(disabledOptions)) {
+            //    SectorCreateInfo* sectorCreateInfo = SectorManager::GetSectorCreateInfoByName("HeightMapEditor_SW");
+            //    sectorCreateInfo->heightMapName = elements.heightMapDropwDownSW.GetSelectedOptionText();
+            //    reloadRequired = true;
+            //}
+            //if (elements.heightMapDropwDownSE.CreateImGuiElements(disabledOptions)) {
+            //    SectorCreateInfo* sectorCreateInfo = SectorManager::GetSectorCreateInfoByName("HeightMapEditor_SE");
+            //    sectorCreateInfo->heightMapName = elements.heightMapDropwDownSE.GetSelectedOptionText();
+            //    reloadRequired = true;
+            //}
+            //ImGui::Dummy(ImVec2(0.0f, 20.0f));
+
+            if (reloadRequired) {
+                MapCreateInfo* mapCreateInfo = MapManager::GetMapCreateInfoByName("HeightMapEditorMap");
+                World::LoadMap(mapCreateInfo);
+                Renderer::RecalculateAllHeightMapData();
+            }
+        }
+
+        elements.leftPanel.EndImGuiElement();
+        
+        // Windows
+        if (elements.newFileWindow.IsVisible()) {
+            elements.newFileWindow.CreateImGuiElements();
+        }
+        if (elements.openFileWindow.IsVisible()) {
+            elements.openFileWindow.CreateImGuiElements();
+        }
+    }
+
+    void OpenHeightMapEditor() {
+        Audio::PlayAudio(AUDIO_SELECT, 1.0f);
+
+        if (IsEditorClosed()) {
+            OpenEditor();
+        }
+
+        if (GetEditorMode() != EditorMode::HEIGHTMAP_EDITOR) {
+            SetEditorMode(EditorMode::HEIGHTMAP_EDITOR);
+        }
+
+        MapCreateInfo* mapCreateInfo = MapManager::GetHeightMapEditorMapCreateInfo();
+        World::LoadMap(mapCreateInfo);
+
+        ReconfigureHeightMapEditorImGuiElements();
+    }
+
+    void LoadHeightMap(const std::string& heightMapName) {
+
+        SectorManager::GetSectorCreateInfoByName("HeightMapEditor_Center");
+
+        SectorManager::SetSectorHeightMap("HeightMapEditor_Center", heightMapName);
+        SectorManager::SetSectorHeightMap("HeightMapEditor_SW", "");
+        SectorManager::SetSectorHeightMap("HeightMapEditor_S", "");
+        SectorManager::SetSectorHeightMap("HeightMapEditor_SE", "");
+        SectorManager::SetSectorHeightMap("HeightMapEditor_W", "");
+        SectorManager::SetSectorHeightMap("HeightMapEditor_E", "");
+        SectorManager::SetSectorHeightMap("HeightMapEditor_NW", "");
+        SectorManager::SetSectorHeightMap("HeightMapEditor_N", "");
+        SectorManager::SetSectorHeightMap("HeightMapEditor_NE", "");
+
+        MapCreateInfo* mapCreateInfo = MapManager::GetHeightMapEditorMapCreateInfo();
+        World::LoadMap(mapCreateInfo);
+        ReconfigureHeightMapEditorImGuiElements();
+
+        std::cout << "Loaded height map: " << heightMapName << "\n";
+    }
+
+    void UpdateHeightMapEditor() {
+        int mapWidth = World::GetMapWidth();
+        int mapDepth = World::GetMapDepth();
+        float worldWidth = World::GetWorldSpaceWidth();
+        float worldDepth = World::GetWorldSpaceDepth();
+
+        int viewportIndex = Editor::GetHoveredViewportIndex();
+        const Viewport* viewport = ViewportManager::GetViewportByIndex(viewportIndex);
+        const glm::vec3 rayOrigin = Editor::GetMouseRayOriginByViewportIndex(viewportIndex);
+        const glm::vec3 rayDir = Editor::GetMouseRayDirectionByViewportIndex(viewportIndex);
+
+        ivecXZ hovered = ivecXZ(-1, -1);
+
+        // Draw grid and check for mouse hover
+        for (int x = 0; x < mapWidth; x++) {
+            for (int z = 0; z < mapDepth; z++) {
+                glm::vec3 p0 = glm::vec3((x + 0) * 64.0f, 0.0f, (z + 0) * 64.0f);
+                glm::vec3 p1 = glm::vec3((x + 0) * 64.0f, 0.0f, (z + 1) * 64.0f);
+                glm::vec3 p2 = glm::vec3((x + 1) * 64.0f, 0.0f, (z + 0) * 64.0f);
+                glm::vec3 p3 = glm::vec3((x + 1) * 64.0f, 0.0f, (z + 1) * 64.0f);
+                float t = 0;
+                if (Util::RayIntersectsTriangle(rayOrigin, rayDir, p0, p1, p2, t) ||
+                    Util::RayIntersectsTriangle(rayOrigin, rayDir, p1, p3, p2, t)) {
+                    hovered = ivecXZ(x, z);
+                }
+                Renderer::DrawLine(p0, p1, GRID_COLOR, true);
+                Renderer::DrawLine(p0, p2, GRID_COLOR, true);
+                Renderer::DrawLine(p2, p3, GRID_COLOR, true);
+                Renderer::DrawLine(p1, p3, GRID_COLOR, true);
+            }
+        }
+
+        // Draw hovered
+        if (hovered != ivecXZ(-1, -1)) {
+            glm::vec3 p0 = glm::vec3((hovered.x + 0) * 64.0f, 0.0f, (hovered.z + 0) * 64.0f);
+            glm::vec3 p1 = glm::vec3((hovered.x + 0) * 64.0f, 0.0f, (hovered.z + 1) * 64.0f);
+            glm::vec3 p2 = glm::vec3((hovered.x + 1) * 64.0f, 0.0f, (hovered.z + 0) * 64.0f);
+            glm::vec3 p3 = glm::vec3((hovered.x + 1) * 64.0f, 0.0f, (hovered.z + 1) * 64.0f);
+            Renderer::DrawLine(p0, p1, WHITE, true);
+            Renderer::DrawLine(p0, p2, WHITE, true);
+            Renderer::DrawLine(p2, p3, WHITE, true);
+            Renderer::DrawLine(p1, p3, WHITE, true);
+        }
+    }
+
+    void ShowNewHeightMapWindow() {
+        CloseAllEditorWindows();
+        HeightMapEditorEditorImguiElements& elements = g_heightMapEditorImguiElements;
+        elements.newFileWindow.Show();
+    }
+
+    void ShowOpenHeightMapWindow() {
+        CloseAllEditorWindows();
+        HeightMapEditorEditorImguiElements& elements = g_heightMapEditorImguiElements;
+        elements.openFileWindow.Show();
+    }
+
+    void CloseAllHeightMapEditorWindows() {
+        HeightMapEditorEditorImguiElements& elements = g_heightMapEditorImguiElements;
+        elements.newFileWindow.Close();
+        elements.openFileWindow.Close();
+    }
+}

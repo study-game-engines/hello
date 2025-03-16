@@ -1,51 +1,41 @@
 #pragma once
-#include "HellCommon.h"
+#include "HellTypes.h"
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <Compressonator.h>
 #include <string>
 #include <memory>
 
 struct OpenGLTexture {
-
+public:
     OpenGLTexture() = default;
-    //explicit OpenGLTexture(const std::string filepath);
-    GLuint GetID();
+    GLuint& GetHandle();
     GLuint64 GetBindlessID();
-    void Bind(unsigned int slot);
-    bool Load(const std::string filepath, bool compressed);
-    bool Bake();
-    void BakeCMPData(CMP_Texture* cmpTexture);
-    //void UploadToGPU(void* data, CMP_Texture* cmpTexture, int width, int height, int channelCount);
-    bool IsBaked();
-    int GetWidth();
-    int GetHeight();
-    std::string& GetFilename();
-    std::string& GetFiletype();
-    void HotloadFromPath(const std::string filepath);
+    void AllocateMemory(int width, int height, int format, int internalFormat, int mipmapLevelCount);
+    void SetWrapMode(TextureWrapMode wrapMode);
+    void SetMinFilter(TextureFilter filter);
+    void SetMagFilter(TextureFilter filter);
     void MakeBindlessTextureResident();
     void MakeBindlessTextureNonResident();
-
-    GLuint& GetHandleReference();
-    void GenerateMipmaps();
+    int GetWidth();
+    int GetHeight();
+    int GetChannelCount();
+    int GetDataSize();
+    void* GetData();
+    GLint GetFormat();
+    GLint GetInternalFormat();
+    GLint GetMipmapLevelCount();
 
 private:
-    GLuint ID;
-    GLuint64 bindlessID = 0;
-    std::string m_fullPath;
-    std::string m_filename;
-    std::string m_filetype;
-    bool m_compressed = false;
-
-    //unsigned char* _data = nullptr;
-    //float* _floatData = nullptr;
-
-    CompressedTextureData m_compressedTextureData;
-
+    GLuint m_handle = 0;
+    GLuint64 m_bindlessID = 0;
+    int m_width = 0;
+    int m_height = 0;
+    int m_channelCount = 0;
+    GLsizei m_dataSize = 0;
     void* m_data = nullptr;
-
-    int _NumOfChannels = 0;
-    int _width = 0;
-    int _height = 0;
-    //bool _baked = false;
+    GLint m_format = 0;
+    GLint m_internalFormat = 0;
+    GLint m_mipmapLevelCount = 0;
+    ImageDataType m_imageDataType;
+    bool m_memoryAllocated = false;
 };

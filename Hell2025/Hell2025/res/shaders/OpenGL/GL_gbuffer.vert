@@ -1,102 +1,82 @@
 #version 460 core
 
-layout (location = 0) in vec3 vPos;
-layout (location = 1) in vec3 vNormal;
-layout (location = 2) in vec2 vTexCoord;
-layout (location = 3) in vec3 vTangent;
-layout (location = 4) in ivec4 vBoneID;
-layout (location = 5) in vec4 vBoneWeight;
+#ifndef ENABLE_BINDLESS
+    #define ENABLE_BINDLESS 1
+#endif
 
-uniform mat4 projection;
-uniform mat4 view;
-uniform int playerIndex;
-uniform int instanceDataOffset;
+#include "../common/util.glsl"
+#include "../common/types.glsl"
+#include "../common/constants.glsl"
+
+layout (location = 0) in vec3 vPosition;
+layout (location = 1) in vec3 vNormal;
+layout (location = 2) in vec2 vUV;
+layout (location = 3) in vec3 vTangent;
+
+readonly restrict layout(std430, binding = 2) buffer viewportDataBuffer {
+	ViewportData viewportData[];
+};
+
+layout(std430, binding = 3) readonly buffer renderItemsBuffer {
+    RenderItem renderItems[];
+};
 
 out vec2 TexCoord;
-out flat int BaseColorTextureIndex;
-out flat int NormalTextureIndex;
-out flat int RMATextureIndex;
-out flat int useEmissiveMask;
-out flat int PlayerIndex;
+out vec4 WorldPos;
 out vec3 Normal;
 out vec3 Tangent;
 out vec3 BiTangent;
-out vec3 emissiveColor;
+out vec3 ViewPos;
+out vec3 EmissiveColor;
 
-struct RenderItem3D {
-    mat4 modelMatrix;
-    mat4 inverseModelMatrix;
-    int meshIndex;
-    int baseColorTextureIndex;
-    int normalMapTextureIndex;
-    int rmaTextureIndex;
-    int vertexOffset;
-    int indexOffset;
-    int castShadow;
-    int useEmissiveMask;
-    float emissiveColorR;
-    float emissiveColorG;
-    float emissiveColorB;
-    float aabbMinX;
-    float aabbMinY;
-    float aabbMinZ;
-    float aabbMaxX;
-    float aabbMaxY;
-    float aabbMaxZ;
-    float padding0;
-    float padding1;
-    float padding2;
-};
+out flat int MousePickType;
+out flat int MousePickIndex;
 
-layout(std430, binding = 1) readonly buffer renderItems {
-    RenderItem3D RenderItems[];
-};
+#if ENABLE_BINDLESS
+out flat int BaseColorTextureIndex;
+out flat int NormalTextureIndex;
+out flat int RMATextureIndex;
+#else
+uniform int u_viewportIndex;
+uniform int u_globalInstanceIndex;
+#endif
 
 void main() {
-	int index = gl_InstanceID + gl_BaseInstance + instanceDataOffset;
 
-    // Set the texture coordinates
-    TexCoord = vec2(vTexCoord.x, vTexCoord.y);
-
-    // Load render item and material data
-    RenderItem3D renderItem = RenderItems[index];	
-	BaseColorTextureIndex =  RenderItems[index].baseColorTextureIndex;
-	NormalTextureIndex =  RenderItems[index].normalMapTextureIndex;
-	RMATextureIndex =  RenderItems[index].rmaTextureIndex;
-
-    // Emissive mask and color
-    useEmissiveMask = renderItem.useEmissiveMask;
-    emissiveColor = vec3(renderItem.emissiveColorR, renderItem.emissiveColorG, renderItem.emissiveColorB);
-
-    // Compute model-space and normal-space transformations
-   mat4 modelMatrix = renderItem.modelMatrix;
-//	mat4 normalMatrix = transpose(renderItem.inverseModelMatrix);
-//   Normal = normalize(normalMatrix * vec4(vNormal, 0)).xyz;
-//	Tangent = normalize(normalMatrix * vec4(vTangent, 0)).xyz;
-//	BiTangent = normalize(cross(Normal, Tangent));
+#if ENABLE_BINDLESS
+    int viewportIndex = gl_BaseInstance >> VIEWPORT_INDEX_SHIFT;
+    int instanceOffset = gl_BaseInstance & ((1 << VIEWPORT_INDEX_SHIFT) - 1);
+    int globalInstanceIndex = instanceOffset + gl_InstanceID;
     
-    mat3 normalMatrix = transpose(mat3(renderItem.inverseModelMatrix));
-    Normal = normalize(normalMatrix * vNormal);
-    Tangent = normalize(normalMatrix * vTangent);
+    BaseColorTextureIndex =  renderItems[globalInstanceIndex].baseColorTextureIndex;
+	NormalTextureIndex =  renderItems[globalInstanceIndex].normalMapTextureIndex;
+	RMATextureIndex =  renderItems[globalInstanceIndex].rmaTextureIndex;   
+
+#else
+    int globalInstanceIndex = u_globalInstanceIndex;
+    int viewportIndex = u_viewportIndex;
+#endif
+
+    RenderItem renderItem = renderItems[globalInstanceIndex]; 
+    mat4 modelMatrix = renderItem.modelMatrix;
+    mat4 inverseModelMatrix = renderItem.inverseModelMatrix;  
+	mat4 projectionView = viewportData[viewportIndex].projectionView;            
+    mat4 normalMatrix = transpose(inverseModelMatrix);
+
+    Normal = normalize(normalMatrix * vec4(vNormal, 0)).xyz;
+    Tangent = normalize(normalMatrix * vec4(vTangent, 0)).xyz;
     BiTangent = normalize(cross(Normal, Tangent));
-
-    // Compute the final position of the vertex in screen space
-    gl_Position = projection * view * modelMatrix * vec4(vPos, 1.0);
     
-    // What did or does this do?
-    // What did or does this do?
-    // What did or does this do?
-    // What did or does this do?
-	int fuck =  renderItem.useEmissiveMask;
-	if (fuck == 2) {
-		vec3 WorldPos = vec4(modelMatrix * vec4(vPos, 1.0)).xyz;
-		TexCoord.x = WorldPos.z / 2;
-	}
-	if (fuck == 3) {
-		vec3 WorldPos = vec4(modelMatrix * vec4(vPos, 1.0)).xyz;
-		TexCoord.x = WorldPos.x / 2;
-	}
+	TexCoord = vUV;
+    WorldPos = modelMatrix * vec4(vPosition, 1.0);
+    ViewPos = viewportData[viewportIndex].inverseView[3].xyz;
 
-    // Pass the player index to the fragment shader
-    PlayerIndex = playerIndex;
+	MousePickType =  renderItems[globalInstanceIndex].mousePickType;
+	MousePickIndex =  renderItems[globalInstanceIndex].mousePickIndex;
+        
+    EmissiveColor.r = renderItems[globalInstanceIndex].emissiveR;
+    EmissiveColor.g = renderItems[globalInstanceIndex].emissiveG;
+    EmissiveColor.b = renderItems[globalInstanceIndex].emissiveB;
+
+	gl_Position = projectionView * WorldPos;
 }

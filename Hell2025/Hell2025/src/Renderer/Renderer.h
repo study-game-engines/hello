@@ -1,39 +1,22 @@
 #pragma once
-#include "RendererCommon.h"
-#include "Types/DetachedMesh.hpp"
-#include "Math/Frustum.h"
+#include "HellTypes.h"
+#include "Math/AABB.h"
 
 namespace Renderer {
-
+    void InitMain();
     void RenderLoadingScreen();
-    void RenderFrame();
+    void RenderGame();
     void HotloadShaders();
-    void NextRenderMode();
-    void PreviousRenderMode();
+    void NextRendererOverrideState();
     void NextDebugLineRenderMode();
-    void UpdatePointCloud();
-    void RecreateBlurBuffers();
-    RenderMode GetRenderMode();
+
+    void RecalculateAllHeightMapData();
+
+    void DrawPoint(glm::vec3 position, glm::vec3 color, bool obeyDepth = false);
+    void DrawLine(glm::vec3 begin, glm::vec3 end, glm::vec3 color, bool obeyDepth = false);
+    void DrawAABB(const AABB& aabb, const glm::vec3& color);
+    void DrawAABB(const AABB& aabb, const glm::vec3& color, const glm::mat4& worldTransform);
+
     DebugLineRenderMode GetDebugLineRenderMode();
-    void ToggleProbes();
-    bool ProbesVisible();
-
-    // Debug
-    void UpdateDebugLinesMesh();
-    void UpdateDebugLinesMesh2D();
-    void UpdateDebugPointsMesh();
-    void UpdateDebugTrianglesMesh();
-    void DrawLine(glm::vec3 begin, glm::vec3 end, glm::vec3 color);
-    void DrawAABB(AABB& aabb, glm::vec3 color);
-    void DrawAABB(AABB& aabb, glm::vec3 color, glm::mat4 worldTransform);
-    void DrawSphere(const Sphere& sphere, int segments, const glm::vec3& color);
-    void DrawFrustum(Frustum& frustum, glm::vec3 color);
-    std::string& GetDebugText();
-    inline DetachedMesh g_debugLinesMesh;
-    inline DetachedMesh g_debugLinesMesh2D;
-    inline DetachedMesh g_debugPointsMesh;
-    inline DetachedMesh g_debugTrianglesMesh;
-    inline std::vector<Vertex> g_debugLines;
-    inline DebugLineRenderMode g_debugLineRenderMode = DebugLineRenderMode::SHOW_NO_LINES;
-
-;}
+    RendererSettings& GetCurrentRendererSettings();
+}

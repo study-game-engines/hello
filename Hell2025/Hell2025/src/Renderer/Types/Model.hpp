@@ -1,5 +1,8 @@
 #pragma once
-#include "RendererCommon.h"
+#include "Common.h"
+#include "HellEnums.h"
+#include "HellTypes.h"
+#include "../File/FileFormats.h"
 #include <string>
 #include <vector>
 
@@ -8,20 +11,33 @@ struct Model {
 private:
     std::string m_name = "undefined";
     std::vector<uint32_t> m_meshIndices;
-    BoundingBox m_boundingBox;
+    FileInfo m_fileInfo; 
+    LoadingState m_loadingState = LoadingState::AWAITING_LOADING_FROM_DISK;
 public:
-    glm::vec3 m_aabbMin;
-    glm::vec3 m_aabbMax;
+    glm::vec3 m_aabbMin = glm::vec3(std::numeric_limits<float>::max());
+    glm::vec3 m_aabbMax = glm::vec3(-std::numeric_limits<float>::max());
     bool m_awaitingLoadingFromDisk = true;
-    bool m_loadedFromDisk = false;
-    //std::string m_fullPath = "";
+    std::string m_fullPath = ""; 
+    ModelData m_modelData;
 
 public:
 
     Model() = default;
 
-    Model(const std::string name) {
-        m_name = name;
+    void SetFileInfo(FileInfo fileInfo) {
+        m_fileInfo = fileInfo;
+    }
+
+    FileInfo GetFileInfo() {
+        return m_fileInfo;
+    }
+
+    LoadingState& GetLoadingState() {
+        return m_loadingState;
+    }
+
+    void SetLoadingState(LoadingState loadingState) {
+        m_loadingState = loadingState;
     }
 
     void AddMeshIndex(uint32_t index) {
@@ -36,19 +52,16 @@ public:
         return m_meshIndices;
     }
 
-    void SetName(const std::string& modelName) {
-        this->m_name = modelName;
+    void SetName(std::string modelName) {
+        m_name = modelName;
+    }
+
+    void SetAABB(glm::vec3 aabbMin, glm::vec3 aabbMax) {
+        m_aabbMin = aabbMin;
+        m_aabbMax = aabbMax;
     }
 
     const std::string GetName() {
         return m_name;
-    }
-
-    const BoundingBox& GetBoundingBox() {
-        return m_boundingBox;
-    }
-
-    void SetBoundingBox(BoundingBox& modelBoundingBox) {
-        this->m_boundingBox = modelBoundingBox;
     }
 };

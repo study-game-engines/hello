@@ -1,833 +1,272 @@
 #version 430 core
+layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 
-#define TILE_SIZE 24
-layout(local_size_x = TILE_SIZE, local_size_y = TILE_SIZE, local_size_z = 1) in;
+#include "../common/lighting.glsl"
+#include "../common/post_processing.glsl"
+#include "../common/types.glsl"
+#include "../common/util.glsl"
 
-layout(rgba8, binding = 0) uniform image2D lightingTexture;
+layout(binding = 0) uniform sampler2D BaseColorTexture;
+layout(binding = 1) uniform sampler2D NormalTexture;
+layout(binding = 2) uniform sampler2D RMATexture;
+layout(binding = 3) uniform sampler2D DepthTexture;
+layout(binding = 4) uniform sampler2D WorldPositionTexture;
+layout(binding = 5) uniform usampler2D ViewportIndexTexture;
+layout(binding = 6) uniform sampler2D EmissiveTexture;
+layout(binding = 7) uniform sampler2D FlashlightCookieTexture;
+layout(binding = 8) uniform sampler2D FlashlighShadowMapTexture;
+layout(binding = 9) uniform sampler2D HeightMapTestTexture;
 
-layout (binding = 0) uniform sampler2D depthTexture;
-layout (binding = 1) uniform samplerCubeArray shadowMapArray;
-layout (binding = 2) uniform sampler2D baseColorTexture;
-layout (binding = 3) uniform sampler2D normalTexture;
-layout (binding = 4) uniform sampler2D rmaTexture;
-layout (binding = 5) uniform sampler2D emissiveTexture;
-layout (binding = 6) uniform sampler3D probeGridTexture;
+uniform int u_editorLighting;
+uniform int u_ambientLightingBoost;
 
-uniform float viewportWidth;
-uniform float viewportHeight;
-uniform int tileXCount;
-uniform int tileYCount;
-uniform float time;
-uniform int probeSpaceWidth;
-uniform int probeSpaceHeight;
-uniform int probeSpaceDepth;
-uniform float probeSpacing;
-uniform vec3 lightVolumePosition;
-uniform int fogAABBCount;
-uniform int rendererOverrideState;
-uniform int renderMode;
-uniform float waterHeight;
+layout(rgba16f, binding = 0) uniform image2D outputImage;
 
-const float PI = 3.14159265359;
-
-struct CameraData {
-    mat4 projection;
-    mat4 projectionInverse;
-    mat4 view;
-    mat4 viewInverse;
-	float viewportWidth;
-	float viewportHeight;
-    float viewportOffsetX;
-    float viewportOffsetY;
-	float clipSpaceXMin;
-    float clipSpaceXMax;
-    float clipSpaceYMin;
-    float clipSpaceYMax;
-	float finalImageColorContrast;
-    float finalImageColorR;
-    float finalImageColorG;
-    float finalImageColorB;
+readonly restrict layout(std430, binding = 1) buffer rendererDataBuffer {
+	RendererData rendererData;
 };
 
-struct PlayerData {
-    int flashlightOn;
-    int padding0;
-    int padding1;
-    int padding2;
+readonly restrict layout(std430, binding = 2) buffer viewportDataBuffer {
+	ViewportData viewportData[];
 };
 
-struct Light {
-    float posX;
-    float posY;
-    float posZ;
-    float colorR;
-    float colorG;
-    float colorB;
-    float strength;
-    float radius;
-    int shadowMapIndex;
-    int contributesToGI;
-    float padding0;
-    float padding1;
+readonly restrict layout(std430, binding = 4) buffer lightsBuffer {
+	Light lights[];
 };
-
-struct TileData {
-    uint lightCount;
-    uint lightIndices[127];
-};
-
-struct AABB {
-	float centerX;
-	float centerY;
-	float centerZ;
-	float boundsMinX;
-	float boundsMinY;
-	float boundsMinZ;
-	float boundsMaxX;
-	float boundsMaxY;
-	float boundsMaxZ;
-	float paddingX;
-	float paddingY;
-	float paddingZ;
-};
-
-layout(std430, binding = 2) readonly buffer Lights {
-    Light lights[];
-};
-
-layout(std430, binding = 16) readonly buffer CameraDataArray {
-    CameraData cameraDataArray[];
-};
-
-layout(std430, binding = 20) buffer Buffer2 {
-    TileData tileData[];
-};
-
-layout(std430, binding = 21) buffer PlayerDataBuffer {
-    PlayerData playerData[];
-};
-
-
-vec3 gridSamplingDisk[20] = vec3[](
-   vec3(1, 1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1, 1,  1),
-   vec3(1, 1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1, 1, -1),
-   vec3(1, 1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1, 1,  0),
-   vec3(1, 0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1, 0, -1),
-   vec3(0, 1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0, 1, -1)
-);
-
-float ShadowCalculation(int lightIndex, vec3 lightPos, float lightRadius, vec3 fragPos, vec3 viewPos, vec3 Normal) {
-    vec3 fragToLight = fragPos - lightPos;
-    float currentDepth = length(fragToLight);
-    float far_plane = lightRadius; // far plane was hardcoded to 20, you can pass it as an argument if needed
-    float shadow = 0.0;
-    vec3 lightDir = fragPos - lightPos;
-    float bias = max(0.0125 * (1.0 - dot(Normal, normalize(lightDir))), 0.00125);  // Added normalize to lightDir
-    int samples = 20;
-    float viewDistance = length(viewPos - fragPos);
-    float diskRadius = (1.0 + (viewDistance / far_plane)) / 200.0;
-    // Sample the cubemap array for shadows
-    for (int i = 0; i < samples; ++i) {
-        // Sample the cubemap array with the light index and the current sampling offset
-        float closestDepth = texture(shadowMapArray, vec4(fragToLight + gridSamplingDisk[i] * diskRadius, lightIndex)).r;
-        closestDepth *= far_plane;  // Undo mapping [0;1]        
-        // Apply bias and check if the fragment is in shadow
-        if (currentDepth - bias > closestDepth) {
-            shadow += 1.0;
-        }
-    }
-    // Average the shadow results
-    shadow /= float(samples);    
-    // Return the final shadow factor (1 means fully lit, 0 means fully in shadow)
-    return 1.0 - shadow;
-}
-
-
-/////////////////////////
-//                     //
-//   Direct Lighting   //
-
-
-float D_GGX(float NoH, float roughness) {
-  float alpha = roughness * roughness;
-  float alpha2 = alpha * alpha;
-  float NoH2 = NoH * NoH;
-  float b = (NoH2 * (alpha2 - 1.0) + 1.0);
-  return alpha2 / (PI * b * b);
-}
-
-float G1_GGX_Schlick(float NdotV, float roughness) {
-  //float r = roughness; // original
-  float r = 0.5 + 0.5 * roughness; // Disney remapping
-  float k = (r * r) / 2.0;
-  float denom = NdotV * (1.0 - k) + k;
-  return NdotV / denom;
-}
-
-float G_Smith(float NoV, float NoL, float roughness) {
-  float g1_l = G1_GGX_Schlick(NoL, roughness);
-  float g1_v = G1_GGX_Schlick(NoV, roughness);
-  return g1_l * g1_v;
-}
-
-vec3 fresnelSchlick(float cosTheta, vec3 F0) {
-    return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
-}
-
-vec3 microfacetBRDF(in vec3 L, in vec3 V, in vec3 N, in vec3 baseColor, in float metallicness, in float fresnelReflect, in float roughness, in vec3 WorldPos) {
-  vec3 H = normalize(V + L); // half vector
-  // all required dot products
-  float NoV = clamp(dot(N, V), 0.0, 1.0);
-  float NoL = clamp(dot(N, L), 0.0, 1.0);
-  float NoH = clamp(dot(N, H), 0.0, 1.0);
-  float VoH = clamp(dot(V, H), 0.0, 1.0);
-  // F0 for dielectics in range [0.0, 0.16]
-  // default FO is (0.16 * 0.5^2) = 0.04
-  vec3 f0 = vec3(0.16 * (fresnelReflect * fresnelReflect));
-  // f0 = vec3(0.125);
-  // in case of metals, baseColor contains F0
-  f0 = mix(f0, baseColor, metallicness);
-  // specular microfacet (cook-torrance) BRDF
-  vec3 F = fresnelSchlick(VoH, f0);
-  float D = D_GGX(NoH, roughness);
-  float G = G_Smith(NoV, NoL, roughness);
-  vec3 spec = (D * G * F) / max(4.0 * NoV * NoL, 0.001);
-
-  // diffuse
-  vec3 notSpec = vec3(1.0) - F; // if not specular, use as diffuse
-  notSpec *= 1.0 - metallicness; // no diffuse for metals
-  vec3 diff = notSpec * baseColor / PI;
-  spec *= 1.05;
-  vec3 result = diff + spec;
-
-  return result;
-}
-
-vec3 GetDirectLighting(vec3 lightPos, vec3 lightColor, float radius, float strength, vec3 Normal, vec3 WorldPos, vec3 baseColor, float roughness, float metallic, vec3 viewPos, float fresnelReflect) {
-	
-	vec3 viewDir = normalize(viewPos - WorldPos);
-	float lightRadiance = strength * 1;// * 1.25;
-	vec3 lightDir = normalize(lightPos - WorldPos);
-	float lightAttenuation = smoothstep(radius, 0, length(lightPos - WorldPos));
-	// lightAttenuation = clamp(lightAttenuation, 0.0, 0.9); // THIS IS WRONG, but does stop super bright region around light source and doesn't seem to affect anything else...
-	float irradiance = max(dot(lightDir, Normal), 0.0) ;
-	irradiance *= lightAttenuation * lightRadiance;
-	vec3 brdf = microfacetBRDF(lightDir, viewDir, Normal, baseColor, metallic, fresnelReflect, roughness, WorldPos);
-	return brdf * irradiance * clamp(lightColor, 0, 1);
-}
-
-vec3 GetOutdoorDirectLighting(vec3 WorldPos, vec3 Normal, vec3 baseColor, float roughness, float metallic, vec3 viewPos, vec3 lightDir, vec3 lightColor, float lightStrength, float fresnelReflect) {
-	vec3 viewDir = normalize(viewPos - WorldPos);
-	float irradiance = max(dot(lightDir, Normal), 0.0);
-	irradiance *= lightStrength;
-	vec3 brdf = microfacetBRDF(lightDir, viewDir, Normal, baseColor, metallic, fresnelReflect, roughness, WorldPos);
-	return brdf * irradiance * clamp(lightColor, 0, 1);
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-//////////////////////
-//                  //
-//   Tone mapping   //
-
-vec3 filmic(vec3 x) {
-  vec3 X = max(vec3(0.0), x - 0.004);
-  vec3 result = (X * (6.2 * X + 0.5)) / (X * (6.2 * X + 1.7) + 0.06);
-  return pow(result, vec3(2.2));
-}
-
-float filmic(float x) {
-  float X = max(0.0, x - 0.004);
-  float result = (X * (6.2 * X + 0.5)) / (X * (6.2 * X + 1.7) + 0.06);
-  return pow(result, 2.2);
-}
-
-vec3 Tonemap_ACES(const vec3 x) { // Narkowicz 2015, "ACES Filmic Tone Mapping Curve"
-    const float a = 2.51;
-    const float b = 0.03;
-    const float c = 2.43;
-    const float d = 0.59;
-    const float e = 0.14;
-    return (x * (a * x + b)) / (x * (c * x + d) + e);
-}
-
-//////////////
-//          //
-//   Noise  //
-
-/*
-vec3 filmPixel(vec2 uv) {
-    mat2x3 uvs = mat2x3(uv.xxx, uv.yyy) + mat2x3(vec3(0, 0.1, 0.2), vec3(0, 0.3, 0.4));
-    return fract(sin(uvs * vec2(12.9898, 78.233) * time) * 43758.5453);
-}*/
-
-float rand(vec2 co){
-    return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
-}
-
-
-vec3 filmPixel(vec2 uv) {
-    mat2x3 uvs = mat2x3(uv.xxx, uv.yyy) + mat2x3(vec3(0, 0.1, 0.2), vec3(0, 0.3, 0.4));
-    return fract(sin(uvs * vec2(12.9898, 78.233) * time) * 43758.5453);
-}
-
-
-
-
-
-
-
-
-
-
-///////////////////////////
-//                       //
-//   Indirect Lighting   //
-
-vec3 GetProbe3(vec3 fragWorldPos, ivec3 offset, out float weight, vec3 Normal) {
-
-	/*
-	float probeWorldX = (x * probeSpacing) + lightVolumePosition.x;
-	float probeWorldY = (y * probeSpacing) + lightVolumePosition.y;
-	float probeWorldZ = (z * probeSpacing) + lightVolumePosition.z;
-	vec3 probePosition = vec3(probeWorldX, probeWorldY, probeWorldZ);
-	*/
-
-	//offset = ivec3(0,0,0);
-
-	vec3 fragPosProbeSpace = fragWorldPos;
-	fragPosProbeSpace.x -= lightVolumePosition.x;
-	fragPosProbeSpace.y -= lightVolumePosition.y;
-	fragPosProbeSpace.z -= lightVolumePosition.z;
-
-    vec3 gridCoords = fragPosProbeSpace / probeSpacing;
-	ivec3 texelCoords = ivec3(floor(gridCoords)) + offset;
-
-    ivec3 base = ivec3(floor(gridCoords));
-    vec3 a = gridCoords - base;
-    vec3 probe_color = texelFetch(probeGridTexture, texelCoords, 0).rgb;
-   // vec3 probe_worldPos = (base + offset) * probeSpacing;
-
-	
-	// Does fragment point away from probe
-	vec3 probe_worldPos = gridCoords * probeSpacing + lightVolumePosition;
-	
-	if(probe_color == vec3(0)) {
-		probe_color = vec3(0,0,0);
-	}
-	
-	vec3 texelCoordsWorldPos = texelCoords * probeSpacing + lightVolumePosition;
-
-    //vec3 v = normalize(probe_worldPos - fragWorldPos); // TODO: no need to normalize if only checking sign
-    vec3 v = normalize(texelCoordsWorldPos - fragWorldPos);
-    float vdotn = dot(v, Normal);
-    vec3 weights = mix(1. - a, a, offset);
-    if(vdotn > 0)
-        weight = weights.x * weights.y * weights.z;
-    else
-        weight = 0.;
-
-		
-	//return probe_worldPos;
-	//return texelCoordsWorldPos;
-
-	//weight = 1;
-	//return v;
-
-	//weight = 1;
-	//return vec3(vdotn);
-		
-      //  weight = weights.x * weights.y * weights.z;
-
-	float dist = length(texelCoordsWorldPos - probe_worldPos);
-	float maxDist = 1.0;
-
-    // Calculate the weight based on the distance, clamped between 0 and 1
-   // weight = clamp(dist / maxDist, 0.0, 1.0);
-
-    //    weight = weights.x * weights.y * weights.z;
-
-	//float dist = length(fragPos1 - probe_worldPos);
-
-    // Calculate the weight based on the distance, clamped between 0 and 1
-   // float weight = clamp(distance / maxDistance, 0.0, 1.0);
-		
-   //  weight = weights.x * weights.y * weights.z;
-    if(probe_color == vec3(0)) {
-        weight = 0.;
-	}
-    return probe_color;
-}
-
-vec3 GetProbe(vec3 fragWorldPos, ivec3 offset, out float weight, vec3 Normal) {
-	vec3 fragProbePos = fragWorldPos - lightVolumePosition;
-    vec3 gridCoords = fragProbePos / probeSpacing;
-    ivec3 base = ivec3(floor(gridCoords));
-    vec3 a = gridCoords - base;
-    vec3 probe_color = texelFetch(probeGridTexture, base + offset, 0).rgb;
-	vec3 probe_worldPos = ivec3(floor(gridCoords) + offset) * probeSpacing + lightVolumePosition;
-    vec3 v = (probe_worldPos - fragWorldPos); // no need to normalize if only checking sign
-    float vdotn = dot(v, Normal);
-	vec3 weights = vec3(1.0) - abs(vec3(offset) - a);
-    if (vdotn > -0.0 && probe_color != vec3(0)) {
-        weight = weights.x * weights.y * weights.z;
-    } else {
-        weight = 0.0;
-    }
-    return probe_color;
-}
-
-vec3 GetIndirectLighting(vec3 WorldPos, vec3 Normal) { // Interpolate visible probes
-    float w;
-    vec3 light;
-    float sumW = 0.;
-    vec3 indirectLighting = vec3(0.);
-    light = GetProbe(WorldPos, ivec3(0, 0, 0), w, Normal);
-    indirectLighting += w * light;
-    sumW += w;
-    light = GetProbe(WorldPos, ivec3(0, 0, 1), w, Normal);
-    indirectLighting += w * light;
-    sumW += w;
-    light = GetProbe(WorldPos, ivec3(0, 1, 0), w, Normal);
-    indirectLighting += w * light;
-    sumW += w;
-    light = GetProbe(WorldPos, ivec3(0, 1, 1), w, Normal);
-    indirectLighting += w * light;
-    sumW += w;
-    light = GetProbe(WorldPos, ivec3(1, 0, 0), w, Normal);
-    indirectLighting += w * light;
-    sumW += w;
-    light = GetProbe(WorldPos, ivec3(1, 0, 1), w, Normal);
-    indirectLighting += w * light;
-    sumW += w;
-    light = GetProbe(WorldPos, ivec3(1, 1, 0), w, Normal);
-    indirectLighting += w * light;
-    sumW += w;
-    light = GetProbe(WorldPos, ivec3(1, 1, 1), w, Normal);
-    indirectLighting += w * light;
-    sumW += w;
-    indirectLighting /= sumW;
-    return indirectLighting;
-}
-
-
-
-
-float FogFactor(float d) {
-    const float FogMax = 750.0;
-    if (d>=FogMax) return 1;
-    return 1 - (FogMax - d) / (FogMax);
-}
-
-
-bool IsPointInsideAABB(vec3 point, vec3 minExtent, vec3 maxExtent) {
-    return all(greaterThanEqual(point, minExtent)) && all(lessThanEqual(point, maxExtent));
-}
-
-vec3 ApplyFog(vec3 color, float dist, vec3 fogColor, float fogStart, float fogEnd) {
-    float fogFactor = clamp((dist - fogStart) / (fogEnd - fogStart), 0.0, 1.0);
-    return mix(color.rgb, fogColor, fogFactor);
-}
-
-float MapRange(float inValue, float minInRange, float maxInRange, float minOutRange, float maxOutRange) {
-    float x = (inValue - minInRange) / (maxInRange - minInRange);
-    return minOutRange + (maxOutRange - minOutRange) * x;
-}
-
-vec3 GetSpotLighting(vec3 fragPos, vec3 normal, vec3 viewPos, vec3 spotLightDirection) {
-    vec3 position = viewPos;
-    vec3 direction = spotLightDirection;
-	float cutoff = cos(radians(10.5));
-    float outerCutoff = cos(radians(47.5));
-    float constant = 0.25;
-    float linear = 0.09;
-    float quadratic = 0.042;
-    vec3 ambient = vec3(0.5);
-    vec3 diffuse = vec3(0.99);
-    vec3 specular = vec3(0.5);
-
-    constant = 0.25;
-    linear = 0.2;
-    quadratic = 0.042;
-
-    vec3 ambientLight = ambient;
-    vec3 lightDir = normalize(position - fragPos);
-    float diff = max(dot(normal, lightDir), 0.0);
-    vec3 diffuseLight = diffuse * diff;
-    vec3 viewDir = normalize(viewPos - fragPos);
-    vec3 reflectDir = reflect(-lightDir, normal);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32); // Shininess factor
-    vec3 specularLight = specular * spec;
-    float theta = dot(lightDir, -direction);
-    float epsilon = cutoff - outerCutoff;
-    float intensity = clamp((theta - outerCutoff) / epsilon, 0.0, 1.0);
-    float distance = length(position - fragPos);
-    float attenuation = 1.0 / (constant + linear * distance + quadratic * (distance * distance));
-    //attenuation = 1;
-    vec3 result = (ambientLight + intensity * (diffuseLight + specularLight)) * attenuation;
-    return result;
-}
-
-vec3 GetUnderWaterLightingFactor(vec3 fragPos, vec3 normal, vec3 viewPos, vec3 spotLightDirection) {
-    vec3 position = viewPos;
-    vec3 direction = spotLightDirection;
-	float cutoff = cos(radians(10.5));
-    float outerCutoff = cos(radians(47.5));
-    float constant = 0.25;
-    float linear = 0.09;
-    float quadratic = 0.042;
-    vec3 ambient = vec3(0.1);
-    vec3 diffuse = vec3(0.5);
-    vec3 specular = vec3(0.0);
-
-    constant = 0.9;
-    linear = 0.05;
-    quadratic = 0.042;
-
-    vec3 ambientLight = ambient;
-    vec3 lightDir = normalize(position - fragPos);
-    float diff = max(dot(normal, lightDir), 0.0);
-    vec3 diffuseLight = diffuse * diff;
-    vec3 viewDir = normalize(viewPos - fragPos);
-    vec3 reflectDir = reflect(-lightDir, normal);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32); // Shininess factor
-    spec = 0;
-    vec3 specularLight = specular * spec;
-    float theta = dot(lightDir, -direction);
-    float epsilon = cutoff - outerCutoff;
-    float intensity = clamp((theta - outerCutoff) / epsilon, 0.0, 1.0);
-    float distance = length(position - fragPos);
-    float attenuation = 1.0 / (constant + linear * distance + quadratic * (distance * distance));
-    vec3 result = (ambientLight + intensity * (diffuseLight + specularLight)) * attenuation;
-    return result;
-}
-
 
 void main() {
-
-	const int tileSize = TILE_SIZE;	
-	vec2 viewportSize = vec2(viewportWidth, viewportHeight);
-	ivec2 pixelCoords = ivec2(gl_GlobalInvocationID.xy);
-	vec2 uv = (vec2(pixelCoords) + vec2(0.5)) / viewportSize;
-	vec3 lightingColor = imageLoad(lightingTexture, pixelCoords).rgb;
-
-	int playerIndex = int(texture(normalTexture, uv).a * 4 + 0.5);
-	vec3 baseColor = texture(baseColorTexture, uv).rgb;	
-	baseColor.rgb = pow(baseColor.rgb, vec3(2.2));
-	vec3 normal = texture(normalTexture, uv).rgb;
-	vec3 rma = texture(rmaTexture, uv).rgb;
-	float roughness = rma.r;
-	float metallic = rma.g;
-	float ao = rma.b;    
-	float alpha = texture(baseColorTexture, uv).a;	
-
-	mat4 inverseProjection = cameraDataArray[playerIndex].projectionInverse;
-	mat4 inverseView = cameraDataArray[playerIndex].viewInverse;
-	vec3 viewPos = cameraDataArray[playerIndex].viewInverse[3].xyz;
-	float clipSpaceXMin = cameraDataArray[playerIndex].clipSpaceXMin;
-	float clipSpaceXMax = cameraDataArray[playerIndex].clipSpaceXMax;
-	float clipSpaceYMin = cameraDataArray[playerIndex].clipSpaceYMin;
-	float clipSpaceYMax = cameraDataArray[playerIndex].clipSpaceYMax;
-	mat4 projection = cameraDataArray[playerIndex].projection;
-	mat4 view = cameraDataArray[playerIndex].view;
-	mat4 projectionView = projection * view;
-	vec3 cameraForward = -normalize(vec3(inverseView[2].xyz));
-	
-	float z = texture(depthTexture, uv).r;
-    vec2 clipSpaceTexCoord = uv;
-	clipSpaceTexCoord.x = (clipSpaceTexCoord.x - clipSpaceXMin) / (clipSpaceXMax - clipSpaceXMin);
-	clipSpaceTexCoord.y = (clipSpaceTexCoord.y - clipSpaceYMin) / (clipSpaceYMax - clipSpaceYMin);
-	vec4 clipSpacePosition = vec4(clipSpaceTexCoord * 2.0 - 1.0, z, 1.0);
-    vec4 viewSpacePosition = inverseProjection * clipSpacePosition;
-    viewSpacePosition /= viewSpacePosition.w;
-    vec4 worldSpacePosition = inverseView * viewSpacePosition;
-
-	uint tileIndex = gl_WorkGroupID.y * tileXCount + gl_WorkGroupID.x;
-	uint lightCount = tileData[tileIndex].lightCount;
-	
-	// Direct lighting
-	vec3 directLighting = vec3(0);
-	for (int i = 0; i < lightCount; i++) {
-		uint lightIndex = tileData[tileIndex].lightIndices[i];
-		vec3 lightColor = vec3(lights[lightIndex].colorR, lights[lightIndex].colorG, lights[lightIndex].colorB);
-		vec3 lightPosition = vec3(lights[lightIndex].posX, lights[lightIndex].posY, lights[lightIndex].posZ);
-		float lightRadius = lights[lightIndex].radius;								
-		float strength = lights[lightIndex].strength;								
-		float shadow = 1;
-		if (lights[lightIndex].shadowMapIndex != -1) {
-			shadow = ShadowCalculation(lights[lightIndex].shadowMapIndex, lightPosition, lightRadius, worldSpacePosition.xyz, viewPos, normal);
-		}	
-        float fresnelReflect = 1.0;
-		directLighting += GetDirectLighting(lightPosition, lightColor, lightRadius, strength, normal, worldSpacePosition.xyz, baseColor, roughness, metallic, viewPos, fresnelReflect) * shadow;
-	}		
-
-	// Indirect lighting
-	vec3 baseColor2 = texture(baseColorTexture, uv).rgb;
-	vec3 WorldPos2 = worldSpacePosition.xyz + (normal * 0.01);
-	vec3 indirectLighting = GetIndirectLighting(WorldPos2, normal);
-	vec3 adjustedIndirectLighting = indirectLighting;
-	float factor = min(1, roughness * 1.0);
-	float factor2 = min(1, 1 - metallic * 1.0);
-	float factor3 = min (factor, factor2);
-	//adjustedIndirectLighting *= (0.45) * vec3(factor2);
-	adjustedIndirectLighting *= (0.35) * vec3(factor2);
-	adjustedIndirectLighting = max(adjustedIndirectLighting, vec3(0));
-	adjustedIndirectLighting *= baseColor2.rgb * 1.0;
-	vec3 finalIndirectLighting = adjustedIndirectLighting * 0.1;
-
-	
-	
-	vec3 finalLighting = directLighting;
-	finalLighting += finalIndirectLighting;
+	ivec2 pixelCoords = ivec2(gl_GlobalInvocationID.xy);   
+    ivec2 outputImageSize = imageSize(outputImage);
 
 
+   // vec2 uv_screenspace = vec2(pixelCoords) / vec2(outputImageSize);
+     vec2 uv_screenspace = (vec2(pixelCoords) + 0.5) / vec2(outputImageSize);
+    // Don't process out of bounds pixels
+    if (pixelCoords.x >= outputImageSize.x || pixelCoords.y >= outputImageSize.y) {
+        return;
+    }    
     
-    // Moonlight lighting
-    if (worldSpacePosition.y > waterHeight) {
+    // Inputs
+    vec4 baseColor = texture(BaseColorTexture, uv_screenspace);
+    vec4 normal = texture(NormalTexture, uv_screenspace);
+    vec4 rma = texture(RMATexture, uv_screenspace);
+    uint viewportIndex = texture(ViewportIndexTexture, uv_screenspace).r;
+    float sssRadius = texture(EmissiveTexture, uv_screenspace).a;
 
-        // Direct Moonlight
-        vec3 moonLightDir = normalize(vec3(0.5, 1.0, -0.5));
-        vec3 defaultLightColor = vec3(1, 0.7799999713897705, 0.5289999842643738);
-        vec3 moonLightColor = mix(defaultLightColor, vec3(1.0, 1.0 ,1.0), 0.5);
-        float moonLightStrength = 0.25;
-        float fresnelReflect = 0.25;
-        vec3 directionalLight = GetOutdoorDirectLighting(worldSpacePosition.xyz, normal, baseColor, roughness, metallic, viewPos, moonLightDir, moonLightColor, moonLightStrength, fresnelReflect);
+    // Gamma-correct the base color
+    vec3 gammaBaseColor = pow(baseColor.rgb, vec3(2.2));
 
-        // Ambient moonlight
-        vec3 ambientColor = vec3(1, 0.98, 0.94);
-        float ambientIntensity = 0.0025;
-        vec3 ambientLighting = baseColor.rgb * ambientColor * ambientIntensity;	
-        directionalLight += ambientLighting;
-
-	    // Moonlight fog
-        vec3 fogColor = vec3(0.32, 0.29, 0.25); 
-        float fogStrength = 0.0225;
-	    float fogStart = 1;
-	    float fogEnd = 30;	
-        float dist = length(worldSpacePosition.xyz - viewPos);
-        vec3 fogLighting = ApplyFog(finalLighting, dist , fogColor, fogStart, fogEnd);
-        directionalLight = mix(directionalLight, fogLighting, fogStrength);
-
-        // Moonlight darnkess falloff
-        float falloffStart = 2.0;    // Distance where falloff begins
-        float falloffEnd = 10.0;     // Distance where falloff reaches maximum effect
-        float maxDarkness = 0.6;     // Maximum darkness (0 = no change, 1 = fully dark)
-        vec3 falloffColor = vec3(0.0, 0.0, 0.0); // Color to blend towards (e.g., black)
-        float distance = length(worldSpacePosition.xyz - viewPos);
-        float falloffFactor = clamp((distance - falloffStart) / (falloffEnd - falloffStart), 0.0, 1.0);
-        falloffFactor *= maxDarkness;
-        directionalLight = mix(directionalLight, falloffColor, falloffFactor);
-            
-	    // Apply moonlighting
-        //finalLighting += directionalLight;
-    }
+    float roughness = rma.r;
+    float metallic = rma.g;
     
-    // Fragments beneath water
-    if (worldSpacePosition.y < waterHeight) {
+    vec2 renderTargetSize = vec2(rendererData.gBufferWidth, rendererData.gBufferHeight);
+    int splitScreenMode = rendererData.splitscreenMode;
 
-        vec3 underWaterLighting = vec3(0);
+    //float clipSpaceXMin = viewportData[viewportIndex].clipSpaceXMin;
+    //float clipSpaceXMax = viewportData[viewportIndex].clipSpaceXMax;
+    //float clipSpaceYMin = viewportData[viewportIndex].clipSpaceYMin;
+    //float clipSpaceYMax = viewportData[viewportIndex].clipSpaceYMax;
+    mat4 inverseProjection = viewportData[viewportIndex].inverseProjection;
+    mat4 inverseView = viewportData[viewportIndex].inverseView;
+    mat4 viewMatrix = viewportData[viewportIndex].view;
+    vec3 viewPos = inverseView[3].xyz;    
+    mat4 flashlightProjectionView = viewportData[viewportIndex].flashlightProjectionView;
+    vec4 flashlightDir = viewportData[viewportIndex].flashlightDir;
+    vec4 flashlightPosition = viewportData[viewportIndex].flashlightPosition;
+    float flashlightModifer = viewportData[viewportIndex].flashlightModifer;
 
-        float viewDistance = length(worldSpacePosition.xyz - viewPos);
-        float mappedViewDistance = MapRange(viewDistance, -2, 10, 0, 1.0);
-                    
-        float near = 0.0025;
-        float far = 200.0;
-        float linearZ = (2.0 * near * far) / (far + near - z * (far - near));
+    // Position from depth reconstruction
+    //float z = texture(DepthTexture, uv_screenspace).r;
+    //vec2 clipSpaceTexCoord = uv_screenspace;
+	//clipSpaceTexCoord.x = (clipSpaceTexCoord.x - clipSpaceXMin) / (clipSpaceXMax - clipSpaceXMin);
+	//clipSpaceTexCoord.y = (clipSpaceTexCoord.y - clipSpaceYMin) / (clipSpaceYMax - clipSpaceYMin);
+	//vec4 clipSpacePosition = vec4(clipSpaceTexCoord * 2.0 - 1.0, z, 1.0);
+    //vec4 viewSpacePosition = inverseProjection * clipSpacePosition;
+    //viewSpacePosition /= viewSpacePosition.w;
+    //vec4 worldSpacePosition = inverseView * viewSpacePosition;
 
-        linearZ *= 0.05;
+    vec3 worldSpacePosition = texture(WorldPositionTexture, uv_screenspace).rgb;
 
-        vec3 fogColor = vec3(0.2,0.6, 1); 
-        vec3 waterColor = vec3(0.85, 1.0, 0.95);
-        fogColor = waterColor;
 
-        mappedViewDistance = clamp(mappedViewDistance, 0.0, 1.0);
-        vec3 fogResult = fogColor * mappedViewDistance * 0.01;
-        fogResult = clamp(fogResult, 0, 1);
 
-        vec3 firstPass = mix(finalLighting, fogResult, mappedViewDistance * 0.5); 
-                    
-        // Viewed from above water
-        if (viewPos.y > waterHeight) {
-            finalLighting = firstPass;
-        }
-        // Viewed from below water
-        else {                     
-            // Some spot lighting
-            vec3 spotLightColor = vec3(1, 0.8799999713897705, 0.6289999842643738);
-            float fresnelReflect = 1.0;
-            vec3 spotLighting = GetDirectLighting(viewPos, spotLightColor, 100, 1.0, normal, worldSpacePosition.xyz, baseColor, roughness, metallic, viewPos, 0.25);
-            
-            // Darnkess falloff
-            float falloffStart = 10.0;
-            float falloffEnd = 30.0; 
-            float maxDarkness = 1.0;
-            vec3 falloffColor = vec3(0.0075);
-            float falloffFactor = clamp((viewDistance - falloffStart) / (falloffEnd - falloffStart), 0.0, 1.0);
-            falloffFactor *= maxDarkness;
-            //vec3 secondPass = mix(firstPass, falloffColor, falloffFactor);
-            
-            // Composite
-            spotLighting = mix(spotLighting * 0.1, falloffColor, falloffFactor);            
-            finalLighting = mix(spotLighting, firstPass, 0.85) * 0.75;
-        }           
-        
+
+    // Direct light
+    vec3 directLighting = vec3(0); 
+    for (int i = 0; i < 3; i++) {    
+        Light light = lights[i];
+        vec3 lightPosition = vec3(light.posX, light.posY, light.posZ);
+        vec3 lightColor =  vec3(light.colorR, light.colorG, light.colorB);
+        float lightStrength = light.strength;
+        float lightRadius = light.radius;
+       
+         if (u_ambientLightingBoost == 1) {
+           // lightRadius *= 10;
+           // lightStrength *= 0.25;
+         }
+
+        directLighting += GetDirectLighting(lightPosition, lightColor, lightRadius, lightStrength, normal.xyz, worldSpacePosition.xyz, gammaBaseColor.rgb, roughness, metallic, viewPos);
+     
+        // Subsurface scattering
+        vec3 radius = vec3(sssRadius);
+        vec3 subColor = Saturate(baseColor.rgb, 1.5);
+        vec3 L = normalize(lightPosition - worldSpacePosition.xyz);
+        float NdotL = max(dot(normal.xyz, L), 0.0);
+        vec3 sss = 0.2 * exp(-3.0 * abs(NdotL) / (radius + 0.001)); 
+        vec3 sssColor = subColor * radius * sss;
+        float lightAttenuation = smoothstep(lightRadius, 0, length(lightPosition - worldSpacePosition.xyz));
+        directLighting += sssColor * lightAttenuation;
     }
 
-
-
-        
-	
-	// Spotlights
-	for (int i = 0; i < 2; i++) {
-	
-		mat4 inverseViewMatrix = cameraDataArray[i].viewInverse;
-		vec3 forward = -normalize(vec3(inverseViewMatrix[2].xyz));
-		vec3 camPos = cameraDataArray[i].viewInverse[3].xyz;
-				
-		vec3 spotLightPos = camPos;
-		if (playerIndex != i) {
-			spotLightPos += (forward * 0.125);
-		}
-		
+    if (flashlightModifer > 0.1) { 
+        // Player flashlight
+		vec3 forward = -normalize(vec3(inverseView[2].xyz));				
+		vec3 spotLightPos = flashlightPosition.xyz;
 		spotLightPos -= vec3(0, 0.0, 0);
-		vec3 dir = normalize(spotLightPos - (camPos - forward));
-
-		vec3 spotLightingFactor = GetSpotLighting(worldSpacePosition.xyz, normalize(normal), spotLightPos, dir);
-	    
-    
-		vec3 spotLightColor = vec3(1, 0.8799999713897705, 0.6289999842643738);
+		vec3 spotLightDir = normalize(spotLightPos - (viewPos - forward));
+        spotLightDir = flashlightDir.xyz;
+        vec3 spotLightColor = vec3(0.9, 0.95, 1.1);
         float fresnelReflect = 0.9;
-        float spotLightRadius = 20.0;
-        float spotLightStregth = 0.5;
+        float spotLightRadius = 50.0;
+        float spotLightStregth = 3.0;        
+        float innerAngle = cos(radians(0.0 * flashlightModifer));
+        float outerAngle = cos(radians(30.0));         
+        mat4 lightProjectionView = flashlightProjectionView;
+        vec3 cookie = ApplyCookie(lightProjectionView, worldSpacePosition.xyz, spotLightPos, spotLightColor, 10, FlashlightCookieTexture);
+        vec3 spotLighting = GetSpotlightLighting(spotLightPos, spotLightDir, spotLightColor, spotLightRadius, spotLightStregth, innerAngle, outerAngle, normal.xyz, worldSpacePosition.xyz, gammaBaseColor.rgb, roughness, metallic, viewPos, lightProjectionView);
+        vec4 FragPosLightSpace = lightProjectionView * vec4(worldSpacePosition.xyz, 1.0);
+        float shadow = SpotlightShadowCalculation(FragPosLightSpace, normal.xyz, spotLightDir, worldSpacePosition.xyz, spotLightPos, viewPos, FlashlighShadowMapTexture);  
+        spotLighting *= vec3(1 - shadow);
+        spotLighting *= cookie * cookie * 5 * spotLightColor;
+        directLighting += vec3(spotLighting) * flashlightModifer;
+    }
 
-        if (worldSpacePosition.y < waterHeight) {
-            fresnelReflect = 1.2;
-            spotLightRadius = 30.0;
-            spotLightStregth = 0.8;
+
+    // Ambient light
+    vec3 amibentLightColor = vec3(1, 0.98, 0.94);
+    float ambientIntensity = 0.0025;
+
+    
+    if (u_ambientLightingBoost == 1) {
+        //ambientIntensity = 0.075;
+    }
+
+
+    vec3 ambientColor = baseColor.rgb * amibentLightColor;
+    vec3 ambientLighting = ambientColor * ambientIntensity;
+    
+    // Alpha
+    float finalAlpha = baseColor.a;
+    
+    // Composite
+    vec3 finalColor = directLighting.rgb + ambientLighting;
+    //finalColor = moonLight;
+
+    // Emissive
+    vec3 emssiveColor = texture(EmissiveTexture, uv_screenspace).rgb;
+    //finalColor += emssiveColor;
+
+    // Tone mapping
+    finalColor = mix(finalColor, Tonemap_ACES(finalColor), 1.0);   
+    
+    // Gamma correct
+    finalColor = pow(finalColor, vec3(1.0/2.2));
+
+	finalColor = mix(finalColor, Tonemap_ACES(finalColor), 0.35);  
+    
+    finalColor.rgb = finalColor.rgb * finalAlpha;    
+    vec4 outputColor = vec4(finalColor, finalAlpha);
+    
+    // Don't apply lighting to skybox
+    float skyboxFlag = float(normal.x == 0.0 && normal.y == 0.0 && normal.z == 0.0);
+    outputColor.rgba = mix(outputColor.rgba, baseColor.rgba, skyboxFlag);
+    
+    if (false) {
+        if (viewportIndex == 0) {
+            outputColor.rgb = vec3(1.0) - outputColor.rgb;
         }
-
-		vec3 spotLighting = GetDirectLighting(spotLightPos, spotLightColor, spotLightRadius, spotLightStregth, normal, worldSpacePosition.xyz, baseColor, roughness, metallic, camPos, fresnelReflect);
-		spotLighting = max(spotLighting, vec3(0));
-		spotLighting *= spotLightingFactor;
-		//spotLighting += spotLightingFactor;
-	
-		if (playerData[i].flashlightOn == 1) {
-			finalLighting += spotLighting;
-		}		
-	}
-	
-    
-
-    finalLighting *= ao;
-
-
-    
-    
-    // Render modes 
-    if (renderMode == 1) {
-        finalLighting = directLighting; 
+        if (viewportIndex == 1) {
+            outputColor.rgb *= vec3(1, 0, 0);
+        }
+        if (viewportIndex == 2) {
+            outputColor.rgb *= vec3(0, 1, 0);
+        }
+        if (viewportIndex == 3) {
+            outputColor.rgb *= vec3(0, 0, 1);
+        }
     }
-    if (renderMode == 2) { // point cloud
-        finalLighting = vec3(0,0,0); 
-    }
-	
-
-
-	// Tone mapping
-	finalLighting = mix(finalLighting, Tonemap_ACES(finalLighting), 1.0);
-	finalLighting = pow(finalLighting, vec3(1.0/2.2));
-	finalLighting = mix(finalLighting, Tonemap_ACES(finalLighting), 0.1235);
-
-	// Vignette
-	uv *=  1.0 - uv.yx;
-	float vig = uv.x*uv.y * 15.0;	// multiply with sth for intensity
-	vig = pow(vig, 0.05);			// change pow for modifying the extend of the  vignette
-	finalLighting *= vec3(vig);
-
+    
 	// Noise
-	vec2 filmRes = viewportSize;
+	vec2 filmRes = vec2(rendererData.gBufferWidth, rendererData.gBufferHeight);
+    vec2 uv = uv_screenspace;
+    float time = rendererData.time;
 	vec2 coord = pixelCoords;
 	vec2 rest = modf(uv * filmRes, coord);
-	vec3 noise00 = filmPixel(coord / filmRes);
-	vec3 noise01 = filmPixel((coord + vec2(0, 1)) / filmRes);
-	vec3 noise10 = filmPixel((coord + vec2(1, 0)) / filmRes);
-	vec3 noise11 = filmPixel((coord + vec2(1, 1)) / filmRes);
+	vec3 noise00 = FilmPixel(coord / filmRes, time);
+	vec3 noise01 = FilmPixel((coord + vec2(0, 1)) / filmRes, time);
+	vec3 noise10 = FilmPixel((coord + vec2(1, 0)) / filmRes, time);
+	vec3 noise11 = FilmPixel((coord + vec2(1, 1)) / filmRes, time);
 	vec3 noise = mix(mix(noise00, noise01, rest.y), mix(noise10, noise11, rest.y), rest.x) * vec3(0.7, 0.6, 0.8);
 	float noiseSpeed = 15.0;
-	float x = rand(uv + rand(vec2(int(time * noiseSpeed), int(-time * noiseSpeed))));
+	float x = Rand(uv + Rand(vec2(int(time * noiseSpeed), int(-time * noiseSpeed))));
 	float noiseFactor = 0.035;
-
-	// Some more YOLO tone mapping
-	finalLighting = mix(finalLighting, Tonemap_ACES(finalLighting), 0.75);
-
-	// Add the noise
-	finalLighting = finalLighting + (x * -noiseFactor) + (noiseFactor / 2);
-
-	// Contrast
-	float contrast = 1.15;
-	vec3 finalColor = finalLighting;
-	finalLighting = finalLighting * contrast;
-
-	// Brightness
-	finalLighting -= vec3(0.020);
+	outputColor = outputColor + (x * -noiseFactor) + (noiseFactor / 2);
 
     // Renderer override states
-    if (rendererOverrideState == 1) {
-        finalLighting = baseColor;
+    if (rendererData.rendererOverrideState == 1) {
+        outputColor = vec4(baseColor.rgb, 1);
     }
-    else if (rendererOverrideState == 2) {
-        finalLighting = normal;
+    else if (rendererData.rendererOverrideState == 2) {
+        outputColor = vec4(normal.rgb, 1);
     }
-    else if (rendererOverrideState == 3) {
-        finalLighting = rma;
+    else if (rendererData.rendererOverrideState == 3) {
+        outputColor = vec4(rma.rgb, 1);
     }
-    else if (rendererOverrideState == 4) {
-        vec3 wildColor = vec3(normal.g, normal.r, normal.r);
-        wildColor *= wildColor;
-        wildColor *= wildColor;
-        wildColor += baseColor * 0.25;
-        finalLighting = wildColor;
+    else if (rendererData.rendererOverrideState == 4) {
+        vec3 lightDir = normalize(inverseView[2].xyz);
+        float ndotl = max(dot(normal.xyz, lightDir), 0.0);
+        vec3 lightColor = vec3(0.5, 0.5, 0.6) * ndotl;
+        outputColor = vec4(lightColor, 1);
+        
+        //outputColor.rgb = mix(outputColor.rgb, Tonemap_ACES(outputColor.rgb), 0.5);   
+        //
+        //// Gamma correct
+        //vec3 gammaCorrected = pow(outputColor.rgb, vec3(1.0/2.2));
+        //outputColor.rgb = mix(outputColor.rgb, gammaCorrected, 0.35);   
+        //
+	    //outputColor.rgb = mix(outputColor.rgb, Tonemap_ACES(outputColor.rgb), 0.35);  
     }
     
-        // Renderer override states
-  //  switch (rendererOverrideState) {
-  //      case 1:
-  //          finalLighting = baseColor;
-  //          break;
-  //      case 2:
-  //          finalLighting = normal;
-  //          break;
-  //      case 3:
-  //          finalLighting = rma;
-  //          break;
-  //      case 4:
-  //          vec3 wildColor = vec3(normal.g, normal.r, normal.r);
-  //          wildColor *= wildColor;
-  //          wildColor *= wildColor;
-  //          wildColor += baseColor * 0.25;
-  //          finalLighting = wildColor;
-  //          break;
-  //      default:
-  //          finalLighting = vec3(0.0); // Fallback case
-  //          break;
-  //  }
+    // Hack to render height map brush
+    vec2 mouseUV = vec2(rendererData.normalizedMouseX, 1 - rendererData.normalizedMouseY);
+    vec3 mouseWorldPos = texture(WorldPositionTexture, mouseUV).rgb;
+    int u_brushSize = 16;
+    float brushSizeWorld = u_brushSize * 0.25;
+    float dist = distance(mouseWorldPos * vec3(1,0,1), worldSpacePosition.xyz * vec3(1,0,1));
+    float innerRadius = brushSizeWorld * 0.7; // fade starts
+    float outerRadius = brushSizeWorld * 1.0; // fade ends
+    float falloff = smoothstep(innerRadius, outerRadius, dist);
+    float alpha = 1.0 - falloff;
+    //outputColor.rgb += vec3(0, 0.5, 1) * alpha * 0.25;
 
+    // Output
+    imageStore(outputImage, pixelCoords, outputColor);
 
-    // Premultply Alpha
-   //float finalAlpha = baseColor.a;
-   finalLighting.rgb = finalLighting.rgb * alpha;
-   //FragOut = vec4(finalColor, finalAlpha);
+        
+    // vec2 viewportPos = vec2(viewportData[viewportIndex].posX, viewportData[viewportIndex].posY);
+    // vec2 viewportSize = vec2(viewportData[viewportIndex].sizeX, viewportData[viewportIndex].sizeY);
+    // vec2 screenUV = WorldToScreen(worldSpacePosition.rgb, viewportData[viewportIndex].projectionView, viewportPos, viewportSize);
+    // imageStore(outputImage, pixelCoords, vec4(screenUV, 0, 1));
+    // imageStore(outputImage, pixelCoords, vec4(normal.rgb, 1.0));    
+    // imageStore(outputImage, pixelCoords, vec4(baseColor.rgb, 1.0));
+    // imageStore(outputImage, pixelCoords, vec4(rma.rgb, 1.0));
+    // imageStore(outputImage, pixelCoords, vec4(worldSpacePosition.rgb, 1.0)); 
+    // imageStore(outputImage, ivec2(gl_GlobalInvocationID.xy), vec4(screenUV, 0.0, 1.0));
+    // vec3 sceneWorldPos = texture(WorldPositionTexture, screenUV).rgb;
+    // imageStore(outputImage, ivec2(gl_GlobalInvocationID.xy), vec4(sceneWorldPos, 1.0));
+    // imageStore(outputImage, pixelCoords, vec4(worldSpacePosition.rgb * 0.1, 1.0));
+    // imageStore(outputImage, pixelCoords, vec4(color.rgb, 1.0));     
 
-    // Write the final color
-	imageStore(lightingTexture, pixelCoords, vec4(finalLighting, alpha));
+    
+    //float heightmap = texture(HeightMapTestTexture, uv_screenspace).r;
+    //imageStore(outputImage, pixelCoords, vec4(heightmap, 0, 0, 1));
 }

@@ -1,98 +1,129 @@
 #pragma once
-#include "HellCommon.h"
-#include "Enums.h"
+#include "HellTypes.h"
+#include "Callbacks/Callbacks.h"
+#include "CreateInfo.h"
+#include "Camera/Camera.h"
+#include "Viewport/Viewport.h"
+#include "Types/EditorMesh.h"
+#include <string>
 
 namespace Editor {
+    void Init();
+    void ResetCameras();
+    void ResetViewports();
+    void Update(float deltaTime);
+    void UpdateCursor();
+    void UpdateDividers();
+    void UpdateInput();
+    void UpdateUI();
+    void UpdateCamera();
+    void UpdateMouseRays();
+    void UpdateCameraInterpolation(float deltaTime);
+    void UpdateDebug();
+    void OpenEditor();
+    void CloseEditor();
+    void ToggleEditorOpenState();
+    void ShowEditorSelectMenu();
+    void SetEditorMode(EditorMode editorMode);
+    void CloseEditorSelectMenu();
+    void SetActiveViewportIndex(int index);
+    void SetSelectedObjectIndex(int index);
+    void SetHoveredObjectIndex(int index);
+    void SetSelectedObjectType(ObjectType editorObjectType);
+    void SetHoveredObjectType(ObjectType editorObjectType);
+    void SetSplitX(float value);
+    void SetSplitY(float value);
+    void SetViewportView(uint32_t viewportIndex, glm::vec3 viewportOrigin, CameraView targetView);
+    void SetEditorState(EditorState editorState);
+    void SetViewportOrthographicState(uint32_t viewportIndex, bool state);
+    //void SetCameraView(uint32_t cameraViewIndex, CameraView cameraView);
+    void SetViewportOrthoSize(uint32_t viewportIndex, float size);
+    void SetEditorViewportSplitMode(EditorViewportSplitMode mode);
+    void UpdateObjectSelection();
 
-    struct MenuItem {
-        std::string name;
-        enum class Type {
-            VALUE_INT,
-            VALUE_FLOAT,
-            VALUE_STRING,
-            VALUE_BOOL,
-            INSERT_CSG_ADDITIVE,
-            INSERT_WALL_PLANE,
-            INSERT_CEILING_PLANE,
-            INSERT_FLOOR_PLANE,
-            INSERT_CSG_SUBTRACTIVE,
-            INSERT_DOOR,
-            INSERT_WINDOW,
-            INSERT_LIGHT,
-            CLOSE_MENU,
-            FILE_NEW_MAP,
-            FILE_LOAD_MAP,
-            FILE_SAVE_MAP,
-            RECALCULATE_NAV_MESH,
-            RECALCULATE_GI
-        } type;
-        void* ptr;
-        float increment = 1.0f;
-        int percision = 2;
-    };
+    // Height Map Editor
+    void InitHeightMapEditor();
+    void OpenHeightMapEditor();
+    void LoadHeightMap(const std::string& heightMapName);
+    void UpdateHeightMapEditor();
+    void ShowNewHeightMapWindow();
+    void ShowOpenHeightMapWindow();
+    void CloseAllHeightMapEditorWindows();
+    void CreateHeigthMapEditorImGuiElements();
+     
+    // House Editor
+    void InitHouseEditor();
+    void OpenHouseEditor();
+    void UpdateHouseEditor();
+    void ShowNewHouseWindow();
+    void ShowOpenHouseWindow();
+    void CloseAllHouseEditorWindows();
+    void CreateHouseEditorImGuiElements();
 
-    void EnterEditor();
-    void LeaveEditor();
-    void UpdateMapEditor(float deltaTime);
-    void UpdateChristmasLightEditor(float deltaTime);
-    void UpdateSharkPathEditor(float deltaTime);
-    bool IsOpen();
-    bool ObjectIsSelected();
-    bool ObjectIsHoverered();
-    std::string GetDebugText();
-    ObjectType& GetHoveredObjectType();
-    ObjectType& GetSelectedObjectType();
-    uint32_t GetSelectedObjectIndex();
-    uint32_t GetHoveredObjectIndex();
-    glm::mat4& GetViewMatrix();
-    glm::vec3 GetViewPos();
-    glm::vec3 GetSelectedVertexPosition();
-    glm::vec3 GetHoveredVertexPosition();
-    int GetSelectedVertexIndex();
-    int GetHoveredVertexIndex();
-    void NextEditorMode();
+    // Map Editor
+    void InitMapEditor();
+    void OpenMapEditor();
+    void UpdateMapEditor();
+    void ShowNewMapWindow();
+    void ShowOpenMapWindow();
+    void CloseAllMapEditorWindows();
+    void CreateMapEditorImGuiElements();
 
-    MenuType GetCurrentMenuType();
-    void SetCurrentMenuType(MenuType type);
+    // Sector Editor
+    void InitSectorEditor();
+    void OpenSectorEditor();
+    void UpdateSectorEditor();
+    void LoadEditorSector(const std::string& sectorName);
+    void SaveEditorSector();
+    void CreateSectorEditorImGuiElements();
+    void ShowNewSectorWindow();
+    void ShowOpenSectorWindow();
+    void CloseAllSectorEditorWindows();
+    SectorCreateInfo* GetEditorSectorCreateInfo();
+    const std::string& GetEditorSectorName();
 
-    // Rendering
-    void UpdateRenderItems();
-    std::vector<RenderItem3D>& GetHoveredRenderItems();
-    std::vector<RenderItem3D>& GetSelectedRenderItems();
-    std::vector<RenderItem2D>& GetMenuRenderItems();
-    std::vector<RenderItem2D>& GetEditorUIRenderItems();
-    
-    inline int g_hoveredObjectIndex = 0;
-    inline int g_selectedObjectIndex = 0;
-    inline int g_hoveredVertexIndex = 0; // ranges from 0 to 3 for planes
-    inline int g_selectedVertexIndex = 0;
-    inline glm::mat4 g_gizmoMatrix = glm::mat4(1);
-    inline glm::vec3 g_hoveredVertexPosition;
-    inline glm::vec3 g_selectedVertexPosition;
+    void CloseAllEditorWindows();
 
-    inline glm::mat4 g_editorViewMatrix;;
+    //EditorUI::NewFileWindow& CreateNewFileWindow(const std::string& name, const std::string& title, NewFileCallback callback);
+    //EditorUI::NewFileWindow* GetNewFileWindow(const std::string& name);
+    //EditorUI::OpenFileWindow& CreateOpenFileWindow(const std::string& name, const std::string& title, const std::string filepath, OpenFileCallback callback);
+    //EditorUI::OpenFileWindow* GetOpenFileWindow(const std::string& name);
 
-    // Editor globals
-    inline glm::dvec3 g_viewTarget;
-    inline glm::dvec3 g_camPos;
-    inline double g_yawAngle = 0.0;
-    inline double g_pitchAngle = 0.0;
-    inline bool g_editorOpen = false;
-    inline ObjectType g_hoveredObjectType = ObjectType::UNDEFINED;
-    inline ObjectType g_selectedObjectType = ObjectType::UNDEFINED;
-    inline std::vector<RenderItem3D> gHoveredRenderItems;
-    inline std::vector<RenderItem3D> gSelectedRenderItems;
-    inline std::vector<RenderItem2D> gMenuRenderItems;
-    inline std::vector<RenderItem2D> gEditorUIRenderItems;
-    inline std::vector<MenuItem> g_menuItems;
-    inline int g_menuSelectionIndex = 0;
-    inline MenuType g_currentMenuType = MenuType::NONE;
-    inline bool g_isDraggingMenu = false;
-    inline hell::ivec2 g_menuLocation = hell::ivec2(76, 460);
-    inline hell::ivec2 g_backgroundLocation = hell::ivec2(0, 0);
-    inline hell::ivec2 g_backgroundSize = hell::ivec2(0, 0);
-    inline hell::ivec2 g_dragOffset = hell::ivec2(0, 0);
+    //void SetCurrentMapName(const std::string& filename);
+    //const std::string& GetCurrentMapName();
 
-    // Work in progress shark path
-    inline std::vector<glm::vec3> g_sharkPath;
+    int GetActiveViewportIndex();
+    int GetHoveredViewportIndex();
+    int GetSelectedObjectIndex();
+    int GetHoveredObjectIndex();
+    bool IsEditorOpen();
+    bool IsEditorClosed();
+    bool IsViewportOrthographic(uint32_t viewportIndex);
+    bool EditorIsIdle();
+    bool EditorWasIdleLastFrame();
+    float GetVerticalDividerXPos();
+    float GetHorizontalDividerYPos();
+    glm::vec3 GetMouseRayOriginByViewportIndex(int32_t viewportIndex);
+    glm::vec3 GetMouseRayDirectionByViewportIndex(int32_t viewportIndex);
+    glm::mat4 GetViewportViewMatrix(int32_t viewportIndex);
+    float GetEditorOrthoSize(int32_t viewportIndex);
+    std::string EditorObjectTypeToString(const ObjectType& type);
+   // Camera* GetCameraByIndex(uint32_t index);
+    Viewport* GetActiveViewport();
+    ShadingMode GetViewportModeByIndex(uint32_t index);
+    CameraView GetCameraViewByIndex(uint32_t index);
+    ObjectType GetSelectedObjectType();
+    ObjectType GetHoveredObjectType();
+    EditorState GetEditorState();
+    EditorViewportSplitMode GetEditorViewportSplitMode();
+    SelectionRectangleState& GetSelectionRectangleState();
+    EditorMode& GetEditorMode();
+
+    EditorMesh& GetEditorMesh(); // BROKEN / 5% IMPLEMENTED
+
+    std::string GetCurrentHeightMapName();
+
+    // Dividers
+    bool IsVerticalDividerHovered();
+    bool IsHorizontalDividerHovered();
 }

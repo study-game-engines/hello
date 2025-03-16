@@ -1,8 +1,5 @@
 #pragma once
 
-#include "keycodes.h"
-#include <vector>
-
 struct MouseState {
     bool detected = false;
     bool leftMouseDown = false;
@@ -22,10 +19,9 @@ struct KeyboardState {
 };
 
 namespace InputMulti {
-
     void Init();
+    void ResetState();
     void Update();
-
     bool LeftMouseDown(int index);
     bool RightMouseDown(int index);
     bool LeftMousePressed(int index);

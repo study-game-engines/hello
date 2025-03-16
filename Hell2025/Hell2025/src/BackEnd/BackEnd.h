@@ -1,24 +1,25 @@
 #pragma once
-#include "HellCommon.h"
+#include "HellEnums.h"
 
 namespace BackEnd {
-
     // Core
-    void Init(API api);
+    bool Init(API api, WindowedMode windowMode);
     void BeginFrame();
+    void UpdateGame();
     void UpdateSubSystems();
     void EndFrame();
-    void CleanUp();
+    void CleanUp(); 
+    bool RenderDocFound();
 
     // API
     void SetAPI(API api);
     const API GetAPI();
 
+    // Cursor
+    void SetCursor(int cursor);
+
     // Window
-    GLFWwindow* GetWindowPointer();
-    const WindowedMode& GetWindowMode();
-    void SetWindowPointer(GLFWwindow* window);
-    void CreateGLFWWindow(const WindowedMode& windowedMode);
+    void* GetWindowPointer();
     void SetWindowedMode(const WindowedMode& windowedMode);
     void ToggleFullscreen();
     void ForceCloseWindow();
@@ -32,9 +33,16 @@ namespace BackEnd {
     int GetCurrentWindowHeight();
     int GetFullScreenWidth();
     int GetFullScreenHeight();
+    const WindowedMode& GetWindowedMode();
 
     // Render Targets
     void SetPresentTargetSize(int width, int height);
     int GetPresentTargetWidth();
     int GetPresentTargetHeight();
+
+    // MousePick
+    void UpdateMousePicking(int x, int);
+    uint16_t GetMousePickR();
+    uint16_t GetMousePickG();
+   
 }

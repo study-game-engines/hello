@@ -1,47 +1,20 @@
 #pragma once
 #include <vulkan/vulkan.h>
-#include "vk_mem_alloc.h"
+#include <vector>
 
-struct Buffer {
-    VkBuffer buffer = VK_NULL_HANDLE;
-    VmaAllocation allocation;
-    unsigned int size = 0;
+struct VulkanBuffer {
+public:
+    VkBuffer m_buffer = VK_NULL_HANDLE;
+    VkDeviceMemory m_memory = VK_NULL_HANDLE;
+    VkDeviceSize m_size = 0;
+    bool Initialize(VkPhysicalDevice physicalDevice, VkDevice device, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties);
+    void CopyData(VkDevice device, const void* data);
+    void Cleanup(VkDevice device);
+    VkBuffer GetBuffer() const;
+    VkDeviceSize GetSize() const;
 
-    void Create(VmaAllocator allocator, unsigned int srcSize, VkBufferUsageFlags bufferUsageFlags, VkMemoryPropertyFlags memoryUsageFlags) {
-        VkBufferCreateInfo createInfo = {};
-        createInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-        createInfo.usage = bufferUsageFlags;
-        createInfo.size = srcSize;
-        createInfo.pNext = nullptr;
-        VmaAllocationCreateInfo vmaallocInfo = {};
-        vmaallocInfo.usage = VMA_MEMORY_USAGE_AUTO;
-        vmaallocInfo.preferredFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-        vmaCreateBuffer(allocator, &createInfo, &vmaallocInfo, &buffer, &allocation, nullptr);
-
-        VkDebugUtilsObjectNameInfoEXT nameInfo = {};
-        nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
-        nameInfo.objectType = VK_OBJECT_TYPE_BUFFER;
-        nameInfo.objectHandle = (uint64_t)buffer;
-        nameInfo.pObjectName = "Misc HellBuffer";
-        size = srcSize;
-    }
-
-    void Map(VmaAllocator allocator, void* srcData) {
-        void* data = nullptr;
-        vmaMapMemory(allocator, allocation, &data);
-        memcpy(data, srcData, size);
-        vmaUnmapMemory(allocator, allocation);
-    }
-
-    void MapRange(VmaAllocator allocator, void* srcData, size_t memorySize) {
-        void* data = nullptr;
-        vmaMapMemory(allocator, allocation, &data);
-        memcpy(data, srcData, memorySize);
-        vmaUnmapMemory(allocator, allocation);
-    }
-
-    void Destroy(VmaAllocator allocator) {
-        vmaDestroyBuffer(allocator, buffer, allocation);
-    }
+private:
+    bool CreateBuffer(VkPhysicalDevice physicalDevice, VkDevice device, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties);
+    bool AllocateMemory(VkPhysicalDevice physicalDevice, VkDevice device, VkDeviceSize size, VkMemoryPropertyFlags properties);
+    uint32_t FindMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties);
 };
-

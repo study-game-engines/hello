@@ -1,10 +1,9 @@
 #pragma once
-#include "../Common/Types.h"
-#include "../File/FileFormats.h"
+#include "HellTypes.h"
 #include <string>
+#include "../File/FileFormats.h"
 
 namespace AssimpImporter {
-
     ModelData ImportFbx(const std::string filepath);
-
+    SkinnedModelData ImportSkinnedFbx(const std::string filepath);
 }

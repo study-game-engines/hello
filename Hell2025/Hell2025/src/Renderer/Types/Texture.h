@@ -1,42 +1,62 @@
 #pragma once
-#include <Compressonator.h>
+#include "HellEnums.h"
 #include <string>
 #include <memory>
-#include "../../API/OpenGL/Types/GL_texture.h"
-#include "../../API/Vulkan/Types/VK_texture.h"
-#include "../../Types/Enums.h"
+#include "../API/OpenGL/Types/gl_texture.h"
+#include "../API/Vulkan/Types/vk_texture.h"
 
-class Texture {
-
+struct Texture {
 public:
-
     Texture() = default;
-    Texture(std::string fullpath, bool compressed);
-	void Load();
-    void Bake();
-    void BakeCMPData(CMP_Texture* cmpTexture);
-	int GetWidth();
-	int GetHeight();
-	std::string& GetFilename();
-	std::string& GetFiletype();
+    void Load();
+    void SetLoadingState(LoadingState loadingState);
+    void SetFileInfo(FileInfo fileInfo);
+    void SetImageDataType(ImageDataType imageDataType);
+    void SetTextureWrapMode(TextureWrapMode wrapMode);
+    void SetMinFilter(TextureFilter filter);
+    void SetMagFilter(TextureFilter filter);
+    void SetTextureDataLevelBakeState(int index, BakeState state);
+    void RequestMipmaps();
+    void FreeCPUMemory();
+    const void PrintDebugInfo();
+    void CheckForBakeCompletion();
+    const bool MipmapsAreRequested();
+    const bool BakeComplete();
+    const int GetTextureDataCount();
+    const int GetWidth(int mipmapLevel);
+    const int GetHeight(int mipmapLevel);
+    const int GetFormat();
+    const int GetInternalFormat();
+    const int GetMipmapLevelCount();
+    const int GetDataSize(int mipmapLevel);
+    const int GetChannelCount();
+    const void* GetData(int mipmapLevel);
+    const std::string& GetFileName();
+    const std::string& GetFilePath();
+    const LoadingState GetLoadingState();
+    const BakeState GetTextureDataLevelBakeState(int index);
+    const FileInfo GetFileInfo();
+    const ImageDataType GetImageDataType();
+    const TextureWrapMode GetTextureWrapMode();
+    const TextureFilter GetMinFilter();
+    const TextureFilter GetMagFilter();
     OpenGLTexture& GetGLTexture();
     VulkanTexture& GetVKTexture();
 
-    void SetLoadingState(LoadingState loadingState);
-    const LoadingState GetLoadingState();
-    const BakingState GetBakingState();
-
-    std::string m_fullPath = "";
-    bool m_compressed = false;
 
 private:
-    OpenGLTexture glTexture;
-    VulkanTexture vkTexture;
-    std::string m_fileName;
-    std::string m_fileType;
-    int width = 0;
-    int height = 0;
-    int channelCount = 0;
+    OpenGLTexture m_glTexture;
+    VulkanTexture m_vkTexture;
     LoadingState m_loadingState = LoadingState::AWAITING_LOADING_FROM_DISK;
-    BakingState m_bakingState = BakingState::AWAITING_BAKE;
+    ImageDataType m_imageDataType = ImageDataType::UNDEFINED;
+    TextureWrapMode m_wrapMode = TextureWrapMode::REPEAT;
+    TextureFilter m_minFilter = TextureFilter::NEAREST;
+    TextureFilter m_magFilter = TextureFilter::NEAREST;
+    FileInfo m_fileInfo;
+    std::vector<TextureData> m_textureDataLevels;
+    std::vector<BakeState> m_textureDataLevelBakeStates;
+    int m_mipmapLevelCount = 0;
+    bool m_mipmapsRequested = false;
+    bool m_bakeComplete = false;
+
 };
