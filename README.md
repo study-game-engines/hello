@@ -39,13 +39,18 @@ Mousewheel: zoom camera<br>
 <br>
 **WARNING: editor menus very buggy still**
 
-### Download
+### Download via terminal
 
-The .lib files are managed by LFS. Download via terminal:
+```
+git clone https://github.com/livinamuk/Hell2025.git
+```
+
+Older commits (before 18/3/25) were managed by LFS:
 
 ```
 git lfs install
-git clone https://github.com/livinamuk/Hell2024.git
+git clone https://github.com/livinamuk/Hell2025.git
+git checkout adc37f7
 ```
 
 ### Usage
