@@ -127,61 +127,6 @@ namespace Physics {
         return g_characterCollisionReports;
     }
 
-    std::vector<Vertex> GetDebugLineVertices(DebugLineRenderMode debugLineRenderMode, std::vector<PxRigidActor*> ignoreList) {
-        if (debugLineRenderMode == DebugLineRenderMode::SHOW_NO_LINES) return std::vector<Vertex>();
-
-        // Prepare
-        PxU32 nbActors = g_scene->getNbActors(PxActorTypeFlag::eRIGID_DYNAMIC | PxActorTypeFlag::eRIGID_STATIC);
-        if (nbActors) {
-            std::vector<PxRigidActor*> actors(nbActors);
-            g_scene->getActors(PxActorTypeFlag::eRIGID_DYNAMIC | PxActorTypeFlag::eRIGID_STATIC, reinterpret_cast<PxActor**>(&actors[0]), nbActors);
-            for (PxRigidActor* actor : actors) {
-                PxShape* shape;
-                actor->getShapes(&shape, 1);
-                actor->setActorFlag(PxActorFlag::eVISUALIZATION, true);
-                for (PxRigidActor* ignoredActor : ignoreList) {
-                    if (ignoredActor == actor) {
-                        actor->setActorFlag(PxActorFlag::eVISUALIZATION, false);
-                    }
-                }
-                if (debugLineRenderMode == DebugLineRenderMode::PHYSX_RAYCAST) {
-                    if (shape->getQueryFilterData().word0 == RaycastGroup::RAYCAST_DISABLED) {
-                        actor->setActorFlag(PxActorFlag::eVISUALIZATION, false);
-                    }
-                }
-                else if (debugLineRenderMode == DebugLineRenderMode::PHYSX_COLLISION) {
-                    if (shape->getQueryFilterData().word1 == CollisionGroup::NO_COLLISION) {
-                        actor->setActorFlag(PxActorFlag::eVISUALIZATION, false);
-                    }
-                }
-            }
-        }
-        // Build vertices
-        std::vector<Vertex> vertices;
-        auto* renderBuffer = &g_scene->getRenderBuffer();
-        for (unsigned int i = 0; i < renderBuffer->getNbLines(); i++) {
-            auto pxLine = renderBuffer->getLines()[i];
-            Vertex v1, v2;
-            v1.position = Physics::PxVec3toGlmVec3(pxLine.pos0);
-            v2.position = Physics::PxVec3toGlmVec3(pxLine.pos1);
-            if (debugLineRenderMode == DebugLineRenderMode::PHYSX_ALL) {
-                v1.normal = GREEN;
-                v2.normal = GREEN;
-            }
-            else if (debugLineRenderMode == DebugLineRenderMode::PHYSX_COLLISION) {
-                v1.normal = LIGHT_BLUE;
-                v2.normal = LIGHT_BLUE;
-            }
-            else if (debugLineRenderMode == DebugLineRenderMode::PHYSX_RAYCAST) {
-                v1.normal = RED;
-                v2.normal = RED;
-            }
-            vertices.push_back(v1);
-            vertices.push_back(v2);
-        }
-        return vertices;
-    }
-
     PxMaterial* GetDefaultMaterial() {
         return g_defaultMaterial;
     }

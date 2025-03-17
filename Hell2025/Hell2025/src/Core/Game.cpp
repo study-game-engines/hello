@@ -78,42 +78,17 @@ namespace Game {
     }
 
     void Update() {
-
         static double lastTime = glfwGetTime();
         double currentTime = glfwGetTime();
         g_deltaTime = static_cast<float>(currentTime - lastTime);
         lastTime = currentTime;
         g_deltaTimeAccumulator += g_deltaTime;
 
-
         // Total time
         g_totalTime += g_deltaTime;
         if (g_totalTime > TIME_WRAP) {
             g_totalTime -= TIME_WRAP; // Keep it continuous
         }
-
-        // Physics
-        while (g_deltaTimeAccumulator >= g_fixedDeltaTime) {
-            g_deltaTimeAccumulator -= g_fixedDeltaTime;
-            if (Editor::IsEditorClosed()) {
-                Physics::StepPhysics(g_fixedDeltaTime);
-            }
-        }
-
-
-        std::string debugText = "Mousepick: ";
-        debugText += std::to_string(BackEnd::GetMousePickR()) + ", ";
-        debugText += std::to_string(BackEnd::GetMousePickG()) + "\n";
-        debugText += "\n";
-        debugText += std::to_string(Game::GetDeltaTime()) + "\n";
-        debugText += "\n";
-        // debugText += Debug::GetText();
-
-         // Update UI
-         //UIBackEnd::BlitText("Might leave in a body bag,", "StandardFont", 0, 0, 2.0f);
-         //UIBackEnd::BlitText("Never in cuffs.", "StandardFont", 0, 30, 2.0f);
-         //UIBackEnd::BlitText(debugText, "StandardFont", 0, 90, 2.0f);
-
 
         // Editor select menu open?
         if (Editor::IsEditorOpen() || ImGuiBackEnd::OwnsMouse()) {
@@ -129,6 +104,16 @@ namespace Game {
 
         for (Player& player : g_localPlayers) {
             player.Update(g_deltaTime);
+        }
+
+        World::Update(g_deltaTime);
+
+        // Physics
+        while (g_deltaTimeAccumulator >= g_fixedDeltaTime) {
+            g_deltaTimeAccumulator -= g_fixedDeltaTime;
+            if (Editor::IsEditorClosed()) {
+                Physics::StepPhysics(g_fixedDeltaTime);
+            }
         }
     }
 

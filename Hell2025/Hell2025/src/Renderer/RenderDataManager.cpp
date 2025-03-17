@@ -20,6 +20,7 @@ namespace RenderDataManager {
     RendererData g_rendererData;
     std::vector<AnimatedGameObject*> g_animatedGameObjectsToSkin;
     std::vector<GPULight> g_gpuLightData;
+    std::vector<HouseRenderItem> g_houseRenderItems;
     std::vector<RenderItem> g_instanceData;
     std::vector<RenderItem> g_outlineRenderItems;
     std::vector<ViewportData> g_viewportData;
@@ -337,6 +338,10 @@ namespace RenderDataManager {
         return g_rendererData;
     }
 
+    const std::vector<HouseRenderItem>& GetHouseRenderItems() {
+        return g_houseRenderItems;
+    }
+
     const std::vector<ViewportData>& GetViewportData() {
         return g_viewportData;
     }
@@ -358,12 +363,15 @@ namespace RenderDataManager {
     }
 
     // Submissions
+    void SubmitHouseRenderItem(const HouseRenderItem& renderItem) {
+        g_houseRenderItems.push_back(renderItem);
+    }
 
-    void SubmitForOutlineRendering(const RenderItem& renderItem) {
+    void SubmitOutlineRenderItem(const RenderItem& renderItem) {
         g_outlineRenderItems.push_back(renderItem);
     }
 
-    void SubmitForOutlineRendering(const std::vector<RenderItem>& renderItems) {
+    void SubmitOutlineRenderItems(const std::vector<RenderItem>& renderItems) {
         g_outlineRenderItems.insert(g_outlineRenderItems.begin(), renderItems.begin(), renderItems.end());
     }
 }

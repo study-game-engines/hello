@@ -39,6 +39,8 @@ void Player::UpdateInteract() {
         PhysicsUserData userData = m_overlapReport.hits[0].userData;
         m_interactObjectType = userData.objectType;
         m_interactObjectId = userData.objectId;
+        m_interactPhysicsType = userData.physicsType;
+        m_interactPhysicsId = userData.physicsId;
         m_interactFound = true;
     }
 

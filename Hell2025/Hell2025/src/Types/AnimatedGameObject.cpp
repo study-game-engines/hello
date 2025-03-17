@@ -354,38 +354,44 @@ bool AnimatedGameObject::AnimationIsPastFrameNumber(int frameNumber) {
     return frameNumber < GetAnimationFrameNumber();
 }
 
-void AnimatedGameObject::DrawBones(glm::vec3 color) {
-    for (const glm::mat4& boneWorldMatrix : m_animationLayer.m_globalBlendedNodeTransforms) {
-        glm::vec3 position = GetModelMatrix() * boneWorldMatrix * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-        Renderer::DrawPoint(position, color);
-    }
-}
+void AnimatedGameObject::DrawBones(int exclusiveViewportIndex) {
+    SkinnedModel* skinnedModel = AssetManager::GetSkinnedModelByIndex(m_skinnedModelIndex);
+    if (!skinnedModel) return;
+    
+    // Traverse the tree
+    for (int i = 0; i < skinnedModel->m_nodes.size(); i++) {
+        glm::mat4 nodeTransformation = glm::mat4(1);
+        unsigned int parentIndex = skinnedModel->m_nodes[i].parentIndex;
+        std::string& nodeName = skinnedModel->m_nodes[i].name;
+        std::string& parentNodeName = skinnedModel->m_nodes[parentIndex].name;
 
-void AnimatedGameObject::DrawBoneTangentVectors(float size) {    
-    // Hack to not render them for view weapon
-    for (int i = 0; i < Game::GetLocalPlayerCount(); i++) {
-        Player* player = Game::GetLocalPlayerByIndex(i);
-        if (player->GetViewWeaponAnimatedGameObject() == this) {
-            return;
+        if (parentIndex != -1 && skinnedModel->BoneExists(nodeName) && skinnedModel->BoneExists(parentNodeName)) {
+            const glm::mat4& boneWorldMatrix = m_animationLayer.m_globalBlendedNodeTransforms[i];
+            const glm::mat4& parentBoneWorldMatrix = m_animationLayer.m_globalBlendedNodeTransforms[parentIndex];
+            glm::vec3 position = GetModelMatrix() * boneWorldMatrix * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+            glm::vec3 parentPosition = GetModelMatrix() * parentBoneWorldMatrix * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+            Renderer::DrawPoint(position, OUTLINE_COLOR, false, exclusiveViewportIndex);
+            Renderer::DrawLine(position, parentPosition, WHITE, false, exclusiveViewportIndex);
         }
     }
-    // Otherwise sent the bone tangent vectors to the render as lines
+
+    // // To draw all nodes
+    // for (const glm::mat4& boneWorldMatrix : m_animationLayer.m_globalBlendedNodeTransforms) {
+    //     glm::vec3 position = GetModelMatrix() * boneWorldMatrix * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+    //     Renderer::DrawPoint(position, color, false, exclusiveViewportIndex);
+    // }
+}
+
+void AnimatedGameObject::DrawBoneTangentVectors(float size, int exclusiveViewportIndex) {
     for (const glm::mat4& boneWorldMatrix : m_animationLayer.m_globalBlendedNodeTransforms) {
         glm::vec3 origin = GetModelMatrix() * boneWorldMatrix * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
         glm::vec3 right = glm::normalize(glm::vec3(boneWorldMatrix[0]));
         glm::vec3 up = glm::normalize(glm::vec3(boneWorldMatrix[1]));
         glm::vec3 forward = glm::normalize(glm::vec3(boneWorldMatrix[2]));
-        Renderer::DrawLine(origin, origin + (forward * size), BLUE);
-        Renderer::DrawLine(origin, origin + (up * size), GREEN);
-        Renderer::DrawLine(origin, origin + (right * size), RED);
+        Renderer::DrawLine(origin, origin + (forward * size), BLUE, false, exclusiveViewportIndex);
+        Renderer::DrawLine(origin, origin + (up * size), GREEN, false, exclusiveViewportIndex);
+        Renderer::DrawLine(origin, origin + (right * size), RED, false, exclusiveViewportIndex);
     }
-}
-
-void AnimatedGameObject::MakeGold() {
-    m_isGold = true;
-}
-void AnimatedGameObject::MakeNotGold() {
-    m_isGold = false;
 }
 
 void AnimatedGameObject::SetExclusiveViewportIndex(int index) {

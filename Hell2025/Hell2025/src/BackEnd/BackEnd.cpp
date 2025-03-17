@@ -17,7 +17,6 @@
 #include "ImGui/ImGuiBackend.h"
 #include "Input/Input.h"
 #include "Input/InputMulti.h"
-#include "Modelling/Clipping.h"
 #include "Modelling/Unused/Modelling.h"
 #include "Physics/Physics.h"
 #include "Renderer/Renderer.h"
@@ -80,7 +79,6 @@ namespace BackEnd {
         Physics::Init();
         ImGuiBackEnd::Init();
 
-        Clipping::Init();
         Modelling::Init();
 
         glfwShowWindow(static_cast<GLFWwindow*>(BackEnd::GetWindowPointer()));
@@ -108,13 +106,11 @@ namespace BackEnd {
     }
 
     void UpdateGame() {
-
         const Resolutions& resolutions = Config::GetResolutions();
 
         float deltaTime = Game::GetDeltaTime();
 
         ViewportManager::Update();
-        //EditorImGui::Update();
         Editor::Update(deltaTime);
         Game::Update();
 
@@ -122,9 +118,6 @@ namespace BackEnd {
         Physics::UpdateActiveRigidDynamicAABBList();
         Physics::UpdateHeightFields();
 
-        World::Update(deltaTime);
-
-        Clipping::Update();
         Modelling::Update();
 
         // Mouse picking
@@ -136,10 +129,13 @@ namespace BackEnd {
         int y = textureHeight - (Input::GetMouseY() * aspectY);
         BackEnd::UpdateMousePicking(x, y);
 
+        World::SubmitRenderItems();
+
         Debug::Update();
         UIBackEnd::Update();
         RenderDataManager::Update();
         ImGuiBackEnd::Update();
+
     }
 
     void EndFrame() {
@@ -357,7 +353,7 @@ namespace BackEnd {
             }
             if (Input::KeyPressed(HELL_KEY_B)) {
                 Audio::PlayAudio(AUDIO_SELECT, 1.00f);
-                Renderer::NextDebugLineRenderMode();
+                Debug::NextDebugRenderMode();
             }
         }
     }

@@ -28,6 +28,7 @@ struct SkinnedModel {
     void SetLoadingState(LoadingState loadingState);
     void SetVertexCount(uint32_t vertexCount);
 
+    bool BoneExists(const std::string& boneName);
     const FileInfo& GetFileInfo();
     const std::string& GetName();
     uint32_t GetMeshCount();

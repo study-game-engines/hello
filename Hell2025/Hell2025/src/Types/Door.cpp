@@ -23,7 +23,7 @@ void Door::Init(DoorCreateInfo createInfo) {
     doorFrameTransform.rotation = m_rotation;
 
     glm::vec3 boxExtents = glm::vec3(DOOR_DEPTH, DOOR_HEIGHT, DOOR_WIDTH);
-    m_physicsId = Physics::CreateRigidStaticFromBoxExtents(doorFrameTransform, boxExtents, filterData);
+    m_physicsId = Physics::CreateRigidStaticBoxFromExtents(doorFrameTransform, boxExtents, filterData);
 
     // Get next unique ID
     m_objectId = UniqueID::GetNext();

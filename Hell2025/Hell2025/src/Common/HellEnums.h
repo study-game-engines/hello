@@ -68,15 +68,16 @@ enum class TextureFilter {
 
 enum class ObjectType {
     NONE = 0,
-    GAME_OBJECT,
-    LIGHT,
-    TREE,
-    PICK_UP,
-    HEIGHT_MAP,
     DOOR,
-    WINDOW,
-    UNDEFINED
-}; 
+    GAME_OBJECT,
+    HEIGHT_MAP,
+    LIGHT,
+    PICK_UP,
+    TREE,
+    UNDEFINED,
+    WALL_SEGMENT,
+    WINDOW
+};
 
 enum class Axis {
     X,
@@ -186,8 +187,9 @@ enum RaycastGroup {
     DOBERMAN = 32
 };
 
-enum DebugLineRenderMode {
-    SHOW_NO_LINES,
+enum DebugRenderMode {
+    NONE = 0,
+    DECALS,
     PATHFINDING_RECAST,
     PHYSX_ALL,
     PHYSX_RAYCAST,
@@ -200,6 +202,10 @@ enum DebugLineRenderMode {
     RTX_LAND_TOP_LEVEL_ACCELERATION_STRUCTURE,
     RTX_LAND_BOTTOM_LEVEL_ACCELERATION_STRUCTURES,
     RTX_LAND_TOP_AND_BOTTOM_LEVEL_ACCELERATION_STRUCTURES,
+    CLIPPING_CUBES,
+    HOUSE_GEOMETRY,
+    BONES,
+    BONE_TANGENTS,
     DEBUG_LINE_MODE_COUNT,
 };
 
@@ -230,6 +236,7 @@ enum struct EditorMode {
 };
 
 enum struct PhysicsType {
+    NONE = 0,
     RIGID_DYNAMIC,
     RIGID_STATIC,
     HEIGHT_FIELD,

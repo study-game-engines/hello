@@ -23,6 +23,10 @@ Light::Light(LightCreateInfo createInfo) {
     }
 }
 
+void Light::Update(float deltaTime) {
+    UpdateRenderItems();
+}
+
 void Light::UpdateRenderItems() {
     m_renderItems.clear();
 

@@ -261,18 +261,6 @@ namespace Editor {
         return g_hoveredObjectType;
     }
 
-    std::string EditorObjectTypeToString(const ObjectType& type) {
-        switch (type) {
-            case ObjectType::NONE:        return "NONE";
-            case ObjectType::GAME_OBJECT: return "GAME_OBJECT";
-            case ObjectType::TREE:        return "TREE";
-            case ObjectType::LIGHT:       return "LIGHT";
-            case ObjectType::PICK_UP:     return "PICK_UP";
-            case ObjectType::WINDOW:      return "WINDOW";
-            default:                      return "Unknown";
-        }
-    }
-
     bool IsViewportOrthographic(uint32_t viewportIndex) {
         if (viewportIndex >= 0 && viewportIndex < 4) {
             return g_isOrthographic[viewportIndex];

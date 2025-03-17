@@ -10,7 +10,7 @@ namespace Physics {
 
     std::unordered_map<uint64_t, RigidStatic> g_rigidStatics;
 
-    uint64_t CreateRigidStaticFromBoxExtents(Transform transform, glm::vec3 boxExtents, PhysicsFilterData filterData) {
+    uint64_t CreateRigidStaticBoxFromExtents(Transform transform, glm::vec3 boxExtents, PhysicsFilterData filterData) {
         PxPhysics* pxPhysics = Physics::GetPxPhysics();
         PxScene* pxScene = Physics::GetPxScene();
         PxMaterial* material = Physics::GetDefaultMaterial();
@@ -49,8 +49,7 @@ namespace Physics {
         return physicsID;
     }
 
-
-   uint64_t CreateRigidStaticFromConvexMeshVertices(Transform transform, const std::span<Vertex>& vertices, PhysicsFilterData filterData) {
+   uint64_t CreateRigidStaticConvexMeshFromVertices(Transform transform, const std::span<Vertex>& vertices, PhysicsFilterData filterData) {
        PxPhysics* pxPhysics = Physics::GetPxPhysics();
        PxScene* pxScene = Physics::GetPxScene();
        PxMaterial* material = Physics::GetDefaultMaterial();
@@ -59,8 +58,6 @@ namespace Physics {
        pxFilterData.word0 = (PxU32)filterData.raycastGroup;
        pxFilterData.word1 = (PxU32)filterData.collisionGroup;
        pxFilterData.word2 = (PxU32)filterData.collidesWith;
-  
-       ///////////////////////////////////////////////////////////////////////////////////////////////
   
        // Create convex shape
        std::vector<PxVec3> pxVertices;
@@ -73,7 +70,7 @@ namespace Physics {
        convexDesc.points.stride = sizeof(PxVec3);
        convexDesc.points.data = pxVertices.data();
        convexDesc.flags = PxConvexFlag::eSHIFT_VERTICES | PxConvexFlag::eCOMPUTE_CONVEX;
-       //  s
+       
        PxTolerancesScale scale;
        PxCookingParams params(scale);
   
@@ -92,16 +89,14 @@ namespace Physics {
        pxShape->setQueryFilterData(pxFilterData);       // ray casts
        pxShape->setSimulationFilterData(pxFilterData);  // collisions
   
-       ///////////////////////////////////////////////////////////////////////////////////////////////
-  
-       // Create rigid dynamic
+       // Create PxRigidStatic
        PxQuat quat = Physics::GlmQuatToPxQuat(glm::quat(transform.rotation));
        PxTransform pxTransform = PxTransform(PxVec3(transform.position.x, transform.position.y, transform.position.z), quat);
        PxRigidStatic* pxRigidStatic = pxPhysics->createRigidStatic(pxTransform);
        pxRigidStatic->attachShape(*pxShape);
        pxScene->addActor(*pxRigidStatic);
     
-       // Create Rigid Static
+       // Create RigidStatic
        uint64_t physicsID = UniqueID::GetNext();
        RigidStatic& rigidStatic = g_rigidStatics[physicsID];
   
@@ -112,11 +107,7 @@ namespace Physics {
        return physicsID;
    }
 
-
-
-   uint64_t CreateRigidStaticFromConvexMeshFromModel(Transform transform, const std::string& modelName, PhysicsFilterData filterData) {
-
-
+   uint64_t CreateRigidStaticConvexMeshFromModel(Transform transform, const std::string& modelName, PhysicsFilterData filterData) {
        PxPhysics* pxPhysics = Physics::GetPxPhysics();
        PxScene* pxScene = Physics::GetPxScene();
        PxMaterial* material = Physics::GetDefaultMaterial();
@@ -126,23 +117,18 @@ namespace Physics {
        pxFilterData.word1 = (PxU32)filterData.collisionGroup;
        pxFilterData.word2 = (PxU32)filterData.collidesWith;
 
-       ///////////////////////////////////////////////////////////////////////////////////////////////
-
        Model* model = AssetManager::GetModelByName(modelName);
        if (!model) {
            std::cout << "Physics::CreateRigidStaticFromConvexMeshFromModel() failed: '" << modelName << "' was not found \"n";
            return 0;
        }
 
-
-       ///////////////////////////////////////////////////////////////////////////////////////////////
-
-       // Create rigid dynamic
+       // Create PxRigidStatic
        PxQuat quat = Physics::GlmQuatToPxQuat(glm::quat(transform.rotation));
        PxTransform pxTransform = PxTransform(PxVec3(transform.position.x, transform.position.y, transform.position.z), quat);
        PxRigidStatic* pxRigidStatic = pxPhysics->createRigidStatic(pxTransform);
 
-       // Create Rigid Static
+       // Create RigidStatic
        uint64_t physicsID = UniqueID::GetNext();
        RigidStatic& rigidStatic = g_rigidStatics[physicsID];
 
@@ -191,9 +177,69 @@ namespace Physics {
        return physicsID;
    }
 
+   uint64_t CreateRigidStaticTriangleMeshFromVertexData(Transform transform, const std::span<Vertex>& vertices, const std::span<uint32_t>& indices, PhysicsFilterData filterData) {
+       PxPhysics* pxPhysics = Physics::GetPxPhysics();
+       PxScene* pxScene = Physics::GetPxScene();
+       PxMaterial* material = Physics::GetDefaultMaterial();
 
+       PxFilterData pxFilterData;
+       pxFilterData.word0 = (PxU32)filterData.raycastGroup;
+       pxFilterData.word1 = (PxU32)filterData.collisionGroup;
+       pxFilterData.word2 = (PxU32)filterData.collidesWith;
 
+       PxTriangleMeshDesc meshDesc;
+       meshDesc.points.count = vertices.size();
+       meshDesc.points.data = vertices.data();
+       meshDesc.points.stride = sizeof(Vertex);
+       meshDesc.triangles.count = indices.size() / 3;
+       meshDesc.triangles.data = indices.data();
+       meshDesc.triangles.stride = 3 * sizeof(PxU32);
+       
+       PxCookingParams params{ PxTolerancesScale() };
+       params.midphaseDesc = PxMeshMidPhase::eBVH33;
+       params.suppressTriangleMeshRemapTable = true;
 
+       // Clear preprocessing flags using the proper PhysX API
+       params.meshPreprocessParams.clear(PxMeshPreprocessingFlag::eDISABLE_CLEAN_MESH);
+       params.meshPreprocessParams.clear(PxMeshPreprocessingFlag::eDISABLE_ACTIVE_EDGES_PRECOMPUTE);
+
+       // Optimize BVH33 midphase for simulation performance
+       params.midphaseDesc.mBVH33Desc.meshCookingHint = PxMeshCookingHint::eSIM_PERFORMANCE;
+       params.midphaseDesc.mBVH33Desc.meshSizePerformanceTradeOff = 0.0f;
+
+       // Validate the mesh cooking parameters
+       PX_ASSERT(PxValidateTriangleMesh(params, meshDesc));
+
+       // Create the triangle mesh
+       PxTriangleMesh* pxTriangleMesh = PxCreateTriangleMesh(params, meshDesc, pxPhysics->getPhysicsInsertionCallback());
+
+       // Create PxShape
+       PxMeshGeometryFlags flags(~PxMeshGeometryFlag::eDOUBLE_SIDED);
+       PxMeshScale meshScale = PxVec3(1.0f, 1.0f, 1.0f);
+       PxTriangleMeshGeometry geometry(pxTriangleMesh, meshScale, flags);
+
+       PxShapeFlags shapeFlags(PxShapeFlag::eSCENE_QUERY_SHAPE); // NOT eSIMULATION_SHAPE. PhysX does not allow for triangle mesh
+       PxShape* pxShape = pxPhysics->createShape(geometry, *material, shapeFlags);
+       pxShape->setQueryFilterData(pxFilterData);       // ray casts
+       pxShape->setSimulationFilterData(pxFilterData);  // collisions
+
+       // Create rigid static
+       PxQuat quat = Physics::GlmQuatToPxQuat(glm::quat(transform.rotation));
+       PxTransform pxTransform = PxTransform(PxVec3(transform.position.x, transform.position.y, transform.position.z), quat);
+       PxRigidStatic* pxRigidStatic = pxPhysics->createRigidStatic(pxTransform);
+       pxScene->addActor(*pxRigidStatic);
+       pxRigidStatic->attachShape(*pxShape);
+
+       // Create Rigid Static
+       uint64_t physicsID = UniqueID::GetNext();
+       RigidStatic& rigidStatic = g_rigidStatics[physicsID];
+       rigidStatic.AddPxShape(pxShape);
+
+       // Update its pointers
+       rigidStatic.SetPxRigidStatic(pxRigidStatic);
+
+       return physicsID;
+   }
 
    void MarkRigidStaticForRemoval(uint64_t rigidStaticId) {
        if (RigidStaticExists(rigidStaticId)) {

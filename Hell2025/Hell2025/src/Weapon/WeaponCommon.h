@@ -110,7 +110,6 @@ struct WeaponInfo {
     int magSize = 0;
     AnimationCancelFrames animationCancelFrames;
     bool auomaticOverride = false;
-    bool isGold = false;
     bool hasAutoSwitch = false;
     float muzzleFlashScale = 1;
     float casingEjectionImpulse = 0.025f;

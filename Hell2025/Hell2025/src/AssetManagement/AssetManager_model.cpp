@@ -6,7 +6,7 @@
 namespace AssetManager {
 
     void PrintModelMeshNames(Model* model) {
-        std::cout << model->GetName();
+        std::cout << model->GetName() << "\n";
         for (const uint32_t& meshIndex : model->GetMeshIndices()) {
             Mesh* mesh = AssetManager::GetMeshByIndex(meshIndex);
             if (mesh) {

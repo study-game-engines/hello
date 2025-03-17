@@ -46,13 +46,13 @@ namespace OpenGLRenderer {
             }
         }
 
-        gBuffer->DrawBuffers({ "BaseColor" });        
+        gBuffer->DrawBuffers({ "BaseColor" });
         SetRasterizerState("GeometryPass_Blended");
 
         for (int i = 0; i < 4; i++) {
             Viewport* viewport = ViewportManager::GetViewportByIndex(i);
             if (viewport->IsVisible()) {
-                OpenGLRenderer::SetViewport(gBuffer, viewport);                
+                OpenGLRenderer::SetViewport(gBuffer, viewport);
                 if (BackEnd::RenderDocFound()) {
                     SplitMultiDrawIndirect(shader, drawInfoSet.geometryBlended.perViewport[i]);
                 }
@@ -82,7 +82,7 @@ namespace OpenGLRenderer {
                 }
             }
         }
-        
+
         glBindVertexArray(0);
 
 
@@ -114,16 +114,12 @@ namespace OpenGLRenderer {
             }
         }
 
-
-
-
+        // Render house
         debugShader->Use();
         debugShader->SetMat4("u_model", glm::mat4(1));
 
         OpenGLDetachedMesh& wallMesh = World::GetHouseMesh();
         glBindVertexArray(wallMesh.GetVAO());
-
-        //glDisable(GL_CULL_FACE);
 
         for (int i = 0; i < 4; i++) {
             Viewport* viewport = ViewportManager::GetViewportByIndex(i);
@@ -133,18 +129,9 @@ namespace OpenGLRenderer {
             OpenGLRenderer::SetViewport(gBuffer, viewport);
             debugShader->SetInt("u_viewportIndex", i);
 
-            std::vector<HouseRenderItem> renderItems;
+            const std::vector<HouseRenderItem>& renderItems = RenderDataManager::GetHouseRenderItems();
 
-            for (Wall& wall : World::GetWalls()) {
-                for (HouseRenderItem& renderItem : wall.GetRenderItems()) {
-                    renderItems.push_back(renderItem);
-                }
-            }
-            for (Floor& floor : World::GetFloors()) {
-                renderItems.push_back(floor.GetRenderItem());
-            }
-
-            for (HouseRenderItem& renderItem : renderItems) {
+            for (const HouseRenderItem& renderItem : renderItems) {
                 int indexCount = renderItem.indexCount;
                 int baseVertex = renderItem.baseVertex;
                 int baseIndex = renderItem.baseIndex;
@@ -158,21 +145,6 @@ namespace OpenGLRenderer {
                 glDrawElementsBaseVertex(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, (void*)(sizeof(unsigned int) * baseIndex), baseVertex);
             }
         }
-
-
-        Transform transform;
-        transform.position = glm::vec3(17.0f, 1.5f, 20.0f);
-        transform.rotation = glm::vec3(0.5f, 0.1f, 0.5f);
-        transform.scale = glm::vec3(1.5f, 1.25f, 1.25);
-
-        debugShader->SetMat4("u_model", transform.to_mat4());
-
-        glBindVertexArray(OpenGLBackEnd::GetVertexDataVAO());
-
-
-        //Mesh* cubeMesh = AssetManager::GetCubeMesh();
-        //glDrawElementsBaseVertex(GL_TRIANGLES, cubeMesh->indexCount, GL_UNSIGNED_INT, (void*)(sizeof(unsigned int)* cubeMesh->baseIndex), cubeMesh->baseVertex);
-
     }
 }
 

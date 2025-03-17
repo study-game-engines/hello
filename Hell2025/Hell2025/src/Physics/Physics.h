@@ -35,12 +35,12 @@ namespace Physics {
     void Init();
     void BeginFrame();
     void StepPhysics(float deltaTime);
+    void SubmitDebugLinesToRenderer(const DebugRenderMode& debugRenderMode);
     void AddCollisionReport(CollisionReport& collisionReport);
     void ClearCollisionReports();
     void ClearCharacterControllerCollsionReports();
     std::vector<CollisionReport>& GetCollisionReports();
     std::vector<CharacterCollisionReport>& GetCharacterCollisionReports();
-    std::vector<Vertex> GetDebugLineVertices(DebugLineRenderMode debugLineRenderMode, std::vector<PxRigidActor*> ignoreList);
     PxPhysics* GetPxPhysics();
     PxScene* GetPxScene();
     CCTHitCallback& GetCharacterControllerHitCallback();    
@@ -84,10 +84,10 @@ namespace Physics {
     glm::mat4 GetRigidStaticGlobalPose(uint64_t rigidStaticId);
     bool RigidStaticExists(uint64_t rigidStaticId);
     void SetRigidStaticUserData(uint64_t rigidStaticId, PhysicsUserData physicsUserData);
-    uint64_t CreateRigidStaticFromBoxExtents(Transform transform, glm::vec3 boxExtents, PhysicsFilterData filterData);
-    uint64_t CreateRigidStaticFromConvexMeshVertices(Transform transform, const std::span<Vertex>& vertices, PhysicsFilterData filterData);
-    uint64_t CreateRigidStaticFromConvexMeshFromModel(Transform transform, const std::string& modelName, PhysicsFilterData filterData);
-
+    uint64_t CreateRigidStaticBoxFromExtents(Transform transform, glm::vec3 boxExtents, PhysicsFilterData filterData);
+    uint64_t CreateRigidStaticConvexMeshFromModel(Transform transform, const std::string& modelName, PhysicsFilterData filterData);
+    uint64_t CreateRigidStaticConvexMeshFromVertices(Transform transform, const std::span<Vertex>& vertices, PhysicsFilterData filterData);
+    uint64_t CreateRigidStaticTriangleMeshFromVertexData(Transform transform, const std::span<Vertex>& vertices, const std::span<uint32_t>& indices, PhysicsFilterData filterData);
 
     // Destroy
     void Destroy(PxRigidDynamic*& rigidDynamic);

@@ -179,6 +179,7 @@ namespace OpenGLRenderer {
         g_shaders["BlurVertical"] = OpenGLShader({ "GL_blur_vertical.vert", "GL_blur.frag" });
         g_shaders["ComputeSkinning"] = OpenGLShader({ "GL_compute_skinning.comp" });
         g_shaders["DebugTextured"] = OpenGLShader({ "GL_debug_textured.vert", "GL_debug_textured.frag" });
+        g_shaders["DebugVertex"] = OpenGLShader({ "gl_debug_vertex.vert", "gl_debug_vertex.frag" });
         g_shaders["Decals"] = OpenGLShader({ "GL_decals.vert", "GL_decals.frag" });
         g_shaders["EditorMesh"] = OpenGLShader({ "GL_editor_mesh.vert", "GL_editor_mesh.frag" });
         g_shaders["EmissiveComposite"] = OpenGLShader({ "GL_emissive_composite.comp" });

@@ -239,27 +239,6 @@ namespace WeaponManager {
         knife.meshMaterials["ArmsFemale"] = "FemaleArms";
         knife.hiddenMeshAtStart.push_back("ArmsFemale");
 
-
-        WeaponInfo& knife2 = g_weapons.emplace_back();
-        knife2.name = "GoldenKnife";
-        knife2.modelName = "Knife";
-        knife2.type = WeaponType::MELEE;
-        knife2.damage = 200;
-        knife2.animationNames.idle = "Knife_Idle";
-        knife2.animationNames.walk = "Knife_Walk";
-        knife2.animationNames.draw = "Knife_Draw";
-        knife2.animationNames.fire.push_back("Knife_Swing0");
-        knife2.animationNames.fire.push_back("Knife_Swing1");
-        knife2.animationNames.fire.push_back("Knife_Swing2");
-        knife2.audioFiles.fire.push_back("Knife.wav");
-        knife2.meshMaterials["Knife"] = "Knife";
-        knife2.meshMaterials["ArmsMale"] = "Hands";
-        knife2.meshMaterials["ArmsFemale"] = "FemaleArms";
-        knife2.hiddenMeshAtStart.push_back("ArmsFemale");
-        knife2.isGold = true;
-
-
-
         WeaponInfo& smith = g_weapons.emplace_back();
         smith.name = "Smith & Wesson";
         smith.type = WeaponType::PISTOL;

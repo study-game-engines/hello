@@ -22,38 +22,11 @@ GameObject::GameObject(GameObjectCreateInfo createInfo) {
     m_transform.scale = createInfo.scale;
 
     if (createInfo.modelName == "Bench2") {
-
         PhysicsFilterData filterData;
         filterData.raycastGroup = RaycastGroup::RAYCAST_ENABLED;
         filterData.collisionGroup = CollisionGroup::ENVIROMENT_OBSTACLE;
         filterData.collidesWith = (CollisionGroup)(PLAYER | BULLET_CASING | ITEM_PICK_UP);
-
-
-        m_physicsId = Physics::CreateRigidStaticFromConvexMeshFromModel(m_transform, "Bench_ConvexHulls", filterData);
-
-
-       //Model* convexHullsModel = AssetManager::GetModelByName("Bench_ConvexHulls");
-       //for (uint32_t meshIndex : convexHullsModel->GetMeshIndices()) {
-       //    Mesh* mesh = AssetManager::GetMeshByIndex(meshIndex);
-       //
-       //    std::span<Vertex> vertices = AssetManager::GetVerticesSpan(mesh->baseVertex, mesh->vertexCount);
-       //
-       //
-       //    m_physicsId = Physics::CreateRigidStaticFromConvexMeshVertices(m_transform, vertices, filterData);
-       //
-       //    std::cout << "attempting to create convex hull for mesh index " << meshIndex << "\n";
-       //
-       //    //break;
-       //
-       //}
-       //glm::vec3 modelExtents = glm::vec3(1.0f);
-       ////m_physicsId = Physics::CreateRigidStaticFromBoxExtents(m_transform, modelExtents, filterData);
-       //m_physicsId = Physics::CreateRigidStaticFromConvexMeshVertices(m_transform, modelExtents, filterData);
-
-
-        //SetConvexHullsFromModel("Bench_ConvexHulls");
-
-        std::cout << "FUUUUUUUUUUUUUCK\n";
+        m_physicsId = Physics::CreateRigidStaticConvexMeshFromModel(m_transform, "Bench_ConvexHulls", filterData);
     }
 }
 
@@ -65,6 +38,10 @@ GameObjectCreateInfo GameObject::GetCreateInfo() {
     createInfo.modelName = m_model->GetName();
     createInfo.meshRenderingInfoSet = m_meshRenderingInfoSet;
     return createInfo;
+}
+
+void GameObject::Update(float deltaTime) {
+    UpdateRenderItems();
 }
 
 void GameObject::SetPosition(glm::vec3 position) {

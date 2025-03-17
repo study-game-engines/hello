@@ -59,20 +59,15 @@ namespace OpenGLRenderer {
 
     // Debug
     void UpdateDebugMesh();
-    void DrawPoint(glm::vec3 position, glm::vec3 color, bool obeyDepth = false);
-    void DrawLine(glm::vec3 begin, glm::vec3 end, glm::vec3 color, bool obeyDepth = false);
+    void DrawPoint(glm::vec3 position, glm::vec3 color, bool obeyDepth = false, int exclusiveViewportIndex = -1);
+    void DrawLine(glm::vec3 begin, glm::vec3 end, glm::vec3 color, bool obeyDepth = false, int exclusiveViewportIndex = -1);
     void DrawAABB(const AABB& aabb, const glm::vec3& color);
     void DrawAABB(const AABB& aabb, const glm::vec3& color, const glm::mat4& worldTransform);
 
-    inline std::vector<Vertex> g_points;
-    inline std::vector<Vertex> g_lines;
-    inline std::vector<Vertex> g_pointsDepthAware;
-    inline std::vector<Vertex> g_linesDepthAware;
-
-    inline OpenGLDetachedMesh g_pointsMesh;
-    inline OpenGLDetachedMesh g_linesMesh;
-    inline OpenGLDetachedMesh g_pointsDepthAwareMesh;
-    inline OpenGLDetachedMesh g_linesDepthAwareMesh;
+    inline std::vector<DebugVertex> g_points;
+    inline std::vector<DebugVertex> g_lines;
+    inline std::vector<DebugVertex> g_pointsDepthAware;
+    inline std::vector<DebugVertex> g_linesDepthAware;
 
     void HotloadShaders();
     void CreateBlurBuffers();

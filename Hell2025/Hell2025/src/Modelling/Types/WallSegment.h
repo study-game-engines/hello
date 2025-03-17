@@ -1,10 +1,13 @@
 #pragma once
-#include "glm/glm.hpp"
 #include "Math/AABB.h"
+#include "ClippingCube.h"
 #include <vector>
 
 struct WallSegment {
-    void Update(glm::vec3 start, glm::vec3 end, float height);
+    void Init(glm::vec3 start, glm::vec3 end, float height);
+    void CleanUp();
+    void CreateVertexData(std::vector<ClippingCube>& clippingCubes, float texOffsetX, float texOffsetY, float texScale);
+    void CreatePhysicsObject();
 
     const glm::vec3& GetStart()                 const { return m_start; }
     const glm::vec3& GetEnd()                   const { return m_end; }
@@ -12,12 +15,18 @@ struct WallSegment {
     const float GetHeight()                     const { return m_height; }
     const AABB& GetAABB()                       const { return m_aabb; }
     const std::vector<glm::vec3>& GetCorners()  const { return m_corners; }
-
+    const std::vector<Vertex>& GetVertices()    const { return m_vertices; }
+    const std::vector<uint32_t>& GetIndices()   const { return m_indices; }
+                                                               
 private:
     glm::vec3 m_start;
     glm::vec3 m_end;
     glm::vec3 m_normal;
     float m_height = 2.4f;
     AABB m_aabb;
+    uint64_t m_objectId = 0;
+    uint64_t m_physicsId = 0;
     std::vector<glm::vec3> m_corners;
+    std::vector<Vertex> m_vertices;
+    std::vector<uint32_t> m_indices;
 };

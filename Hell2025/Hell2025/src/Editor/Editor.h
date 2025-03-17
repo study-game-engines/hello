@@ -107,8 +107,6 @@ namespace Editor {
     glm::vec3 GetMouseRayDirectionByViewportIndex(int32_t viewportIndex);
     glm::mat4 GetViewportViewMatrix(int32_t viewportIndex);
     float GetEditorOrthoSize(int32_t viewportIndex);
-    std::string EditorObjectTypeToString(const ObjectType& type);
-   // Camera* GetCameraByIndex(uint32_t index);
     Viewport* GetActiveViewport();
     ShadingMode GetViewportModeByIndex(uint32_t index);
     CameraView GetCameraViewByIndex(uint32_t index);

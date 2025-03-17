@@ -144,12 +144,8 @@ public:
 
     AnimationLayer m_animationLayer;
 
-    void DrawBones(glm::vec3 color);
-    void DrawBoneTangentVectors(float size = 0.1f);
-
-    void MakeGold();
-    void MakeNotGold();
-
+    void DrawBones(int exclusiveViewportIndex = -1);
+    void DrawBoneTangentVectors(float size = 0.1f, int exclusiveViewportIndex = -1);
 
     void SetExclusiveViewportIndex(int index);
     void SetIgnoredViewportIndex(int index);
@@ -158,7 +154,6 @@ public:
 
     int m_ignoredViewportIndex = -1;
     int m_exclusiveViewportIndex = -1;
-
 
     AnimationLayer& GetAnimationLayer() { return m_animationLayer; }
     void SubmitForSkinning();

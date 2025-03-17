@@ -14,6 +14,7 @@ struct GameObject {
     Transform m_transform;
     std::vector<MeshRenderingInfo> m_meshRenderingInfoSet;
 
+    void Update(float deltaTime);
     void SetName(const std::string& name);
     void SetPosition(glm::vec3 position);
     void SetRotation(glm::vec3 rotation);

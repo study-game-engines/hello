@@ -6,14 +6,16 @@
 struct Light {
     Light() = default;
     Light(LightCreateInfo createInfo);
+    void Update(float deltaTime);
+
+    LightCreateInfo GetCreateInfo();
     glm::vec3 GetPosition();
     glm::vec3 GetColor();
-    LightCreateInfo GetCreateInfo();
     float GetStrength();
     float GetRadius();
     void SetMousePickIndex(int index);
     void SetPosition(glm::vec3 position);
-    void UpdateRenderItems();
+
     std::vector<RenderItem>& GetRenderItems();
 
 private:
@@ -26,4 +28,6 @@ private:
     Material* m_material = nullptr;
     Model* m_model = nullptr;
     std::vector<RenderItem> m_renderItems;
+
+    void UpdateRenderItems();
 };

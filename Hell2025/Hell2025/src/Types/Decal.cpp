@@ -11,7 +11,10 @@ void Decal::Init(const DecalCreateInfo& createInfo) {
     m_parentObjectType = createInfo.parentObjectType;
     m_localPosition = createInfo.localPosition;
     m_localNormal = createInfo.localNormal;
+    Update();
+}
 
+void Decal::Update() {
     glm::mat4 parentMatrix = Physics::GetRigidStaticGlobalPose(m_parentPhysicsId);
 
     Transform localTranslation;

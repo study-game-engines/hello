@@ -44,7 +44,7 @@ void Player::UpdateUI() {
         text += "Cam Pos: " + Util::Vec3ToString(GetCameraPosition()) + "\n";
         //text += "Cam Euler: " + Util::Vec3ToString(GetCameraRotation()) + "\n";
         text += "Weapon Action: " + Util::WeaponActionToString(GetCurrentWeaponAction()) + "\n";
-        text += "Mouse ray: " + Util::ObjectTypeToString(m_interactObjectType) + "\n";
+        text += "Mouse ray: " + Util::ObjectTypeToString(m_interactObjectType) + " " + std::to_string(m_interactObjectId) + " " + Util::PhysicsTypeToString(m_interactPhysicsType) + " " + std::to_string(m_interactPhysicsId) + "\n";
         
         //text += "CanReloadShotgun: " + Util::BoolToString(CanReloadShotgun()) + "\n";
        // text += "ShellInChamber: " + Util::BoolToString(IsShellInShotgunChamber()) + "\n";

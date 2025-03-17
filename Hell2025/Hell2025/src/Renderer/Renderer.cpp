@@ -14,8 +14,6 @@ namespace Renderer {
         RendererSettings sectorEditor;
     } g_rendererSettingsSet;
 
-    DebugLineRenderMode g_debugLineRenderMode = DebugLineRenderMode::SHOW_NO_LINES;
-
     void InitMain() {
         if (BackEnd::GetAPI() == API::OPENGL) {
             OpenGLRenderer::InitMain();
@@ -70,18 +68,18 @@ namespace Renderer {
         }
     }
 
-    void DrawPoint(glm::vec3 position, glm::vec3 color, bool obeyDepth) {
+    void DrawPoint(glm::vec3 position, glm::vec3 color, bool obeyDepth, int exclusiveViewportIndex) {
         if (BackEnd::GetAPI() == API::OPENGL) {
-            OpenGLRenderer::DrawPoint(position, color, obeyDepth);
+            OpenGLRenderer::DrawPoint(position, color, obeyDepth, exclusiveViewportIndex);
         }
         else if (BackEnd::GetAPI() == API::VULKAN) {
             // TODO
         }
     }
 
-    void DrawLine(glm::vec3 begin, glm::vec3 end, glm::vec3 color, bool obeyDepth) {
+    void DrawLine(glm::vec3 begin, glm::vec3 end, glm::vec3 color, bool obeyDepth, int exclusiveViewportIndex) {
         if (BackEnd::GetAPI() == API::OPENGL) {
-            OpenGLRenderer::DrawLine(begin, end, color, obeyDepth);
+            OpenGLRenderer::DrawLine(begin, end, color, obeyDepth, exclusiveViewportIndex);
         }
         else if (BackEnd::GetAPI() == API::VULKAN) {
             // TODO
@@ -104,39 +102,6 @@ namespace Renderer {
         else if (BackEnd::GetAPI() == API::VULKAN) {
             // TODO
         }
-    }
-
-    void Renderer::NextDebugLineRenderMode() {
-        std::vector<DebugLineRenderMode> allowedDebugLineRenderModes = {
-            SHOW_NO_LINES,
-            PHYSX_ALL,
-            //PATHFINDING,
-            //PHYSX_COLLISION,
-            //PATHFINDING_RECAST,
-            //RTX_LAND_TOP_LEVEL_ACCELERATION_STRUCTURE,
-            //RTX_LAND_BOTTOM_LEVEL_ACCELERATION_STRUCTURES,
-            //BOUNDING_BOXES,
-        };
-
-        g_debugLineRenderMode = (DebugLineRenderMode)(int(g_debugLineRenderMode) + 1);
-        if (g_debugLineRenderMode == DEBUG_LINE_MODE_COUNT) {
-            g_debugLineRenderMode = (DebugLineRenderMode)0;
-        }
-        // If mode isn't in available modes list, then go to next
-        bool allowed = false;
-        for (auto& avaliableMode : allowedDebugLineRenderModes) {
-            if (g_debugLineRenderMode == avaliableMode) {
-                allowed = true;
-                break;
-            }
-        }
-        if (!allowed && g_debugLineRenderMode != DebugLineRenderMode::SHOW_NO_LINES) {
-            NextDebugLineRenderMode();
-        }
-    }
-
-    DebugLineRenderMode GetDebugLineRenderMode() {
-        return g_debugLineRenderMode;
     }
 
     RendererSettings& GetCurrentRendererSettings() {

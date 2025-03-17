@@ -1,5 +1,6 @@
 #include "Editor/Editor.h"
 
+#include "Config/Config.h"
 #include "Core/Audio.h"
 #include "ImGui/EditorImgui.h"
 #include "ImGui/Types/Types.h"
@@ -141,15 +142,34 @@ namespace Editor {
         // Draw Grid
         float gridWorldSpaceSize = 5.0f;
         float gridSpacing = 0.5f;
+        float yHeight = -0.01f;
 
         for (float x = -gridWorldSpaceSize; x <= gridWorldSpaceSize; x += gridSpacing) {
             for (float z = -gridWorldSpaceSize; z <= gridWorldSpaceSize; z += gridSpacing) {
-                glm::vec3 p1 = glm::vec3(x, 0, -gridWorldSpaceSize);
-                glm::vec3 p2 = glm::vec3(x, 0, gridWorldSpaceSize);
-                glm::vec3 p3 = glm::vec3(-gridWorldSpaceSize, 0.0f, z);
-                glm::vec3 p4 = glm::vec3(gridWorldSpaceSize, 0.0f, z);
+                glm::vec3 p1 = glm::vec3(x, yHeight, -gridWorldSpaceSize);
+                glm::vec3 p2 = glm::vec3(x, yHeight, gridWorldSpaceSize);
+                glm::vec3 p3 = glm::vec3(-gridWorldSpaceSize, yHeight, z);
+                glm::vec3 p4 = glm::vec3(gridWorldSpaceSize, yHeight, z);
                 Renderer::DrawLine(p1, p2, GRID_COLOR, true);
                 Renderer::DrawLine(p3, p4, GRID_COLOR, true);
+            }
+        }
+
+
+
+        const Resolutions& resolutions = Config::GetResolutions();
+        float pixelSizeX = 2.0f / resolutions.gBuffer.x;
+        float pixelSizeY = 2.0f / resolutions.gBuffer.y;
+
+        for (int x = 0; x <= 1; x++) {
+            for (int y = 0; y <= 1; y++) {
+                glm::vec3 n = glm::vec3(gridWorldSpaceSize, yHeight, 0.0f);
+                glm::vec3 s = glm::vec3(-gridWorldSpaceSize, yHeight, 0.0f);
+                glm::vec3 e = glm::vec3(0.0f, yHeight, gridWorldSpaceSize);
+                glm::vec3 w = glm::vec3(0.0f, yHeight, -gridWorldSpaceSize);
+
+                Renderer::DrawLine(n, s, WHITE, true);
+                Renderer::DrawLine(e, w, WHITE, true);
             }
         }
     }

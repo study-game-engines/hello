@@ -24,25 +24,16 @@ namespace World {
     std::vector<PickUp> g_pickUps;
     std::vector<Tree> g_trees;
 
-    std::vector<RenderItem> g_renderItems;
-    std::vector<RenderItem> g_renderItemsBlended;
-    std::vector<RenderItem> g_renderItemsAlphaDiscarded;
-    std::vector<RenderItem> g_renderItemsHairTopLayer;
-    std::vector<RenderItem> g_renderItemsHairBottomLayer;
-    std::vector<RenderItem> g_skinnedRenderItems;
 
     std::vector<ClippingCube> g_clippingCubes;
 
     std::vector<HeightMapChunk> g_heightMapChunks;
     std::map<ivecXZ, int> g_validChunks;
 
-    std::vector<Floor> g_floors;
+    std::vector<HousePlane> g_floors;
     std::vector<Wall> g_walls;
     std::vector<Window> g_windows;
 
-    OpenGLDetachedMesh g_houseMesh;
-    std::vector<Vertex> g_houseMeshVertices;
-    std::vector<uint32_t> g_houseMeshIndices;
 
     // Map
     std::string g_mapName = "";
@@ -54,7 +45,6 @@ namespace World {
     void RecreateHieghtMapChunks();
     void AddSectorAtLocation(SectorCreateInfo& sectorCreateInfo, SpawnOffset spawnOffset);
     void ProcessBullets();
-    void UpdateHouseMeshVertexData();
 
     void Init() {
         LoadMap("TestMap");
@@ -69,215 +59,6 @@ namespace World {
         }
         for (Tree& tree : g_trees) {
             tree.BeginFrame();
-        }
-    }
-
-    void UpdateHouseMeshVertexData() {
-        g_houseMeshVertices.clear();
-        g_houseMeshIndices.clear();
-
-       for (Wall& wall : g_walls) {
-           int baseVertex = g_houseMeshVertices.size();
-           int baseIndex = g_houseMeshIndices.size();
-           wall.UpdateRenderItems(baseVertex, baseIndex);
-           std::vector<Vertex>& localVertices = wall.GetVertices();
-           std::vector<uint32_t>& localIndices = wall.GetIndices();
-           g_houseMeshVertices.insert(g_houseMeshVertices.end(), localVertices.begin(), localVertices.end());
-           g_houseMeshIndices.insert(g_houseMeshIndices.end(), localIndices.begin(), localIndices.end());
-       }
-
-       
-       
-       for (Floor& floor : g_floors) {
-           int baseVertex = g_houseMeshVertices.size();
-           int baseIndex = g_houseMeshIndices.size();       
-           floor.UpdateRenderItem(baseVertex, baseIndex);              
-           std::vector<Vertex>& localVertices = floor.GetVertices();
-           std::vector<uint32_t>& localIndices = floor.GetIndices();
-           g_houseMeshVertices.insert(g_houseMeshVertices.end(), localVertices.begin(), localVertices.end());
-           g_houseMeshIndices.insert(g_houseMeshIndices.end(), localIndices.begin(), localIndices.end());
-       }
-
-
-        g_houseMesh.UpdateBuffers(g_houseMeshVertices, g_houseMeshIndices);
-    }
-
-    void Update(float deltaTime) {
-        
-        //for (ClippingCube& clippingCube : g_clippingCubes) {
-        //    clippingCube.DrawDebugCorners(OUTLINE_COLOR);
-        //    clippingCube.DrawDebugEdges(WHITE);
-        //}
-
-        for (Decal& decal : g_decals) {
-          //  Renderer::DrawPoint(decal.GetPosition(), GREEN);
-            //Renderer::DrawLine(p1, p2, GREEN);
-
-        }
-
-        ProcessBullets();
-
-        if (Input::KeyPressed(HELL_KEY_BACKSPACE)) {
-            //MapCreateInfo* currentMapCreateInfo = GetCurrentMapCreateInfo();
-            //MapManager::PrintMapCreateInfoDebugInfo(currentMapCreateInfo);
-
-            PickUpCreateInfo createInfo;
-            createInfo.position = Game::GetLocalPlayerByIndex(0)->GetCameraPosition();
-            createInfo.position += Game::GetLocalPlayerByIndex(0)->GetCameraForward();
-            createInfo.rotation.x = Util::RandomFloat(-HELL_PI, HELL_PI);
-            createInfo.rotation.y = Util::RandomFloat(-HELL_PI, HELL_PI);
-            createInfo.rotation.z = Util::RandomFloat(-HELL_PI, HELL_PI);
-            createInfo.pickUpType = Util::PickUpTypeToString(PickUpType::AKS74U);
-            AddPickUp(createInfo);            
-        }
-
-        if (Input::KeyPressed(HELL_KEY_INSERT)) {
-            //MapCreateInfo* currentMapCreateInfo = GetCurrentMapCreateInfo();
-            //MapManager::PrintMapCreateInfoDebugInfo(currentMapCreateInfo);
-
-            PickUpCreateInfo createInfo;
-            createInfo.position = Game::GetLocalPlayerByIndex(0)->GetCameraPosition();
-            createInfo.position += Game::GetLocalPlayerByIndex(0)->GetCameraForward();
-            createInfo.rotation.x = Util::RandomFloat(-HELL_PI, HELL_PI);
-            createInfo.rotation.y = Util::RandomFloat(-HELL_PI, HELL_PI);
-            createInfo.rotation.z = Util::RandomFloat(-HELL_PI, HELL_PI);
-            createInfo.pickUpType = Util::PickUpTypeToString(PickUpType::REMINGTON_870);
-            AddPickUp(createInfo);
-        }
-
-
-
-       //if (Input::KeyPressed(HELL_KEY_SPACE)) {
-       //    if (OpenGLRenderer::IsMouseRayWorldPositionReadBackReady()) {
-       //        TreeCreateInfo treeCreateInfo;
-       //        treeCreateInfo.position = OpenGLRenderer::GetMouseRayWorldPostion();
-       //        treeCreateInfo.type = (int)TreeType::TREE_LARGE_0;
-       //        g_editorSector.trees.push_back(treeCreateInfo);
-       //        AddTree(treeCreateInfo);
-       //        Audio::PlayAudio(AUDIO_SELECT, 1.00f);
-       //    }
-       //}
-
-        for (GameObject& gameObject : g_gameObjects) {
-            gameObject.UpdateRenderItems();
-
-            // Selected outline?
-            if (gameObject.IsSelected()) {
-                RenderDataManager::SubmitForOutlineRendering(gameObject.GetRenderItems());
-                RenderDataManager::SubmitForOutlineRendering(gameObject.GetRenderItemsHairTopLayer());
-                RenderDataManager::SubmitForOutlineRendering(gameObject.GetRenderItemsHairBottomLayer());
-                break;
-            }
-        }
-        for (AnimatedGameObject& animatedGameObject : g_animatedGameObjects) {
-            animatedGameObject.Update(deltaTime);
-        }
-
-        // Clear global render item vectors
-        g_renderItems.clear();
-        g_skinnedRenderItems.clear();
-        g_renderItemsBlended.clear();
-        g_renderItemsAlphaDiscarded.clear();
-        g_renderItemsHairTopLayer.clear();
-        g_renderItemsHairBottomLayer.clear();
-
-        int mousePickIndex = 0;
-        for (PickUp& pickUp : g_pickUps) {
-            pickUp.SetMousePickIndex(mousePickIndex++);
-            pickUp.Update(deltaTime);
-            g_renderItems.insert(g_renderItems.end(), pickUp.GetRenderItems().begin(), pickUp.GetRenderItems().end());
-        }
-
-        // Doors
-        mousePickIndex = 0;
-        for (Door& door : g_doors) {
-            door.SetMousePickIndex(mousePickIndex++);
-            door.Update(deltaTime);
-            g_renderItems.insert(g_renderItems.end(), door.GetRenderItems().begin(), door.GetRenderItems().end());
-        }
-
-        // Window
-        mousePickIndex = 0;
-        for (Window& window : g_windows) {
-            window.SetMousePickIndex(mousePickIndex++);
-            window.Update(deltaTime);
-            g_renderItems.insert(g_renderItems.end(), window.GetRenderItems().begin(), window.GetRenderItems().end());
-        }
-
-        // Trees
-        mousePickIndex = 0;
-        for (Tree& tree : g_trees) {
-            tree.SetMousePickIndex(mousePickIndex++);
-            tree.Update(deltaTime);
-            g_renderItems.insert(g_renderItems.end(), tree.GetRenderItems().begin(), tree.GetRenderItems().end());
-        
-            // Selected outline?
-            if (tree.IsSelected()) {
-                RenderDataManager::SubmitForOutlineRendering(tree.GetRenderItems());
-            }
-        
-        }
-
-        // Update each GameObject and collect render items
-        mousePickIndex = 0;
-        for (GameObject& gameObject : g_gameObjects) {
-            gameObject.SetMousePickIndex(mousePickIndex++);
-            gameObject.UpdateRenderItems();
-            // Merge render items into global vectors
-            g_renderItems.insert(g_renderItems.end(), gameObject.GetRenderItems().begin(), gameObject.GetRenderItems().end());
-            g_renderItemsBlended.insert(g_renderItemsBlended.end(), gameObject.GetRenderItemsBlended().begin(), gameObject.GetRenderItemsBlended().end());
-            g_renderItemsAlphaDiscarded.insert(g_renderItemsAlphaDiscarded.end(), gameObject.GetRenderItemsAlphaDiscarded().begin(), gameObject.GetRenderItemsAlphaDiscarded().end());
-            g_renderItemsHairTopLayer.insert(g_renderItemsHairTopLayer.end(), gameObject.GetRenderItemsHairTopLayer().begin(), gameObject.GetRenderItemsHairTopLayer().end());
-            g_renderItemsHairBottomLayer.insert(g_renderItemsHairBottomLayer.end(), gameObject.GetRenderItemsHairBottomLayer().begin(), gameObject.GetRenderItemsHairBottomLayer().end());
-        }
-
-        // Lights
-        mousePickIndex = 0;
-        for (Light& light : g_lights) {
-            light.UpdateRenderItems();
-            light.SetMousePickIndex(mousePickIndex++);
-            g_renderItems.insert(g_renderItems.end(), light.GetRenderItems().begin(), light.GetRenderItems().end());
-        }
-
-        for (BulletCasing& casing : g_bulletCasings) {
-            casing.Update(deltaTime);
-
-            RenderItem& renderItem = g_renderItems.emplace_back();
-            renderItem.modelMatrix = casing.GetModelMatrix();
-            renderItem.inverseModelMatrix = inverse(renderItem.modelMatrix);
-
-            Material* material = AssetManager::GetMaterialByIndex(casing.GetMaterialIndex());
-            renderItem.baseColorTextureIndex = material->m_basecolor;
-            renderItem.rmaTextureIndex = material->m_rma;
-            renderItem.normalMapTextureIndex = material->m_normal;
-            renderItem.meshIndex = casing.GetMeshIndex();
-
-            if (Input::KeyPressed(HELL_KEY_BACKSPACE)) {
-                Physics::RemoveRigidDynamic(casing.GetrigidDynamicId());
-            }
-        }
-
-
-        RenderDataManager::ResetBaseSkinnedVertex();
-        for (AnimatedGameObject& animatedGameObject : g_animatedGameObjects) {
-            animatedGameObject.UpdateRenderItems();
-            animatedGameObject.SubmitForSkinning();
-            //animatedGameObject.DrawBones(WHITE);
-            //animatedGameObject.DrawBoneTangentVectors();
-            g_skinnedRenderItems.insert(g_skinnedRenderItems.end(), animatedGameObject.GetRenderItems().begin(), animatedGameObject.GetRenderItems().end());
-        }
-
-        // Animated game objects
-        for (int i = 0; i < Game::GetLocalPlayerCount(); i++) {
-            Player* player = Game::GetLocalPlayerByIndex(i);
-            AnimatedGameObject* viewWeapon = player->GetViewWeaponAnimatedGameObject();
-            AnimatedGameObject* characterModel = player->GetCharacterModelAnimatedGameObject();
-            viewWeapon->UpdateRenderItems();
-            viewWeapon->SubmitForSkinning();
-            characterModel->UpdateRenderItems();
-            characterModel->SubmitForSkinning();
-            g_skinnedRenderItems.insert(g_skinnedRenderItems.end(), viewWeapon->GetRenderItems().begin(), viewWeapon->GetRenderItems().end());
-            g_skinnedRenderItems.insert(g_skinnedRenderItems.end(), characterModel->GetRenderItems().begin(), characterModel->GetRenderItems().end());
         }
     }
 
@@ -474,78 +255,6 @@ namespace World {
         }
     }
 
-    void ProcessBullets() {
-        for (Bullet& bullet : g_bullets) {
-
-            // Cast PhysX ray
-            glm::vec3 rayOrigin = bullet.GetOrigin();
-            glm::vec3 rayDirection = bullet.GetDirection();
-            float rayLength = 1000.0f;
-            PxU32 collisionFlags = RaycastGroup::RAYCAST_ENABLED;
-            PhysXRayResult rayResult = Physics::CastPhysXRay(rayOrigin, rayDirection, rayLength, collisionFlags);
-
-            // On hit
-            if (rayResult.hitFound) {
-                if (rayResult.userData != nullptr) {
-                    PhysicsUserData* physicsUserData = (PhysicsUserData*)rayResult.userData;
-                    PxRigidDynamic* pxRigidDynamic = (PxRigidDynamic*)rayResult.hitActor;
-
-                    float strength = 200.0f;
-                    PxVec3 force = Physics::GlmVec3toPxVec3(bullet.GetDirection()) * strength;
-
-                    // Apply force if object is dynamic
-                    if (physicsUserData->physicsType == PhysicsType::RIGID_DYNAMIC) {
-                        pxRigidDynamic->setRigidBodyFlag(PxRigidBodyFlag::eKINEMATIC, false);
-                        pxRigidDynamic->addForce(force);
-                    }
-                    
-
-                    // Apply force if object is dynamic
-                    if (physicsUserData->objectType == ObjectType::WINDOW) {
-                        std::cout << "Shot window " << Util::Vec3ToString(rayResult.hitPosition) << "\n";
-
-                        glm::mat4 parentMatrix = Physics::GetRigidStaticGlobalPose(physicsUserData->physicsId);
-                        glm::vec3 localPosition = glm::inverse(parentMatrix) * glm::vec4(rayResult.hitPosition + (rayResult.surfaceNormal * glm::vec3(0.001)), 1.0);
-                        glm::vec3 localNormal = glm::inverse(parentMatrix) * glm::vec4(rayResult.surfaceNormal, 0.0);
-
-                        DecalCreateInfo decalCreateInfo;
-                        decalCreateInfo.position = rayResult.hitPosition;
-                        decalCreateInfo.scale = glm::vec3(0.4);
-                        decalCreateInfo.parentPhysicsId = physicsUserData->physicsId;
-                        decalCreateInfo.parentPhysicsType = physicsUserData->physicsType;
-                        decalCreateInfo.parentObjectId = physicsUserData->objectId;
-                        decalCreateInfo.parentObjectType = physicsUserData->objectType;
-                        decalCreateInfo.localPosition = localPosition;
-                        decalCreateInfo.localNormal = localNormal;
-                        decalCreateInfo.decalType = DecalType::GLASS;
-
-                        AddDecal(decalCreateInfo);
-
-                        localNormal = glm::inverse(parentMatrix) * glm::vec4(rayResult.surfaceNormal * glm::vec3(-1) - (rayResult.surfaceNormal * glm::vec3(0.001)), 0.0);
-                        AddDecal(decalCreateInfo);
-
-                        Audio::PlayAudio("GlassImpact.wav", 2.0f);
-                    }
-
-                    // 
-
-                                        // Front glass bullet decal
-                   //PxRigidBody* parent = actor;
-                   //glm::mat4 parentMatrix = Util::PxMat44ToGlmMat4(actor->getGlobalPose());
-                   //glm::vec3 localPosition = glm::inverse(parentMatrix) * glm::vec4(rayResult.hitPosition + (rayResult.surfaceNormal * glm::vec3(0.001)), 1.0);
-                   //glm::vec3 localNormal = glm::inverse(parentMatrix) * glm::vec4(rayResult.surfaceNormal, 0.0);
-                   //Scene::CreateBulletDecal(localPosition, localNormal, parent, BulletHoleDecalType::GLASS);
-                   //
-                   //// Back glass bullet decal
-                   //localNormal = glm::inverse(parentMatrix) * glm::vec4(rayResult.surfaceNormal * glm::vec3(-1) - (rayResult.surfaceNormal * glm::vec3(0.001)), 0.0);
-                   //Scene::CreateBulletDecal(localPosition, localNormal, parent, BulletHoleDecalType::GLASS);
-
-                    //AddDecal(rayResult.hitPosition);
-                }
-            }
-        }
-    }
-
     PickUp* GetPickUpByObjectId(uint64_t objectID) {
         for (int i = 0; i < g_pickUps.size(); i++) {
             PickUp& pickUp = g_pickUps[i];
@@ -597,6 +306,9 @@ namespace World {
         }
         for (Window& window : g_windows) {
             window.CleanUp();
+        }
+        for (Wall& wall: g_walls) {
+            wall.CleanUp();
         }
 
         // Clear all containers
@@ -748,7 +460,7 @@ namespace World {
 
 
 
-        Floor& floor = g_floors.emplace_back();
+        HousePlane& floor = g_floors.emplace_back();
         glm::vec3 p0 = glm::vec3(0.0f, 0.0f, -3.0f);
         glm::vec3 p1 = glm::vec3(0.0f, 0.0f, 6.1f);
         glm::vec3 p2 = glm::vec3(4.4f, 0.0f, 6.1f);
@@ -756,7 +468,7 @@ namespace World {
         floor.InitFromPoints(p0, p1, p2, p3);
         floor.SetMaterial("FloorBoards");
 
-        Floor& floor2 = g_floors.emplace_back();
+        HousePlane& floor2 = g_floors.emplace_back();
         p0 = glm::vec3(0.0f, 2.4f, -2.9f);
         p1 = glm::vec3(0.0f, 2.4f, 6.1f);
         p2 = glm::vec3(4.4f, 2.4f, 6.1f);
@@ -774,8 +486,7 @@ namespace World {
         g_lights.clear();
         AddLight(lightCreateInfo);
 
-        UpdateHouseMeshVertexData();
-
+        UpdateHouseMeshVertexDataAndRenderItems();
     }
 
     void AddBullet(BulletCreateInfo createInfo) {
@@ -905,29 +616,19 @@ namespace World {
         return count;
     }
 
-    OpenGLDetachedMesh& GetHouseMesh() {
-        return g_houseMesh;
-    }
-
+    std::vector<AnimatedGameObject>& GetAnimatedGameObjects()   { return g_animatedGameObjects; }
     std::vector<Decal>& GetDecals()                             { return g_decals; }
     std::vector<Door>& GetDoors()                               { return g_doors; }
-    std::vector<Floor>& GetFloors()                             { return g_floors; }
+    std::vector<HousePlane>& GetHousePlanes()                   { return g_floors; }
     std::vector<Wall>& GetWalls()                               { return g_walls; }
     std::vector<Window>& GetWindows()                           { return g_windows; }
     std::vector<ClippingCube>& GetClippingCubes()               { return g_clippingCubes; }
-    std::vector<AnimatedGameObject>& GetAnimatedGameObjects()   { return g_animatedGameObjects; }
     std::vector<BulletCasing>& GetBulletCasings()               { return g_bulletCasings; };
     std::vector<Bullet>& GetBullets()                           { return g_bullets; };
     std::vector<GameObject>& GetGameObjects()                   { return g_gameObjects; }
     std::vector<Light>& GetLights()                             { return g_lights; };
     std::vector<PickUp>& GetPickUps()                           { return g_pickUps; };
     std::vector<Tree>& GetTrees()                               { return g_trees; };
-    std::vector<RenderItem>& GetRenderItems()                   { return g_renderItems; }
-    std::vector<RenderItem>& GetRenderItemsBlended()            { return g_renderItemsBlended; }
-    std::vector<RenderItem>& GetRenderItemsAlphaDiscarded()     { return g_renderItemsAlphaDiscarded; }
-    std::vector<RenderItem>& GetRenderItemsHairTopLayer()       { return g_renderItemsHairTopLayer; }
-    std::vector<RenderItem>& GetRenderItemsHairBottomLayer()    { return g_renderItemsHairBottomLayer; }
-    std::vector<RenderItem>& GetSkinnedRenderItems()            { return g_skinnedRenderItems; }
 
     void PrintMapCreateInfoDebugInfo() {
         std::cout << "Map: '" << g_mapName << "'\n";

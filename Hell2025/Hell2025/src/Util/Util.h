@@ -71,6 +71,7 @@ namespace Util {
     std::string WeaponActionToString(const WeaponAction& weaponAction);
     std::string ImageDataTypeToString(const ImageDataType& imageDataType);
     std::string EditorModeToString(const EditorMode& editorMode);
+    std::string DebugRenderModeToString(const DebugRenderMode& mode);
     const char* CopyConstChar(const char* text);
     bool StrCmp(const char* queryA, const char* queryB);
 
@@ -115,6 +116,7 @@ namespace Util {
     std::string PickUpTypeToString(PickUpType type);
     std::string BlendingModeToString(BlendingMode mode);
     std::string ObjectTypeToString(ObjectType type);
+    std::string PhysicsTypeToString(PhysicsType type);
     LightType StringToLightType(const std::string& str);
     PickUpType StringToPickUpType(const std::string& str);
     BlendingMode StringToBlendingMode(const std::string& str);

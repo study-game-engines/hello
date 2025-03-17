@@ -5,6 +5,7 @@
 
 struct Decal {
     void Init(const DecalCreateInfo& createInfo);
+    void Update();
 
     const glm::mat4& GetModelMatrix()        const { return m_modelMatrix; }
     const glm::vec3& GetPosition()           const { return m_position; }

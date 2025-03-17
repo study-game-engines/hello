@@ -211,6 +211,7 @@ copy /Y "$(ProjectDir)vendor\DLLs\PVDRuntime_64.dll" "$(TargetDir)PVDRuntime_64.
     <ClCompile Include="src\File\File_height_map.cpp" />
     <ClCompile Include="src\Math\AABB.cpp" />
     <ClCompile Include="src\Modelling\Types\WallSegment.cpp" />
+    <ClCompile Include="src\Physics\Physics_debug.cpp" />
     <ClCompile Include="src\Physics\Physics_rigids_dynamics.cpp" />
     <ClCompile Include="src\Physics\Physics_heightfields.cpp" />
     <ClCompile Include="src\Physics\Physics_rigid_statics.cpp" />
@@ -222,7 +223,7 @@ copy /Y "$(ProjectDir)vendor\DLLs\PVDRuntime_64.dll" "$(TargetDir)PVDRuntime_64.
     <ClCompile Include="src\Renderer\Types\TextureArray.cpp" />
     <ClCompile Include="src\Types\Decal.cpp" />
     <ClCompile Include="src\Types\Door.cpp" />
-    <ClCompile Include="src\Types\Floor.cpp" />
+    <ClCompile Include="src\Types\HousePlane.cpp" />
     <ClCompile Include="src\Types\PickUp.cpp" />
     <ClCompile Include="src\Types\Tree.cpp" />
     <ClCompile Include="src\Types\Wall.cpp" />
@@ -297,11 +298,13 @@ copy /Y "$(ProjectDir)vendor\DLLs\PVDRuntime_64.dll" "$(TargetDir)PVDRuntime_64.
     <ClCompile Include="src\Util\Util_math.cpp" />
     <ClCompile Include="src\Util\Util_mesh.cpp" />
     <ClCompile Include="src\Viewport\ViewportManager.cpp" />
+    <ClCompile Include="src\World\HouseManager.cpp" />
     <ClCompile Include="src\World\MapManager.cpp" />
-    <ClCompile Include="src\World\Sector.cpp" />
     <ClCompile Include="src\World\SectorManager.cpp" />
     <ClCompile Include="src\World\World.cpp" />
-    <ClCompile Include="src\World\World_render_items.cpp" />
+    <ClCompile Include="src\World\World_house.cpp" />
+    <ClCompile Include="src\World\World_render_submit.cpp" />
+    <ClCompile Include="src\World\World_update.cpp" />
     <ClCompile Include="vendor\clipper\src\clipper.engine.cpp" />
     <ClCompile Include="vendor\clipper\src\clipper.offset.cpp" />
     <ClCompile Include="vendor\clipper\src\clipper.rectclip.cpp" />
@@ -330,6 +333,8 @@ copy /Y "$(ProjectDir)vendor\DLLs\PVDRuntime_64.dll" "$(TargetDir)PVDRuntime_64.
     <None Include="res\shaders\OpenGL\GL_blur_vertical.vert" />
     <None Include="res\shaders\OpenGL\GL_debug_textured.frag" />
     <None Include="res\shaders\OpenGL\GL_debug_textured.vert" />
+    <None Include="res\shaders\OpenGL\gl_debug_vertex.frag" />
+    <None Include="res\shaders\OpenGL\gl_debug_vertex.vert" />
     <None Include="res\shaders\OpenGL\GL_decals.frag" />
     <None Include="res\shaders\OpenGL\GL_decals.vert" />
     <None Include="res\shaders\OpenGL\GL_editor_mesh.frag" />
@@ -382,6 +387,7 @@ copy /Y "$(ProjectDir)vendor\DLLs\PVDRuntime_64.dll" "$(TargetDir)PVDRuntime_64.
     <ClInclude Include="src\API\OpenGL\Renderer\GL_renderer.h" />
     <ClInclude Include="src\API\OpenGL\GL_util.h" />
     <ClInclude Include="src\API\OpenGL\Types\GL_cubemapView.h" />
+    <ClInclude Include="src\API\OpenGL\Types\GL_debug_mesh.hpp" />
     <ClInclude Include="src\API\OpenGL\Types\GL_detachedMesh.hpp" />
     <ClInclude Include="src\API\OpenGL\Types\GL_heightmapMesh.h" />
     <ClInclude Include="src\API\OpenGL\Types\GL_indirectBuffer.hpp" />
@@ -435,7 +441,7 @@ copy /Y "$(ProjectDir)vendor\DLLs\PVDRuntime_64.dll" "$(TargetDir)PVDRuntime_64.
     <ClInclude Include="src\Types\Bullet.h" />
     <ClInclude Include="src\Types\Decal.h" />
     <ClInclude Include="src\Types\Door.h" />
-    <ClInclude Include="src\Types\Floor.h" />
+    <ClInclude Include="src\Types\HousePlane.h" />
     <ClInclude Include="src\Types\PickUp.h" />
     <ClInclude Include="src\Types\Tree.h" />
     <ClInclude Include="src\Types\Wall.h" />
@@ -502,8 +508,8 @@ copy /Y "$(ProjectDir)vendor\DLLs\PVDRuntime_64.dll" "$(TargetDir)PVDRuntime_64.
     <ClInclude Include="src\Common\HellTypes.h" />
     <ClInclude Include="src\Util\Util.h" />
     <ClInclude Include="src\Viewport\ViewportManager.h" />
+    <ClInclude Include="src\World\HouseManager.h" />
     <ClInclude Include="src\World\MapManager.h" />
-    <ClInclude Include="src\World\Sector.h" />
     <ClInclude Include="src\World\SectorManager.h" />
     <ClInclude Include="src\World\World.h" />
     <ClInclude Include="vendor\stb_image\stb_image.h" />

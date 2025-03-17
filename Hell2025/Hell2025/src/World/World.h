@@ -7,7 +7,7 @@
 #include "Types/BulletCasing.h"
 #include "Types/Decal.h"
 #include "Types/Door.h"
-#include "Types/Floor.h"
+#include "Types/HousePlane.h"
 #include "Types/GameObject.h"
 #include "Types/Light.h"
 #include "Types/PickUp.h"
@@ -22,61 +22,45 @@
 #include "API/OpenGL/Types/GL_detachedMesh.hpp"
 
 namespace World {
-
-
-    OpenGLDetachedMesh& GetHouseMesh();
-
-
-
-    void NewCampainWorld();
-
     void Init();
-    void LoadMap(const std::string& mapName);
-    void LoadMap(MapCreateInfo* mapCreateInfo);
-    //void LoadSingleSector(const std::string& sectorName);
-    void LoadSingleSector(SectorCreateInfo* sectorCreateInfo);
-
-    //void RevertToSavedSector();
-
-
-    void LoadDeathMatchMap();
-
-    //SectorCreateInfo& GetEditorSectorCreateInfo();
-
-    //MapCreateInfo* GetCurrentMapCreateInfo();
-    std::vector<HeightMapChunk>& GetHeightMapChunks();
-
     void BeginFrame();
     void Update(float deltaTime);
+    void SubmitRenderItems();
+
+    void LoadMap(const std::string& mapName);
+    void LoadMap(MapCreateInfo* mapCreateInfo);
+    void LoadSingleSector(SectorCreateInfo* sectorCreateInfo);
+    void LoadDeathMatchMap();
+
     void ResetWorld();
     void LoadEmptyWorld();
+    void NewCampainWorld();
 
     bool ChunkExists(int x, int z);
-    const uint32_t GetMapWorldSpaceWidth();
-    const uint32_t GetMapWorldSpaceDepth();
     const uint32_t GetChunkCountX();
     const uint32_t GetChunkCountZ();
     const uint32_t GetChunkCount(); 
     const HeightMapChunk* GetChunk(int x, int z);
 
-    std::vector<ClippingCube>& GetClippingCubes();
+    void AddBullet(BulletCreateInfo createInfo);
+    void AddBulletCasing(BulletCasingCreateInfo createInfo, SpawnOffset spawnOffset = SpawnOffset());
+    void AddDecal(const DecalCreateInfo& createInfo);
+    void AddGameObject(GameObjectCreateInfo createInfo, SpawnOffset spawnOffset = SpawnOffset());
+    void AddLight(LightCreateInfo createInfo, SpawnOffset spawnOffset = SpawnOffset());
+    void AddPickUp(PickUpCreateInfo createInfo, SpawnOffset spawnOffset = SpawnOffset());
+    void AddTree(TreeCreateInfo createInfo, SpawnOffset spawnOffset = SpawnOffset());
 
-    // Pick Ups
-    PickUp* GetPickUpByObjectId(uint64_t objectID);
-    void RemovePickUp(uint64_t objectID);
-
-    // Doors
-    Door* GetDoorByObjectId(uint64_t objectID);
-    
+    // Creation
     void CreateGameObject();
     void CreateAnimatedGameObject();
 
+    // Getters
+
+    // Removal
+    void RemovePickUp(uint64_t objectID);
+    
+
     //AnimatedGameObject* GetAnimatedGameObjectByIndex(int32_t index);
-    GameObject* GetGameObjectByIndex(int32_t index);
-    GameObject* GetGameObjectByName(const std::string& name);
-    Light* GetLightByIndex(int32_t index);
-    PickUp* GetPickUpByIndex(int32_t index);
-    Tree* GetTreeByIndex(int32_t index);
 
     const float GetWorldSpaceWidth();
     const float GetWorldSpaceDepth();
@@ -91,12 +75,27 @@ namespace World {
     // Map
     const std::string& GetCurrentMapName();
 
-    std::vector<GameObject>& GetGameObjects();
+    void UpdateHouseMeshVertexDataAndRenderItems();
+
+    OpenGLDetachedMesh& GetHouseMesh();
+
+    Door* GetDoorByObjectId(uint64_t objectID);
+    PickUp* GetPickUpByObjectId(uint64_t objectID);
+    GameObject* GetGameObjectByIndex(int32_t index);
+    GameObject* GetGameObjectByName(const std::string& name);
+    Light* GetLightByIndex(int32_t index);
+    PickUp* GetPickUpByIndex(int32_t index);
+    Tree* GetTreeByIndex(int32_t index);
+
+    std::vector<AnimatedGameObject>& GetAnimatedGameObjects();
     std::vector<Bullet>& GetBullets();
     std::vector<BulletCasing>& GetBulletCasings();
+    std::vector<ClippingCube>& GetClippingCubes();
     std::vector<Decal>& GetDecals();
     std::vector<Door>& GetDoors();
-    std::vector<Floor>& GetFloors();
+    std::vector<GameObject>& GetGameObjects();
+    std::vector<HeightMapChunk>& GetHeightMapChunks();
+    std::vector<HousePlane>& GetHousePlanes();
     std::vector<Light>& GetLights();
     std::vector<PickUp>& GetPickUps();
     std::vector<Tree>& GetTrees();
@@ -109,14 +108,6 @@ namespace World {
     std::vector<RenderItem>& GetRenderItemsHairTopLayer();
     std::vector<RenderItem>& GetRenderItemsHairBottomLayer();
     std::vector<RenderItem>& GetSkinnedRenderItems();
-
-    void AddBullet(BulletCreateInfo createInfo);
-    void AddBulletCasing(BulletCasingCreateInfo createInfo, SpawnOffset spawnOffset = SpawnOffset());
-    void AddDecal(const DecalCreateInfo& createInfo);
-    void AddGameObject(GameObjectCreateInfo createInfo, SpawnOffset spawnOffset = SpawnOffset());
-    void AddLight(LightCreateInfo createInfo, SpawnOffset spawnOffset = SpawnOffset());
-    void AddPickUp(PickUpCreateInfo createInfo, SpawnOffset spawnOffset = SpawnOffset());
-    void AddTree(TreeCreateInfo createInfo, SpawnOffset spawnOffset = SpawnOffset());
 }
 
 /*

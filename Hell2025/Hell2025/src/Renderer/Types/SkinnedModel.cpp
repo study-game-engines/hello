@@ -28,6 +28,10 @@ void SkinnedModel::SetFileInfo(FileInfo fileInfo) {
     m_fileInfo = fileInfo;
 }
 
+bool SkinnedModel::BoneExists(const std::string& boneName) {
+    return m_boneMapping.find(boneName) != m_boneMapping.end();
+}
+
 const FileInfo& SkinnedModel::GetFileInfo() {
     return m_fileInfo;
 }

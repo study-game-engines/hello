@@ -6,18 +6,34 @@
 #include "Core/Game.h"
 #include "Input/Input.h"
 #include "Editor/Editor.h"
+#include "Renderer/Renderer.h"
 #include "Renderer/RenderDataManager.h"
+#include "Physics/Physics.h"
 #include "Viewport/ViewportManager.h"
 #include "UI/UIBackEnd.h"
+#include "World/World.h"
 
 namespace Debug {
     std::string g_text = "";
     bool g_showDebugText = false;
+    DebugRenderMode g_debugRenderMode = DebugRenderMode::NONE;
+
+    void UpdateDebugPointsAndLines();
+    void UpdateDebugText();
 
     void Update() {
+        UpdateDebugPointsAndLines();
+        UpdateDebugText();
+    }
+    void UpdateDebugText() {
         if (!g_showDebugText) return;
 
         AddText("Editor State: " + Util::EditorStateToString(Editor::GetEditorState()));
+
+        const DebugRenderMode& debugRenderMode = Debug::GetDebugRenderMode();
+        if (debugRenderMode != DebugRenderMode::NONE) {
+            AddText("Line Mode: " + Util::DebugRenderModeToString(debugRenderMode));
+        }
 
         return;
 
@@ -100,6 +116,45 @@ namespace Debug {
         //}
     }
 
+    void UpdateDebugPointsAndLines() {
+        if (g_debugRenderMode == DebugRenderMode::BONES) {
+            for (AnimatedGameObject& animatedGameObject : World::GetAnimatedGameObjects()) {
+                animatedGameObject.DrawBones();
+            }
+            for (int i = 0; i < Game::GetLocalPlayerCount(); i++) {
+                Player* player = Game::GetLocalPlayerByIndex(i);
+                //player->GetCharacterModelAnimatedGameObject()->DrawBones(RED, i);
+                player->GetViewWeaponAnimatedGameObject()->DrawBones(i);
+            }
+        }
+        if (g_debugRenderMode == DebugRenderMode::BONE_TANGENTS) {
+            for (AnimatedGameObject& animatedGameObject : World::GetAnimatedGameObjects()) {
+                animatedGameObject.DrawBoneTangentVectors();
+            }
+            for (int i = 0; i < Game::GetLocalPlayerCount(); i++) {
+                Player* player = Game::GetLocalPlayerByIndex(i);
+                //player->GetCharacterModelAnimatedGameObject()->DrawBoneTangentVectors(0.001f, i);
+                player->GetViewWeaponAnimatedGameObject()->DrawBoneTangentVectors(0.001f, i);
+            }
+        }
+        if (g_debugRenderMode == DebugRenderMode::CLIPPING_CUBES) {
+            for (ClippingCube& clippingCube : World::GetClippingCubes()) {
+                clippingCube.DrawDebugCorners(OUTLINE_COLOR);
+                clippingCube.DrawDebugEdges(WHITE);
+            }
+        }
+        if (g_debugRenderMode == DebugRenderMode::DECALS) {
+            for (const Decal& decal : World::GetDecals()) {
+                Renderer::DrawPoint(decal.GetPosition(), OUTLINE_COLOR);
+            }
+        }
+        if (g_debugRenderMode == DebugRenderMode::PHYSX_ALL ||
+            g_debugRenderMode == DebugRenderMode::PHYSX_COLLISION ||
+            g_debugRenderMode == DebugRenderMode::PHYSX_RAYCAST) {
+            Physics::SubmitDebugLinesToRenderer(g_debugRenderMode);
+        }
+    }
+
     void AddText(const std::string& text) {
         g_text += text + "\n";
     }
@@ -118,5 +173,43 @@ namespace Debug {
 
     bool IsDebugTextVisible() {
         return g_showDebugText;
+    }
+
+    void NextDebugRenderMode() {
+        std::vector<DebugRenderMode> allowedDebugRenderModes = {
+            NONE,
+            PHYSX_ALL,
+            CLIPPING_CUBES,
+            HOUSE_GEOMETRY,
+            DECALS,
+            BONES,
+            BONE_TANGENTS,
+            //PATHFINDING,
+            //PHYSX_COLLISION,
+            //PATHFINDING_RECAST,
+            //RTX_LAND_TOP_LEVEL_ACCELERATION_STRUCTURE,
+            //RTX_LAND_BOTTOM_LEVEL_ACCELERATION_STRUCTURES,
+            //BOUNDING_BOXES,
+        };
+
+        g_debugRenderMode = (DebugRenderMode)(int(g_debugRenderMode) + 1);
+        if (g_debugRenderMode == DEBUG_LINE_MODE_COUNT) {
+            g_debugRenderMode = (DebugRenderMode)0;
+        }
+        // If mode isn't in available modes list, then go to next
+        bool allowed = false;
+        for (auto& avaliableMode : allowedDebugRenderModes) {
+            if (g_debugRenderMode == avaliableMode) {
+                allowed = true;
+                break;
+            }
+        }
+        if (!allowed && g_debugRenderMode != DebugRenderMode::NONE) {
+            NextDebugRenderMode();
+        }
+    }
+
+    const DebugRenderMode& GetDebugRenderMode() {
+        return g_debugRenderMode;
     }
 }

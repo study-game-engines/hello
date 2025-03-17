@@ -2,10 +2,7 @@
 #include "clipper2/clipper.h"
 #include "glm/glm.hpp"
 #include "earcut/earcut.hpp"
-#include "Renderer/Renderer.h"
 #include "Util.h"
-
-#include "Input/Input.h"
 
 namespace mapbox {
     namespace util {
@@ -22,8 +19,6 @@ namespace mapbox {
 
 namespace Clipping {
 
-    OpenGLDetachedMesh g_mesh;
-
     double ComputeSignedArea(const std::vector<glm::vec2>& points);
     std::vector<glm::vec2> ProjectWallSegmentTo2D(WallSegment& wallSegment);
     std::vector<glm::vec2> ProjectCubeSliceTo2D(const ClippingCube& cube, const WallSegment& refWallSegment);
@@ -32,17 +27,10 @@ namespace Clipping {
     std::vector<Vertex> ProjectBackTo3D(const std::vector<glm::vec2>& vertices2D, const WallSegment& refWallSegment);
     Clipper2Lib::PathD ConvertToClipperPath(const std::vector<glm::vec2>& points);
     
-    void Init() {
-
-    }
-
-    void Update() {
-
-    }
-
-    void SubtractCubesFromWallSegment(WallSegment& wallSegment, std::vector<ClippingCube>& clippingCubes, float texOffsetX, float texOffsetY, float texScale, std::vector<Vertex>& verticesOut, std::vector<uint32_t>& indicesOut) {
+    void SubtractCubesFromWallSegment(WallSegment& wallSegment, std::vector<ClippingCube>& clippingCubes, std::vector<Vertex>& verticesOut, std::vector<uint32_t>& indicesOut) {
         const AABB& wallAABB = wallSegment.GetAABB();
         const glm::vec3 wallNormal = wallSegment.GetNormal();
+        const std::vector<glm::vec3>& corners = wallSegment.GetCorners();
         
         // Create wall path
         std::vector<glm::vec2> projectedWall = ProjectWallSegmentTo2D(wallSegment);
@@ -67,24 +55,6 @@ namespace Clipping {
         std::vector<glm::vec2> vertices2D = FlattenEarcutInput(earcutInput);
         verticesOut = ProjectBackTo3D(vertices2D, wallSegment);
         indicesOut = mapbox::earcut<uint32_t>(earcutInput);
-
-        // Update UVs
-        for (Vertex& vertex : verticesOut) {
-            glm::vec3 origin = glm::vec3(0, 0, 0);
-            origin = glm::vec3(0);
-            vertex.uv = Util::CalculateUV(vertex.position, wallNormal);
-            vertex.uv *= texScale;
-            vertex.uv.x += texOffsetX;
-            vertex.uv.y += texOffsetY;
-        }
-
-        // Update normals and tangents
-        for (int i = 0; i < indicesOut.size(); i += 3) {
-            Vertex& v0 = verticesOut[indicesOut[i + 0]];
-            Vertex& v1 = verticesOut[indicesOut[i + 1]];
-            Vertex& v2 = verticesOut[indicesOut[i + 2]];
-            Util::SetNormalsAndTangentsFromVertices(v0, v1, v2);
-        }
     }
 
     std::vector<glm::vec2> ProjectWallSegmentTo2D(WallSegment& wallSegment) {
@@ -230,9 +200,5 @@ namespace Clipping {
             path.push_back(Clipper2Lib::PointD(pt.x, pt.y));
         }
         return path;
-    }
-
-    OpenGLDetachedMesh& GetMesh() {
-        return g_mesh;
     }
 }

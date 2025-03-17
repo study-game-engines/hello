@@ -1,21 +1,13 @@
-#include "Floor.h"
+#include "HousePlane.h"
 #include "AssetManagement/AssetManager.h"
-#include "Input/Input.h"
-#include "Renderer/Renderer.h"
 #include "Util/Util.h"
 
-void Floor::InitFromPoints(glm::vec3 p0, glm::vec3 p1, glm::vec3 p2, glm::vec3 p3) {
+void HousePlane::InitFromPoints(glm::vec3 p0, glm::vec3 p1, glm::vec3 p2, glm::vec3 p3) {
     m_p0 = p0;
     m_p1 = p1;
     m_p2 = p2;
     m_p3 = p3;
-}
 
-void Floor::SetMaterial(const std::string& materialName) {
-    m_material = AssetManager::GetMaterialByName(materialName);
-}
-
-void Floor::UpdateRenderItem(int globalBaseVertex, int globalBaseIndex) {
     m_vertices.clear();
     m_indices.clear();
 
@@ -48,20 +40,8 @@ void Floor::UpdateRenderItem(int globalBaseVertex, int globalBaseIndex) {
         Vertex& v2 = m_vertices[m_indices[i + 2]];
         Util::SetNormalsAndTangentsFromVertices(v0, v1, v2);
     }
+}
 
-    // Handle missing material
-    if (!m_material) {
-        m_material = AssetManager::GetDefaultMaterial();
-    }
-
-    // Render Item    
-    m_renderItem.baseColorTextureIndex = m_material->m_basecolor;
-    m_renderItem.normalMapTextureIndex = m_material->m_normal;
-    m_renderItem.rmaTextureIndex = m_material->m_rma;
-    m_renderItem.baseVertex = globalBaseVertex;
-    m_renderItem.baseIndex = globalBaseIndex;
-    m_renderItem.vertexCount = m_vertices.size();
-    m_renderItem.indexCount = m_indices.size();
-    m_renderItem.aabbMin = glm::vec4(0); // TODO
-    m_renderItem.aabbMax = glm::vec4(0); // TODO
+void HousePlane::SetMaterial(const std::string& materialName) {
+    m_material = AssetManager::GetMaterialByName(materialName);
 }

@@ -148,7 +148,9 @@ private:
     // Interact
     bool m_interactFound = false;
     uint64_t m_interactObjectId = 0;
-    ObjectType m_interactObjectType = ObjectType::NONE;
+    uint64_t m_interactPhysicsId = 0;
+    ObjectType m_interactObjectType = ObjectType::UNDEFINED;
+    PhysicsType m_interactPhysicsType = PhysicsType::UNDEFINED;
 
     // Flashlight
     glm::vec3 m_flashlightPosition;

@@ -65,21 +65,6 @@ struct HouseRenderItem {
     glm::vec4 aabbMax;
 };
 
-//struct SkinnedRenderItem {
-//    glm::mat4 modelMatrix = glm::mat4(1);
-//    glm::mat4 inverseModelMatrix = glm::mat4(1);
-//    glm::vec4 aabbMin = glm::vec4(0);
-//    glm::vec4 aabbMax = glm::vec4(0);
-//    int srcMeshIndex;
-//    int baseColorTextureIndex;
-//    int normalTextureIndex;
-//    int rmaTextureIndex;
-//    int baseVertex;
-//    int padding0;
-//    int padding1;
-//    int padding2;
-//};
-
 struct RenderItem2D {
     glm::mat4 modelMatrix = glm::mat4(1);
     float colorTintR = 1.0f;
@@ -154,6 +139,15 @@ struct WeightedVertex {
         return position == other.position && normal == other.normal && uv == other.uv;
     }
 };
+
+#pragma pack(push, 1)
+struct DebugVertex {
+    glm::vec3 position;
+    glm::vec3 color;
+    glm::ivec2 pixelOffset;
+    int exclusiveViewportIndex = -1;
+};
+#pragma pack(pop)
 
 struct TextureData {
     int m_width = 0;

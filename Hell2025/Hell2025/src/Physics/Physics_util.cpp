@@ -32,9 +32,9 @@ namespace Physics {
 
     physx::PxMat44 GlmMat4ToPxMat44(glm::mat4 glmMatrix) {
         physx::PxMat44 matrix;
-        for (int x = 0; x < 4; x++)
-            for (int y = 0; y < 4; y++)
-                matrix[x][y] = glmMatrix[x][y];
+        std::copy(glm::value_ptr(glmMatrix),
+                  glm::value_ptr(glmMatrix) + 16,
+                  reinterpret_cast<float*>(&matrix));
         return matrix;
     }
 
@@ -44,7 +44,6 @@ namespace Physics {
         PxVec3 unitDir = PxVec3(rayDirection.x, rayDirection.y, rayDirection.z);
         PxReal maxDistance = rayLength;
         PxRaycastBuffer hit;
-        // const PxHitFlags outputFlags = PxHitFlag::ePOSITION | PxHitFlag::eNORMAL | ~PxHitFlag::eMESH_BOTH_SIDES;
         PxHitFlags outputFlags = PxHitFlag::ePOSITION | PxHitFlag::eNORMAL | PxHitFlag::eMESH_BOTH_SIDES;
         if (cullBackFacing) {
             outputFlags = PxHitFlag::ePOSITION | PxHitFlag::eNORMAL;
@@ -62,7 +61,6 @@ namespace Physics {
         result.rayDirection = rayDirection;
         result.hitFound = false;
         result.hitActor = nullptr;
-        //result.parent = nullptr;
 
         // Cast the ray
         bool status = scene->raycast(origin, unitDir, maxDistance, hit, outputFlags, filterData);
@@ -125,8 +123,8 @@ namespace Physics {
                     overlapResult.objectPosition.y = rigid->getGlobalPose().p.y;
                     overlapResult.objectPosition.z = rigid->getGlobalPose().p.z;
                 }
-                if (userData->physicsType == PhysicsType::HEIGHT_FIELD ||
-                    userData->physicsType == PhysicsType::RIGID_STATIC) {
+                if (userData->physicsType == PhysicsType::RIGID_STATIC ||
+                    userData->physicsType == PhysicsType::HEIGHT_FIELD) {
                     PxRigidStatic* rigid = (PxRigidStatic*)hitActor;
                     OverlapResult& overlapResult = overlapReport.hits.emplace_back();
                     overlapResult.userData = *userData;

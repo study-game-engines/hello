@@ -19,14 +19,18 @@ void Window::Init(WindowCreateInfo createInfo) {
 
     m_model = AssetManager::GetModelByIndex(AssetManager::GetModelIndexByName("Window"));
     m_glassModel = AssetManager::GetModelByIndex(AssetManager::GetModelIndexByName("WindowGlass"));
-    AssetManager::PrintModelMeshNames(m_model);
 
     // Glass PhysX shapes
     PhysicsFilterData filterData;
     filterData.raycastGroup = RaycastGroup::RAYCAST_ENABLED;
     filterData.collisionGroup = CollisionGroup::NO_COLLISION;
     filterData.collidesWith = CollisionGroup::NO_COLLISION;
-    m_physicsId = Physics::CreateRigidStaticFromConvexMeshFromModel(transform, "WindowGlass", filterData);
+
+    filterData.collisionGroup = CollisionGroup::ENVIROMENT_OBSTACLE;
+    filterData.collidesWith = (CollisionGroup)(GENERIC_BOUNCEABLE | BULLET_CASING | RAGDOLL);
+
+    m_physicsId = Physics::CreateRigidStaticConvexMeshFromModel(transform, "WindowGlass", filterData);
+    m_objectId = UniqueID::GetNext();
 
     // Set PhysX user data
     PhysicsUserData userData;

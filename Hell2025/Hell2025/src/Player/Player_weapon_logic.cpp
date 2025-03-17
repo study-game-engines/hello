@@ -131,9 +131,6 @@ void Player::SwitchWeapon(const std::string& name, WeaponAction weaponAction) {
     viewWeapon->SetSkinnedModel(weaponInfo->modelName);
     viewWeapon->EnableDrawingForAllMesh();
 
-    // Is it gold?
-    weaponInfo->isGold ? viewWeapon->MakeGold() : viewWeapon->MakeNotGold();
-
     // Set materials
     for (auto& it : weaponInfo->meshMaterials) {
         viewWeapon->SetMeshMaterialByMeshName(it.first, it.second);

@@ -1,189 +1,36 @@
 #include "../GL_renderer.h" 
-#include "../../GL_backend.h"
-#include "AssetManagement/AssetManager.h"
-#include "Config/Config.h"
-#include "Editor/Editor.h"
-#include "Input/Input.h"
 #include "Viewport/ViewportManager.h"
 #include "Renderer/RenderDataManager.h"
 #include "Renderer/Renderer.h"
-#include <glm/gtx/quaternion.hpp>
 
 #include "Physics/Physics.h"
 
-#include "Core/Game.h"
-
+#include "API/OpenGL/Types/GL_debug_mesh.hpp"
 
 namespace OpenGLRenderer {
 
+    OpenGLDebugMesh g_debugMeshPoints;
+    OpenGLDebugMesh g_debugMeshLines;
+    OpenGLDebugMesh g_debugMeshDepthAwarePoints;
+    OpenGLDebugMesh g_debugMeshDepthAwareLines;
+
     void DebugPass() {
-        OpenGLShader* shader = GetShader("SolidColor");
+        OpenGLShader* shader = GetShader("DebugVertex");
         OpenGLFrameBuffer* gBuffer = GetFrameBuffer("GBuffer");
 
-
+        if (!gBuffer) return;
         if (!shader) return;
 
-        if (Input::KeyPressed(HELL_KEY_5)) {
-            Editor::SetSplitX(0.4f);
-            Editor::SetSplitY(0.4f);
-            //ViewportManager::UpdateViewports();
-        }
-        if (Input::KeyPressed(HELL_KEY_6)) {
-            Editor::SetSplitX(1.0f);
-            Editor::SetSplitY(1.0f);
-            //ViewportManager::UpdateViewports();
-        }
-
-        // Physics lines
-        DebugLineRenderMode debugLineRenderMode = Renderer::GetDebugLineRenderMode();
-        std::vector<PxRigidActor*> ignoreList;
-        std::vector<Vertex> physxLines = Physics::GetDebugLineVertices(debugLineRenderMode, ignoreList);
-        for (int i = 0; i < physxLines.size(); i += 2) {
-            Vertex& v0 = physxLines[i + 0];
-            Vertex& v1 = physxLines[i + 1];
-            DrawLine(v0.position, v1.position, WHITE);
-        }
-
-
-        //if (false) {
-        //    for (RenderItem& renderItem : Scene::GetRenderItems()) {
-        //        Util::UpdateRenderItemAABB(renderItem);
-        //        AABB aabb(renderItem.aabbMin, renderItem.aabbMax);
-        //        DrawAABB(aabb, WHITE);
-        //    }
-        //}
-
         const std::vector<ViewportData>& viewportData = RenderDataManager::GetViewportData();
-
-        //if (false) {
-        //    const Resolutions& resolutions = Config::GetResolutions();
-        //
-        //    for (GameObject& gameObject : Scene::GetGameObjects()) {
-        //        Model* model = gameObject.m_model;
-        //        for (auto meshIndex : model->GetMeshIndices()) {
-        //            Mesh* mesh = AssetManager::GetMeshByIndex(meshIndex);
-        //            AABB aabb = AABB(mesh->aabbMin, mesh->aabbMax);
-        //            glm::vec3 color = glm::vec3(YELLOW);
-        //            glm::mat4 modelMatrix = gameObject.m_transform.to_mat4();
-        //
-        //            if (model->GetName() == "Cube") {
-        //
-        //                int viewportIndex = Editor::GetHoveredViewportIndex();
-        //                Viewport* viewport = ViewportManager::GetViewportByIndex(viewportIndex);
-        //                if (!viewport->IsVisible()) continue;
-        //
-        //                glm::vec3 rayOrigin = Editor::GetMouseRayOriginByViewportIndex(viewportIndex);
-        //                glm::vec3 rayDir = Editor::GetMouseRayDirectionByViewportIndex(viewportIndex);
-        //
-        //                std::vector<Vertex>& vertices = mesh->m_vertices;
-        //                std::vector<uint32_t>& indices = mesh->m_indices;
-        //
-        //                for (int j = 0; j < indices.size(); j += 3) {
-        //                    Vertex& v0 = vertices[indices[j + 0]];
-        //                    Vertex& v1 = vertices[indices[j + 1]];
-        //                    Vertex& v2 = vertices[indices[j + 2]];
-        //                    glm::vec3 pos0 = modelMatrix * glm::vec4(v0.position, 1.0f);
-        //                    glm::vec3 pos1 = modelMatrix * glm::vec4(v1.position, 1.0f);
-        //                    glm::vec3 pos2 = modelMatrix * glm::vec4(v2.position, 1.0f);
-        //
-        //                    float t = 9999;
-        //                    if (Util::RayIntersectsTriangle(rayOrigin, rayDir, pos0, pos1, pos2, t)) {
-        //                        color = glm::vec3(GREEN);
-        //                    }
-        //                }
-        //            }
-        //            DrawAABB(aabb, color, modelMatrix);
-        //        }
-        //    }
-        //}
 
         gBuffer->Bind();
         gBuffer->DrawBuffer("FinalLighting");
 
-        glEnable(GL_DEPTH_TEST);
         glDisable(GL_CULL_FACE);
+        glDisable(GL_BLEND);
         glPointSize(8.0f);
-        glDisable(GL_DEPTH_TEST);
-
-
-    
-
-
-
-
-        EditorMesh& editorMesh = Editor::GetEditorMesh();
-        for (int i = 0; i < 8; i++) {
-            // DrawPoint(editorMesh.m_corners[i], YELLOW);
-        }
-
-
-
-        for (int i = 0; i < 8; i++) {
-            //  DrawPoint(editorMesh.m_corners[i], YELLOW);
-        }
-
-
-
-        // const Resolutions& resolutions = Config::GetResolutions();
-        //
-        //
-        // Viewport* viewport = Editor::GetActiveViewport();
-        // int viewportIndex = Editor::GetActiveViewportIndex();
-        // glm::mat4 projectionView = viewportData[viewportIndex].projectionView;
-        //
-        // int width = resolutions.gBuffer.x;
-        // int height = resolutions.gBuffer.y;
-        // int mouseX = Input::GetMouseX();
-        // int mouseY = Input::GetMouseY();
-        // int threshold = 50;
-        //
-        // for (int i = 0; i < 8; i++) {
-        //
-        //     glm::vec3 vertexPosition = editorMesh.m_corners[i];
-        //     glm::ivec2 screenPos = Util::WorldToScreenCoords(vertexPosition, projectionView, width, height, true);
-        //
-        //     if (mouseX < screenPos.x + threshold &&
-        //         mouseX > screenPos.x - threshold &&
-        //         mouseY < screenPos.y + threshold &&
-        //         mouseY > screenPos.y - threshold) {
-        //         std::cout << " POINT overlapped \n";
-        //
-        //         DrawPoint(editorMesh.m_corners[i], BLUE);
-        //     }
-        //
-        // }
-
-
-  //
-  // glm::ivec2 WorldToScreenCoords(const glm::vec3 & worldPos, const glm::mat4 & viewProjection, int screenWidth, int screenHeight, bool flipY = false);
-  //
-  //
-  // g_hoveredVertexIndex = -1;
-  // if (g_selectedObjectType == ObjectType::CSG_OBJECT_ADDITIVE_WALL_PLANE) {
-  //     CSGPlane& csgPlane = Scene::g_csgAdditiveWallPlanes[g_selectedObjectIndex];
-  //     for (int i = 0; i < 4; i++) {
-  //         glm::vec3 worldPos = csgPlane.m_veritces[i];
-  //         glm::ivec2 screenPos = Util::CalculateScreenSpaceCoordinates(worldPos, mvp, PRESENT_WIDTH, PRESENT_HEIGHT, true);
-  //        
-  //     }
-  // }
-
-      //for (int i = 0; i < 4; i++) {
-      //    if (IsPlayerRayWorldPositionReadBackReady(i)) {
-      //        glm::vec3 position = GetPlayerRayWorldPostion(i);
-      //        DrawPoint(position, WHITE);
-      //    }
-      //}
 
         shader->Use();
-        shader->SetMat4("model", glm::mat4(1));
-        shader->SetBool("useUniformColor", false);
-
-
-       // glEnable(GL_CULL_FACE);
-       // glBindVertexArray(grassMesh.glMesh.GetVAO());
-       // glDrawElements(GL_TRIANGLE_STRIP, grassMesh.glMesh.GetIndexCount(), GL_UNSIGNED_INT, 0);
-       // glDisable(GL_CULL_FACE);
 
         UpdateDebugMesh();
 
@@ -192,57 +39,43 @@ namespace OpenGLRenderer {
             if (!viewport->IsVisible()) continue;
 
             OpenGLRenderer::SetViewport(gBuffer, viewport);
+            shader->SetInt("u_viewportIndex", i);
+            shader->SetMat4("u_projectionView", viewportData[i].projectionView);
 
-            glm::mat4 projectionMatrix = viewportData[i].projection;
-            glm::mat4 viewMatrix = viewportData[i].view;
-
-            shader->SetMat4("projection", projectionMatrix);
-            shader->SetMat4("view", viewMatrix);
-            shader->SetBool("useUniformColor", false);
-
-            // Draw lines depth aware
-            if (g_linesDepthAwareMesh.GetIndexCount() > 0) {
-                glEnable(GL_DEPTH_TEST);
-                glBindVertexArray(g_linesDepthAwareMesh.GetVAO());
-                glDrawElements(GL_LINES, g_linesDepthAwareMesh.GetIndexCount(), GL_UNSIGNED_INT, 0);
-                glDisable(GL_DEPTH_TEST);
-                glFinish();
+            glDisable(GL_DEPTH_TEST);
+            if (g_debugMeshPoints.GetVertexCount() > 0) {
+                glBindVertexArray(g_debugMeshPoints.GetVAO());
+                glDrawArrays(GL_POINTS, 0, g_debugMeshPoints.GetVertexCount());
             }
-            // Draw lines
-            if (g_linesMesh.GetIndexCount() > 0) {
-                glBindVertexArray(g_linesMesh.GetVAO());
-                glDrawElements(GL_LINES, g_linesMesh.GetIndexCount(), GL_UNSIGNED_INT, 0);
-            }
-            // Draw points
-            if (g_pointsMesh.GetIndexCount() > 0) {
-                glBindVertexArray(g_pointsMesh.GetVAO());
-                glDrawElements(GL_POINTS, g_pointsMesh.GetIndexCount(), GL_UNSIGNED_INT, 0);
+            if (g_debugMeshLines.GetVertexCount() > 0) {
+                glBindVertexArray(g_debugMeshLines.GetVAO());
+                glDrawArrays(GL_LINES, 0, g_debugMeshLines.GetVertexCount());
             }
 
-            //glEnable(GL_CULL_FACE);
-            //
-            //editorMesh.RecalculateMesh();
-            //shader->SetBool("useUniformColor", true);
-            //shader->SetVec4("uniformColor", GREEN);
-            //OpenGLDetachedMesh& mesh = editorMesh.m_glMesh;
-            //glBindVertexArray(mesh.GetVAO());
-            //glDrawElements(GL_TRIANGLES, mesh.GetIndexCount(), GL_UNSIGNED_INT, 0);
-
+            glEnable(GL_DEPTH_TEST);
+            if (g_debugMeshDepthAwarePoints.GetVertexCount() > 0) {
+                glBindVertexArray(g_debugMeshPoints.GetVAO());
+                glDrawArrays(GL_POINTS, 0, g_debugMeshPoints.GetVertexCount());
+            }
+            if (g_debugMeshDepthAwareLines.GetVertexCount() > 0) {
+                glBindVertexArray(g_debugMeshDepthAwareLines.GetVAO());
+                glDrawArrays(GL_LINES, 0, g_debugMeshDepthAwareLines.GetVertexCount());
+            }
         }
     }
 
-    void DrawPoint(glm::vec3 position, glm::vec3 color, bool obeyDepth) {
+    void DrawPoint(glm::vec3 position, glm::vec3 color, bool obeyDepth, int exclusiveViewportIndex) {
         if (obeyDepth) {
-            g_pointsDepthAware.push_back(Vertex(position, color));
+            g_pointsDepthAware.push_back(DebugVertex(position, color, glm::ivec2(0,0), exclusiveViewportIndex));
         }
         else {
-            g_points.push_back(Vertex(position, color));
+            g_points.push_back(DebugVertex(position, color, glm::ivec2(0, 0), exclusiveViewportIndex));
         }
     }
 
-    void DrawLine(glm::vec3 begin, glm::vec3 end, glm::vec3 color, bool obeyDepth) {
-        Vertex v0 = Vertex(begin, color);
-        Vertex v1 = Vertex(end, color);
+    void DrawLine(glm::vec3 begin, glm::vec3 end, glm::vec3 color, bool obeyDepth, int exclusiveViewportIndex) {
+        DebugVertex v0 = DebugVertex(begin, color, glm::ivec2(0, 0), exclusiveViewportIndex);
+        DebugVertex v1 = DebugVertex(end, color, glm::ivec2(0, 0), exclusiveViewportIndex);
         if (obeyDepth) {
             g_linesDepthAware.push_back(v0);
             g_linesDepthAware.push_back(v1);
@@ -300,45 +133,14 @@ namespace OpenGLRenderer {
     }
 
     void UpdateDebugMesh() {
-        std::vector<Vertex> vertices;
-        std::vector<uint32_t> indices;
+        g_debugMeshPoints.UpdateVertexData(g_points);
+        g_debugMeshDepthAwarePoints.UpdateVertexData(g_pointsDepthAware);
+        g_debugMeshLines.UpdateVertexData(g_lines);
+        g_debugMeshDepthAwareLines.UpdateVertexData(g_linesDepthAware);
 
-        // Points
-        vertices.insert(std::end(vertices), std::begin(g_points), std::end(g_points));
         g_points.clear();
-        for (int i = 0; i < vertices.size(); i++) {
-            indices.push_back(i);
-        }
-        g_pointsMesh.UpdateBuffers(vertices, indices);
-
-        // Points depth aware
-        vertices.clear();
-        indices.clear();
-        vertices.insert(std::end(vertices), std::begin(g_pointsDepthAware), std::end(g_pointsDepthAware));
-        g_pointsDepthAware.clear();
-        for (int i = 0; i < vertices.size(); i++) {
-            indices.push_back(i);
-        }
-        g_pointsDepthAwareMesh.UpdateBuffers(vertices, indices);
-
-        // Lines
-        vertices.clear();
-        indices.clear();
-        vertices.insert(std::end(vertices), std::begin(g_lines), std::end(g_lines));
         g_lines.clear();
-        for (int i = 0; i < vertices.size(); i++) {
-            indices.push_back(i);
-        }
-        g_linesMesh.UpdateBuffers(vertices, indices);
-
-        // Depth Aware Lines
-        vertices.clear();
-        indices.clear();
-        vertices.insert(std::end(vertices), std::begin(g_linesDepthAware), std::end(g_linesDepthAware));
+        g_pointsDepthAware.clear();
         g_linesDepthAware.clear();
-        for (int i = 0; i < vertices.size(); i++) {
-            indices.push_back(i);
-        }
-        g_linesDepthAwareMesh.UpdateBuffers(vertices, indices);
     }
 }
