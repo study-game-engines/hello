@@ -106,25 +106,75 @@ namespace AssetManager {
         return -1;
     }
 
-    void BuildHardcodedModels() {
+    void BuildPrimitives() {
+        Model* model = CreateModel("Primitives");
+
         /* Quad */ {
             std::vector<Vertex> vertices = {
-                {{-0.5f, -0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}}, // Bottom-left
-                {{ 0.5f, -0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}}, // Bottom-right
-                {{ 0.5f,  0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}, {1.0f, 0.0f, 0.0f}}, // Top-right
-                {{-0.5f,  0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}, {1.0f, 0.0f, 0.0f}}  // Top-left
+                // Position               Normal               UV            Tangent
+                {{-0.5f, -0.5f, 0.0f},    {0.0f, 0.0f, 1.0f},  {0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}}, // Bottom-left
+                {{ 0.5f, -0.5f, 0.0f},    {0.0f, 0.0f, 1.0f},  {1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}}, // Bottom-right
+                {{ 0.5f,  0.5f, 0.0f},    {0.0f, 0.0f, 1.0f},  {1.0f, 1.0f}, {1.0f, 0.0f, 0.0f}}, // Top-right
+                {{-0.5f,  0.5f, 0.0f},    {0.0f, 0.0f, 1.0f},  {0.0f, 1.0f}, {1.0f, 0.0f, 0.0f}}  // Top-left
             };
 
-            std::vector<uint32_t> indices = {
-                0, 1, 2,  // First triangle
-                2, 3, 0   // Second triangle
-            };
+            std::vector<uint32_t> indices = { 0, 1, 2, 2, 3, 0 };
 
-            Model* model = CreateModel("Quad");
             int meshIndex = CreateMesh("Quad", vertices, indices);
             model->AddMeshIndex(meshIndex);
-            model->SetLoadingState(LoadingState::LOADING_COMPLETE);
         }
-    }
 
+        /* Cube */ {
+            std::vector<Vertex> cubeVertices = {
+                // FRONT FACE
+                {{-0.5f, -0.5f,  0.5f}, { 0, 0, 1}, {0, 0}, {1, 0, 0}},
+                {{ 0.5f, -0.5f,  0.5f}, { 0, 0, 1}, {1, 0}, {1, 0, 0}},
+                {{ 0.5f,  0.5f,  0.5f}, { 0, 0, 1}, {1, 1}, {1, 0, 0}},
+                {{-0.5f,  0.5f,  0.5f}, { 0, 0, 1}, {0, 1}, {1, 0, 0}},
+
+                // BACK FACE
+                {{ 0.5f, -0.5f, -0.5f}, { 0, 0, -1}, {0, 0}, {-1, 0, 0}},
+                {{-0.5f, -0.5f, -0.5f}, { 0, 0, -1}, {1, 0}, {-1, 0, 0}},
+                {{-0.5f,  0.5f, -0.5f}, { 0, 0, -1}, {1, 1}, {-1, 0, 0}},
+                {{ 0.5f,  0.5f, -0.5f}, { 0, 0, -1}, {0, 1}, {-1, 0, 0}},
+
+                // LEFT FACE
+                {{-0.5f, -0.5f, -0.5f}, {-1, 0, 0}, {0, 0}, {0, 0, 1}},
+                {{-0.5f, -0.5f,  0.5f}, {-1, 0, 0}, {1, 0}, {0, 0, 1}},
+                {{-0.5f,  0.5f,  0.5f}, {-1, 0, 0}, {1, 1}, {0, 0, 1}},
+                {{-0.5f,  0.5f, -0.5f}, {-1, 0, 0}, {0, 1}, {0, 0, 1}},
+
+                // RIGHT FACE
+                {{ 0.5f, -0.5f,  0.5f}, { 1, 0, 0}, {0, 0}, {0, 0, -1}},
+                {{ 0.5f, -0.5f, -0.5f}, { 1, 0, 0}, {1, 0}, {0, 0, -1}},
+                {{ 0.5f,  0.5f, -0.5f}, { 1, 0, 0}, {1, 1}, {0, 0, -1}},
+                {{ 0.5f,  0.5f,  0.5f}, { 1, 0, 0}, {0, 1}, {0, 0, -1}},
+
+                // TOP FACE
+                {{-0.5f,  0.5f,  0.5f}, { 0, 1, 0}, {0, 0}, {1, 0, 0}},
+                {{ 0.5f,  0.5f,  0.5f}, { 0, 1, 0}, {1, 0}, {1, 0, 0}},
+                {{ 0.5f,  0.5f, -0.5f}, { 0, 1, 0}, {1, 1}, {1, 0, 0}},
+                {{-0.5f,  0.5f, -0.5f}, { 0, 1, 0}, {0, 1}, {1, 0, 0}},
+
+                // BOTTOM FACE
+                {{-0.5f, -0.5f, -0.5f}, { 0,-1, 0}, {0, 0}, {1, 0, 0}},
+                {{ 0.5f, -0.5f, -0.5f}, { 0,-1, 0}, {1, 0}, {1, 0, 0}},
+                {{ 0.5f, -0.5f,  0.5f}, { 0,-1, 0}, {1, 1}, {1, 0, 0}},
+                {{-0.5f, -0.5f,  0.5f}, { 0,-1, 0}, {0, 1}, {1, 0, 0}} 
+            };
+
+            std::vector<uint32_t> cubeIndices = {
+                0, 1, 2,  2, 3, 0,      // Front face
+                4, 5, 6,  6, 7, 4,      // Back face
+                8, 9, 10, 10, 11, 8,    // Left face
+                12, 13, 14, 14, 15, 12, // Right face
+                16, 17, 18, 18, 19, 16, // Top face
+                20, 21, 22, 22, 23, 20  // Bottom face
+            };
+
+            int meshIndexCube = CreateMesh("Cube", cubeVertices, cubeIndices);
+            model->AddMeshIndex(meshIndexCube);
+        }
+        model->SetLoadingState(LoadingState::LOADING_COMPLETE);
+    }
 }

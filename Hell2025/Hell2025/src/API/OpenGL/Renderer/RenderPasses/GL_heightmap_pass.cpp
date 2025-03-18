@@ -8,6 +8,7 @@
 
 #include "API/OpenGL/Types/GL_texture_readback.h"
 #include "BackEnd/BackEnd.h"
+#include "Core/Game.h"
 #include "Editor/Editor.h"
 #include "Editor/Gizmo.h"
 #include "Imgui/ImguiBackEnd.h"
@@ -350,15 +351,24 @@ namespace OpenGLRenderer {
 
         int heightMapCount = World::GetHeightMapCount();
 
+        int culled = 0;
+
         for (int i = 0; i < 4; i++) {
             Viewport* viewport = ViewportManager::GetViewportByIndex(i);
+            Frustum& frustum = viewport->GetFrustum();
+
             if (viewport->IsVisible()) {
                 OpenGLRenderer::SetViewport(gBuffer, viewport);
-
                 std::vector<HeightMapChunk>& chunks = World::GetHeightMapChunks();
                 //std::cout << "chunks.size(): " << chunks.size() << "\n";
                 for (HeightMapChunk& chunk : chunks) {
 
+                    if (Editor::IsEditorClosed()) {
+                        if (!frustum.IntersectsAABB(AABB(chunk.aabbMin, chunk.aabbMax))) {
+                            culled++;
+                            continue;
+                        }
+                    }
                    // std::cout << "hi\n";
 
                     int indexCount = INDICES_PER_CHUNK;
@@ -372,30 +382,10 @@ namespace OpenGLRenderer {
                     // Draw chunk vertices as points
                     //glDrawArraysInstancedBaseInstance(GL_POINTS, chunk.baseVertex, VERTICES_PER_CHUNK, instanceCount, viewportIndex);
                 }
-
-                for (int h = 0; h < heightMapCount; h++) {
-
-                    for (int c = 0; c < 64; c++) {
-                        int indexCount = INDICES_PER_CHUNK;
-                        int baseVertex = 0;
-                        int baseIndex = c * indicesPerChunk + (indicesPerHeightMap * h);
-                        void* indexOffset = (GLvoid*)(baseIndex * sizeof(GLuint));
-                        int instanceCount = 1;
-                        int viewportIndex = i;
-                        //glDrawElementsInstancedBaseVertexBaseInstance(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, indexOffset, instanceCount, baseVertex, viewportIndex);
-
-                        // Draw indices as points
-                        //glDrawElementsInstancedBaseVertexBaseInstance(GL_POINTS, indexCount, GL_UNSIGNED_INT, indexOffset, instanceCount, baseVertex, viewportIndex);
-
-                        // Draw chunk vertices as points
-                 //       glDrawArraysInstancedBaseInstance(GL_POINTS, baseVertex, VERTICES_PER_CHUNK, instanceCount, viewportIndex);
-                    }
-                } 
             }
         }
         glBindVertexArray(0);
-
-        //OpenGLBackEnd::ReadBackHeightmapMeshData();
+        //std::cout << "Culled: " << culled << "\n";
     }
 
     void SaveHeightMap() {

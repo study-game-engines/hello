@@ -1,3 +1,4 @@
+#include "API/OpenGL/GL_backend.h"
 #include "API/OpenGL/Renderer/GL_renderer.h"
 #include "Core/Game.h"
 #include "Renderer/RenderDataManager.h"
@@ -10,6 +11,7 @@ namespace OpenGLRenderer {
         SetRasterizerState("DecalPass");
 
         const std::vector<ViewportData>& viewportData = RenderDataManager::GetViewportData();
+        const std::vector<RenderItem>& decalRenderItems = RenderDataManager::GetDecalRenderItems();
 
         OpenGLShader* shader = GetShader("Decals");
         OpenGLFrameBuffer* gBuffer = GetFrameBuffer("GBuffer");
@@ -18,13 +20,8 @@ namespace OpenGLRenderer {
 
         gBuffer->Bind();
         gBuffer->DrawBuffer("FinalLighting");
-
-        glBindTextureUnit(0, gBuffer->GetDepthAttachmentHandle());
-
-
-        Material* material = AssetManager::GetMaterialByName("BulletHole_Glass");
-
-        std::vector<Decal>& decal = World::GetDecals();
+;
+        glBindVertexArray(OpenGLBackEnd::GetVertexDataVAO());
 
         for (int i = 0; i < 4; i++) {
             Viewport* viewport = ViewportManager::GetViewportByIndex(i);
@@ -33,24 +30,20 @@ namespace OpenGLRenderer {
             OpenGLRenderer::SetViewport(gBuffer, viewport);
             shader->SetInt("u_viewportIndex", i);
 
-            Player* player = Game::GetLocalPlayerByIndex(i);
-
-            for (Decal& decal : decal) {
-
-                Mesh* mesh = AssetManager::GetQuadZFacingMesh();
+            for (const RenderItem& renderItem : decalRenderItems) {
+                Mesh* mesh = AssetManager::GetMeshByIndex(renderItem.meshIndex);
                 if (!mesh) continue;
                                 
-                shader->SetMat4("u_modelMatrix", decal.GetModelMatrix());
+                shader->SetMat4("u_modelMatrix", renderItem.modelMatrix);
 
-                 glActiveTexture(GL_TEXTURE0);
-                 glBindTexture(GL_TEXTURE_2D, AssetManager::GetTextureByIndex(material->m_basecolor)->GetGLTexture().GetHandle());
-                 glActiveTexture(GL_TEXTURE1);
-                 glBindTexture(GL_TEXTURE_2D, AssetManager::GetTextureByIndex(material->m_normal)->GetGLTexture().GetHandle());
-                 glActiveTexture(GL_TEXTURE2);
-                 glBindTexture(GL_TEXTURE_2D, AssetManager::GetTextureByIndex(material->m_rma)->GetGLTexture().GetHandle());
+                glActiveTexture(GL_TEXTURE0);
+                glBindTexture(GL_TEXTURE_2D, AssetManager::GetTextureByIndex(renderItem.baseColorTextureIndex)->GetGLTexture().GetHandle());
+                glActiveTexture(GL_TEXTURE1);
+                glBindTexture(GL_TEXTURE_2D, AssetManager::GetTextureByIndex(renderItem.normalMapTextureIndex)->GetGLTexture().GetHandle());
+                glActiveTexture(GL_TEXTURE2);
+                glBindTexture(GL_TEXTURE_2D, AssetManager::GetTextureByIndex(renderItem.rmaTextureIndex)->GetGLTexture().GetHandle());
 
                 glDrawElementsBaseVertex(GL_TRIANGLES, mesh->indexCount, GL_UNSIGNED_INT, (void*)(sizeof(unsigned int) * mesh->baseIndex), mesh->baseVertex);
-
             }
         }
     }

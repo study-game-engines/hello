@@ -13,7 +13,7 @@ void main() {
 
     vec3 color = texture(cubeMap, TexCoords).rgb;
     //color = AdjustHue(color, -180);
-    //color = AdjustSaturation(color, -0.5);
-    color = AdjustLightness(color, -0.65);
+    color = AdjustSaturation(color, -0.5);
+    color = AdjustLightness(color, -0.75);
     FinalLighting = vec4(color, 1.0);
 }

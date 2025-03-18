@@ -2,8 +2,41 @@
 #include "HellDefines.h"
 #include <numeric>
 #include <random>
+#include <glm/gtx/quaternion.hpp>
 
 namespace Util {
+
+    glm::mat4 RotationMatrixFromForwardVector(glm::vec3 forward, glm::vec3 worldForward, glm::vec3 worldUp) {
+        forward = glm::normalize(forward);
+        worldForward = glm::normalize(worldForward);  // e.g., (0, 0, 1)
+        // Compute the quaternion that rotates from worldForward to forward.
+        glm::quat q = glm::rotation(worldForward, forward);
+        return glm::mat4_cast(q);
+
+        //forward = glm::normalize(forward);
+        //worldForward = glm::normalize(worldForward);
+        //worldUp = glm::normalize(worldUp);
+        //
+        //// If forward == worldForward, return identity
+        //if (glm::all(glm::epsilonEqual(forward, worldForward, 0.0001f))) {
+        //    return glm::mat4(1.0f);
+        //}
+        //
+        //// If forward is exactly worldUp, return a rotation that points straight up
+        //if (glm::all(glm::epsilonEqual(forward, worldUp, 0.0001f))) {
+        //    return glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1, 0, 0)); // Rotate 90° around X-axis
+        //}
+        //
+        //// If forward is exactly -worldUp, return a rotation that points straight down
+        //if (glm::all(glm::epsilonEqual(forward, -worldUp, 0.0001f))) {
+        //    return glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1, 0, 0)); // Rotate -90° around X-axis
+        //}
+        //
+        //glm::quat q = glm::quatLookAt(forward, worldUp);
+        //glm::quat qWorld = glm::quatLookAt(worldForward, worldUp);
+        //
+        //return glm::mat4_cast(q * glm::inverse(qWorld));
+    }
 
     AABB GetAABBFromPoints(std::vector<glm::vec3>& points) {
         glm::vec3 aabbMin(std::numeric_limits<float>::max());

@@ -29,7 +29,8 @@ void Window::Init(WindowCreateInfo createInfo) {
     filterData.collisionGroup = CollisionGroup::ENVIROMENT_OBSTACLE;
     filterData.collidesWith = (CollisionGroup)(GENERIC_BOUNCEABLE | BULLET_CASING | RAGDOLL);
 
-    m_physicsId = Physics::CreateRigidStaticConvexMeshFromModel(transform, "WindowGlass", filterData);
+    m_physicsId = Physics::CreateRigidStaticTriangleMeshFromModel(transform, "WindowGlassPhysX", filterData);
+    //m_physicsId = Physics::CreateRigidStaticConvexMeshFromModel(transform, "WindowGlass", filterData);
     m_objectId = UniqueID::GetNext();
 
     // Set PhysX user data

@@ -2,7 +2,7 @@
 #include "HellTypes.h"
 #include "CreateInfo.h"
 #include "glm/glm.hpp"
-#include "Modelling/Types/WallSegment.h"
+#include "Types/WallSegment.h"
 #include <vector>
 
 struct Wall {

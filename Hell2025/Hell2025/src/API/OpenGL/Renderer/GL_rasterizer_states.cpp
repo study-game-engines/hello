@@ -6,7 +6,7 @@ namespace OpenGLRenderer {
         OpenGLRasterizerState* decalPass = CreateRasterizerState("DecalPass");
         decalPass->depthTestEnabled = true;
         decalPass->blendEnable = true;
-        decalPass->cullfaceEnable = false;
+        decalPass->cullfaceEnable = true;
         decalPass->depthMask = false;
         decalPass->depthFunc = GL_LESS;
         decalPass->blendFuncSrcfactor = GL_SRC_ALPHA;

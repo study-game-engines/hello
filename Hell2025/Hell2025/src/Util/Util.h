@@ -11,6 +11,7 @@
 
 namespace Util {
     // Math
+    glm::mat4 RotationMatrixFromForwardVector(glm::vec3 forward, glm::vec3 worldForward, glm::vec3 worldUp);
     glm::vec2 ComputeCentroid2D(const std::vector<glm::vec2>& points);
     std::vector<glm::vec2> SortConvexHullPoints2D(std::vector<glm::vec2>&points);
     std::vector<glm::vec2> ComputeConvexHull2D(std::vector<glm::vec2> points);

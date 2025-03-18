@@ -18,24 +18,19 @@ namespace World {
     std::vector<AnimatedGameObject> g_animatedGameObjects;
     std::vector<Bullet> g_bullets;
     std::vector<BulletCasing> g_bulletCasings;
+    std::vector<ClippingCube> g_clippingCubes;
     std::vector<Door> g_doors;
     std::vector<Decal> g_decals;
     std::vector<GameObject> g_gameObjects;
+    std::vector<HeightMapChunk> g_heightMapChunks;
+    std::vector<HousePlane> g_housePlanes;
     std::vector<PickUp> g_pickUps;
     std::vector<Tree> g_trees;
-
-
-    std::vector<ClippingCube> g_clippingCubes;
-
-    std::vector<HeightMapChunk> g_heightMapChunks;
-    std::map<ivecXZ, int> g_validChunks;
-
-    std::vector<HousePlane> g_floors;
     std::vector<Wall> g_walls;
     std::vector<Window> g_windows;
 
+    std::map<ivecXZ, int> g_validChunks;
 
-    // Map
     std::string g_mapName = "";
     uint32_t g_mapWidth = 0;
     uint32_t g_mapDepth = 0;
@@ -51,8 +46,6 @@ namespace World {
     }
 
     void BeginFrame() {
-        // Clear all bullets
-        g_bullets.clear();
 
         for (GameObject& gameObject : g_gameObjects) {
             gameObject.BeginFrame();
@@ -301,14 +294,17 @@ namespace World {
         for (Door& door : g_doors) {
             door.CleanUp();
         }
+        for (HousePlane& housePlane : g_housePlanes) {
+            housePlane.CleanUp();
+        }
         for (PickUp& pickUp : g_pickUps) {
             pickUp.CleanUp();
         }
+        for (Wall& wall : g_walls) {
+            wall.CleanUp();
+        }
         for (Window& window : g_windows) {
             window.CleanUp();
-        }
-        for (Wall& wall: g_walls) {
-            wall.CleanUp();
         }
 
         // Clear all containers
@@ -321,7 +317,8 @@ namespace World {
         g_pickUps.clear();
         g_walls.clear();
         g_doors.clear();
-        g_floors.clear();
+        g_housePlanes.clear();
+        g_windows.clear();
 
         Door& door = g_doors.emplace_back();
         DoorCreateInfo doorCreateInfo;
@@ -437,6 +434,7 @@ namespace World {
         wallCreateInfo2.points.push_back(glm::vec3(0.1f, 0.0f, 2.9f));
         wallCreateInfo2.points.push_back(glm::vec3(0.1f, 0.0f, -2.9f));
         wallCreateInfo2.materialName = "WallPaper";
+        wallCreateInfo2.materialName = "Ceiling2";
         wallCreateInfo2.textureOffsetX = 0.0f;
         wallCreateInfo2.textureOffsetY = -1.4f;
         wallCreateInfo2.textureScale = 1 / 2.4f;
@@ -452,6 +450,7 @@ namespace World {
         wallCreateInfo3.points.push_back(glm::vec3(0.1f, 0.0f, 6.0f));
         wallCreateInfo3.points.push_back(glm::vec3(0.1f, 0.0f, 3.0f));
         wallCreateInfo3.materialName = "WallPaper";
+        wallCreateInfo3.materialName = "Ceiling2";
         wallCreateInfo3.textureOffsetX = 0.0f;
         wallCreateInfo3.textureOffsetY = -1.4f;
         wallCreateInfo3.textureScale = 1 / 2.4f;
@@ -460,7 +459,7 @@ namespace World {
 
 
 
-        HousePlane& floor = g_floors.emplace_back();
+        HousePlane& floor = g_housePlanes.emplace_back();
         glm::vec3 p0 = glm::vec3(0.0f, 0.0f, -3.0f);
         glm::vec3 p1 = glm::vec3(0.0f, 0.0f, 6.1f);
         glm::vec3 p2 = glm::vec3(4.4f, 0.0f, 6.1f);
@@ -468,7 +467,7 @@ namespace World {
         floor.InitFromPoints(p0, p1, p2, p3);
         floor.SetMaterial("FloorBoards");
 
-        HousePlane& floor2 = g_floors.emplace_back();
+        HousePlane& floor2 = g_housePlanes.emplace_back();
         p0 = glm::vec3(0.0f, 2.4f, -2.9f);
         p1 = glm::vec3(0.0f, 2.4f, 6.1f);
         p2 = glm::vec3(4.4f, 2.4f, 6.1f);
@@ -480,8 +479,8 @@ namespace World {
         lightCreateInfo.position = glm::vec3(2.2f, 2.2f, 0.0f);
         lightCreateInfo.color = DEFAULT_LIGHT_COLOR;
         lightCreateInfo.type = "HANGING_LIGHT";
-        lightCreateInfo.radius = 8.752f;
-        lightCreateInfo.strength = 1.5f;
+        lightCreateInfo.radius = 8.5f;
+        lightCreateInfo.strength = 1.25f;
 
         g_lights.clear();
         AddLight(lightCreateInfo);
@@ -619,7 +618,7 @@ namespace World {
     std::vector<AnimatedGameObject>& GetAnimatedGameObjects()   { return g_animatedGameObjects; }
     std::vector<Decal>& GetDecals()                             { return g_decals; }
     std::vector<Door>& GetDoors()                               { return g_doors; }
-    std::vector<HousePlane>& GetHousePlanes()                   { return g_floors; }
+    std::vector<HousePlane>& GetHousePlanes()                   { return g_housePlanes; }
     std::vector<Wall>& GetWalls()                               { return g_walls; }
     std::vector<Window>& GetWindows()                           { return g_windows; }
     std::vector<ClippingCube>& GetClippingCubes()               { return g_clippingCubes; }

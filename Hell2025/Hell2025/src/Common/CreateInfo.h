@@ -5,16 +5,13 @@
 #include <map>
 
 struct DecalCreateInfo {
-    glm::vec3 position = glm::vec3(0.0f);
-    glm::vec3 rotation = glm::vec3(0.0f);
-    glm::vec3 scale = glm::vec3(1.0f);
-    glm::vec3 localPosition = glm::vec3(0.0f);
-    glm::vec3 localNormal = glm::vec3(0.0f);
     DecalType decalType;
-    uint64_t parentPhysicsId = 0;
-    uint64_t parentObjectId = 0;
     PhysicsType parentPhysicsType = PhysicsType::UNDEFINED;
     ObjectType parentObjectType = ObjectType::UNDEFINED;
+    glm::vec3 surfaceHitPosition = glm::vec3(0.0f);
+    glm::vec3 surfaceHitNormal = glm::vec3(0.0f);
+    uint64_t parentPhysicsId = 0;
+    uint64_t parentObjectId = 0;
 };
 
 struct DoorCreateInfo {

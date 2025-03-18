@@ -210,7 +210,7 @@ copy /Y "$(ProjectDir)vendor\DLLs\PVDRuntime_64.dll" "$(TargetDir)PVDRuntime_64.
     <ClCompile Include="src\Imgui\Types\Types.cpp" />
     <ClCompile Include="src\File\File_height_map.cpp" />
     <ClCompile Include="src\Math\AABB.cpp" />
-    <ClCompile Include="src\Modelling\Types\WallSegment.cpp" />
+    <ClCompile Include="src\Types\WallSegment.cpp" />
     <ClCompile Include="src\Physics\Physics_debug.cpp" />
     <ClCompile Include="src\Physics\Physics_rigids_dynamics.cpp" />
     <ClCompile Include="src\Physics\Physics_heightfields.cpp" />
@@ -433,7 +433,7 @@ copy /Y "$(ProjectDir)vendor\DLLs\PVDRuntime_64.dll" "$(TargetDir)PVDRuntime_64.
     <ClInclude Include="src\Imgui\EditorImgui.h" />
     <ClInclude Include="src\Imgui\Types\Types.h" />
     <ClInclude Include="src\Math\AABB.h" />
-    <ClInclude Include="src\Modelling\Types\WallSegment.h" />
+    <ClInclude Include="src\Types\WallSegment.h" />
     <ClInclude Include="src\Physics\Types\HeightField.h" />
     <ClInclude Include="src\Physics\Types\RigidDynamic.h" />
     <ClInclude Include="src\Physics\Types\RigidStatic.h" />

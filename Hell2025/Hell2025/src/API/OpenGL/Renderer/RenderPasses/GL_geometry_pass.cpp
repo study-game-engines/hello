@@ -118,13 +118,13 @@ namespace OpenGLRenderer {
         debugShader->Use();
         debugShader->SetMat4("u_model", glm::mat4(1));
 
-        OpenGLDetachedMesh& wallMesh = World::GetHouseMesh();
-        glBindVertexArray(wallMesh.GetVAO());
+        OpenGLDetachedMesh& houseMesh = World::GetHouseMesh();
+        glBindVertexArray(houseMesh.GetVAO());
 
         for (int i = 0; i < 4; i++) {
             Viewport* viewport = ViewportManager::GetViewportByIndex(i);
             if (!viewport->IsVisible()) continue;
-            if (wallMesh.GetIndexCount() <= 0) continue;
+            if (houseMesh.GetIndexCount() <= 0) continue;
 
             OpenGLRenderer::SetViewport(gBuffer, viewport);
             debugShader->SetInt("u_viewportIndex", i);

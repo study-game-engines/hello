@@ -21,6 +21,7 @@ namespace RenderDataManager {
     void DecodeBaseInstance(int baseInstance, int& playerIndex, int& instanceOffset);
 
     // Submissions
+    void SubmitDecalRenderItem(const RenderItem& renderItem);
     void SubmitHouseRenderItem(const HouseRenderItem& renderItem);
     void SubmitOutlineRenderItem(const RenderItem& renderItem);
     void SubmitOutlineRenderItems(const std::vector<RenderItem>& renderItems);
@@ -28,6 +29,7 @@ namespace RenderDataManager {
     const RendererData& GetRendererData();
     const std::vector<GPULight>& GetGPULightData();
     const std::vector<HouseRenderItem>& GetHouseRenderItems();
+    const std::vector<RenderItem>& GetDecalRenderItems();
     const std::vector<RenderItem>& GetInstanceData();
     const std::vector<RenderItem>& GetOutlineRenderItems();
     const std::vector<ViewportData>& GetViewportData();

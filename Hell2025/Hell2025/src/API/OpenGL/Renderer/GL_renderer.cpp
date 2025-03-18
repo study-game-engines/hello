@@ -286,15 +286,17 @@ namespace OpenGLRenderer {
         //dstRect.y1 = worldFramebuffer.GetHeight() * 0.5f;
         //OpenGLRenderer::BlitToDefaultFrameBuffer(&worldFramebuffer, "HeightMap", srcRect, dstRect, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 
-       // BlitRect srcRect;
-       // srcRect.x0 = 0;
-       // srcRect.y0 = 0;
-       // srcRect.x1 = gBuffer.GetWidth();
-       // srcRect.y1 = gBuffer.GetHeight();
-       // BlitRect dstRect = srcRect;
-       // dstRect.x1 = gBuffer.GetWidth() * 0.6f;
-       // dstRect.y1 = gBuffer.GetHeight() * 0.6f;
-       // OpenGLRenderer::BlitToDefaultFrameBuffer(&gBuffer, "Glass", srcRect, dstRect, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+        
+
+        //BlitRect srcRect;
+        //srcRect.x0 = 0;
+        //srcRect.y0 = 0;
+        //srcRect.x1 = gBuffer.GetWidth();
+        //srcRect.y1 = gBuffer.GetHeight();
+        //BlitRect dstRect = srcRect;
+        //dstRect.x1 = gBuffer.GetWidth() * 0.6f;
+        //dstRect.y1 = gBuffer.GetHeight() * 0.6f;
+        //OpenGLRenderer::BlitToDefaultFrameBuffer(&gBuffer, "Glass", srcRect, dstRect, GL_COLOR_BUFFER_BIT, GL_LINEAR);
         
     }
 
@@ -310,7 +312,7 @@ namespace OpenGLRenderer {
         gBuffer->ClearAttachmentUI("MousePick", 0, 0);
         gBuffer->ClearAttachment("WorldSpacePosition", 0, 0);
         gBuffer->ClearAttachment("Emissive", 0, 0, 0, 0);
-        gBuffer->ClearAttachment("Glass", 0, 0, 0, 0);
+        gBuffer->ClearAttachment("Glass", 0, 1, 0, 0);
         gBuffer->ClearDepthAttachment();
 
         // Viewport index
@@ -372,7 +374,7 @@ namespace OpenGLRenderer {
     }
 
     void DrawQuad() {
-        Mesh* mesh = AssetManager::GetMeshByModelNameMeshIndex("Quad", 0);
+        static Mesh* mesh = AssetManager::GetMeshByModelNameMeshName("Primitives", "Quad");
         glDrawElementsBaseVertex(GL_TRIANGLES, mesh->indexCount, GL_UNSIGNED_INT, (void*)(sizeof(unsigned int) * mesh->baseIndex), mesh->baseVertex);
     }
 

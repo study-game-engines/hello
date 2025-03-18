@@ -25,11 +25,82 @@ void Player::UpdateFlashlight(float deltaTime) {
         m_flashLightModifier = Util::FInterpTo(m_flashLightModifier, 1.0f, deltaTime, 10.5f);
     }
 
-    // Position
-    m_flashlightPosition = GetCameraPosition();
-    m_flashlightPosition += GetCameraRight() * glm::vec3(0.3f);
-    m_flashlightPosition -= GetCameraUp() * glm::vec3(m_bobOffsetY * 2);
+    if (!ViewportIsVisible()) {
+        return;
+    }
+
+    // Prevent NAN direction, which is the case on first spawn
+    if (Util::IsNan(m_flashlightDirection)) {
+        m_flashlightDirection = GetCameraForward();
+    }
+
+    float distanceToTextureHit = 9999;
+    float distanceToPhysxRayHit = 9999;
+    float finalDistance = 0.0f;
+    glm::vec3 textureHitPos = glm::vec3(0.0f);
+    glm::vec3 physxRayHitPos = glm::vec3(0.0f);
+    glm::vec3 finalHitPos = glm::vec3(0.0f);
+
+    // World position texture hit position
+    if (OpenGLRenderer::IsPlayerRayWorldPositionReadBackReady(m_viewportIndex)) {
+        textureHitPos = OpenGLRenderer::GetPlayerRayWorldPostion(m_viewportIndex);
+        if (textureHitPos != glm::vec3(0.0f)) {
+            distanceToTextureHit = glm::distance(GetCameraPosition(), textureHitPos);
+        }
+    }
+
+    // PhysX camera ray hit position
+    if (m_cameraRayResult.hitFound) {
+        physxRayHitPos = m_cameraRayResult.hitPosition;
+        distanceToPhysxRayHit = glm::distance(GetCameraPosition(), physxRayHitPos);
+    }
+
+    // If not hit was found
+    if (textureHitPos == glm::vec3(0.0f) && physxRayHitPos == glm::vec3(0.0f)) {
+        m_flashlightPosition = GetCameraPosition();
+        m_flashlightDirection = GetCameraForward();
+        std::cout << "no hit \n";
+        return;
+    }
+    // Otherwise take the closest hit
+    else if (distanceToTextureHit < distanceToPhysxRayHit) {
+        finalHitPos = textureHitPos;
+        finalDistance = distanceToTextureHit;
+    }
+    else {
+        finalHitPos = physxRayHitPos;
+        finalDistance = distanceToPhysxRayHit;
+    }
     
+    // Centered pos/dir
+    glm::vec3 centeredFlashlightPosition = GetCameraPosition() - GetCameraForward() * glm::vec3(0.2f);
+    glm::vec3 centeredFlashlightDirection = GetCameraForward();
+
+    // Offset pos/dir
+    glm::vec3 offsetFlashlightPosition = centeredFlashlightPosition;
+    offsetFlashlightPosition += GetCameraRight() * glm::vec3(0.1f);
+    offsetFlashlightPosition -= GetCameraUp() * glm::vec3(m_bobOffsetY * 2);
+    glm::vec3 offsetFlashlightDirection = glm::normalize(finalHitPos - offsetFlashlightPosition);
+
+    // Compute lerp factor
+    float maxDistance = 1.0f;
+    float t = glm::clamp(finalDistance / maxDistance, 0.0f, 0.75f);
+
+    // Mix between centered and offset based on distance to cam hit
+    glm::vec3 flashlightPositionTarget = glm::mix(centeredFlashlightPosition, offsetFlashlightPosition, t);
+    glm::vec3 flashlightDirectionTarget = glm::mix(centeredFlashlightDirection, offsetFlashlightDirection, t);
+
+    // If no hit was found then default back to centered
+    if (textureHitPos == glm::vec3(0.0f) && physxRayHitPos == glm::vec3(0.0f)) {
+        flashlightPositionTarget = centeredFlashlightPosition;
+        flashlightDirectionTarget = centeredFlashlightDirection;
+    }
+
+    // Lerp between last pos/dir to the new ones
+    float interSpeed = 40;
+    m_flashlightPosition = Util::LerpVec3(m_flashlightPosition, flashlightPositionTarget, deltaTime, interSpeed);
+    m_flashlightDirection = Util::LerpVec3(m_flashlightDirection, flashlightDirectionTarget, deltaTime, interSpeed);
+
     // Projection view matrix
     float lightRadius = 25.0f;
     float outerAngle = glm::radians(25.0);
@@ -38,34 +109,5 @@ void Player::UpdateFlashlight(float deltaTime) {
     glm::mat4 spotlightProjection = glm::perspectiveZO(outerAngle * 2, 1.0f, 0.05f, lightRadius);
     m_flashlightProjectionView = spotlightProjection * flashlightViewMatrix;
 
-    // Direction
-    if (!ViewportIsVisible()) {
-        return;
-    }
-    glm::vec3 rayOrigin = GetCameraPosition();
-    glm::vec3 rayDir = GetCameraForward();
 
-    // Prevent NAN direction, which is the case on first spawn
-    if (Util::IsNan(m_flashlightDirection)) {
-        m_flashlightDirection = GetCameraForward();
-    }
-
-    if (OpenGLRenderer::IsPlayerRayWorldPositionReadBackReady(m_viewportIndex)) {
-        glm::vec3 target = GetCameraPosition() + GetCameraForward() * glm::vec3(4.0f);
-
-        // Unless crosshair hit position is less than 4 meters, then use ray hit pos
-        glm::vec3 crosshairHitPosition = OpenGLRenderer::GetPlayerRayWorldPostion(m_viewportIndex);
-        if (glm::distance(crosshairHitPosition, GetCameraPosition()) < 4) {
-            target = crosshairHitPosition;
-        }
-        glm::vec3 flashlightDirectionTarget = glm::normalize(target - m_flashlightPosition);
-
-        float interSpeed = 30;
-        m_flashlightDirection = Util::LerpVec3(m_flashlightDirection, flashlightDirectionTarget, deltaTime, interSpeed);
-    }
-    // If worldspace position pixel readback is not ready, 
-    // then fall back to the camera forward vector
-    else {
-        m_flashlightDirection = GetCameraForward();
-    }
 }

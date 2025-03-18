@@ -112,7 +112,7 @@ namespace AssetManager {
 
         if (LoadingComplete()) {
             BakePendingModels();
-            BuildHardcodedModels();
+            BuildPrimitives();
             BuildIndexMaps(); // required before BuildMaterials()
             BuildMaterials();
             BuildIndexMaps(); // but also required after BuildMaterials()... FIX! maybe just add to the index map when you create these objects.
@@ -318,13 +318,18 @@ namespace AssetManager {
         return mesh;
     }
 
+    int GetQuadZFacingMeshIndex() {
+        static int meshIndex = GetModelByIndex(GetModelIndexByName("QuadZFacing"))->GetMeshIndices()[0];
+        return meshIndex;
+    }
+
     Mesh* GetQuadZFacingMesh() {
         // Clean me up
         static Mesh* mesh = GetMeshByIndex(GetModelByIndex(GetModelIndexByName("QuadZFacing"))->GetMeshIndices()[0]);
         return mesh;
     }
        
-    Mesh* GetMeshByModelNameMeshIndex(const std::string modelName, uint32_t meshIndex) {
+    Mesh* GetMeshByModelNameMeshIndex(const std::string& modelName, uint32_t meshIndex) {
         Model* model = GetModelByName(modelName);
         if (!model || meshIndex < 0 && meshIndex >= model->GetMeshCount()) {
             return nullptr;
@@ -332,6 +337,32 @@ namespace AssetManager {
         else {
             return AssetManager::GetMeshByIndex(model->GetMeshIndices()[meshIndex]);
         }
+    }
+
+    Mesh* GetMeshByModelNameMeshName(const std::string& modelName, const std::string& meshName) {
+        Model* model = GetModelByName(modelName);
+        if (!model) return nullptr;
+
+        for (uint32_t meshIndex : model->GetMeshIndices()) {
+            Mesh* mesh = GetMeshByIndex(meshIndex);
+            if (mesh && mesh->GetName() == meshName) {
+                return mesh;
+            }
+        }
+        return nullptr;
+    }
+
+    int GetMeshIndexByModelNameMeshName(const std::string& modelName, const std::string& meshName) {
+        Model* model = GetModelByName(modelName);
+        if (!model) return -1;
+
+        for (uint32_t meshIndex : model->GetMeshIndices()) {
+            Mesh* mesh = GetMeshByIndex(meshIndex);
+            if (mesh && mesh->GetName() == meshName) {
+                return meshIndex;
+            }
+        }
+        return -1;
     }
 }
 

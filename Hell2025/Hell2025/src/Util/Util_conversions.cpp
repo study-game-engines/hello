@@ -50,9 +50,11 @@ namespace Util {
     std::string ObjectTypeToString(ObjectType type) {
         switch (type) {
             case ObjectType::NONE:          return "NONE";
+            case ObjectType::DECAL:         return "DECAL";
             case ObjectType::DOOR:          return "DOOR";
             case ObjectType::GAME_OBJECT:   return "GAME_OBJECT";
             case ObjectType::HEIGHT_MAP:    return "HEIGHT_MAP";
+            case ObjectType::HOUSE_PLANE:   return "HOUSE_PLANE";
             case ObjectType::LIGHT:         return "LIGHT";
             case ObjectType::PICK_UP:       return "PICK_UP";
             case ObjectType::TREE:          return "TREE";

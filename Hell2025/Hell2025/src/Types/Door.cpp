@@ -22,8 +22,11 @@ void Door::Init(DoorCreateInfo createInfo) {
     doorFrameTransform.position = m_position;
     doorFrameTransform.rotation = m_rotation;
 
+    Transform shapeOffset;
+    shapeOffset.position.x = -0.005f;
+
     glm::vec3 boxExtents = glm::vec3(DOOR_DEPTH, DOOR_HEIGHT, DOOR_WIDTH);
-    m_physicsId = Physics::CreateRigidStaticBoxFromExtents(doorFrameTransform, boxExtents, filterData);
+    m_physicsId = Physics::CreateRigidStaticBoxFromExtents(doorFrameTransform, boxExtents, filterData, shapeOffset);
 
     // Get next unique ID
     m_objectId = UniqueID::GetNext();
@@ -49,7 +52,7 @@ void Door::Update(float deltaTime) {
     m_frameModelMatrix = doorFrameTransform.to_mat4();
 
     Transform doorTransform;
-    doorTransform.position = glm::vec3(0.058520, 0, 0.39550f);
+    doorTransform.position = glm::vec3(0.058520f, 0.0f, 0.39550f);
     doorTransform.rotation.y = m_currentOpenRotation;
     m_doorModelMatrix = m_frameModelMatrix * doorTransform.to_mat4();
 

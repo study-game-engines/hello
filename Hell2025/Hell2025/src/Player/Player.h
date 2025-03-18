@@ -46,6 +46,8 @@ struct Player {
     void UpdateAnimatedGameObjects(float deltaTime);
     void UpdateWeaponSlide();
 
+    PhysXRayResult m_cameraRayResult;
+
     // Weapon shit
     int GetCurrentWeaponMagAmmo();
     int GetCurrentWeaponTotalAmmo();

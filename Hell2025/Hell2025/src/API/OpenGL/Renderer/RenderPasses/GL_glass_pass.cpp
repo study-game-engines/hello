@@ -1,4 +1,5 @@
 #include "API/OpenGL/Renderer/GL_renderer.h"
+#include "API/OpenGL/GL_backend.h"
 #include "Core/Game.h"
 #include "Renderer/RenderDataManager.h"
 #include "Viewport/ViewportManager.h"`
@@ -20,10 +21,15 @@ namespace OpenGLRenderer {
         gBuffer->Bind();
         gBuffer->DrawBuffer("Glass");
 
+        glBindVertexArray(OpenGLBackEnd::GetVertexDataVAO());
         glBindTextureUnit(0, gBuffer->GetDepthAttachmentHandle());
+        glBindTextureUnit(7, AssetManager::GetTextureByName("Flashlight2")->GetGLTexture().GetHandle());
+
+        OpenGLFrameBuffer* flashLightShadowMapFBO = GetFrameBuffer("FlashlightShadowMap");
+        glBindTextureUnit(8, flashLightShadowMapFBO->GetDepthAttachmentHandle());
 
         std::vector<Window>& windows = World::GetWindows();
-
+        
         for (int i = 0; i < 4; i++) {
             Viewport* viewport = ViewportManager::GetViewportByIndex(i);
             if (!viewport->IsVisible()) continue;
@@ -49,16 +55,15 @@ namespace OpenGLRenderer {
 
                     glDrawElementsBaseVertex(GL_TRIANGLES, mesh->indexCount, GL_UNSIGNED_INT, (void*)(sizeof(unsigned int) * mesh->baseIndex), mesh->baseVertex);
                 }            
-            }          
+            }
         }
-
+        
         // Composite that render back into the lighting texture
         gBuffer->SetViewport();
         compositeShader->Use();
         glBindImageTexture(0, gBuffer->GetColorAttachmentHandleByName("FinalLighting"), 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F);
         glBindImageTexture(1, gBuffer->GetColorAttachmentHandleByName("Glass"), 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA8);
         glDispatchCompute(gBuffer->GetWidth() / 16, gBuffer->GetHeight() / 4, 1);
-
 
         glDepthMask(GL_TRUE);
     }

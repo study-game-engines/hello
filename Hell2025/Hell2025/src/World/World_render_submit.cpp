@@ -14,6 +14,7 @@ namespace World {
     void SubmitRenderItems() {
         std::vector<AnimatedGameObject>& animatedGameObjects = GetAnimatedGameObjects();
         std::vector<BulletCasing>& bulletCasings = GetBulletCasings();
+        std::vector<Decal>& decals = GetDecals();
         std::vector<Door>& doors = GetDoors();
         std::vector<GameObject>& gameObjects = GetGameObjects();
         std::vector<Light>& lights = GetLights();
@@ -45,6 +46,10 @@ namespace World {
         for (PickUp& pickUp : pickUps) {
             pickUp.SetMousePickIndex(mousePickIndex++);
             g_renderItems.insert(g_renderItems.end(), pickUp.GetRenderItems().begin(), pickUp.GetRenderItems().end());
+        }
+
+        for (Decal& decal : decals) {
+            decal.SubmitRenderItem();
         }
 
         // Doors

@@ -7,7 +7,6 @@
 
 void Player::UpdateInteract() {
 
-    PhysXRayResult m_cameraRayResult;
     OverlapReport m_overlapReport;
 
     float sphereRadius = 0.25f;

@@ -38,7 +38,7 @@
 
 #define DOOR_WIDTH 0.8f
 #define DOOR_HEIGHT 2.0f
-#define DOOR_DEPTH 0.05f
+#define DOOR_DEPTH 0.034f
 
 // System audio
 #define AUDIO_SELECT "UI_Select.wav"

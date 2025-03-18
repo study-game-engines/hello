@@ -22,9 +22,6 @@ readonly restrict layout(std430, binding = 4) buffer lightsBuffer {
 };
 
 void main() {
-
-   // FragOut = vec4(TexCoord, 0, 1);
-
    vec4 baseColor = texture2D(baseColorTexture, TexCoord);
    vec3 normalMap = texture2D(normalTexture, TexCoord).rgb;
    vec3 rma = texture2D(rmaTexture, TexCoord).rgb;
@@ -33,12 +30,13 @@ void main() {
    normalMap.rgb = normalMap.rgb * 2.0 - 1.0;
    normalMap = normalize(normalMap);
    vec3 normal = normalize(tbn * (normalMap));
-   normal *= - 1;
  
    vec3 gammaBaseColor = pow(baseColor.rgb, vec3(2.2));
    float roughness = rma.r;
    float metallic = rma.g;
- 
+    roughness = 0.5;
+    metallic = 0.5;
+
    // Direct light
    vec3 directLighting = vec3(0); 
    for (int i = 0; i < 3; i++) {    
@@ -47,10 +45,8 @@ void main() {
        vec3 lightColor =  vec3(light.colorR, light.colorG, light.colorB);
        float lightStrength = light.strength;
        float lightRadius = light.radius;
-            
        directLighting += GetDirectLighting(lightPosition, lightColor, lightRadius, lightStrength, normal.xyz, WorldPos.xyz, gammaBaseColor.rgb, roughness, metallic, ViewPos);
-    
-   }
+    }
  
    vec3 finalColor = directLighting;
  
@@ -60,12 +56,9 @@ void main() {
    // Gamma correct
    finalColor = pow(finalColor, vec3(1.0/2.2));
  
- finalColor = mix(finalColor, Tonemap_ACES(finalColor), 0.35);  
+   finalColor = mix(finalColor, Tonemap_ACES(finalColor), 0.35);  
  
    FragOut.rgb = vec3(finalColor);
    FragOut.a = baseColor.a;
-
-   
-   //FragOut.rgb = vec3(normal);
    
 }

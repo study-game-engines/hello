@@ -14,7 +14,7 @@ namespace OpenGLRenderer {
         const std::vector<ViewportData>& viewportData = RenderDataManager::GetViewportData();
         OpenGLShader* shader = GetShader("SpriteSheet");
         OpenGLFrameBuffer* gBuffer = GetFrameBuffer("GBuffer");
-        Mesh* mesh = AssetManager::GetMeshByModelNameMeshIndex("Quad", 0);
+        Mesh* mesh = AssetManager::GetMeshByModelNameMeshName("Primitives", "Quad");
 
         gBuffer->Bind();
         gBuffer->DrawBuffer("FinalLighting");

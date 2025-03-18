@@ -1,6 +1,6 @@
 #pragma once
 #include "Math/AABB.h"
-#include "ClippingCube.h"
+#include "Modelling/Types/ClippingCube.h"
 #include <vector>
 
 struct WallSegment {

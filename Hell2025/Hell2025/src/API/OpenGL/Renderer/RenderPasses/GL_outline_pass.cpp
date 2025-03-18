@@ -62,7 +62,7 @@ namespace OpenGLRenderer {
             outlineShader->SetInt("u_offsetCount", offsets.size());
             outlineShader->SetInt("u_viewportIndex", i);
             int instanceCount = offsets.size();
-            Mesh* mesh = AssetManager::GetMeshByModelNameMeshIndex("Quad", 0);
+            Mesh* mesh = AssetManager::GetMeshByModelNameMeshName("Primitives", "Quad");
             glEnable(GL_BLEND);
             glBlendEquation(GL_MAX);
             glBlendFunc(GL_ONE, GL_ONE);

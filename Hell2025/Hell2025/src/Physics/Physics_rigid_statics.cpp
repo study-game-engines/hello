@@ -10,7 +10,7 @@ namespace Physics {
 
     std::unordered_map<uint64_t, RigidStatic> g_rigidStatics;
 
-    uint64_t CreateRigidStaticBoxFromExtents(Transform transform, glm::vec3 boxExtents, PhysicsFilterData filterData) {
+    uint64_t CreateRigidStaticBoxFromExtents(Transform transform, glm::vec3 boxExtents, PhysicsFilterData filterData, Transform localOffset) {
         PxPhysics* pxPhysics = Physics::GetPxPhysics();
         PxScene* pxScene = Physics::GetPxScene();
         PxMaterial* material = Physics::GetDefaultMaterial();
@@ -31,6 +31,9 @@ namespace Physics {
         pxShape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, true);
         pxShape->setFlag(PxShapeFlag::eSCENE_QUERY_SHAPE, true);
 
+        PxTransform localOffsetTransform = PxTransform(GlmMat4ToPxMat44(localOffset.to_mat4()));
+        pxShape->setLocalPose(localOffsetTransform);
+
         // Create rigid dynamic
         PxQuat quat = Physics::GlmQuatToPxQuat(glm::quat(transform.rotation));
         PxTransform pxTransform = PxTransform(PxVec3(transform.position.x, transform.position.y, transform.position.z), quat);
@@ -49,7 +52,7 @@ namespace Physics {
         return physicsID;
     }
 
-   uint64_t CreateRigidStaticConvexMeshFromVertices(Transform transform, const std::span<Vertex>& vertices, PhysicsFilterData filterData) {
+    uint64_t CreateRigidStaticConvexMeshFromVertices(Transform transform, const std::span<Vertex>& vertices, PhysicsFilterData filterData) {
        PxPhysics* pxPhysics = Physics::GetPxPhysics();
        PxScene* pxScene = Physics::GetPxScene();
        PxMaterial* material = Physics::GetDefaultMaterial();
@@ -176,6 +179,38 @@ namespace Physics {
 
        return physicsID;
    }
+
+
+
+   uint64_t CreateRigidStaticTriangleMeshFromModel(Transform transform, const std::string& modelName, PhysicsFilterData filterData) {
+       Model* model = AssetManager::GetModelByName(modelName);
+       if (!model) {
+           std::cout << "Physics::CreateRigidStaticTriangleMeshFromModel() failed: model name '" << modelName << "' not found\n";
+           return 0;
+       }
+
+       std::vector<Vertex> globalVertices = AssetManager::GetVertices();
+       std::vector<uint32_t> globalIndices = AssetManager::GetIndices();
+
+       std::vector<Vertex> vertices;
+       std::vector<uint32_t> indices;
+
+       for (uint32_t meshIndex : model->GetMeshIndices()) {
+           Mesh* mesh = AssetManager::GetMeshByIndex(meshIndex);
+           if (!mesh) continue;
+
+           for (int i = mesh->baseIndex; i < mesh->baseIndex + mesh->indexCount; i++) {
+               uint32_t index = globalIndices[i];
+               const Vertex& vertex = globalVertices[index + mesh->baseVertex];
+               vertices.push_back(vertex);
+//               indices.push_back(indices.size());
+               indices.push_back(static_cast<uint32_t>(vertices.size() - 1));
+           }
+       }
+
+       return CreateRigidStaticTriangleMeshFromVertexData(transform, vertices, indices, filterData);
+    }
+
 
    uint64_t CreateRigidStaticTriangleMeshFromVertexData(Transform transform, const std::span<Vertex>& vertices, const std::span<uint32_t>& indices, PhysicsFilterData filterData) {
        PxPhysics* pxPhysics = Physics::GetPxPhysics();

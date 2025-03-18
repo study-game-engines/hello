@@ -68,9 +68,11 @@ enum class TextureFilter {
 
 enum class ObjectType {
     NONE = 0,
+    DECAL,
     DOOR,
     GAME_OBJECT,
     HEIGHT_MAP,
+    HOUSE_PLANE,
     LIGHT,
     PICK_UP,
     TREE,

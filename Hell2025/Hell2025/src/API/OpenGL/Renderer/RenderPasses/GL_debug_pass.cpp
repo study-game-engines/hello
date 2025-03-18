@@ -26,10 +26,11 @@ namespace OpenGLRenderer {
         gBuffer->Bind();
         gBuffer->DrawBuffer("FinalLighting");
 
+        glDisable(GL_DEPTH_TEST);
         glDisable(GL_CULL_FACE);
         glDisable(GL_BLEND);
-        glPointSize(8.0f);
-
+        glPointSize(8.0f); 
+      
         shader->Use();
 
         UpdateDebugMesh();

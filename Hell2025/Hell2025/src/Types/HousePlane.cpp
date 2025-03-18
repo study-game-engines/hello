@@ -1,6 +1,8 @@
 #include "HousePlane.h"
 #include "AssetManagement/AssetManager.h"
+#include "Physics/Physics.h"
 #include "Util/Util.h"
+#include "UniqueID.h"
 
 void HousePlane::InitFromPoints(glm::vec3 p0, glm::vec3 p1, glm::vec3 p2, glm::vec3 p3) {
     m_p0 = p0;
@@ -40,8 +42,43 @@ void HousePlane::InitFromPoints(glm::vec3 p0, glm::vec3 p1, glm::vec3 p2, glm::v
         Vertex& v2 = m_vertices[m_indices[i + 2]];
         Util::SetNormalsAndTangentsFromVertices(v0, v1, v2);
     }
+
+    CreatePhysicsObject();
+}
+
+void HousePlane::CleanUp() {
+    Physics::MarkRigidStaticForRemoval(m_physicsId);
+    m_vertices.clear();
+    m_indices.clear();
+    m_objectId = 0;
+    m_physicsId = 0;
+    m_p0 = glm::vec3(0.0f);
+    m_p1 = glm::vec3(0.0f);
+    m_p2 = glm::vec3(0.0f);
+    m_p3 = glm::vec3(0.0f);
+    Material* m_material = nullptr;
 }
 
 void HousePlane::SetMaterial(const std::string& materialName) {
     m_material = AssetManager::GetMaterialByName(materialName);
+}
+
+void HousePlane::CreatePhysicsObject() {
+    Physics::MarkRigidStaticForRemoval(m_physicsId);
+
+    PhysicsFilterData filterData;
+    filterData.raycastGroup = RAYCAST_ENABLED;
+    filterData.collisionGroup = CollisionGroup::ENVIROMENT_OBSTACLE;
+    filterData.collidesWith = (CollisionGroup)(GENERIC_BOUNCEABLE | BULLET_CASING | RAGDOLL | PLAYER | ITEM_PICK_UP);
+
+    m_physicsId = Physics::CreateRigidStaticTriangleMeshFromVertexData(Transform(), m_vertices, m_indices, filterData);
+    m_objectId = UniqueID::GetNext();
+
+    // Set PhysX user data
+    PhysicsUserData userData;
+    userData.physicsId = m_physicsId;
+    userData.objectId = m_objectId;
+    userData.physicsType = PhysicsType::RIGID_STATIC;
+    userData.objectType = ObjectType::HOUSE_PLANE;
+    Physics::SetRigidStaticUserData(m_physicsId, userData);
 }

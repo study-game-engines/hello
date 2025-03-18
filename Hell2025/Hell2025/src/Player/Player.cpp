@@ -55,7 +55,6 @@ void Player::Update(float deltaTime) {
     UpdateBreatheBob(deltaTime);
     UpdateCamera(deltaTime);
     UpdateInteract();
-    UpdateFlashlight(deltaTime);
     UpdateWeaponLogic(deltaTime);
     UpdateViewWeapon(deltaTime);
     UpdateAnimatedGameObjects(deltaTime);
@@ -63,6 +62,7 @@ void Player::Update(float deltaTime) {
     UpdateSpriteSheets(deltaTime);
     UpdateAudio();
     UpdateUI();
+    UpdateFlashlight(deltaTime);
     if (Input::KeyPressed(HELL_KEY_K)) {
         m_awaitingSpawn = true;
         WeaponManager::Init(); // remove me

@@ -59,19 +59,11 @@ namespace Physics {
         result.hitPosition = glm::vec3(0, 0, 0);
         result.surfaceNormal = glm::vec3(0, 0, 0);
         result.rayDirection = rayDirection;
-        result.hitFound = false;
         result.hitActor = nullptr;
+        result.hitFound = scene->raycast(origin, unitDir, maxDistance, hit, outputFlags, filterData);
 
-        // Cast the ray
-        bool status = scene->raycast(origin, unitDir, maxDistance, hit, outputFlags, filterData);
-
-        if (status) {
-            if (hit.block.actor->getName()) {
-                result.hitObjectName = hit.block.actor->getName();
-            }
-            else
-                result.hitObjectName = "HIT OBJECT HAS NO ACTOR NAME";
-
+        // On hit
+        if (result.hitFound) {
             result.hitPosition = glm::vec3(hit.block.position.x, hit.block.position.y, hit.block.position.z);
             result.surfaceNormal = glm::vec3(hit.block.normal.x, hit.block.normal.y, hit.block.normal.z);
             result.hitFound = true;

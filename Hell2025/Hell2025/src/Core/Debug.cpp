@@ -146,6 +146,7 @@ namespace Debug {
         if (g_debugRenderMode == DebugRenderMode::DECALS) {
             for (const Decal& decal : World::GetDecals()) {
                 Renderer::DrawPoint(decal.GetPosition(), OUTLINE_COLOR);
+                Renderer::DrawLine(decal.GetPosition(), decal.GetPosition() + decal.GetWorldNormal() * 0.05f, OUTLINE_COLOR);
             }
         }
         if (g_debugRenderMode == DebugRenderMode::PHYSX_ALL ||

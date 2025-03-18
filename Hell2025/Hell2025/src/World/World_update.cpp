@@ -16,7 +16,6 @@ namespace World {
         std::vector<AnimatedGameObject>& animatedGameObjects = GetAnimatedGameObjects();
         std::vector<BulletCasing>& bulletCasings = GetBulletCasings();
         std::vector<Bullet>& bullets = GetBullets();
-        std::vector<Decal>& decals = GetDecals();
         std::vector<Door>& doors = GetDoors();
         std::vector<GameObject>& gameObjects = GetGameObjects();
         std::vector<Light>& lights = GetLights();
@@ -30,10 +29,6 @@ namespace World {
 
         for (BulletCasing& bulletCasing : bulletCasings) {
             bulletCasing.Update(deltaTime);
-        }
-
-        for (Decal& decal : decals) {
-            decal.Update();
         }
 
         for (Door& door : doors) {
@@ -63,6 +58,7 @@ namespace World {
 
     void ProcessBullets() {
         std::vector<Bullet>& bullets = GetBullets();
+        std::vector<Bullet> newBullets;
         bool glassWasHit = false;
 
         for (Bullet& bullet : bullets) {
@@ -77,31 +73,27 @@ namespace World {
             // On hit
             if (rayResult.hitFound && rayResult.userData != nullptr) {
                 PhysicsUserData* physicsUserData = (PhysicsUserData*)rayResult.userData;
-                PxRigidDynamic* pxRigidDynamic = (PxRigidDynamic*)rayResult.hitActor;
-                glm::mat4 parentMatrix = Physics::GetRigidStaticGlobalPose(physicsUserData->physicsId);
-                glm::vec3 localPosition = glm::inverse(parentMatrix) * glm::vec4(rayResult.hitPosition + (rayResult.surfaceNormal * glm::vec3(0.001)), 1.0);
-                glm::vec3 localNormal = glm::inverse(parentMatrix) * glm::vec4(rayResult.surfaceNormal, 0.0);
 
                 // Apply force if object is dynamic
                 float strength = 200.0f;
                 PxVec3 force = Physics::GlmVec3toPxVec3(bullet.GetDirection()) * strength;
+                PxRigidDynamic* pxRigidDynamic = (PxRigidDynamic*)rayResult.hitActor;
                 if (physicsUserData->physicsType == PhysicsType::RIGID_DYNAMIC) {
                     pxRigidDynamic->setRigidBodyFlag(PxRigidBodyFlag::eKINEMATIC, false);
                     pxRigidDynamic->addForce(force);
                 }
 
                 DecalCreateInfo decalCreateInfo;
-                decalCreateInfo.position = rayResult.hitPosition;
-                decalCreateInfo.scale = glm::vec3(0.4);
                 decalCreateInfo.parentPhysicsId = physicsUserData->physicsId;
                 decalCreateInfo.parentPhysicsType = physicsUserData->physicsType;
                 decalCreateInfo.parentObjectId = physicsUserData->objectId;
                 decalCreateInfo.parentObjectType = physicsUserData->objectType;
-                decalCreateInfo.localPosition = localPosition;
-                decalCreateInfo.localNormal = localNormal;
+                decalCreateInfo.surfaceHitPosition = rayResult.hitPosition;
+                decalCreateInfo.surfaceHitNormal = rayResult.surfaceNormal;
 
                 // Plaster decal
                 if (physicsUserData->objectType == ObjectType::WALL_SEGMENT ||
+                    physicsUserData->objectType == ObjectType::HOUSE_PLANE ||
                     physicsUserData->objectType == ObjectType::DOOR) {
                     decalCreateInfo.decalType = DecalType::PLASTER;
                     AddDecal(decalCreateInfo);
@@ -111,6 +103,18 @@ namespace World {
                 if (physicsUserData->objectType == ObjectType::WINDOW) {
                     decalCreateInfo.decalType = DecalType::GLASS;
                     AddDecal(decalCreateInfo);
+
+                    decalCreateInfo.surfaceHitNormal *= glm::vec3(-1.0f);
+                    AddDecal(decalCreateInfo);
+
+                    // Create new bullet
+                    BulletCreateInfo bulletCreateInfo;
+                    bulletCreateInfo.origin = rayResult.hitPosition + bullet.GetDirection() * glm::vec3(0.05f);
+                    bulletCreateInfo.direction = bullet.GetDirection();
+                    bulletCreateInfo.damage = bullet.GetDamage();
+                    bulletCreateInfo.weaponIndex = bullet.GetWeaponIndex();
+                    newBullets.emplace_back(Bullet(bulletCreateInfo));
+
                     glassWasHit = true;
                 }
             }
@@ -119,6 +123,9 @@ namespace World {
         if (glassWasHit) {
             Audio::PlayAudio("GlassImpact.wav", 2.0f);
         }
+
+        // Wipe old bullets, and replace with any new ones that got spawned from glass hits
+        bullets = newBullets;;
     }
 
     void LazyDebugSpawns() {
