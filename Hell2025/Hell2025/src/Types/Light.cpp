@@ -1,5 +1,6 @@
 #include "Light.h"
 #include "AssetManagement/AssetManager.h"
+#include "Physics/Physics.h"
 #include "Util.h"
 
 Light::Light(LightCreateInfo createInfo) {   
@@ -10,18 +11,31 @@ Light::Light(LightCreateInfo createInfo) {
     m_type = Util::StringToLightType(createInfo.type);
 
     if (m_type == LightType::LAMP_POST) {
-        uint32_t modelIndex = AssetManager::GetModelIndexByName("LampPost");
-        uint32_t materialIndex = AssetManager::GetMaterialIndexByName("LampPost");
-        m_model = AssetManager::GetModelByIndex(modelIndex);
-        m_material = AssetManager::GetMaterialByIndex(materialIndex);
+        m_material = AssetManager::GetMaterialByIndex(AssetManager::GetMaterialIndexByName("LampPost"));
+        m_model0 = AssetManager::GetModelByIndex(AssetManager::GetModelIndexByName("LampPost"));
+        m_transform0.position = m_position;
     }
     if (m_type == LightType::HANGING_LIGHT) {
-        uint32_t modelIndex = AssetManager::GetModelIndexByName("LightHanging");
-        uint32_t materialIndex = AssetManager::GetMaterialIndexByName("Light");
-        m_model = AssetManager::GetModelByIndex(modelIndex);
-        m_material = AssetManager::GetMaterialByIndex(materialIndex);
+        m_material = AssetManager::GetMaterialByIndex(AssetManager::GetMaterialIndexByName("Light"));
+        m_model0 = AssetManager::GetModelByIndex(AssetManager::GetModelIndexByName("LightHanging"));
+        m_transform0.position = m_position;
+        PhysXRayResult rayResult = Physics::CastPhysXRay(m_position, glm::vec3(0.0f, 1.0f, 0.0f), 100.0f, RaycastGroup::RAYCAST_ENABLED);
+        if (rayResult.hitFound) {
+            m_model1 = AssetManager::GetModelByIndex(AssetManager::GetModelIndexByName("LightHangingCord"));
+            m_model2 = AssetManager::GetModelByIndex(AssetManager::GetModelIndexByName("LightHangingMount"));
+            m_transform1.position = m_position;
+            m_transform1.scale.y = glm::distance(rayResult.hitPosition, m_position);
+            m_transform2.position = rayResult.hitPosition;
+            std::cout << "hit found: " << Util::Vec3ToString(rayResult.hitPosition) << "\n";
+        }
+        else {
+            m_model1 = nullptr;
+            m_model2 = nullptr;
+            std::cout << "no hit\n";
+        }
     }
 }
+
 
 void Light::Update(float deltaTime) {
     UpdateRenderItems();
@@ -30,26 +44,68 @@ void Light::Update(float deltaTime) {
 void Light::UpdateRenderItems() {
     m_renderItems.clear();
 
-    Transform transform;
-    transform.position = m_position;
-
-    for (uint32_t meshIndex : m_model->GetMeshIndices()) {
-        RenderItem& renderItem = m_renderItems.emplace_back();
-        renderItem.mousePickType = (int)ObjectType::LIGHT;
-        renderItem.mousePickIndex = m_mousePickIndex;
-        renderItem.modelMatrix =    transform.to_mat4();
-        renderItem.inverseModelMatrix = glm::inverse(renderItem.modelMatrix);
-        renderItem.meshIndex = meshIndex;
-        if (m_material) {
-            renderItem.baseColorTextureIndex = m_material->m_basecolor;
-            renderItem.normalMapTextureIndex = m_material->m_normal;
-            renderItem.rmaTextureIndex = m_material->m_rma;
+    if (m_model0) {
+        for (uint32_t meshIndex : m_model0->GetMeshIndices()) {
+            RenderItem& renderItem = m_renderItems.emplace_back();
+            renderItem.mousePickType = (int)ObjectType::LIGHT;
+            renderItem.mousePickIndex = m_mousePickIndex;
+            renderItem.modelMatrix = m_transform0.to_mat4();
+            renderItem.inverseModelMatrix = glm::inverse(renderItem.modelMatrix);
+            renderItem.meshIndex = meshIndex;
+            if (m_material) {
+                renderItem.baseColorTextureIndex = m_material->m_basecolor;
+                renderItem.normalMapTextureIndex = m_material->m_normal;
+                renderItem.rmaTextureIndex = m_material->m_rma;
+            }
+            Mesh* mesh = AssetManager::GetMeshByIndex(meshIndex);
+            if (mesh->GetName() == "Lamp") {
+                renderItem.emissiveR = m_color.r;
+                renderItem.emissiveG = m_color.g;
+                renderItem.emissiveB = m_color.b;
+            }
         }
-        Mesh* mesh = AssetManager::GetMeshByIndex(meshIndex);
-        if (mesh->GetName() == "Lamp") {
-            renderItem.emissiveR = m_color.r;
-            renderItem.emissiveG = m_color.g;
-            renderItem.emissiveB = m_color.b;
+    }
+   
+    if (m_model1) {
+        for (uint32_t meshIndex : m_model1->GetMeshIndices()) {
+            RenderItem& renderItem = m_renderItems.emplace_back();
+            renderItem.mousePickType = (int)ObjectType::LIGHT;
+            renderItem.mousePickIndex = m_mousePickIndex;
+            renderItem.modelMatrix = m_transform1.to_mat4();
+            renderItem.inverseModelMatrix = glm::inverse(renderItem.modelMatrix);
+            renderItem.meshIndex = meshIndex;
+            if (m_material) {
+                renderItem.baseColorTextureIndex = m_material->m_basecolor;
+                renderItem.normalMapTextureIndex = m_material->m_normal;
+                renderItem.rmaTextureIndex = m_material->m_rma;
+            }
+            Mesh* mesh = AssetManager::GetMeshByIndex(meshIndex);
+            if (mesh->GetName() == "Lamp") {
+                renderItem.emissiveR = m_color.r;
+                renderItem.emissiveG = m_color.g;
+                renderItem.emissiveB = m_color.b;
+            }
+        }
+    }
+    if (m_model2) {
+        for (uint32_t meshIndex : m_model2->GetMeshIndices()) {
+            RenderItem& renderItem = m_renderItems.emplace_back();
+            renderItem.mousePickType = (int)ObjectType::LIGHT;
+            renderItem.mousePickIndex = m_mousePickIndex;
+            renderItem.modelMatrix = m_transform2.to_mat4();
+            renderItem.inverseModelMatrix = glm::inverse(renderItem.modelMatrix);
+            renderItem.meshIndex = meshIndex;
+            if (m_material) {
+                renderItem.baseColorTextureIndex = m_material->m_basecolor;
+                renderItem.normalMapTextureIndex = m_material->m_normal;
+                renderItem.rmaTextureIndex = m_material->m_rma;
+            }
+            Mesh* mesh = AssetManager::GetMeshByIndex(meshIndex);
+            if (mesh->GetName() == "Lamp") {
+                renderItem.emissiveR = m_color.r;
+                renderItem.emissiveG = m_color.g;
+                renderItem.emissiveB = m_color.b;
+            }
         }
     }
 }

@@ -130,10 +130,13 @@ ModelData File::ImportModel(const std::string& filepath) {
     std::string modelName(modelHeader.nameLength, '\0');
     file.read(&modelName[0], modelHeader.nameLength);
 
+    FileInfo fileInfo = Util::GetFileInfoFromPath(filepath);
+
     // Store header data
     modelData.meshCount = modelHeader.meshCount;
     modelData.meshes.resize(modelHeader.meshCount);
-    modelData.name = modelName;
+    //modelData.name = modelName;
+    modelData.name = fileInfo.name;
     modelData.aabbMin = modelHeader.aabbMin;
     modelData.aabbMax = modelHeader.aabbMax;
     modelData.timestamp = modelHeader.timestamp;

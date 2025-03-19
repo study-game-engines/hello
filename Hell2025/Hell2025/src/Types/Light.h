@@ -26,8 +26,14 @@ private:
     float m_strength = 1.0f;
     LightType m_type = LightType::LAMP_POST;
     Material* m_material = nullptr;
-    Model* m_model = nullptr;
+    Model* m_model0 = nullptr;
+    Model* m_model1 = nullptr;
+    Model* m_model2 = nullptr;
+    Transform m_transform0;
+    Transform m_transform1;
+    Transform m_transform2;
     std::vector<RenderItem> m_renderItems;
 
+    void UpdateTransforms();
     void UpdateRenderItems();
 };
