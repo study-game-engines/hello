@@ -59,7 +59,7 @@ namespace Physics {
         result.hitPosition = glm::vec3(0, 0, 0);
         result.surfaceNormal = glm::vec3(0, 0, 0);
         result.rayDirection = rayDirection;
-        result.hitActor = nullptr;
+        result.userData = PhysicsUserData();
         result.hitFound = scene->raycast(origin, unitDir, maxDistance, hit, outputFlags, filterData);
 
         // On hit
@@ -67,8 +67,10 @@ namespace Physics {
             result.hitPosition = glm::vec3(hit.block.position.x, hit.block.position.y, hit.block.position.z);
             result.surfaceNormal = glm::vec3(hit.block.normal.x, hit.block.normal.y, hit.block.normal.z);
             result.hitFound = true;
-            result.hitActor = hit.block.actor;
-            result.userData = hit.block.actor->userData;
+            PhysicsUserData* userData = (PhysicsUserData*)hit.block.actor->userData;
+            if (userData) {
+                result.userData = *userData;
+            }
         }
         return result;
     }

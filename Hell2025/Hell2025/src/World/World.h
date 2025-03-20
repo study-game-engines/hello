@@ -6,14 +6,14 @@
 #include "Types/Bullet.h"
 #include "Types/BulletCasing.h"
 #include "Types/Decal.h"
-#include "Types/Door.h"
-#include "Types/HousePlane.h"
+#include "Types/House/Door.h"
+#include "Types/House/HousePlane.h"
+#include "Types/House/Wall.h"
+#include "Types/House/Window.h"
 #include "Types/GameObject.h"
 #include "Types/Light.h"
 #include "Types/PickUp.h"
 #include "Types/Tree.h"
-#include "Types/Wall.h"
-#include "Types/Window.h"
 #include "Util/Util.h"
 #include "glm/gtx/intersect.hpp"
 #include <vector>
@@ -96,8 +96,10 @@ namespace World {
     std::vector<GameObject>& GetGameObjects();
     std::vector<HeightMapChunk>& GetHeightMapChunks();
     std::vector<HousePlane>& GetHousePlanes();
+    std::vector<HouseRenderItem>& GetHouseRenderItems();
     std::vector<Light>& GetLights();
     std::vector<PickUp>& GetPickUps();
+    std::vector<Transform>& GetDoorAndWindowCubeTransforms();
     std::vector<Tree>& GetTrees();
     std::vector<Wall>& GetWalls();
     std::vector<Window>& GetWindows();

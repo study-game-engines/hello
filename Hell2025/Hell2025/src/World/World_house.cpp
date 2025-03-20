@@ -6,14 +6,15 @@ namespace World {
     OpenGLDetachedMesh g_houseMesh;
     std::vector<Vertex> g_houseMeshVertices;
     std::vector<uint32_t> g_houseMeshIndices;
-    std::vector<HouseRenderItem> g_renderItems;
 
     void UpdateHouseMeshVertexDataAndRenderItems() {
         std::vector<Wall>& walls = GetWalls();
         std::vector<HousePlane>& housePlanes = GetHousePlanes();
+        std::vector<HouseRenderItem>& houseRenderItems = GetHouseRenderItems();
 
         g_houseMeshVertices.clear();
         g_houseMeshIndices.clear();
+        houseRenderItems.clear();
 
         int baseVertex = 0;
         int baseIndex = 0;
@@ -28,7 +29,7 @@ namespace World {
                 const std::vector<Vertex>& vertices = wallSegment.GetVertices();
                 const std::vector<uint32_t>& indices = wallSegment.GetIndices();
 
-                HouseRenderItem renderItem;
+                HouseRenderItem& renderItem = houseRenderItems.emplace_back();
                 renderItem.baseColorTextureIndex = material->m_basecolor;
                 renderItem.normalMapTextureIndex = material->m_normal;
                 renderItem.rmaTextureIndex = material->m_rma;
@@ -38,8 +39,6 @@ namespace World {
                 renderItem.indexCount = indices.size();
                 renderItem.aabbMin = glm::vec4(0); // TODO
                 renderItem.aabbMax = glm::vec4(0); // TODO
-
-                RenderDataManager::SubmitHouseRenderItem(renderItem);
 
                 g_houseMeshVertices.insert(g_houseMeshVertices.end(), vertices.begin(), vertices.end());
                 g_houseMeshIndices.insert(g_houseMeshIndices.end(), indices.begin(), indices.end());
@@ -56,7 +55,7 @@ namespace World {
             std::vector<Vertex>& vertices = housePlane.GetVertices();
             std::vector<uint32_t>& indices = housePlane.GetIndices();
 
-            HouseRenderItem renderItem;
+            HouseRenderItem& renderItem = houseRenderItems.emplace_back();
             renderItem.baseColorTextureIndex = material->m_basecolor;
             renderItem.normalMapTextureIndex = material->m_normal;
             renderItem.rmaTextureIndex = material->m_rma;
@@ -67,8 +66,6 @@ namespace World {
             renderItem.aabbMin = glm::vec4(0); // TODO
             renderItem.aabbMax = glm::vec4(0); // TODO
 
-            RenderDataManager::SubmitHouseRenderItem(renderItem);
-
             g_houseMeshVertices.insert(g_houseMeshVertices.end(), vertices.begin(), vertices.end());
             g_houseMeshIndices.insert(g_houseMeshIndices.end(), indices.begin(), indices.end());
 
@@ -77,6 +74,10 @@ namespace World {
         }
 
         g_houseMesh.UpdateBuffers(g_houseMeshVertices, g_houseMeshIndices);
+
+        // Ceiling trims
+
+        // Floor trims
     }
 
     OpenGLDetachedMesh& GetHouseMesh() {

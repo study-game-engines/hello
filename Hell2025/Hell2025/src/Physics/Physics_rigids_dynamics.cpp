@@ -174,6 +174,16 @@ namespace Physics {
         }
     }
 
+    void AddFoceToRigidDynamic(uint64_t rigidDynamicId, glm::vec3 force) {
+        if (RigidDynamicExists(rigidDynamicId)) {
+            RigidDynamic& rigidDynamic = g_rigidDynamics[rigidDynamicId];
+            PxRigidDynamic* pxRigidDynamic = rigidDynamic.GetPxRigidDynamic();
+            PxVec3 pxForce = Physics::GlmVec3toPxVec3(force);
+            pxRigidDynamic->setRigidBodyFlag(PxRigidBodyFlag::eKINEMATIC, false);
+            pxRigidDynamic->addForce(pxForce);
+        }
+    }
+
     void RemoveRigidDynamic(uint64_t rigidDynamicId) {
         if (RigidDynamicExists(rigidDynamicId)) {
             PxPhysics* pxPhysics = Physics::GetPxPhysics();

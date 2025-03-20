@@ -20,10 +20,13 @@ namespace RenderDataManager {
     RendererData g_rendererData;
     std::vector<AnimatedGameObject*> g_animatedGameObjectsToSkin;
     std::vector<GPULight> g_gpuLightData;
+
     std::vector<HouseRenderItem> g_houseRenderItems;
     std::vector<RenderItem> g_decalRenderItems;
-    std::vector<RenderItem> g_instanceData;
+    std::vector<RenderItem> g_renderItems;
     std::vector<RenderItem> g_outlineRenderItems;
+
+    std::vector<RenderItem> g_instanceData;
     std::vector<ViewportData> g_viewportData;
     uint32_t g_baseSkinnedVertex;
 
@@ -43,7 +46,9 @@ namespace RenderDataManager {
     void BeginFrame() {
         g_animatedGameObjectsToSkin.clear();
         g_decalRenderItems.clear();
+        g_renderItems.clear();
         g_outlineRenderItems.clear();
+        g_houseRenderItems.clear();
     }
 
     void Update() {
@@ -164,7 +169,12 @@ namespace RenderDataManager {
     void UpdateDrawCommandsSet() {
         g_instanceData.clear();
         auto& set = g_drawCommandsSet;
-        CreateDrawCommands(set.geometry, World::GetRenderItems());
+
+        std::vector<RenderItem> renderItems;
+        renderItems.insert(renderItems.end(), g_renderItems.begin(), g_renderItems.end());
+        renderItems.insert(renderItems.end(), World::GetRenderItems().begin(), World::GetRenderItems().end());
+
+        CreateDrawCommands(set.geometry, renderItems);
         CreateDrawCommands(set.geometryBlended, World::GetRenderItemsBlended());
         CreateDrawCommands(set.geometryAlphaDiscarded, World::GetRenderItemsAlphaDiscarded());
         CreateDrawCommands(set.hairTopLayer, World::GetRenderItemsHairTopLayer());
@@ -371,6 +381,10 @@ namespace RenderDataManager {
     // Submissions
     void SubmitDecalRenderItem(const RenderItem& renderItem) {
         g_decalRenderItems.push_back(renderItem);
+    }
+
+    void SubmitRenderItem(const RenderItem& renderItem) {
+        g_renderItems.push_back(renderItem);
     }
 
     void SubmitHouseRenderItem(const HouseRenderItem& renderItem) {

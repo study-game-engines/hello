@@ -31,6 +31,8 @@ struct WallCreateInfo {
     float textureScale;
     float textureOffsetX;
     float textureOffsetY;
+    TrimType ceilingTrimType = TrimType::NONE;
+    TrimType floorTrimType = TrimType::NONE;
 };
 
 struct LightCreateInfo {

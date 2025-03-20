@@ -2,7 +2,7 @@
 #include "HellTypes.h"
 
 struct HousePlane {
-    void InitFromPoints(glm::vec3 p0, glm::vec3 p1, glm::vec3 p2, glm::vec3 p3);
+    void InitFromPoints(glm::vec3 p0, glm::vec3 p1, glm::vec3 p2, glm::vec3 p3, float textureScale);
     void SetMaterial(const std::string& materialName);
     void CleanUp();
 

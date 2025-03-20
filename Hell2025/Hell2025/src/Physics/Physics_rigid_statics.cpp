@@ -189,8 +189,8 @@ namespace Physics {
            return 0;
        }
 
-       std::vector<Vertex> globalVertices = AssetManager::GetVertices();
-       std::vector<uint32_t> globalIndices = AssetManager::GetIndices();
+       std::vector<Vertex>& globalVertices = AssetManager::GetVertices();
+       std::vector<uint32_t>& globalIndices = AssetManager::GetIndices();
 
        std::vector<Vertex> vertices;
        std::vector<uint32_t> indices;
@@ -203,7 +203,6 @@ namespace Physics {
                uint32_t index = globalIndices[i];
                const Vertex& vertex = globalVertices[index + mesh->baseVertex];
                vertices.push_back(vertex);
-//               indices.push_back(indices.size());
                indices.push_back(static_cast<uint32_t>(vertices.size() - 1));
            }
        }

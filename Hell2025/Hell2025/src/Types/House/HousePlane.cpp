@@ -4,7 +4,7 @@
 #include "Util/Util.h"
 #include "UniqueID.h"
 
-void HousePlane::InitFromPoints(glm::vec3 p0, glm::vec3 p1, glm::vec3 p2, glm::vec3 p3) {
+void HousePlane::InitFromPoints(glm::vec3 p0, glm::vec3 p1, glm::vec3 p2, glm::vec3 p3, float textureScale) {
     m_p0 = p0;
     m_p1 = p1;
     m_p2 = p2;
@@ -23,7 +23,6 @@ void HousePlane::InitFromPoints(glm::vec3 p0, glm::vec3 p1, glm::vec3 p2, glm::v
     m_indices = { 0, 1, 2, 2, 3, 0 };
 
     // Update UVs
-    float textureScale = 0.5f;
     float textureOffsetX = 0.0f;
     float textureOffsetY = 0.0f;
     for (Vertex& vertex : m_vertices) {

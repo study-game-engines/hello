@@ -24,7 +24,8 @@ namespace World {
     std::vector<GameObject> g_gameObjects;
     std::vector<HeightMapChunk> g_heightMapChunks;
     std::vector<HousePlane> g_housePlanes;
-    std::vector<PickUp> g_pickUps;
+    std::vector<PickUp> g_pickUps; 
+    std::vector<Transform> g_doorAndWindowCubeTransforms;
     std::vector<Tree> g_trees;
     std::vector<Wall> g_walls;
     std::vector<Window> g_windows;
@@ -368,7 +369,7 @@ namespace World {
             transform.position = window.GetPosition();
             transform.position.y += 1.5f;
             transform.rotation = window.GetRotation();
-            transform.scale = glm::vec3(0.2f, 1.185074f, 0.74f);
+            transform.scale = glm::vec3(0.2f, 1.185074f, 0.76f);
 
             ClippingCube& cube = g_clippingCubes.emplace_back();
             cube.Update(transform);
@@ -390,13 +391,6 @@ namespace World {
         //transform.scale = glm::vec3(0.75f, 0.75f, 0.75);
         //cube2.Update(transform);
         // REDESIGN MEEEEEEEEEE
-
-
-
-
-
-
-
 
 
 
@@ -439,8 +433,9 @@ namespace World {
         wallCreateInfo2.textureOffsetY = -1.4f;
         wallCreateInfo2.textureScale = 1 / 2.4f;
         wallCreateInfo2.height = 2.4f;
+        wallCreateInfo2.ceilingTrimType = TrimType::TIMBER;
+        wallCreateInfo2.floorTrimType = TrimType::TIMBER;
         wall2.Init(wallCreateInfo2);
-
 
         Wall& wall3 = g_walls.emplace_back();
         WallCreateInfo wallCreateInfo3;
@@ -455,16 +450,16 @@ namespace World {
         wallCreateInfo3.textureOffsetY = -1.4f;
         wallCreateInfo3.textureScale = 1 / 2.4f;
         wallCreateInfo3.height = 2.4f;
+        wallCreateInfo3.ceilingTrimType = TrimType::TIMBER;
+        wallCreateInfo3.floorTrimType = TrimType::TIMBER;
         wall3.Init(wallCreateInfo3);
-
-
 
         HousePlane& floor = g_housePlanes.emplace_back();
         glm::vec3 p0 = glm::vec3(0.0f, 0.0f, -3.0f);
         glm::vec3 p1 = glm::vec3(0.0f, 0.0f, 6.1f);
         glm::vec3 p2 = glm::vec3(4.4f, 0.0f, 6.1f);
         glm::vec3 p3 = glm::vec3(4.4f, 0.0f, -3.0f);
-        floor.InitFromPoints(p0, p1, p2, p3);
+        floor.InitFromPoints(p0, p1, p2, p3, 0.4f);
         floor.SetMaterial("FloorBoards");
 
         HousePlane& floor2 = g_housePlanes.emplace_back();
@@ -472,11 +467,11 @@ namespace World {
         p1 = glm::vec3(0.0f, 2.4f, 6.1f);
         p2 = glm::vec3(4.4f, 2.4f, 6.1f);
         p3 = glm::vec3(4.4f, 2.4f, -2.9f);
-        floor2.InitFromPoints(p3, p2, p1, p0);
+        floor2.InitFromPoints(p3, p2, p1, p0, 1.0f);
         floor2.SetMaterial("Ceiling2");
 
         LightCreateInfo lightCreateInfo;
-        lightCreateInfo.position = glm::vec3(2.2f, 2.2f, 0.0f);
+        lightCreateInfo.position = glm::vec3(2.2f, 2.175f, 0.0f);
         lightCreateInfo.color = DEFAULT_LIGHT_COLOR;
         lightCreateInfo.type = "HANGING_LIGHT";
         lightCreateInfo.radius = 8.5f;
@@ -615,19 +610,23 @@ namespace World {
         return count;
     }
 
+    std::vector<HouseRenderItem> g_renderItems;
+
     std::vector<AnimatedGameObject>& GetAnimatedGameObjects()   { return g_animatedGameObjects; }
+    std::vector<Bullet>& GetBullets()                           { return g_bullets; };
+    std::vector<BulletCasing>& GetBulletCasings()               { return g_bulletCasings; };
+    std::vector<ClippingCube>& GetClippingCubes()               { return g_clippingCubes; }
     std::vector<Decal>& GetDecals()                             { return g_decals; }
     std::vector<Door>& GetDoors()                               { return g_doors; }
-    std::vector<HousePlane>& GetHousePlanes()                   { return g_housePlanes; }
-    std::vector<Wall>& GetWalls()                               { return g_walls; }
-    std::vector<Window>& GetWindows()                           { return g_windows; }
-    std::vector<ClippingCube>& GetClippingCubes()               { return g_clippingCubes; }
-    std::vector<BulletCasing>& GetBulletCasings()               { return g_bulletCasings; };
-    std::vector<Bullet>& GetBullets()                           { return g_bullets; };
     std::vector<GameObject>& GetGameObjects()                   { return g_gameObjects; }
+    std::vector<HousePlane>& GetHousePlanes()                   { return g_housePlanes; }
+    std::vector<HouseRenderItem>& GetHouseRenderItems()         { return g_renderItems; }
     std::vector<Light>& GetLights()                             { return g_lights; };
     std::vector<PickUp>& GetPickUps()                           { return g_pickUps; };
+    std::vector<Transform>& GetDoorAndWindowCubeTransforms()    { return g_doorAndWindowCubeTransforms;  }
     std::vector<Tree>& GetTrees()                               { return g_trees; };
+    std::vector<Wall>& GetWalls()                               { return g_walls; }
+    std::vector<Window>& GetWindows()                           { return g_windows; }
 
     void PrintMapCreateInfoDebugInfo() {
         std::cout << "Map: '" << g_mapName << "'\n";

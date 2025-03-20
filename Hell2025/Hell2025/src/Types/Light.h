@@ -34,6 +34,6 @@ private:
     Transform m_transform2;
     std::vector<RenderItem> m_renderItems;
 
-    void UpdateTransforms();
+    //void UpdateTransforms();
     void UpdateRenderItems();
 };

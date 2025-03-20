@@ -10,7 +10,12 @@
 #include <span>
 
 namespace Util {
+    // Black magic
+    void PackUint64(uint64_t value, uint32_t& xOut, uint32_t& yOut);
+    void UnpackUint64(uint32_t xValue, uint32_t yValue, uint64_t& out);
+
     // Math
+    float EulerYRotationBetweenTwoPoints(glm::vec3 a, glm::vec3 b);
     glm::mat4 RotationMatrixFromForwardVector(glm::vec3 forward, glm::vec3 worldForward, glm::vec3 worldUp);
     glm::vec2 ComputeCentroid2D(const std::vector<glm::vec2>& points);
     std::vector<glm::vec2> SortConvexHullPoints2D(std::vector<glm::vec2>&points);
@@ -40,6 +45,7 @@ namespace Util {
     AABB GetAABBFromPoints(std::vector<glm::vec3>& points);
 
     // Raycasting
+    CubeRayResult CastCubeRay(const glm::vec3& rayOrigin, const glm::vec3 rayDir, std::vector<Transform>& cubeTransforms, float maxDistance = 99999);
     glm::vec3 GetMouseRayDir(glm::mat4 projection, glm::mat4 view, int windowWidth, int windowHeight, int mouseX, int mouseY);
     bool RayIntersectsTriangle(const glm::vec3& rayOrigin, const glm::vec3& rayDir, const glm::vec3& v0, const glm::vec3& v1, const glm::vec3& v2, float& t);
 

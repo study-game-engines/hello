@@ -1,6 +1,42 @@
 #include "Util.h"
+#include "AssetManagement/AssetManager.h"
 
 namespace Util {
+    CubeRayResult CastCubeRay(const glm::vec3& rayOrigin, const glm::vec3 rayDir, std::vector<Transform>& cubeTransforms, float maxDistance) {
+        CubeRayResult rayResult;
+        rayResult.distanceToHit = std::numeric_limits<float>::max();
+
+        Mesh* mesh = AssetManager::GetMeshByModelNameMeshName("Primitives", "Cube");
+        if (!mesh) return rayResult;
+
+        std::vector<Vertex>& vertices = AssetManager::GetVertices();
+        std::vector<uint32_t>& indices = AssetManager::GetIndices();
+
+        for (Transform& cubeTransform : cubeTransforms) {
+            const glm::mat4& modelMatrix = cubeTransform.to_mat4();
+
+            for (int i = mesh->baseIndex; i < mesh->baseIndex + mesh->indexCount; i += 3) {
+                uint32_t idx0 = indices[i + 0];
+                uint32_t idx1 = indices[i + 1];
+                uint32_t idx2 = indices[i + 2];
+                const glm::vec3& vert0 = modelMatrix * glm::vec4(vertices[idx0 + mesh->baseVertex].position, 1.0f);
+                const glm::vec3& vert1 = modelMatrix * glm::vec4(vertices[idx1 + mesh->baseVertex].position, 1.0f);
+                const glm::vec3& vert2 = modelMatrix * glm::vec4(vertices[idx2 + mesh->baseVertex].position, 1.0f);
+                float t = 0;
+
+                if (Util::RayIntersectsTriangle(rayOrigin, rayDir, vert0, vert1, vert2, t) && t < maxDistance && t < rayResult.distanceToHit) {
+                    rayResult.distanceToHit = t;
+                    rayResult.hitFound = true;
+                    rayResult.hitPosition = rayOrigin + (rayDir * t);
+                    rayResult.cubeTransform;
+                    rayResult.hitNormal = glm::normalize(glm::cross(vert1 - vert0, vert2 - vert0));
+                }
+            }
+        }
+
+        return rayResult;
+    }
+
     bool RayIntersectsTriangle(const glm::vec3& rayOrigin, const glm::vec3& rayDir, const glm::vec3& v0, const glm::vec3& v1, const glm::vec3& v2, float& t) {
         const float EPSILON = 1e-8f;
         glm::vec3 edge1 = v1 - v0;

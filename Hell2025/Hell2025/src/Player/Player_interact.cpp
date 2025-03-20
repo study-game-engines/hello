@@ -6,6 +6,10 @@
 #include <algorithm>
 
 void Player::UpdateInteract() {
+    m_interactObjectId = 0;
+    m_interactPhysicsId = 0;
+    m_interactObjectType = ObjectType::NONE;
+    m_interactPhysicsType = PhysicsType::NONE;
 
     OverlapReport m_overlapReport;
 
@@ -19,6 +23,13 @@ void Player::UpdateInteract() {
     m_cameraRayResult = Physics::CastPhysXRay(cameraRayOrigin, cameraRayDirection, 100, cameraRayFlags);
 
     // Interact overlap test
+    if (m_cameraRayResult.hitFound) {
+        PhysicsUserData& userData = m_cameraRayResult.userData;
+        m_interactObjectType = userData.objectType;
+        m_interactObjectId = userData.objectId;
+        m_interactPhysicsType = userData.physicsType;
+        m_interactPhysicsId = userData.physicsId;
+    }
     glm::vec3 cameraRayHitPosition = m_cameraRayResult.hitPosition;
 
 
@@ -40,9 +51,11 @@ void Player::UpdateInteract() {
         m_interactObjectId = userData.objectId;
         m_interactPhysicsType = userData.physicsType;
         m_interactPhysicsId = userData.physicsId;
-        m_interactFound = true;
     }
 
+    m_interactFound = (m_interactObjectType == ObjectType::PICK_UP || 
+                       m_interactObjectType == ObjectType::DOOR);
+     
     // Pick up selected item
     if (PressedInteract()) {
         if (m_interactObjectType == ObjectType::PICK_UP) {

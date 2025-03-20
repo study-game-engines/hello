@@ -17,9 +17,11 @@ namespace World {
         std::vector<Decal>& decals = GetDecals();
         std::vector<Door>& doors = GetDoors();
         std::vector<GameObject>& gameObjects = GetGameObjects();
+        std::vector<HouseRenderItem>& houseRenderItems = GetHouseRenderItems();
         std::vector<Light>& lights = GetLights();
         std::vector<PickUp>& pickUps = GetPickUps();
         std::vector<Tree>& trees = GetTrees();
+        std::vector<Wall>& walls = GetWalls();
         std::vector<Window>& windows = GetWindows();
 
         for (GameObject& gameObject : gameObjects) {
@@ -59,6 +61,11 @@ namespace World {
             g_renderItems.insert(g_renderItems.end(), door.GetRenderItems().begin(), door.GetRenderItems().end());
         }
 
+        // House render items
+        for (HouseRenderItem& houseRenderItem : houseRenderItems) {
+            RenderDataManager::SubmitHouseRenderItem(houseRenderItem);
+        }
+
         // Window
         mousePickIndex = 0;
         for (Window& window : windows) {
@@ -76,7 +83,6 @@ namespace World {
             if (tree.IsSelected()) {
                 RenderDataManager::SubmitOutlineRenderItems(tree.GetRenderItems());
             }
-
         }
 
         // Update each GameObject and collect render items
@@ -116,6 +122,26 @@ namespace World {
             animatedGameObject.UpdateRenderItems();
             animatedGameObject.SubmitForSkinning();
             g_skinnedRenderItems.insert(g_skinnedRenderItems.end(), animatedGameObject.GetRenderItems().begin(), animatedGameObject.GetRenderItems().end());
+        }
+
+        for (Wall& wall : walls) {
+            wall.SubmitTrimRenderItems();
+        }
+
+        // Hack to render door and window cube transforms
+        if (false) {
+            int meshIndex = AssetManager::GetMeshIndexByModelNameMeshName("Primitives", "Cube");
+            std::vector<Transform>& transforms = GetDoorAndWindowCubeTransforms();
+            for (Transform& transform : transforms) {
+                Material* material = AssetManager::GetDefaultMaterial();
+                RenderItem renderItem;
+                renderItem.meshIndex = meshIndex;
+                renderItem.modelMatrix = transform.to_mat4();
+                renderItem.baseColorTextureIndex = material->m_basecolor;
+                renderItem.normalMapTextureIndex = material->m_normal;
+                renderItem.rmaTextureIndex = material->m_rma;
+                RenderDataManager::SubmitRenderItem(renderItem);
+            }
         }
 
         // Animated game objects

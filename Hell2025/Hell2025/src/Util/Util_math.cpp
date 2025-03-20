@@ -6,6 +6,13 @@
 
 namespace Util {
 
+    float EulerYRotationBetweenTwoPoints(glm::vec3 a, glm::vec3 b) {
+        float delta_x = b.x - a.x;
+        float delta_y = b.z - a.z;
+        float theta_radians = atan2(delta_y, delta_x);
+        return -theta_radians;
+    }
+
     glm::mat4 RotationMatrixFromForwardVector(glm::vec3 forward, glm::vec3 worldForward, glm::vec3 worldUp) {
         forward = glm::normalize(forward);
         worldForward = glm::normalize(worldForward);  // e.g., (0, 0, 1)

@@ -42,17 +42,6 @@ void Decal::Init(const DecalCreateInfo& createInfo) {
     m_localMatrix *= Util::RotationMatrixFromForwardVector(m_localNormal, glm::vec3(0, 0, 1), glm::vec3(0, 1, 0));
     m_localMatrix *= glm::rotate(glm::mat4(1.0f), randomRotation, glm::vec3(0, 0, 1));
     m_localMatrix *= glm::scale(glm::mat4(1.0f), glm::vec3(scale));
-
-    std::cout << "surfaceHitNormal: " << Util::Vec3ToString(createInfo.surfaceHitNormal) << "\n";
-    std::cout << "m_localNormal: " << Util::Vec3ToString(m_localNormal) << "\n";
-
-    glm::mat4 rot = Util::RotationMatrixFromForwardVector(m_localNormal, glm::vec3(0, 0, 1), glm::vec3(0, 1, 0));
-
-    glm::vec3 result = rot * glm::vec4(createInfo.surfaceHitNormal, 0);
-    result = glm::normalize(result);
-
-    std::cout << "result: " << Util::Vec3ToString(result) << "\n";
-
 }
 
 void Decal::SubmitRenderItem() {

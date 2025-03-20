@@ -257,3 +257,8 @@ enum struct DecalType {
     PLASTER
 };
 
+enum struct TrimType {
+    NONE,
+    TIMBER,
+    PLASTER
+};

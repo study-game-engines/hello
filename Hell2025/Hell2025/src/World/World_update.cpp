@@ -8,10 +8,12 @@ namespace World {
 
     void LazyDebugSpawns();
     void ProcessBullets();
+    void UpdateDoorAndWindowCubeTransforms();
 
     void Update(float deltaTime) {
         ProcessBullets();
         LazyDebugSpawns();
+        UpdateDoorAndWindowCubeTransforms();
 
         std::vector<AnimatedGameObject>& animatedGameObjects = GetAnimatedGameObjects();
         std::vector<BulletCasing>& bulletCasings = GetBulletCasings();
@@ -21,6 +23,7 @@ namespace World {
         std::vector<Light>& lights = GetLights();
         std::vector<PickUp>& pickUps = GetPickUps();
         std::vector<Tree>& trees = GetTrees();
+        std::vector<Wall>& walls = GetWalls();
         std::vector<Window>& windows = GetWindows();
 
         for (AnimatedGameObject& animatedGameObject : animatedGameObjects) {
@@ -54,6 +57,10 @@ namespace World {
         for (Window& window : windows) {
             window.Update(deltaTime);
         }
+
+        for (Wall& wall : walls) {
+            // Nothing as of yet. Probably ever.
+        }
     }
 
     void ProcessBullets() {
@@ -71,51 +78,55 @@ namespace World {
             PhysXRayResult rayResult = Physics::CastPhysXRay(rayOrigin, rayDirection, rayLength, collisionFlags);
 
             // On hit
-            if (rayResult.hitFound && rayResult.userData != nullptr) {
-                PhysicsUserData* physicsUserData = (PhysicsUserData*)rayResult.userData;
+            if (rayResult.hitFound) {
+                PhysicsType& physicsType = rayResult.userData.physicsType;
+                ObjectType& objectType = rayResult.userData.objectType;
+                uint64_t physicsId = rayResult.userData.physicsId;
+                uint64_t objectId = rayResult.userData.objectId;
 
                 // Apply force if object is dynamic
-                float strength = 200.0f;
-                PxVec3 force = Physics::GlmVec3toPxVec3(bullet.GetDirection()) * strength;
-                PxRigidDynamic* pxRigidDynamic = (PxRigidDynamic*)rayResult.hitActor;
-                if (physicsUserData->physicsType == PhysicsType::RIGID_DYNAMIC) {
-                    pxRigidDynamic->setRigidBodyFlag(PxRigidBodyFlag::eKINEMATIC, false);
-                    pxRigidDynamic->addForce(force);
+                if (physicsType == PhysicsType::RIGID_DYNAMIC) {
+                    float strength = 200.0f;
+                    glm::vec3 force = bullet.GetDirection() * strength;
+                    Physics::AddFoceToRigidDynamic(physicsId, force);
                 }
 
-                DecalCreateInfo decalCreateInfo;
-                decalCreateInfo.parentPhysicsId = physicsUserData->physicsId;
-                decalCreateInfo.parentPhysicsType = physicsUserData->physicsType;
-                decalCreateInfo.parentObjectId = physicsUserData->objectId;
-                decalCreateInfo.parentObjectType = physicsUserData->objectType;
-                decalCreateInfo.surfaceHitPosition = rayResult.hitPosition;
-                decalCreateInfo.surfaceHitNormal = rayResult.surfaceNormal;
+                // Add decals for rigid static
+                if (physicsType == PhysicsType::RIGID_STATIC) {
+                    DecalCreateInfo decalCreateInfo;
+                    decalCreateInfo.parentPhysicsId = physicsId;
+                    decalCreateInfo.parentPhysicsType = physicsType;
+                    decalCreateInfo.parentObjectId = objectId;
+                    decalCreateInfo.parentObjectType = objectType;
+                    decalCreateInfo.surfaceHitPosition = rayResult.hitPosition;
+                    decalCreateInfo.surfaceHitNormal = rayResult.surfaceNormal;
 
-                // Plaster decal
-                if (physicsUserData->objectType == ObjectType::WALL_SEGMENT ||
-                    physicsUserData->objectType == ObjectType::HOUSE_PLANE ||
-                    physicsUserData->objectType == ObjectType::DOOR) {
-                    decalCreateInfo.decalType = DecalType::PLASTER;
-                    AddDecal(decalCreateInfo);
-                }
+                    // Plaster decal
+                    if (objectType == ObjectType::WALL_SEGMENT ||
+                        objectType == ObjectType::HOUSE_PLANE ||
+                        objectType == ObjectType::DOOR) {
+                        decalCreateInfo.decalType = DecalType::PLASTER;
+                        AddDecal(decalCreateInfo);
+                    }
 
-                // Glass decal
-                if (physicsUserData->objectType == ObjectType::WINDOW) {
-                    decalCreateInfo.decalType = DecalType::GLASS;
-                    AddDecal(decalCreateInfo);
+                    // Glass decal
+                    if (objectType == ObjectType::WINDOW) {
+                        decalCreateInfo.decalType = DecalType::GLASS;
+                        AddDecal(decalCreateInfo);
 
-                    decalCreateInfo.surfaceHitNormal *= glm::vec3(-1.0f);
-                    AddDecal(decalCreateInfo);
+                        decalCreateInfo.surfaceHitNormal *= glm::vec3(-1.0f);
+                        AddDecal(decalCreateInfo);
 
-                    // Create new bullet
-                    BulletCreateInfo bulletCreateInfo;
-                    bulletCreateInfo.origin = rayResult.hitPosition + bullet.GetDirection() * glm::vec3(0.05f);
-                    bulletCreateInfo.direction = bullet.GetDirection();
-                    bulletCreateInfo.damage = bullet.GetDamage();
-                    bulletCreateInfo.weaponIndex = bullet.GetWeaponIndex();
-                    newBullets.emplace_back(Bullet(bulletCreateInfo));
+                        // Create new bullet
+                        BulletCreateInfo bulletCreateInfo;
+                        bulletCreateInfo.origin = rayResult.hitPosition + bullet.GetDirection() * glm::vec3(0.05f);
+                        bulletCreateInfo.direction = bullet.GetDirection();
+                        bulletCreateInfo.damage = bullet.GetDamage();
+                        bulletCreateInfo.weaponIndex = bullet.GetWeaponIndex();
+                        newBullets.emplace_back(Bullet(bulletCreateInfo));
 
-                    glassWasHit = true;
+                        glassWasHit = true;
+                    }
                 }
             }
         }
@@ -151,6 +162,25 @@ namespace World {
             createInfo.rotation.z = Util::RandomFloat(-HELL_PI, HELL_PI);
             createInfo.pickUpType = Util::PickUpTypeToString(PickUpType::REMINGTON_870);
             AddPickUp(createInfo);
+        }
+    }
+
+    void UpdateDoorAndWindowCubeTransforms() {
+        std::vector<Transform>& transforms = GetDoorAndWindowCubeTransforms();
+        std::vector<Door>& doors = GetDoors();
+        std::vector<Window>& windows = GetWindows();
+
+        transforms.clear();
+        transforms.reserve(doors.size() + windows.size());
+
+        for (Door& door : doors) {
+            Transform& transform = transforms.emplace_back();
+            transform.position = door.GetPosition();
+            transform.position.y += DOOR_HEIGHT / 2;
+            transform.rotation.y = door.GetRotation().y;
+            transform.scale.x = 0.2f;
+            transform.scale.y = DOOR_HEIGHT * 1.1f;
+            transform.scale.z = 1.02f;
         }
     }
 }

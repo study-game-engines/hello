@@ -154,6 +154,7 @@ private:
     ObjectType m_interactObjectType = ObjectType::UNDEFINED;
     PhysicsType m_interactPhysicsType = PhysicsType::UNDEFINED;
 
+
     // Flashlight
     glm::vec3 m_flashlightPosition;
     glm::vec3 m_flashlightDirection;

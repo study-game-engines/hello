@@ -397,16 +397,6 @@ struct SelectionRectangleState {
     int currentY = 0;
 };
 
-struct PhysXRayResult {
-    std::string hitObjectName;
-    glm::vec3 hitPosition;
-    glm::vec3 surfaceNormal;
-    glm::vec3 rayDirection;
-    bool hitFound;
-    void* hitActor = nullptr;
-    void* userData = nullptr;
-};
-
 struct MeshRenderingInfo {
     uint32_t meshIndex;
     uint32_t materialIndex;
@@ -519,10 +509,10 @@ struct HeightMapChunk {
 };
 
 struct PhysicsUserData {
-    uint64_t physicsId;
-    uint64_t objectId;
-    PhysicsType physicsType;
-    ObjectType objectType;
+    uint64_t physicsId = 0;
+    uint64_t objectId = 0;
+    PhysicsType physicsType = PhysicsType::NONE;
+    ObjectType objectType = ObjectType::NONE;
 };
 
 struct OverlapResult {
@@ -530,9 +520,26 @@ struct OverlapResult {
     glm::vec3 objectPosition;
 };
 
+struct PhysXRayResult {
+    PhysicsUserData userData;
+    std::string hitObjectName;
+    glm::vec3 hitPosition;
+    glm::vec3 surfaceNormal;
+    glm::vec3 rayDirection;
+    bool hitFound;
+};
+
 struct OverlapReport {
     std::vector<OverlapResult> hits;
     bool HitsFound() {
         return hits.size();
     }
+};
+
+struct CubeRayResult {
+    Transform cubeTransform = Transform();
+    glm::vec3 hitPosition = glm::vec3(0.0f);
+    glm::vec3 hitNormal = glm::vec3(0.0f);
+    float distanceToHit = 0;
+    bool hitFound = false;
 };
