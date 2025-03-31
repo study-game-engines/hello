@@ -1,12 +1,7 @@
 #include "../GL_renderer.h"
 #include "API/OpenGL/GL_backend.h"
+#include "AssetManagement/AssetManager.h"
 #include "Renderer/RenderDataManager.h"
-
-
-// Get me out of here
-#include "World/World.h"
-// Get me out of here
-
 
 namespace OpenGLRenderer {
 

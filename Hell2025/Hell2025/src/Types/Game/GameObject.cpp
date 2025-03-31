@@ -2,6 +2,7 @@
 #include "AssetManagement/AssetManager.h"
 #include "Physics/Physics.h"
 #include "Util.h"
+#include "UniqueID.h"
 
 GameObject::GameObject(GameObjectCreateInfo createInfo) {
     SetModel(createInfo.modelName);
@@ -28,6 +29,8 @@ GameObject::GameObject(GameObjectCreateInfo createInfo) {
         filterData.collidesWith = (CollisionGroup)(PLAYER | BULLET_CASING | ITEM_PICK_UP);
         m_physicsId = Physics::CreateRigidStaticConvexMeshFromModel(m_transform, "Bench_ConvexHulls", filterData);
     }
+
+    m_objectId = UniqueID::GetNext();
 }
 
 GameObjectCreateInfo GameObject::GetCreateInfo() {
@@ -64,7 +67,7 @@ void GameObject::SetModel(const std::string& name) {
     m_model = AssetManager::GetModelByIndex(AssetManager::GetModelIndexByName(name.c_str()));
     if (m_model) {
         m_meshRenderingInfoSet.clear();
-        for (uint32_t& meshIndex : m_model->GetMeshIndices()) {
+        for (const uint32_t& meshIndex : m_model->GetMeshIndices()) {
             MeshRenderingInfo& meshRenderingInfo = m_meshRenderingInfoSet.emplace_back();
             meshRenderingInfo.meshIndex = meshIndex;
             meshRenderingInfo.materialIndex = AssetManager::GetMaterialIndexByName(DEFAULT_MATERIAL_NAME);
@@ -157,7 +160,7 @@ void GameObject::UpdateRenderItems() {
         if (!material) continue;
 
         RenderItem renderItem;
-        renderItem.mousePickType = (int)ObjectType::GAME_OBJECT;
+        renderItem.objectType = (int)ObjectType::GAME_OBJECT;
         renderItem.mousePickIndex = m_mousePickIndex;
         renderItem.modelMatrix = GetModelMatrix();
         renderItem.inverseModelMatrix = glm::inverse(renderItem.modelMatrix);
@@ -243,30 +246,10 @@ const glm::mat4 GameObject::GetModelMatrix() {
 }
 
 const glm::vec3 GameObject::GetObjectCenter() {
-    glm::vec3 aabbCenter = (m_model->m_aabbMin + m_model->m_aabbMax) * 0.5f;
+    glm::vec3 aabbCenter = (m_model->GetAABBMin() + m_model->GetAABBMax()) * 0.5f;
     return GetModelMatrix() * glm::vec4(aabbCenter, 1.0f);
 }
 
 const glm::vec3 GameObject::GetObjectCenterOffsetFromOrigin() {
     return GetObjectCenter() - glm::vec3(GetModelMatrix()[3]);
-}
-
-const std::vector<RenderItem>& GameObject::GetRenderItems() {
-    return m_renderItems;
-}
-
-const std::vector<RenderItem>& GameObject::GetRenderItemsBlended() {
-    return m_renderItemsBlended;
-}
-
-const std::vector<RenderItem>& GameObject::GetRenderItemsAlphaDiscarded() {
-    return m_renderItemsAlphaDiscarded;
-}
-
-const std::vector<RenderItem>& GameObject::GetRenderItemsHairTopLayer() {
-    return m_renderItemsHairTopLayer;
-}
-
-const std::vector<RenderItem>& GameObject::GetRenderItemsHairBottomLayer() {
-    return m_renderItemsHairBottomLayer;
 }

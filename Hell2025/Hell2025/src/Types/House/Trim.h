@@ -1,6 +1,6 @@
 #pragma once
 #include "HellTypes.h"
-#include "Renderer/Types/Model.hpp"
+#include "Types/Renderer/Model.h"
 
 struct Trim {
     void Init(Transform transform, const std::string& modelName, const std::string& materialName);

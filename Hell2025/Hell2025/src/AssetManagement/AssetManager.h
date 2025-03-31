@@ -1,13 +1,13 @@
 #pragma once
 #include "HellTypes.h"
 #include "File/File.h"
-#include "Renderer/Types/Animation.h"
-#include "Renderer/Types/Mesh.hpp"
-#include "Renderer/Types/Model.hpp"
-#include "Renderer/Types/SkinnedMesh.hpp"
-#include "Renderer/Types/SkinnedModel.h"
-#include "Renderer/Types/SpriteSheetTexture.h"
-#include "Renderer/Types/Texture.h"
+#include "Types/Animation/Animation.h"
+#include "Types/Renderer/Mesh.h"
+#include "Types/Renderer/Model.h"
+#include "Types/Renderer/SkinnedMesh.hpp"
+#include "Types/Renderer/SkinnedModel.h"
+#include "Types/Renderer/SpriteSheetTexture.h"
+#include "Types/Renderer/Texture.h"
 #include <span>
 #include <string>
 #include <vector>
@@ -49,6 +49,8 @@ namespace AssetManager {
     Mesh* GetMeshByModelNameMeshName(const std::string& modelName, const std::string& meshName);
     Mesh* GetMeshByModelNameMeshIndex(const std::string& modelName, uint32_t meshIndex);
     int GetMeshIndexByModelNameMeshName(const std::string& modelName, const std::string& meshName);
+    std::vector<Vertex> GetMeshVertices(Mesh* mesh);
+    void CreateMeshBvhs();
 
     // Models
     std::vector<Model>& GetModels();

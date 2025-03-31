@@ -6,7 +6,8 @@ namespace OpenGLRenderer {
     void LightingPass() {
         OpenGLFrameBuffer* gBuffer = GetFrameBuffer("GBuffer");
         OpenGLFrameBuffer* finalImageFBO = GetFrameBuffer("FinalImage");
-        OpenGLFrameBuffer* flashLightShadowMapFBO = GetFrameBuffer("FlashlightShadowMap");
+        OpenGLShadowMap* flashLightShadowMapsFBO = GetShadowMap("FlashlightShadowMaps");
+        //OpenGLFrameBuffer* flashLightShadowMapFBO = GetFrameBuffer("FlashlightShadowMap");
         OpenGLShader* lightingShader = GetShader("Lighting");
 
         if (!gBuffer) return;
@@ -23,8 +24,7 @@ namespace OpenGLRenderer {
         glBindTextureUnit(5, finalImageFBO->GetColorAttachmentHandleByName("ViewportIndex"));
         glBindTextureUnit(6, gBuffer->GetColorAttachmentHandleByName("Emissive"));
         glBindTextureUnit(7, AssetManager::GetTextureByName("Flashlight2")->GetGLTexture().GetHandle());
-        glBindTextureUnit(8, flashLightShadowMapFBO->GetDepthAttachmentHandle());
-        glBindTextureUnit(9, 339);
+        glBindTextureUnit(8, flashLightShadowMapsFBO->GetDepthTextureHandle());
 
         glBindImageTexture(0, gBuffer->GetColorAttachmentHandleByName("FinalLighting"), 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F);
 

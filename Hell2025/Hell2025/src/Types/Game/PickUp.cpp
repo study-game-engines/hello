@@ -22,16 +22,14 @@ void PickUp::Init(PickUpCreateInfo createInfo) {
         SetModel("Shotgun_AmmoBox");
         SetAllMeshMaterials("Shotgun_AmmoBox");
         float mass = 0.45f;
-        glm::vec3 modelExtents = m_model->m_aabbMax - m_model->m_aabbMin;
-        m_physicsId = Physics::CreateRigidDynamicFromBoxExtents(m_transform, modelExtents, mass, filterData);
+        m_physicsId = Physics::CreateRigidDynamicFromBoxExtents(m_transform, m_model->GetExtents(), mass, filterData);
     }
     // Shotty slug
     else if (m_pickUpType == PickUpType::SHOTGUN_AMMO_SLUG) {
         SetModel("Shotgun_AmmoBox");
         SetAllMeshMaterials("Shotgun_AmmoBoxSlug");
         float mass = 0.45f;
-        glm::vec3 modelExtents = m_model->m_aabbMax - m_model->m_aabbMin;
-        m_physicsId = Physics::CreateRigidDynamicFromBoxExtents(m_transform, modelExtents, mass, filterData);
+        m_physicsId = Physics::CreateRigidDynamicFromBoxExtents(m_transform, m_model->GetExtents(), mass, filterData);
     }
     // AKS74U
     else if (m_pickUpType == PickUpType::AKS74U) {
@@ -42,7 +40,6 @@ void PickUp::Init(PickUpCreateInfo createInfo) {
         SetMeshMaterial("Mesh3", "AKS74U_3");
         SetMeshMaterial("Mesh4", "AKS74U_4");
         float mass = 2.7f;
-        glm::vec3 modelExtents = m_model->m_aabbMax - m_model->m_aabbMin;
 
         // Convex mesh
         Model* model = AssetManager::GetModelByName("AKS74U_PickUpConvexMesh");
@@ -62,7 +59,6 @@ void PickUp::Init(PickUpCreateInfo createInfo) {
         SetModel("Shotgun_PickUp");
         SetAllMeshMaterials("Shotgun");
         float mass = 3.2f;
-        glm::vec3 modelExtents = m_model->m_aabbMax - m_model->m_aabbMin;
 
         // Convex mesh
         Model* model = AssetManager::GetModelByName("Shotgun_PickUpConvexMesh");
@@ -170,8 +166,8 @@ void PickUp::UpdateRenderItems() {
         Mesh* mesh = AssetManager::GetMeshByIndex(m_model->GetMeshIndices()[i]);
         if (mesh) {
             Material* material = AssetManager::GetMaterialByIndex(m_materialIndices[i]);
-            RenderItem renderItem;
-            renderItem.mousePickType = (int)ObjectType::PICK_UP;
+            RenderItem& renderItem = m_renderItems.emplace_back();
+            renderItem.objectType = (int)ObjectType::PICK_UP;
             renderItem.mousePickIndex = m_mousePickIndex;
             renderItem.modelMatrix = GetModelMatrix();
             renderItem.inverseModelMatrix = glm::inverse(renderItem.modelMatrix);
@@ -179,7 +175,7 @@ void PickUp::UpdateRenderItems() {
             renderItem.baseColorTextureIndex = material->m_basecolor;
             renderItem.normalMapTextureIndex = material->m_normal;
             renderItem.rmaTextureIndex = material->m_rma;
-            m_renderItems.push_back(renderItem);
+            Util::UpdateRenderItemAABB(renderItem);
         }
     }
 }

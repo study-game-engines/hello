@@ -36,7 +36,7 @@ struct RenderItem {
     int normalMapTextureIndex = 0;
     int rmaTextureIndex = 0;
 
-    int mousePickType = 0;
+    int objectType = 0;
     int mousePickIndex = 0;
     int baseSkinnedVertex = 0;
     int ignoredViewportIndex = -1;
@@ -165,14 +165,14 @@ struct FileInfo {
     std::string name;
     std::string ext;
     std::string dir;
-    std::string GetFileNameWithExtension() {
-        if (ext.length() > 0) {
-            return name + "." + ext;
-        }
-        else {
-            return name;
-        }
-    }
+    //std::string GetFileNameWithExtension() {
+    //    if (ext.length() > 0) {
+    //        return name + "." + ext;
+    //    }
+    //    else {
+    //        return name;
+    //    }
+    //}
 };
 
 struct Transform {
@@ -542,4 +542,14 @@ struct CubeRayResult {
     glm::vec3 hitNormal = glm::vec3(0.0f);
     float distanceToHit = 0;
     bool hitFound = false;
+};
+
+struct ObjectInstanceData {
+    uint64_t objectId;
+    uint64_t triangleMeshBvhId;
+    ObjectType objectType;
+    glm::vec3 worldAabbBoundsMin;
+    glm::vec3 worldAabbBoundsMax;
+    glm::vec3 worldAabbCenter;
+    glm::mat4 worldTransform;
 };

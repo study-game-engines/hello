@@ -7,6 +7,8 @@
 
 #include "API/OpenGL/Types/GL_debug_mesh.hpp"
 
+#include "raytracing/bvh.h"
+
 namespace OpenGLRenderer {
 
     OpenGLDebugMesh g_debugMeshPoints;
@@ -15,6 +17,7 @@ namespace OpenGLRenderer {
     OpenGLDebugMesh g_debugMeshDepthAwareLines;
 
     void DebugPass() {
+
         OpenGLShader* shader = GetShader("DebugVertex");
         OpenGLFrameBuffer* gBuffer = GetFrameBuffer("GBuffer");
 

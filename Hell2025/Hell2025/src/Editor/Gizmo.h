@@ -1,5 +1,5 @@
 #pragma once
-#include "../Renderer/Types/DetachedMesh.hpp"
+#include "Types/Renderer/DetachedMesh.hpp"
 #include <vector>
 
 enum class GizmoMode {

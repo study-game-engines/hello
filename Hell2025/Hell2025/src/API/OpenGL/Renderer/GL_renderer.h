@@ -6,6 +6,7 @@
 #include "API/OpenGL/Types/GL_detachedMesh.hpp"
 #include "API/OpenGL/Types/GL_frameBuffer.h"
 #include "API/OpenGL/Types/GL_shader.h"
+#include "API/OpenGL/Types/GL_shadow_map.h"
 #include "API/OpenGL/Types/GL_ssbo.hpp"
 #include "Viewport/Viewport.h"
 
@@ -74,9 +75,10 @@ namespace OpenGLRenderer {
     void DrawQuad();
 
     OpenGLCubemapView* GetCubemapView(const std::string& name);
-    OpenGLFrameBuffer* GetFrameBuffer(const std::string& name);
     OpenGLFrameBuffer* GetBlurBuffer(int viewportIndex, int bufferIndex);
+    OpenGLFrameBuffer* GetFrameBuffer(const std::string& name);
     OpenGLShader* GetShader(const std::string& name);
+    OpenGLShadowMap* GetShadowMap(const std::string& name);
 
     // SSBOs
     void CreateSSBO(const std::string& name, float size, GLbitfield flags);

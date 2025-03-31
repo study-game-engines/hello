@@ -1,7 +1,7 @@
 #pragma once
 #include "HellTypes.h"
 #include "CreateInfo.h"
-#include "Renderer/Types/Model.hpp"
+#include "Types/Renderer/Model.h"
 
 struct Light {
     Light() = default;
@@ -16,9 +16,11 @@ struct Light {
     void SetMousePickIndex(int index);
     void SetPosition(glm::vec3 position);
 
-    std::vector<RenderItem>& GetRenderItems();
+    const std::vector<RenderItem>& GetRenderItems() const   { return m_renderItems; }
+    const uint64_t GetObjectId() const                      { return m_objectId; }
 
 private:
+    uint64_t m_objectId = 0;
     glm::vec3 m_position = glm::vec3(0.0f, 0.0f, 0.0f);
     glm::vec3 m_color = glm::vec3(1, 0.7799999713897705, 0.5289999842643738);
     int m_mousePickIndex = 0;
@@ -34,6 +36,5 @@ private:
     Transform m_transform2;
     std::vector<RenderItem> m_renderItems;
 
-    //void UpdateTransforms();
     void UpdateRenderItems();
 };

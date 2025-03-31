@@ -74,10 +74,10 @@ vec3 GetSpotlightLighting(
     return brdf * irradiance * clamp(lightColor, 0, 1);
 }
 
-float SpotlightShadowCalculation(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir, vec3 fragWorldPos, vec3 lightPos, vec3 viewPos, sampler2D shadowMap) {
+float SpotlightShadowCalculation(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir, vec3 fragWorldPos, vec3 lightPos, vec3 viewPos, sampler2DArray shadowMapArray, int layerIndex) {
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
     projCoords = projCoords * 0.5 + 0.5;
-    float closestDepth = texture(shadowMap, projCoords.xy).r; 
+    float closestDepth = texture(shadowMapArray, vec3(projCoords.xy, layerIndex)).r; 
     float currentDepth = projCoords.z;    
     const float slopeFactor = 0.003;
     float slopeBias = slopeFactor * max(0.0, (1.0 - dot(normal, lightDir)));
@@ -90,12 +90,12 @@ float SpotlightShadowCalculation(vec4 fragPosLightSpace, vec3 normal, vec3 light
 
     // PCF Filtering
     float shadow = 0.0;
-    vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
+    vec2 texelSize = 1.0 / vec2(textureSize(shadowMapArray, 0).xy);
     const int kernelSize = 2;
     for (int x = -kernelSize; x <= kernelSize; ++x) {
         for (int y = -kernelSize; y <= kernelSize; ++y) {
             vec2 offset = vec2(x, y) * texelSize;
-            float closestDepth = texture(shadowMap, projCoords.xy + offset).r;
+            float closestDepth = texture(shadowMapArray, vec3(projCoords.xy + offset, layerIndex)).r;
             shadow += (currentDepth - bias > closestDepth) ? 1.0 : 0.0;
         }
     }

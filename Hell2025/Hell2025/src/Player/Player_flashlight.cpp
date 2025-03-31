@@ -1,5 +1,7 @@
 #include "Player.h"
 #include "Core/Audio.h"
+#include "Config/Config.h"
+#include "Viewport/ViewportManager.h"
 #include "Util.h"
 
 // GET THIS OUT OF HERE
@@ -59,7 +61,7 @@ void Player::UpdateFlashlight(float deltaTime) {
     if (textureHitPos == glm::vec3(0.0f) && physxRayHitPos == glm::vec3(0.0f)) {
         m_flashlightPosition = GetCameraPosition();
         m_flashlightDirection = GetCameraForward();
-        std::cout << "no hit \n";
+        //std::cout << "no hit \n";
         return;
     }
     // Otherwise take the closest hit
@@ -96,18 +98,34 @@ void Player::UpdateFlashlight(float deltaTime) {
         flashlightDirectionTarget = centeredFlashlightDirection;
     }
 
+
     // Lerp between last pos/dir to the new ones
     float interSpeed = 40;
     m_flashlightPosition = Util::LerpVec3(m_flashlightPosition, flashlightPositionTarget, deltaTime, interSpeed);
     m_flashlightDirection = Util::LerpVec3(m_flashlightDirection, flashlightDirectionTarget, deltaTime, interSpeed);
 
+    //OpenGLRenderer::DrawPoint(textureHitPos, RED);
+
     // Projection view matrix
-    float lightRadius = 25.0f;
-    float outerAngle = glm::radians(25.0);
+    float lightRadius = 10.0f;
+    float outerAngle = glm::radians(30.0);
     glm::vec3 flashlightTargetPosition = m_flashlightPosition + m_flashlightDirection;
     glm::mat4 flashlightViewMatrix = glm::lookAt(m_flashlightPosition, flashlightTargetPosition, GetCameraUp());
     glm::mat4 spotlightProjection = glm::perspectiveZO(outerAngle * 2, 1.0f, 0.05f, lightRadius);
     m_flashlightProjectionView = spotlightProjection * flashlightViewMatrix;
+}
 
-
+void Player::UpdateFlashlightFrustum() {
+    const Resolutions& resolutions = Config::GetResolutions();
+    int renderTargetWidth = resolutions.gBuffer.x;
+    int renderTargetHeight = resolutions.gBuffer.y;
+    Viewport* viewport = ViewportManager::GetViewportByIndex(m_viewportIndex);
+    float viewportWidth = viewport->GetSize().x * renderTargetWidth;
+    float viewportHeight = viewport->GetSize().y * renderTargetHeight;
+    float aspect = viewportWidth / viewportHeight;
+    float nearPlane = 0.01f;
+    float farPlane = 10.0f;
+    glm::mat4 perspectiveMatrix = glm::perspective(m_cameraZoom, aspect, nearPlane, farPlane);
+    glm::mat4 projectionView = perspectiveMatrix * m_camera.GetViewMatrix();
+    m_flashlightFrustum.Update(m_flashlightProjectionView);
 }

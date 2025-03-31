@@ -2,6 +2,7 @@
 #include "Renderer/Renderer.h"
 #include "Modelling/Clipping.h"
 #include "World/World.h"
+#include "AssetManagement/AssetManager.h"
 
 void Wall::Init(WallCreateInfo createInfo) {
     CleanUp();

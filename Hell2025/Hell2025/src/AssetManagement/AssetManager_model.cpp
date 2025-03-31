@@ -39,7 +39,9 @@ namespace AssetManager {
     }
 
     void LoadModel(Model* model) {
-        model->m_modelData = File::ImportModel("res/models/" + model->GetFileInfo().GetFileNameWithExtension());
+        const FileInfo& fileInfo = model->GetFileInfo();
+        std::string filepath = "res/models/" + fileInfo.name + "." + fileInfo.ext;
+        model->m_modelData = File::ImportModel(filepath);
         model->SetLoadingState(LoadingState::LOADING_COMPLETE);
     }
 

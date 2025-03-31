@@ -61,6 +61,9 @@ namespace World {
         for (Wall& wall : walls) {
             // Nothing as of yet. Probably ever.
         }
+
+        UpdateSceneBvh();
+        TestBvh();
     }
 
     void ProcessBullets() {

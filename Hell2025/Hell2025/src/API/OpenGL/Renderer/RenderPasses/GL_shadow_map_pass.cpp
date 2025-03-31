@@ -1,5 +1,6 @@
 #include "API/OpenGL/GL_backend.h"
 #include "API/OpenGL/Renderer/GL_renderer.h"
+#include "AssetManagement/AssetManager.h"
 #include "Core/Game.h"
 #include "Renderer/RenderDataManager.h"
 #include "Viewport/ViewportManager.h"
@@ -17,8 +18,8 @@ namespace OpenGLRenderer {
     }
 
     void RenderFlashLightShadowMaps() {
-        OpenGLShader* shader = GetShader("ShadowMapGeometry");
-        OpenGLFrameBuffer* frameBuffer = GetFrameBuffer("FlashlightShadowMap");
+        OpenGLShader* shader = GetShader("ShadowMap");
+        OpenGLShadowMap* shadowMapsFBO = GetShadowMap("FlashlightShadowMaps");
         OpenGLHeightMapMesh& heightMapMesh = OpenGLBackEnd::GetHeightMapMesh();
 
         glEnable(GL_DEPTH_TEST);
@@ -27,42 +28,37 @@ namespace OpenGLRenderer {
         glEnable(GL_CULL_FACE);
         glCullFace(GL_BACK);
 
-        frameBuffer->Bind();
-        frameBuffer->SetViewport();
-        frameBuffer->ClearDepthAttachment();
-
-        glm::mat4 lightProjectionView = Game::GetLocalPlayerByIndex(0)->GetFlashlightProjectionView();
+        shadowMapsFBO->Bind();
+        shadowMapsFBO->SetViewport();
 
         shader->Use();
-        shader->SetMat4("u_projectionView", lightProjectionView);
 
-        // Heightmap
-        // Scene geometry
-        glCullFace(GL_FRONT);
-        glBindVertexArray(OpenGLBackEnd::GetVertexDataVAO());
-        for (RenderItem& renderItem : World::GetRenderItems()) {
-            shader->SetMat4("u_modelMatrix", renderItem.modelMatrix);
-            Mesh* mesh = AssetManager::GetMeshByIndex(renderItem.meshIndex);
-            glDrawElementsBaseVertex(GL_TRIANGLES, mesh->indexCount, GL_UNSIGNED_INT, (void*)(sizeof(unsigned int) * mesh->baseIndex), mesh->baseVertex);
-        }
+        for (int i = 0; i < Game::GetLocalPlayerCount(); i++) {
+            shadowMapsFBO->BindLayer(i);
+            shadowMapsFBO->ClearLayer(i);
 
-
-
-        for (int i = 0; i < 4; i++) {
-            Viewport* viewport = ViewportManager::GetViewportByIndex(i);
+            glm::mat4 lightProjectionView = Game::GetLocalPlayerByIndex(i)->GetFlashlightProjectionView();
+            shader->SetMat4("u_projectionView", lightProjectionView);
 
             Frustum frustum;
             frustum.Update(lightProjectionView);
 
+            // Scene geometry
+            glCullFace(GL_FRONT);
+            glBindVertexArray(OpenGLBackEnd::GetVertexDataVAO());
+            for (RenderItem& renderItem : World::GetRenderItems()) {
+                shader->SetMat4("u_modelMatrix", renderItem.modelMatrix);
+                Mesh* mesh = AssetManager::GetMeshByIndex(renderItem.meshIndex);
+                glDrawElementsBaseVertex(GL_TRIANGLES, mesh->indexCount, GL_UNSIGNED_INT, (void*)(sizeof(unsigned int) * mesh->baseIndex), mesh->baseVertex);
+            }
+
+            // Heightfield chunks
             Transform transform;
             transform.scale = glm::vec3(HEIGHTMAP_SCALE_XZ, HEIGHTMAP_SCALE_Y, HEIGHTMAP_SCALE_XZ);
             glm::mat4 modelMatrix = transform.to_mat4();
             glm::mat4 inverseModelMatrix = glm::inverse(modelMatrix);
             shader->SetMat4("u_modelMatrix", modelMatrix);
-            int indexCount = (HEIGHT_MAP_SIZE - 1) * (HEIGHT_MAP_SIZE - 1) * 6;
-            int vertexCount = HEIGHT_MAP_SIZE * HEIGHT_MAP_SIZE;
 
-            // Heightfield chunks
             std::vector<HeightMapChunk>& chunks = World::GetHeightMapChunks();
             for (HeightMapChunk& chunk : chunks) {
                 if (!frustum.IntersectsAABB(AABB(chunk.aabbMin, chunk.aabbMax))) continue;
@@ -87,16 +83,11 @@ namespace OpenGLRenderer {
                 int baseVertex = renderItem.baseVertex;
                 int baseIndex = renderItem.baseIndex;glDrawElementsBaseVertex(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, (void*)(sizeof(unsigned int) * baseIndex), baseVertex);
             }
-            break;
-        }
-        glBindVertexArray(0);
 
-        //// TODO: find out what the fuck is going on here!
-        //
-        //int i = 0; // viewport index !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        //glBindVertexArray(heightMapMesh.GetVAO());
-        //glDrawElementsInstancedBaseVertexBaseInstance(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, (void*)(sizeof(unsigned int) * 0), 1, 0, i);
-        
+            //break;
+        }
+
+        glBindVertexArray(0);
         glCullFace(GL_BACK);
     }
 }

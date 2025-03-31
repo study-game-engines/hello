@@ -1,4 +1,7 @@
 #include "AssetManager.h"
+#include "Raytracing/bvh.h"
+#include "Timer.hpp"
+#include <mutex>
 
 namespace AssetManager {
 
@@ -21,16 +24,13 @@ namespace AssetManager {
         mesh.extents = aabbMax - aabbMin;
         mesh.boundingSphereRadius = std::max(mesh.extents.x, std::max(mesh.extents.y, mesh.extents.z)) * 0.5f;
 
-        // Remove me
-        mesh.m_vertices = vertices;
-        mesh.m_indices = indices;
-
         allVertices.reserve(allVertices.size() + vertices.size());
         allVertices.insert(std::end(allVertices), std::begin(vertices), std::end(vertices));
         allIndices.reserve(allIndices.size() + indices.size());
         allIndices.insert(std::end(allIndices), std::begin(indices), std::end(indices));
         g_nextVertexInsert += mesh.vertexCount;
         g_nextIndexInsert += mesh.indexCount;
+
         return meshes.size() - 1;
     }
 
@@ -76,6 +76,36 @@ namespace AssetManager {
         else {
             std::cout << "AssetManager::GetMeshByIndex() failed because index '" << index << "' is out of range. Size is " << meshes.size() << "!\n";
             return nullptr;
+        }
+    }
+
+    std::vector<Vertex> GetMeshVertices(Mesh* mesh) {
+        if (!mesh) {
+            std::cout << "AssetManager::GetMeshVertices() failed: mesh was nullptr\n";
+            return std::vector<Vertex>();
+        }
+
+        std::vector<Vertex>& vertices = AssetManager::GetVertices();
+        std::vector<uint32_t>& indices = AssetManager::GetIndices();
+
+        std::vector<Vertex> result;
+        result.reserve(mesh->vertexCount);
+
+        for (int i = mesh->baseIndex; i < mesh->baseIndex + mesh->indexCount; i++) {
+            uint32_t index = indices[i];
+            const Vertex& vertex = vertices[index + mesh->baseVertex];
+            result.push_back(vertex);
+        }
+
+        return result;
+    }
+
+    void CreateMeshBvhs() {
+        Timer timer ("CreateMeshBVHs()");
+        for (Mesh& mesh : GetMeshes()) {
+            Timer timer("CreateMeshBVHs() " + mesh.GetName() + " " + std::to_string(mesh.indexCount));
+            std::vector<Vertex> vertices = GetMeshVertices(&mesh);
+            mesh.triangleMeshBvhId = BVH::CreateBvhFromVertices(vertices);
         }
     }
 }

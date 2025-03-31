@@ -1,4 +1,5 @@
 ﻿#include "Player.h"
+#include "AssetManagement/AssetManager.h"
 #include "Core/Audio.h"
 #include "Core/Game.h"
 #include "Input/Input.h"

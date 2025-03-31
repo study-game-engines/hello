@@ -1,12 +1,12 @@
 #pragma once
 #include "HellEnums.h"
+#include "API/OpenGL/Types/GL_heightmap_mesh.h"
+#include "Types/GL_texture.h"
+#include "Types/Renderer/Texture.h"
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <string>
 #include <iostream>
-#include "Types/GL_texture.h"
-#include "../Renderer/Types/Texture.h"
-#include "Types/GL_heightmapMesh.h"
 
 namespace OpenGLBackEnd {
     // Core

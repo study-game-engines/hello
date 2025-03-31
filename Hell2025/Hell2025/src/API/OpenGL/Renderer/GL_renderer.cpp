@@ -1,22 +1,22 @@
 ﻿#include "GL_renderer.h"
-#include "../GL_backend.h"
-#include "../GL_Util.h"
-#include "../Types/GL_indirectBuffer.hpp"
-#include "../Types/GL_pbo.hpp"
-#include "../Types/GL_shader.h"
-#include "../Types/GL_ssbo.hpp"
-#include "../AssetManagement/AssetManager.h"
-#include "../BackEnd/BackEnd.h"
-#include "../Core/Audio.h"
-#include "../Core/Game.h"
-#include "../Config/Config.h"
-#include "../Input/Input.h"
-#include "../Player/Player.h"
-#include "../Renderer/RenderDataManager.h"
-#include "../Util/Util.h"
-#include "../UI/UIBackEnd.h"
-#include "../UI/TextBlitter.h"
-#include "../Types/GameObject.h"
+#include "API/OpenGL/GL_backend.h"
+#include "API/OpenGL/GL_Util.h"
+#include "API/OpenGL/Types/GL_indirectBuffer.hpp"
+#include "API/OpenGL/Types/GL_pbo.hpp"
+#include "API/OpenGL/Types/GL_shader.h"
+#include "API/OpenGL/Types/GL_ssbo.hpp"
+#include "AssetManagement/AssetManager.h"
+#include "BackEnd/BackEnd.h"
+#include "Core/Audio.h"
+#include "Core/Game.h"
+#include "Config/Config.h"
+#include "Input/Input.h"
+#include "Player/Player.h"
+#include "Renderer/RenderDataManager.h"
+#include "Util/Util.h"
+#include "UI/UIBackEnd.h"
+#include "UI/TextBlitter.h"
+#include "Types/Game/GameObject.h"
 #include "../Hardcoded.hpp"
 #include "../Timer.hpp"
 #include <glm/gtx/matrix_decompose.hpp>
@@ -34,6 +34,7 @@ namespace OpenGLRenderer {
 
     std::unordered_map<std::string, OpenGLShader> g_shaders;
     std::unordered_map<std::string, OpenGLFrameBuffer> g_frameBuffers;
+    std::unordered_map<std::string, OpenGLShadowMap> g_shadowMaps;
     std::unordered_map<std::string, OpenGLCubemapView> g_cubemapViews;
     std::unordered_map<std::string, OpenGLSSBO> g_ssbos;
     std::unordered_map<std::string, OpenGLRasterizerState> g_rasterizerStates;
@@ -100,6 +101,8 @@ namespace OpenGLRenderer {
 
         g_frameBuffers["FlashlightShadowMap"] = OpenGLFrameBuffer("Flashlight", FLASHLIGHT_SHADOWMAP_SIZE, FLASHLIGHT_SHADOWMAP_SIZE);
         g_frameBuffers["FlashlightShadowMap"].CreateDepthAttachment(GL_DEPTH32F_STENCIL8, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_BORDER, glm::vec4(1.0f));
+
+        g_shadowMaps["FlashlightShadowMaps"] = OpenGLShadowMap("FlashlightShadowMaps", 2048, 2048, 4);
 
         int framebufferHandle = g_frameBuffers["GBuffer"].GetHandle();
         int attachmentSlot = g_frameBuffers["GBuffer"].GetColorAttachmentSlotByName("MousePick");
@@ -203,8 +206,7 @@ namespace OpenGLRenderer {
         g_shaders["Outline"] = OpenGLShader({ "GL_outline.vert", "GL_outline.frag" });
         g_shaders["OutlineComposite"] = OpenGLShader({ "GL_outline_composite.comp" });
         g_shaders["OutlineMask"] = OpenGLShader({ "GL_outline_mask.vert", "GL_outline_mask.frag" });
-        g_shaders["ShadowMapGeometry"] = OpenGLShader({ "GL_shadow_map_geometry.vert", "GL_shadow_map.frag" });
-        g_shaders["ShadowMapHeightMap"] = OpenGLShader({ "GL_shadow_map_heightmap.vert", "GL_shadow_map.frag" });
+        g_shaders["ShadowMap"] = OpenGLShader({ "GL_shadow_map.vert", "GL_shadow_map.frag" });
         g_shaders["SolidColor"] = OpenGLShader({ "GL_solid_color.vert", "GL_solid_color.frag" });
         g_shaders["Skybox"] = OpenGLShader({ "GL_skybox.vert", "GL_skybox.frag" });
         g_shaders["SpriteSheet"] = OpenGLShader({ "GL_sprite_sheet.vert", "GL_sprite_sheet.frag" });
@@ -415,6 +417,11 @@ namespace OpenGLRenderer {
     OpenGLFrameBuffer* GetFrameBuffer(const std::string& name) {
         auto it = g_frameBuffers.find(name);
         return (it != g_frameBuffers.end()) ? &it->second : nullptr;
+    }
+
+    OpenGLShadowMap* GetShadowMap(const std::string& name) {
+        auto it = g_shadowMaps.find(name);
+        return (it != g_shadowMaps.end()) ? &it->second : nullptr;
     }
 
     OpenGLFrameBuffer* GetBlurBuffer(int viewportIndex, int bufferIndex) {

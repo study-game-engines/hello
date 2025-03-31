@@ -63,6 +63,7 @@ void Player::Update(float deltaTime) {
     UpdateAudio();
     UpdateUI();
     UpdateFlashlight(deltaTime);
+    UpdateFlashlightFrustum();
     if (Input::KeyPressed(HELL_KEY_K)) {
         m_awaitingSpawn = true;
         WeaponManager::Init(); // remove me

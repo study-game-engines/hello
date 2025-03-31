@@ -119,6 +119,7 @@ namespace AssetManager {
             BuildGoldenMaterialVariants();
             BuildIndexMaps();
             BuildSpriteSheetTextures();
+            CreateMeshBvhs();
 
             HeightMapManager::Init();
             MapManager::Init();
@@ -332,6 +333,7 @@ namespace AssetManager {
     Mesh* GetMeshByModelNameMeshIndex(const std::string& modelName, uint32_t meshIndex) {
         Model* model = GetModelByName(modelName);
         if (!model || meshIndex < 0 && meshIndex >= model->GetMeshCount()) {
+            std::cout << "AssetManager::GetMeshByModelNameMeshIndex() failed: model name '" << modelName << "' not found\n";
             return nullptr;
         }
         else {

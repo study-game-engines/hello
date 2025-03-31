@@ -1,5 +1,5 @@
 #pragma once
-#include "GL_heightmapMesh.h"
+#include "GL_heightmap_mesh.h"
 #include <glm/glm.hpp>
 #include <glad/glad.h>
 

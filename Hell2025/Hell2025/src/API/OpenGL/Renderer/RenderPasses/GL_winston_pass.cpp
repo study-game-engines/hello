@@ -1,4 +1,5 @@
 #include "API/OpenGL/Renderer/GL_renderer.h"
+#include "AssetManagement/AssetManager.h"
 #include "Core/Game.h"
 #include "Renderer/RenderDataManager.h"
 #include "Viewport/ViewportManager.h"`

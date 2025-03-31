@@ -1,6 +1,6 @@
 #pragma once
-#include "Renderer/Types/SkinnedModel.h"
-#include "Renderer/Types/AnimationLayer.h"
+#include "Types/Animation/AnimationLayer.h"
+#include "Types/Renderer/SkinnedModel.h"
 #include <unordered_map>
 
 struct MeshRenderingEntry {

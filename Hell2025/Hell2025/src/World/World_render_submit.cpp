@@ -1,4 +1,5 @@
 #include "World.h"
+#include "AssetManagement/AssetManager.h"
 #include "Core/Game.h"
 #include "Renderer/RenderDataManager.h"
 

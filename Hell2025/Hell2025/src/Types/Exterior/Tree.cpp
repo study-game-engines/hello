@@ -1,5 +1,6 @@
 #include "Tree.h"
 #include "AssetManagement/AssetManager.h"
+#include "UniqueID.h"
 #include "Util.h"
 
 Tree::Tree(TreeCreateInfo createInfo) {
@@ -20,6 +21,8 @@ Tree::Tree(TreeCreateInfo createInfo) {
         m_model = AssetManager::GetModelByName("TreeLarge_2");
         m_material = AssetManager::GetMaterialByName("TreeLarge_0");
     }
+
+    m_objectId = UniqueID::GetNext();
 }
 
 TreeCreateInfo Tree::GetCreateInfo() {
@@ -62,8 +65,8 @@ void Tree::UpdateRenderItems() {
     for (int i = 0; i < m_model->GetMeshCount(); i++) {
         Mesh* mesh = AssetManager::GetMeshByIndex(m_model->GetMeshIndices()[i]);
         if (mesh) {
-            RenderItem renderItem;
-            renderItem.mousePickType = (int)ObjectType::TREE;
+            RenderItem& renderItem = m_renderItems.emplace_back();
+            renderItem.objectType = (int)ObjectType::TREE;
             renderItem.mousePickIndex = m_mousePickIndex;
             renderItem.modelMatrix = GetModelMatrix();
             renderItem.inverseModelMatrix = glm::inverse(renderItem.modelMatrix);
@@ -71,7 +74,7 @@ void Tree::UpdateRenderItems() {
             renderItem.baseColorTextureIndex = m_material->m_basecolor;
             renderItem.normalMapTextureIndex = m_material->m_normal;
             renderItem.rmaTextureIndex = m_material->m_rma;
-            m_renderItems.push_back(renderItem);
+            Util::UpdateRenderItemAABB(renderItem);
         }
     }
 }

@@ -1,4 +1,5 @@
 #include "World.h"
+#include "AssetManagement/AssetManager.h"
 #include "Renderer/RenderDataManager.h"
 
 namespace World {

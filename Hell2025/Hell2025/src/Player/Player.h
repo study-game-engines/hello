@@ -1,10 +1,11 @@
 #pragma once
 #include "HellTypes.h"
 #include "Camera/Camera.h"
+#include "Camera/Frustum.h"
 #include "Math/AABB.h"
 #include "Physics/Physics.h"
-#include "Types/AnimatedGameObject.h"
-#include "Types/SpriteSheetObject.h"
+#include "Types/Game/AnimatedGameObject.h"
+#include "Types/Renderer/SpriteSheetObject.h"
 #include "Weapon/WeaponManager.h"
 
 struct Player {
@@ -43,6 +44,7 @@ struct Player {
     void UpdateBreatheBob(float deltaTime);
     void UpdateAudio();
     void UpdateFlashlight(float deltaTime);
+    void UpdateFlashlightFrustum();
     void UpdateAnimatedGameObjects(float deltaTime);
     void UpdateWeaponSlide();
 
@@ -139,15 +141,18 @@ struct Player {
 
     ivecXZ GetChunkPos() { return m_chunkPos; }
 
-    bool InteractFound() { return m_interactFound; }
-    uint64_t GetInteractObjectId() { return m_interactObjectId; }
-    ObjectType GetInteractObjectType() { return m_interactObjectType; }
+    bool InteractFound()                { return m_interactFound; }
+    uint64_t GetInteractObjectId()      { return m_interactObjectId; }
+    ObjectType GetInteractObjectType()  { return m_interactObjectType; }
+    Frustum& GetFlashlightFrustum()     { return m_flashlightFrustum; }
 
 private:
     glm::vec3 m_position = glm::vec3(0.0f);
     ivecXZ m_chunkPos;
 
     // Interact
+
+    Frustum m_flashlightFrustum;
     bool m_interactFound = false;
     uint64_t m_interactObjectId = 0;
     uint64_t m_interactPhysicsId = 0;

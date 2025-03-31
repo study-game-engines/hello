@@ -2,7 +2,7 @@
 #include "HellTypes.h"
 #include "CreateInfo.h"
 #include "Physics/Types/RigidDynamic.h"
-#include "../Renderer/Types/Model.hpp"
+#include "Types/Renderer/Model.h"
 
 struct GameObject {
     GameObject() = default;
@@ -40,14 +40,16 @@ struct GameObject {
     const glm::vec3 GetObjectCenter();
     const glm::vec3 GetObjectCenterOffsetFromOrigin();
 
-    const std::vector<RenderItem>& GetRenderItems();
-    const std::vector<RenderItem>& GetRenderItemsBlended();
-    const std::vector<RenderItem>& GetRenderItemsAlphaDiscarded();
-    const std::vector<RenderItem>& GetRenderItemsHairTopLayer();
-    const std::vector<RenderItem>& GetRenderItemsHairBottomLayer();
+    const std::vector<RenderItem>& GetRenderItems() const                   { return m_renderItems; }
+    const std::vector<RenderItem>& GetRenderItemsBlended()const             { return m_renderItemsBlended; }
+    const std::vector<RenderItem>& GetRenderItemsAlphaDiscarded() const     { return m_renderItemsAlphaDiscarded; }
+    const std::vector<RenderItem>& GetRenderItemsHairTopLayer() const       { return m_renderItemsHairTopLayer; }
+    const std::vector<RenderItem>& GetRenderItemsHairBottomLayer() const    { return m_renderItemsHairBottomLayer; }
+    const uint64_t GetObjectId() const                                      { return m_objectId; }
 
 private:
     uint64_t m_physicsId = 0;
+    uint64_t m_objectId = 0;
     int m_mousePickIndex = 0;
     bool m_selected = false;
     bool m_hasPhysics = false;

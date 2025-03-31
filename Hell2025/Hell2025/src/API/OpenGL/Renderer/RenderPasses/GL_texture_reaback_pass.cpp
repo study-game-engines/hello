@@ -50,6 +50,8 @@ namespace OpenGLRenderer {
                 Player* player = Game::GetLocalPlayerByIndex(i);
                 glm::ivec2 coords = player->GetViewportCenter();
 
+                //std::cout << i << ": " << coords.x << ", " << coords.y << "\n";
+
                 int xOffset = coords.x;
                 int yOffset = coords.y;
                 int width = 1;

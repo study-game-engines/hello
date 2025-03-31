@@ -4,6 +4,7 @@
 #include "Physics/Physics.h"
 #include "Physics/Physics.h"
 #include "UniqueID.h"
+#include "Util.h"
 
 void Door::Init(DoorCreateInfo createInfo) {
     m_position = createInfo.position;
@@ -94,7 +95,7 @@ void Door::UpdateRenderItems() {
     // Bail if models are invalid
     if (!m_doorModel || !m_frameModel) return;
 
-    for (uint32_t& meshIndex : m_doorModel->GetMeshIndices()) {
+    for (const uint32_t& meshIndex : m_doorModel->GetMeshIndices()) {
         Mesh* mesh = AssetManager::GetMeshByIndex(meshIndex);
         RenderItem& renderItem = m_renderItems.emplace_back();
         renderItem.modelMatrix = m_doorModelMatrix;
@@ -103,9 +104,10 @@ void Door::UpdateRenderItems() {
         renderItem.baseColorTextureIndex = m_material->m_basecolor;
         renderItem.rmaTextureIndex = m_material->m_rma;
         renderItem.normalMapTextureIndex = m_material->m_normal;
+        Util::UpdateRenderItemAABB(renderItem);
     }
 
-    for (uint32_t& meshIndex : m_frameModel->GetMeshIndices()) {
+    for (const uint32_t& meshIndex : m_frameModel->GetMeshIndices()) {
         Mesh* mesh = AssetManager::GetMeshByIndex(meshIndex);
         RenderItem& renderItem = m_renderItems.emplace_back();
         renderItem.modelMatrix = m_frameModelMatrix;
@@ -114,6 +116,7 @@ void Door::UpdateRenderItems() {
         renderItem.baseColorTextureIndex = m_material->m_basecolor;
         renderItem.rmaTextureIndex = m_material->m_rma;
         renderItem.normalMapTextureIndex = m_material->m_normal;
+        Util::UpdateRenderItemAABB(renderItem);
     }
 }
 

@@ -2,7 +2,7 @@
 #include "HellTypes.h"
 #include "HellEnums.h"
 #include "CreateInfo.h"
-#include "Renderer/Types/Model.hpp"
+#include "Types/Renderer/Model.h"
 
 struct PickUp {
     PickUp() = default;

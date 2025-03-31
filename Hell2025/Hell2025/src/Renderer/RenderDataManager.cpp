@@ -1,4 +1,5 @@
 #include "RenderDataManager.h"
+#include "AssetManagement/AssetManager.h"
 #include "HellDefines.h"
 #include "BackEnd/BackEnd.h"
 #include "Camera/Frustum.h"

@@ -1,6 +1,6 @@
 #pragma once
 #include "HellEnums.h"
-#include "../Renderer/Types/Texture.h"
+#include "Types/Renderer/Texture.h"
 
 struct UploadContext {
     VkFence uploadFence;

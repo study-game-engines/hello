@@ -3,6 +3,7 @@
 #include "Physics/Physics.h"
 #include "Physics/Physics.h"
 #include "UniqueID.h"
+#include "Util.h"
 #include <unordered_map>
 
 void Window::Init(WindowCreateInfo createInfo) {
@@ -78,7 +79,7 @@ void Window::UpdateRenderItems() {
     // Bail if model is invalid
     if (!m_model) return;
 
-    for (uint32_t& meshIndex : m_model->GetMeshIndices()) {
+    for (const uint32_t& meshIndex : m_model->GetMeshIndices()) {
         Mesh* mesh = AssetManager::GetMeshByIndex(meshIndex);
         RenderItem& renderItem = m_renderItems.emplace_back();
         renderItem.modelMatrix = m_modelMatrix;
@@ -92,12 +93,13 @@ void Window::UpdateRenderItems() {
         renderItem.baseColorTextureIndex = material->m_basecolor;
         renderItem.rmaTextureIndex = material->m_rma;
         renderItem.normalMapTextureIndex = material->m_normal;
+        Util::UpdateRenderItemAABB(renderItem);
     }
 
     // Bail if model is invalid
     if (!m_glassModel) return;
     
-    for (uint32_t& meshIndex : m_glassModel->GetMeshIndices()) {
+    for (const uint32_t& meshIndex : m_glassModel->GetMeshIndices()) {
         Mesh* mesh = AssetManager::GetMeshByIndex(meshIndex);
         RenderItem& renderItem = m_glassRenderItems.emplace_back();
         renderItem.modelMatrix = m_modelMatrix;
@@ -106,6 +108,7 @@ void Window::UpdateRenderItems() {
         renderItem.baseColorTextureIndex = m_exteriorMaterial->m_basecolor;
         renderItem.rmaTextureIndex = m_exteriorMaterial->m_rma;
         renderItem.normalMapTextureIndex = m_exteriorMaterial->m_normal;
+        Util::UpdateRenderItemAABB(renderItem);
     }
 }
 

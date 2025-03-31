@@ -1,19 +1,18 @@
 #pragma once
 #include "HellTypes.h"
-#include "AssetManagement/AssetManager.h"
 #include "Core/Debug.h"
-#include "Types/AnimatedGameObject.h"
-#include "Types/Bullet.h"
-#include "Types/BulletCasing.h"
-#include "Types/Decal.h"
+#include "Types/Game/AnimatedGameObject.h"
+#include "Types/Game/Bullet.h"
+#include "Types/Game/BulletCasing.h"
+#include "Types/Game/Decal.h"
+#include "Types/Game/GameObject.h"
+#include "Types/Game/Light.h"
+#include "Types/Game/PickUp.h"
 #include "Types/House/Door.h"
 #include "Types/House/HousePlane.h"
 #include "Types/House/Wall.h"
 #include "Types/House/Window.h"
-#include "Types/GameObject.h"
-#include "Types/Light.h"
-#include "Types/PickUp.h"
-#include "Types/Tree.h"
+#include "Types/Exterior/Tree.h"
 #include "Util/Util.h"
 #include "glm/gtx/intersect.hpp"
 #include <vector>
@@ -59,8 +58,10 @@ namespace World {
     // Removal
     void RemovePickUp(uint64_t objectID);
     
-
-    //AnimatedGameObject* GetAnimatedGameObjectByIndex(int32_t index);
+    // BVH
+    void UpdateSceneBvh();
+    void TestBvh();
+    
 
     const float GetWorldSpaceWidth();
     const float GetWorldSpaceDepth();

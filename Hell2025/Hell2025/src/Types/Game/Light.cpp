@@ -2,6 +2,7 @@
 #include "AssetManagement/AssetManager.h"
 #include "Physics/Physics.h"
 #include "Util.h"
+#include "UniqueID.h"
 
 Light::Light(LightCreateInfo createInfo) {   
     m_position = createInfo.position;
@@ -34,6 +35,8 @@ Light::Light(LightCreateInfo createInfo) {
             std::cout << "no hit\n";
         }
     }
+
+    m_objectId = UniqueID::GetNext();
 }
 
 
@@ -47,7 +50,7 @@ void Light::UpdateRenderItems() {
     if (m_model0) {
         for (uint32_t meshIndex : m_model0->GetMeshIndices()) {
             RenderItem& renderItem = m_renderItems.emplace_back();
-            renderItem.mousePickType = (int)ObjectType::LIGHT;
+            renderItem.objectType = (int)ObjectType::LIGHT;
             renderItem.mousePickIndex = m_mousePickIndex;
             renderItem.modelMatrix = m_transform0.to_mat4();
             renderItem.inverseModelMatrix = glm::inverse(renderItem.modelMatrix);
@@ -69,7 +72,7 @@ void Light::UpdateRenderItems() {
     if (m_model1) {
         for (uint32_t meshIndex : m_model1->GetMeshIndices()) {
             RenderItem& renderItem = m_renderItems.emplace_back();
-            renderItem.mousePickType = (int)ObjectType::LIGHT;
+            renderItem.objectType = (int)ObjectType::LIGHT;
             renderItem.mousePickIndex = m_mousePickIndex;
             renderItem.modelMatrix = m_transform1.to_mat4();
             renderItem.inverseModelMatrix = glm::inverse(renderItem.modelMatrix);
@@ -90,7 +93,7 @@ void Light::UpdateRenderItems() {
     if (m_model2) {
         for (uint32_t meshIndex : m_model2->GetMeshIndices()) {
             RenderItem& renderItem = m_renderItems.emplace_back();
-            renderItem.mousePickType = (int)ObjectType::LIGHT;
+            renderItem.objectType = (int)ObjectType::LIGHT;
             renderItem.mousePickIndex = m_mousePickIndex;
             renderItem.modelMatrix = m_transform2.to_mat4();
             renderItem.inverseModelMatrix = glm::inverse(renderItem.modelMatrix);
@@ -108,10 +111,10 @@ void Light::UpdateRenderItems() {
             }
         }
     }
-}
 
-std::vector<RenderItem>& Light::GetRenderItems() {
-    return m_renderItems;
+    for (RenderItem& renderItem : m_renderItems) {
+        Util::UpdateRenderItemAABB(renderItem);
+    }
 }
 
 void Light::SetMousePickIndex(int index) {

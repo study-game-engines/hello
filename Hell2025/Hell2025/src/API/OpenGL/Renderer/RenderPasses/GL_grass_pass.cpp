@@ -1,6 +1,6 @@
 ﻿#include "API/OpenGL/Renderer/GL_renderer.h" 
 #include "AssetManagement/AssetManager.h"
-#include "Renderer/Types/GrassMesh.h"
+#include "Types/Renderer/GrassMesh.h"
 
 #include "API/OpenGL/GL_backend.h"
 #include "Config/Config.h"

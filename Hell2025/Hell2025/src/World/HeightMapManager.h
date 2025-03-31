@@ -1,5 +1,5 @@
 #pragma once
-#include "Renderer/Types/TextureArray.h"
+#include "Types/Renderer/TextureArray.h"
 #include <vector>
 #include <string>
 

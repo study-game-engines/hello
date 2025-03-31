@@ -1,6 +1,6 @@
 #pragma once
 #include "HellTypes.h"
-#include "Types/AnimatedGameObject.h"
+#include "Types/Game/AnimatedGameObject.h"
 #include <vector>
 
 namespace RenderDataManager {

@@ -1,7 +1,7 @@
 #pragma once
 #include "HellTypes.h"
 #include "CreateInfo.h"
-#include "Renderer/Types/Model.hpp"
+#include "Types/Renderer/Model.h"
 
 struct Window {
     void Init(WindowCreateInfo createInfo);

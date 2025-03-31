@@ -1,7 +1,7 @@
 #pragma once
 #include "HellTypes.h"
 #include "CreateInfo.h"
-#include "Renderer/Types/SpriteSheetTexture.h"
+#include "Types/Renderer/SpriteSheetTexture.h"
 #include <string>
 
 struct SpriteSheetObject {

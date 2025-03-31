@@ -2,7 +2,7 @@
 #include "HellEnums.h"
 #include "HellTypes.h"
 #include "Math/AABB.h"
-#include "Renderer/Types/Animation.h"
+#include "Types/Animation/Animation.h"
 #include <vector>
 #include <filesystem>
 #include <assimp/matrix3x3.h>

@@ -1,7 +1,7 @@
 #pragma once
 #include "HellTypes.h"
 #include "CreateInfo.h"
-#include "Renderer/Types/Model.hpp"
+#include "Types/Renderer/Model.h"
 
 struct Door {
     void Init(DoorCreateInfo createInfo);
@@ -13,8 +13,12 @@ struct Door {
 
     const glm::vec3& GetPosition() const                    { return m_position; }
     const glm::vec3& GetRotation() const                    { return m_rotation; }
-    const uint64_t GetObjectId() const                      { return m_objectId; }
+    const glm::mat4& GetDoorModelMatrix () const            { return m_doorModelMatrix; }
+    const glm::mat4& GetDoorFrameModelMatrix () const       { return m_frameModelMatrix; }
+    const Model* GetDoorModel() const                       { return m_doorModel; }
+    const Model* GetDoorFrameModel() const                  { return m_frameModel; }
     const OpeningState& GetOpeningState() const             { return m_openingState; }
+    const uint64_t GetObjectId() const                      { return m_objectId; }
     const std::vector<RenderItem>& GetRenderItems() const   { return m_renderItems; }
 
 private:
