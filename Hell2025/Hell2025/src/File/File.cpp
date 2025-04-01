@@ -503,53 +503,6 @@ uint64_t File::GetLastModifiedTime(const std::string& filePath) {
     }
 }
 
-/*
-█▀▄ █▀▀ █▀▄ █ █ █▀▀
-█ █ █▀▀ █▀▄ █ █ █ █
-▀▀  ▀▀▀ ▀▀  ▀▀▀ ▀▀▀ */
-
-void File::PrintModelHeader(ModelHeader header, const std::string& identifier) {
-    std::cout << identifier << "\n";
-    std::cout << " Version: " << header.version << "\n";
-    std::cout << " Mesh Count: " << header.meshCount << "\n";
-    std::cout << " Name Length: " << header.nameLength << "\n";
-    std::cout << " Timestamp: " << header.timestamp << "\n\n";
-    std::cout << " AABB min: " << Util::Vec3ToString(header.aabbMin) << "\n";
-    std::cout << " AABB max: " << Util::Vec3ToString(header.aabbMax) << "\n\n";
-}
-
-void File::PrintMeshHeader(MeshHeader header, const std::string& identifier) {
-    std::cout << identifier << "\n";
-    std::cout << " Name Length: " << header.nameLength << "\n";
-    std::cout << " Vertex Count: " << header.vertexCount << "\n";
-    std::cout << " Index Count: " << header.indexCount << "\n";
-    std::cout << " AABB min: " << Util::Vec3ToString(header.aabbMin) << "\n";
-    std::cout << " AABB max: " << Util::Vec3ToString(header.aabbMax) << "\n\n";
-}
-
-void File::PrintSkinnedModelHeader(SkinnedModelHeader header, const std::string& identifier) {
-    std::cout << identifier << "\n";
-    std::cout << " Version: " << header.version << "\n";
-    std::cout << " Name Length: " << header.nameLength << "\n";
-    std::cout << " Vertex Count: " << header.vertexCount << "\n";
-    std::cout << " Index Count: " << header.indexCount << "\n";
-    std::cout << " Mesh Count: " << header.meshCount << "\n";
-    std::cout << " Mesh Node Count: " << header.nodeCount << "\n";
-    std::cout << " Mesh Bone Count: " << header.boneCount << "\n";
-    std::cout << " Timestamp: " << header.timestamp << "\n\n";
-}
-
-void File::PrintSkinnedMeshHeader(SkinnedMeshHeader header, const std::string& identifier) {
-    std::cout << identifier << "\n";
-    std::cout << " Name Length: " << header.nameLength << "\n";
-    std::cout << " Vertex Count: " << header.vertexCount << "\n";
-    std::cout << " Index Count: " << header.indexCount << "\n";
-    std::cout << " Local Base Vertex: " << header.localBaseVertex << "\n";
-    std::cout << " AABB min: " << Util::Vec3ToString(header.aabbMin) << "\n";
-    std::cout << " AABB max: " << Util::Vec3ToString(header.aabbMax) << "\n\n";
-}
-
-
 void File::ExportMeshDataToOBJ(const std::string& filepath, const MeshData& mesh) {
     std::ofstream file(filepath);
     if (!file.is_open()) {

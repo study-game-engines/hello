@@ -544,12 +544,58 @@ struct CubeRayResult {
     bool hitFound = false;
 };
 
-struct ObjectInstanceData {
+struct BvhNode {
+    glm::vec3 boundsMin;
+    uint32_t firstChildOrPrimitive;
+    glm::vec3 boundsMax;
+    uint32_t primitiveCount;
+};
+
+struct RayData {
+    float origin[3];
+    float dir[3];
+    float invDir[3];
+    float paddedInvDir[3];
+    float minDistance = 0;
+    float maxDistance = 0;
+    int octant[3];
+};
+
+struct PrimitiveInstance {
     uint64_t objectId;
-    uint64_t triangleMeshBvhId;
+    uint64_t meshBvhId;
     ObjectType objectType;
     glm::vec3 worldAabbBoundsMin;
     glm::vec3 worldAabbBoundsMax;
     glm::vec3 worldAabbCenter;
     glm::mat4 worldTransform;
+};
+
+struct GpuPrimitiveInstance {
+    glm::mat4 worldTransform;
+    glm::mat4 inverseWorldTransform;
+    int bvhRootNodeIndex;
+    int padding0;
+    int padding1;
+    int padding2;
+};
+
+struct SceneBvh {
+    std::vector<BvhNode> m_nodes;
+    std::vector<GpuPrimitiveInstance> m_instances;
+};
+
+struct MeshBvh {
+    std::vector<BvhNode> m_nodes;
+    std::vector<float> m_triangleData;
+};
+
+struct RayTraversalResult {
+    bool hitFound = false;
+    size_t primtiviveId = 0;
+    float distanceToHit = std::numeric_limits<float>::max();
+    glm::vec3 hitPosition = glm::vec3(0);
+    glm::mat4 primitiveTransform = glm::mat4(1.0f);
+    glm::vec3 nodeBoundsMin = glm::vec3(0.0f);
+    glm::vec3 nodeBoundsMax = glm::vec3(0.0f);
 };

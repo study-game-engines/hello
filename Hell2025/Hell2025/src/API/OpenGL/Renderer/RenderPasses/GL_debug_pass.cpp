@@ -7,8 +7,6 @@
 
 #include "API/OpenGL/Types/GL_debug_mesh.hpp"
 
-#include "raytracing/bvh.h"
-
 namespace OpenGLRenderer {
 
     OpenGLDebugMesh g_debugMeshPoints;

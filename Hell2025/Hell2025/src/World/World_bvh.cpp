@@ -1,12 +1,12 @@
 #include "World.h"
 #include "AssetManagement/AssetManager.h"
 #include "Core/Game.h"
-#include "Raytracing/Bvh.h";
+#include "Math/Bvh.h";
 #include "Viewport/ViewportManager.h";
 
 namespace World {
 
-    std::vector<ObjectInstanceData> g_instances;
+    std::vector<PrimitiveInstance> g_instances;
     uint64_t g_sceneBvhId;
 
     //ObjectInstanceData CreateObjectInstanceDataFromRenderItem(const RenderItem& renderItem, uint64_t objectId) {
@@ -21,16 +21,16 @@ namespace World {
     //    return instance;
     //}
 
-    void CreateObjectInstanceDataFromRenderItem(const RenderItem& renderItem, uint64_t objectId, Frustum& frustum, std::vector<ObjectInstanceData>& container) {
+    void CreateObjectInstanceDataFromRenderItem(const RenderItem& renderItem, uint64_t objectId, Frustum& frustum, std::vector<PrimitiveInstance>& container) {
         if (frustum.IntersectsAABB(renderItem)) {
-            ObjectInstanceData& instance = container.emplace_back();
+            PrimitiveInstance& instance = container.emplace_back();
             instance.objectId = objectId;
             instance.objectType = (ObjectType)renderItem.objectType;
             instance.worldTransform = renderItem.modelMatrix;
             instance.worldAabbBoundsMin = renderItem.aabbMin;
             instance.worldAabbBoundsMax = renderItem.aabbMax;
             instance.worldAabbCenter = (renderItem.aabbMin + renderItem.aabbMax) * 0.5f;
-            instance.triangleMeshBvhId = AssetManager::GetMeshByIndex(renderItem.meshIndex)->triangleMeshBvhId;
+            instance.meshBvhId = AssetManager::GetMeshByIndex(renderItem.meshIndex)->triangleMeshBvhId;
         }
     }
 
@@ -68,7 +68,7 @@ namespace World {
         for (PickUp& pickUp : GetPickUps()) {
             const std::vector<RenderItem>& renderItems = pickUp.GetRenderItems();
             for (const RenderItem& renderItem : renderItems) {
-                ObjectInstanceData& instance = g_instances.emplace_back();
+                //PrimitiveInstance& instance = g_instances.emplace_back();
                 CreateObjectInstanceDataFromRenderItem(renderItem, pickUp.GetObjectId(), frustum, g_instances);
             }
         }
@@ -91,8 +91,12 @@ namespace World {
         //    }
         //}
 
-        BVH::DestroySceneBvh(g_sceneBvhId);
-        g_sceneBvhId = BVH::CreateSceneBvh(g_instances);
+        
+        // Rebuild TLAS
+        if (g_sceneBvhId == 0) {
+            g_sceneBvhId = BVH::CreateNewSceneBvh();
+        }
+        BVH::UpdateSceneBvh(g_sceneBvhId, g_instances);
 
         //for (int i = 0; i < g_instances.size(); i++) {
         //    ObjectInstanceData& instance = g_instances[i];
@@ -113,17 +117,23 @@ namespace World {
         glm::vec3 rayDir = player->GetCameraForward();
         float maxRayDistance = 1000.0f;
 
-        SceneRayTraversalResult result = BVH::ClosestHitScene(g_sceneBvhId, rayOrigin, rayDir, maxRayDistance);
+        if (Util::IsNan(rayDir)) {
+            return;
+        }
+
+        BVH::RenderSceneBvh(g_sceneBvhId, GREEN);
+
+        RayTraversalResult result = BVH::ClosestHit(g_sceneBvhId, rayOrigin, rayDir, maxRayDistance);
         if (result.hitFound) {
-            ObjectInstanceData& instanceData = g_instances[result.instanceIndex];
+            PrimitiveInstance& instanceData = g_instances[result.primtiviveId];
             //Entity& entity = entities[instanceData.entityId];
             //BVH::RenderTriangleMeshTriangle(instanceData.triangleMeshBvhId, result.primtiviveId, GREEN, instanceData.worldTransform);
-            BVH::RenderTriangleMesh(instanceData.triangleMeshBvhId, GREEN, instanceData.worldTransform);
+            BVH::RenderRayResultTriangle(result, GREEN);
             //std::cout << "hit found\n";
         } 
-        else {
-            //std::cout << "hit not found\n";
-        }
+        //else {
+        //    //std::cout << "hit not found\n";
+        //}
     }
 
     void TestBvh() {

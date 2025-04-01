@@ -1,5 +1,5 @@
 #include "AssetManager.h"
-#include "Raytracing/bvh.h"
+#include "Math/Bvh.h"
 #include "Timer.hpp"
 #include <mutex>
 
@@ -105,7 +105,8 @@ namespace AssetManager {
         for (Mesh& mesh : GetMeshes()) {
             Timer timer("CreateMeshBVHs() " + mesh.GetName() + " " + std::to_string(mesh.indexCount));
             std::vector<Vertex> vertices = GetMeshVertices(&mesh);
-            mesh.triangleMeshBvhId = BVH::CreateBvhFromVertices(vertices);
+            mesh.triangleMeshBvhId = BVH::CreateMeshBvhFromVertices(vertices);
         }
+        BVH::FlatternMeshBvhNodes();
     }
 }

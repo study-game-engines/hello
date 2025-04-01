@@ -88,17 +88,24 @@ namespace AssetManager {
 
         // Loading complete?
         g_loadingComplete = true;
-        for (Texture& texture : g_textures) {
-            texture.CheckForBakeCompletion();
-            if (!texture.BakeComplete()) {
-                g_loadingComplete = false;
-                return;
-            }
-        }
         for (Model& model : g_models) {
             if (model.GetLoadingState() != LoadingState::LOADING_COMPLETE) {
                 g_loadingComplete = false;
                 std::cout << model.GetFileInfo().name;
+                return;
+            }
+        }
+
+        static bool modelsBaked = false;
+        if (!modelsBaked) {
+            BakePendingModels();
+            modelsBaked = true;
+        }
+
+        for (Texture& texture : g_textures) {
+            texture.CheckForBakeCompletion();
+            if (!texture.BakeComplete()) {
+                g_loadingComplete = false;
                 return;
             }
         }
@@ -111,7 +118,7 @@ namespace AssetManager {
         }
 
         if (LoadingComplete()) {
-            BakePendingModels();
+            //BakePendingModels();
             BuildPrimitives();
             BuildIndexMaps(); // required before BuildMaterials()
             BuildMaterials();
@@ -119,7 +126,9 @@ namespace AssetManager {
             BuildGoldenMaterialVariants();
             BuildIndexMaps();
             BuildSpriteSheetTextures();
+
             CreateMeshBvhs();
+
 
             HeightMapManager::Init();
             MapManager::Init();

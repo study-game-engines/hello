@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|x64">
@@ -201,6 +201,12 @@ copy /Y "$(ProjectDir)vendor\DLLs\PVDRuntime_64.dll" "$(TargetDir)PVDRuntime_64.
     <ClCompile Include="src\Editor\Editors\Editor_house.cpp" />
     <ClCompile Include="src\Editor\Editors\Editor_map.cpp" />
     <ClCompile Include="src\Editor\Editors\Editor_sector.cpp" />
+    <ClCompile Include="src\File\File_debug.cpp" />
+    <ClCompile Include="src\File\File_mesh_bvh.cpp" />
+    <ClCompile Include="src\Math\Bvh.cpp" />
+    <ClCompile Include="src\Math\Bvh_debug_draw.cpp" />
+    <ClCompile Include="src\Math\Bvh_math.cpp" />
+    <ClCompile Include="src\Math\Bvh_traversal.cpp" />
     <ClCompile Include="src\Modelling\Clipping.cpp" />
     <ClCompile Include="src\Modelling\Types\ClippingCube.cpp" />
     <ClCompile Include="src\Modelling\Unused\EditableMesh.cpp" />
@@ -211,7 +217,6 @@ copy /Y "$(ProjectDir)vendor\DLLs\PVDRuntime_64.dll" "$(TargetDir)PVDRuntime_64.
     <ClCompile Include="src\Imgui\Types\Types.cpp" />
     <ClCompile Include="src\File\File_height_map.cpp" />
     <ClCompile Include="src\Math\AABB.cpp" />
-    <ClCompile Include="src\Raytracing\Bvh.cpp" />
     <ClCompile Include="src\Types\Renderer\Mesh.cpp" />
     <ClCompile Include="src\Types\Renderer\Model.cpp" />
     <ClCompile Include="src\Types\House\Trim.cpp" />
@@ -430,6 +435,7 @@ copy /Y "$(ProjectDir)vendor\DLLs\PVDRuntime_64.dll" "$(TargetDir)PVDRuntime_64.
     <ClInclude Include="src\AssetManagement\BakeQueue.h" />
     <ClInclude Include="src\Callbacks\Callbacks.h" />
     <ClInclude Include="src\Common\UniqueID.h" />
+    <ClInclude Include="src\Math\Bvh.h" />
     <ClInclude Include="src\Modelling\Clipping.h" />
     <ClInclude Include="src\Modelling\Types\ClippingCube.h" />
     <ClInclude Include="src\Modelling\Unused\EditableMesh.h" />
@@ -440,7 +446,6 @@ copy /Y "$(ProjectDir)vendor\DLLs\PVDRuntime_64.dll" "$(TargetDir)PVDRuntime_64.
     <ClInclude Include="src\Imgui\Types\Types.h" />
     <ClInclude Include="src\Math\AABB.h" />
     <ClInclude Include="src\Physics\CollisionReports.h" />
-    <ClInclude Include="src\Raytracing\Bvh.h" />
     <ClInclude Include="src\Types\Renderer\Mesh.h" />
     <ClInclude Include="src\Types\Renderer\Model.h" />
     <ClInclude Include="src\Types\House\Trim.h" />

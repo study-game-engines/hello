@@ -51,6 +51,18 @@ struct HeightMapHeader {
     uint32_t width;
     uint32_t height;
 };
+
+struct ModelBvhHeader {
+    char signature[14];     // "HELL_MODEL_BVH" 14 bytes
+    uint32_t version;
+    uint32_t meshCount;
+    uint64_t timestamp;
+};
+
+struct MeshBvhHeader {
+    uint32_t floatCount;
+    uint32_t nodeCount;
+};
 #pragma pack(pop)
 
 struct MeshData {

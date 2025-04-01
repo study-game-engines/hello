@@ -18,6 +18,10 @@ namespace File {
     SkinnedModelData ImportSkinnedModel(const std::string& filepath);
     SkinnedModelHeader ReadSkinnedModelHeader(const std::string& filepath);
     
+    // BVHs
+    void ExportMeshBvh(const MeshBvh& meshBvh);
+    MeshBvh LoadMeshBvh(const std::string& filePath);
+
     // I/O
     void DeleteFile(const std::string& filePath);
 
@@ -33,4 +37,6 @@ namespace File {
     void PrintSkinnedMeshHeader(SkinnedMeshHeader header, const std::string& identifier);
     void PrintModelHeader(ModelHeader header, const std::string& identifier);
     void PrintMeshHeader(MeshHeader header, const std::string& identifier);
+    void PrintModelBvhHeader(ModelBvhHeader header, const std::string& identifier);
+    void PrintMeshBvhHeader(MeshBvhHeader header, const std::string& identifier);
 }
