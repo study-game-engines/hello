@@ -68,13 +68,14 @@ namespace BVH {
 
         MadmannBvhBuilder::Config config;
         config.quality = MadmannBvhBuilder::Quality::High;
+        config.max_depth = MAX_BVH_STACK_SIZE;
         MadmannBvh bvh = MadmannBvhBuilder::build(g_threadPool, bboxes, centers, config);
 
         // Create our node array
         int nodeCount = bvh.nodes.size();
         meshBvh.m_nodes.resize(nodeCount);
 
-        // .. by iterating the bvh created by the library and extracing the relevant data
+        // .. by iterating the bvh created by the library and extracting the relevant data
         for (int i = 0; i < nodeCount; i++) {
             const MadmannBvhNode& mmNode = bvh.nodes[i];
             BvhNode& node = meshBvh.m_nodes[i];
@@ -102,9 +103,20 @@ namespace BVH {
 
                 for (int i = 0; i < node.primitiveCount; i++) {
                     int primitiveId = node.firstChildOrPrimitive + i;
-                    int triangleIndex = bvh.prim_ids[primitiveId];
 
+                    if (primitiveId >= bvh.prim_ids.size()) {
+                        std::cout << "Invalid primitiveId access in bvh.prim_ids\n";
+                    }
+                    assert(primitiveId < bvh.prim_ids.size() && "Invalid primitiveId access in bvh.prim_ids");
+
+                    int triangleIndex = bvh.prim_ids[primitiveId];
                     int vertexIndex = triangleIndex * 3;
+
+                    if (vertexIndex + 2 >= vertices.size()) {
+                        std::cout << "Invalid triangleIndex leading to vertex out-of-bounds\n";
+                    }
+                    assert(vertexIndex + 2 < vertices.size() && "Invalid triangleIndex leading to vertex out-of-bounds");
+
                     glm::vec3& p0 = vertices[vertexIndex + 0].position;
                     glm::vec3& p1 = vertices[vertexIndex + 1].position;
                     glm::vec3& p2 = vertices[vertexIndex + 2].position;
@@ -142,11 +154,18 @@ namespace BVH {
             }
             // The node is internal, so recurse
             else {
+
                 stack[stack_size++] = node.firstChildOrPrimitive + 0;
                 stack[stack_size++] = node.firstChildOrPrimitive + 1;
             }
+
+            if (stack_size >= MAX_BVH_STACK_SIZE) {
+                std::cout << "MAX_BVH_STACK_SIZE of " << MAX_BVH_STACK_SIZE << " exceeded at " << stack_size << "\n";
+            }
+            assert(stack_size < MAX_BVH_STACK_SIZE - 1 && "BVH traversal stack overflow: MAX_BVH_STACK_SIZE too small for BVH depth.");
         }
     
+        std::cout << "uniqueId: " << uniqueId << "\n";
         return uniqueId;
     }
 

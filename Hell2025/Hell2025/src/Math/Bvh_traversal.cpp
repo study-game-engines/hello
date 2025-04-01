@@ -211,13 +211,16 @@ namespace BVH {
 
         RayData rayData = ComputeRayData(localOrigin, localDir, localMinDistance, localMaxDistance);
 
-        const std::vector<BvhNode>& meshBvhNodes = GetMeshGpuBvhNodes();
-        //const std::vector<GpuPrimitiveInstance>& entityInstances = GetGpuEntityInstances();
-        const std::vector<float>& triangleData = GetTriangleData();
 
         RayTraversalResult closestRayResult;
         closestRayResult.hitFound = false;
         closestRayResult.distanceToHit = maxDistance;
+
+        const std::vector<BvhNode>& meshBvhNodes = GetMeshGpuBvhNodes();
+        const std::vector<float>& triangleData = GetTriangleData();
+
+        // Bail early if the mesh BVHs did not load for some reason
+        if (meshBvhNodes.empty() || triangleData.empty()) return closestRayResult;
 
         // Walk the bvh
         stack[currentStackSize++] = roodNodeIndex;

@@ -37,6 +37,9 @@ public:
         /// this will be split using a fallback strategy. This should not happen often, but may
         /// happen in worst-case scenarios or poorly designed scenes.
         size_t max_leaf_size = 8;
+
+        /// Modified by Chris to allow the specification of a max tree depth
+        size_t max_depth = 16;
     };
 
 protected:
@@ -44,6 +47,7 @@ protected:
         size_t node_id;
         size_t begin;
         size_t end;
+        size_t current_depth; // Added by Chris
 
         BVH_ALWAYS_INLINE size_t size() const { return end - begin; }
     };
@@ -80,12 +84,21 @@ protected:
         bvh.nodes.back().set_bbox(compute_bbox(0, prim_count));
 
         std::stack<WorkItem> stack;
-        stack.push(WorkItem { 0, 0, prim_count });
+        stack.push(WorkItem { 0, 0, prim_count, 0 }); // Added by Chris, the 4th parameter, an initial tree depth of 0
         while (!stack.empty()) {
             auto item = stack.top();
             stack.pop();
 
             auto& node = bvh.nodes[item.node_id];
+
+                        // Added by Chris
+            if (item.current_depth >= config_.max_depth) {
+                node.index = Node::Index::make_leaf(item.begin, item.size());
+                std::cout << "skipping because item.current_depth > " << config_.max_depth << "\n";
+                continue; // Skip splitting attempt
+            }
+
+
             if (item.size() > config_.min_leaf_size) {
                 if (auto split_pos = try_split(node.get_bbox(), item.begin, item.end)) {
                     auto first_child = bvh.nodes.size();
@@ -109,6 +122,10 @@ protected:
 
                     auto first_item  = WorkItem { first_child + 0, first_range.first, first_range.second };
                     auto second_item = WorkItem { first_child + 1, second_range.first, second_range.second };
+
+                    first_item.current_depth = item.current_depth + 1;  // Added by Chris
+                    second_item.current_depth = item.current_depth + 1; // Added by Chris
+
                     bvh.nodes[first_child + 0].set_bbox(first_bbox);
                     bvh.nodes[first_child + 1].set_bbox(second_bbox);
 
