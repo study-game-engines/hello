@@ -2,6 +2,7 @@
 #include "Core/Debug.h"
 #include "Core/Game.h"
 #include "Editor/Editor.h"
+#include "Input/Input.h"
 #include "Input/InputMulti.h"
 #include <glm/gtc/noise.hpp> 
 
@@ -58,8 +59,21 @@ void Player::UpdateCamera(float deltaTime) {
     float viewHeightTarget = m_crouching ? m_viewHeightCrouching : m_viewHeightStanding;
     m_currentViewHeight = Util::FInterpTo(m_currentViewHeight, viewHeightTarget, deltaTime, crouchDownSpeed);
 
+    static float viewHeightModifer = 0.0f;
+    if (Input::KeyDown(HELL_KEY_EQUAL)) {
+        viewHeightModifer += 2.0 * deltaTime;
+    }
+    if (Input::KeyDown(HELL_KEY_MINUS)) {
+        viewHeightModifer -= 2.0 * deltaTime;
+    }
+    if (Input::KeyDown(HELL_KEY_BACKSPACE)) {
+        viewHeightModifer = 0.0f;
+    }
+   // m_currentViewHeight += viewHeightModifer;
+
+
     // Position
-    m_camera.SetPosition(m_position + glm::vec3(0, m_currentViewHeight, 0) + m_headBob + m_breatheBob);
+    m_camera.SetPosition(m_position + glm::vec3(0, m_currentViewHeight + viewHeightModifer, 0) + m_headBob + m_breatheBob);
 
     // Chunk position
     m_chunkPos = ivecXZ(static_cast<int>(std::floor(m_camera.GetPosition().x / CHUNK_SIZE_WORLDSPACE)),

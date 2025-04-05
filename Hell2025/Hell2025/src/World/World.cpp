@@ -20,11 +20,13 @@ namespace World {
     std::vector<BulletCasing> g_bulletCasings;
     std::vector<ClippingCube> g_clippingCubes;
     std::vector<Door> g_doors;
+    std::vector<BasicDoor> g_doorBasics;
     std::vector<Decal> g_decals;
     std::vector<GameObject> g_gameObjects;
     std::vector<HeightMapChunk> g_heightMapChunks;
     std::vector<HousePlane> g_housePlanes;
-    std::vector<PickUp> g_pickUps; 
+    std::vector<PickUp> g_pickUps;
+    std::vector<Piano> g_pianos;
     std::vector<Transform> g_doorAndWindowCubeTransforms;
     std::vector<Tree> g_trees;
     std::vector<Wall> g_walls;
@@ -108,7 +110,7 @@ namespace World {
             return nullptr;
         }
     }
-        
+
     Tree* GetTreeByIndex(int32_t index) {
         if (index >= 0 && index < g_trees.size()) {
             return &g_trees[index];
@@ -121,7 +123,7 @@ namespace World {
 
 
     void NewCampainWorld() {
-        ResetWorld();   
+        ResetWorld();
     }
 
     void LoadDeathMatchMap() {
@@ -207,7 +209,7 @@ namespace World {
         if (mapCreateInfo) {
             LoadMap(mapCreateInfo);
         }
-    } 
+    }
 
     void LoadEmptyWorld() {
         ResetWorld();
@@ -228,7 +230,7 @@ namespace World {
         g_mapWidth = 1;
         g_mapDepth = 1;
 
-        AddSectorAtLocation(*sectorCreateInfo, SpawnOffset()); 
+        AddSectorAtLocation(*sectorCreateInfo, SpawnOffset());
         RecreateHieghtMapChunks();
 
         std::cout << "Loaded Single Sector: '" << g_sectorNames[0][0] << "' with height map '" << g_heightMapNames[0][0] << "'\n";
@@ -267,7 +269,7 @@ namespace World {
         }
     }
 
-    void RemovePickUp(uint64_t objectID) {  
+    void RemovePickUp(uint64_t objectID) {
         for (int i = 0; i < g_pickUps.size(); i++) {
             PickUp& pickUp = g_pickUps[i];
             if (pickUp.GetObjectId() == objectID) {
@@ -295,8 +297,14 @@ namespace World {
         for (Door& door : g_doors) {
             door.CleanUp();
         }
+        for (GameObject& gameObject : g_gameObjects) {
+            gameObject.CleanUp();
+        }
         for (HousePlane& housePlane : g_housePlanes) {
             housePlane.CleanUp();
+        }
+        for (Piano& piano : g_pianos) {
+            piano.CleanUp();
         }
         for (PickUp& pickUp : g_pickUps) {
             pickUp.CleanUp();
@@ -316,6 +324,7 @@ namespace World {
         g_trees.clear();
         g_heightMapChunks.clear();
         g_pickUps.clear();
+        g_pianos.clear();
         g_walls.clear();
         g_doors.clear();
         g_housePlanes.clear();
@@ -350,6 +359,19 @@ namespace World {
         windowCreateInfo3.position = glm::vec3(2.2f, 0.0f, 2.95f);
         windowCreateInfo3.rotation = glm::vec3(0.0f, HELL_PI * 0.5f, 0.0f);
         window3.Init(windowCreateInfo3);
+
+
+        PianoCreateInfo createInfo;
+        createInfo.position = glm::vec3(4.35f, 0.0f, 1.0f);
+        createInfo.rotation.y = HELL_PI * -0.5f;
+        Piano& piano = g_pianos.emplace_back();
+        piano.Init(createInfo);
+
+        PianoCreateInfo createInfo2;
+        createInfo2.position = glm::vec3(3.00f, 0.0f, -2.14f);
+        createInfo2.rotation.y = -0.75f;
+        Piano& piano2 = g_pianos.emplace_back();
+        piano2.Init(createInfo2);
 
         // Make all clipping cubes
         g_clippingCubes.clear();
@@ -483,6 +505,10 @@ namespace World {
         UpdateHouseMeshVertexDataAndRenderItems();
     }
 
+    void AddDoorBasic(BasicDoorCreateInfo createInfo) {
+        g_doorBasics.push_back(BasicDoor(createInfo));
+    }
+
     void AddBullet(BulletCreateInfo createInfo) {
         g_bullets.push_back(Bullet(createInfo));
     }
@@ -610,6 +636,15 @@ namespace World {
         return count;
     }
 
+    Piano* GetPianoByPianoId(uint64_t objectId) {
+        for (Piano& piano : g_pianos) {
+            if (piano.GetPianoObjectId() == objectId) {
+                return &piano;
+            }
+        }
+        return nullptr;
+    }
+
     std::vector<HouseRenderItem> g_renderItems;
 
     std::vector<AnimatedGameObject>& GetAnimatedGameObjects()   { return g_animatedGameObjects; }
@@ -622,6 +657,7 @@ namespace World {
     std::vector<HousePlane>& GetHousePlanes()                   { return g_housePlanes; }
     std::vector<HouseRenderItem>& GetHouseRenderItems()         { return g_renderItems; }
     std::vector<Light>& GetLights()                             { return g_lights; };
+    std::vector<Piano>& GetPianos()                             { return g_pianos; };
     std::vector<PickUp>& GetPickUps()                           { return g_pickUps; };
     std::vector<Transform>& GetDoorAndWindowCubeTransforms()    { return g_doorAndWindowCubeTransforms;  }
     std::vector<Tree>& GetTrees()                               { return g_trees; };

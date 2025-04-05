@@ -21,6 +21,7 @@ namespace World {
         std::vector<HouseRenderItem>& houseRenderItems = GetHouseRenderItems();
         std::vector<Light>& lights = GetLights();
         std::vector<PickUp>& pickUps = GetPickUps();
+        std::vector<Piano>& pianos = GetPianos();
         std::vector<Tree>& trees = GetTrees();
         std::vector<Wall>& walls = GetWalls();
         std::vector<Window>& windows = GetWindows();
@@ -65,6 +66,10 @@ namespace World {
         // House render items
         for (HouseRenderItem& houseRenderItem : houseRenderItems) {
             RenderDataManager::SubmitHouseRenderItem(houseRenderItem);
+        }
+
+        for (Piano& piano : pianos) {
+            piano.SubmitRenderItems();
         }
 
         // Window

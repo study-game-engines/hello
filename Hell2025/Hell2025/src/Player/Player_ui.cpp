@@ -7,6 +7,7 @@
 #include "UI/TextBlitter.h"
 #include "UI/UiBackend.h"
 #include "Viewport/ViewportManager.h"
+#include "World/World.h"
 
 void Player::UpdateUI() {
     if (Editor::IsEditorOpen()) return;
@@ -46,6 +47,29 @@ void Player::UpdateUI() {
         text += "Weapon Action: " + Util::WeaponActionToString(GetCurrentWeaponAction()) + "\n";
         text += "Mouse ray: " + Util::ObjectTypeToString(m_interactObjectType) + " " + std::to_string(m_interactObjectId) + " " + Util::PhysicsTypeToString(m_interactPhysicsType) + " " + std::to_string(m_interactPhysicsId) + "\n";
         
+
+
+
+        glm::vec3 rayOrigin = GetCameraPosition();
+        glm::vec3 rayDir = GetCameraForward();
+        float maxRayDistance = 100.0f;
+
+        RayTraversalResult result = World::ClosestHit(rayOrigin, rayDir, maxRayDistance, m_viewportIndex);
+        if (result.hitFound) {
+            if (result.objectType == ObjectType::PIANO_KEY) {
+                for (Piano& piano : World::GetPianos()) {
+                    if (piano.PianoKeyExists(result.objectId)) {
+                        PianoKey* pianoKey = piano.GetPianoKey(result.objectId);
+                        if (pianoKey) {
+                            text += "Key code: " + std::to_string(pianoKey->m_note) + "\n";
+                        }
+                    }
+                }
+            }
+        }
+
+
+
         //text += "CanReloadShotgun: " + Util::BoolToString(CanReloadShotgun()) + "\n";
        // text += "ShellInChamber: " + Util::BoolToString(IsShellInShotgunChamber()) + "\n";
        // text += "CanFireShotgun: " + Util::BoolToString(CanFireShotgun()) + "\n";

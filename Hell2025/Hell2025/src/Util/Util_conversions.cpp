@@ -57,6 +57,8 @@ namespace Util {
             case ObjectType::HOUSE_PLANE:   return "HOUSE_PLANE";
             case ObjectType::LIGHT:         return "LIGHT";
             case ObjectType::PICK_UP:       return "PICK_UP";
+            case ObjectType::PIANO:         return "PIANO";
+            case ObjectType::PIANO_KEY:         return "PIANO_KEY";
             case ObjectType::TREE:          return "TREE";
             case ObjectType::UNDEFINED:     return "UNDEFINED";
             case ObjectType::WALL_SEGMENT:  return "WALL_SEGMENT";

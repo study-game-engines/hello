@@ -101,6 +101,16 @@ bool Player::PressedInteract() {
     }
 }
 
+bool Player::PressingInteract() {
+    if (m_inputType == InputType::KEYBOARD_AND_MOUSE) {
+        return InputMulti::KeyDown(m_keyboardIndex, m_mouseIndex, m_controls.INTERACT);
+    }
+    else {
+        //return InputMulti::ButtonPressed(_controllerIndex, m_controls.INTERACT);
+        return false;
+    }
+}
+
 bool Player::PressedReload() {
     if (m_inputType == InputType::KEYBOARD_AND_MOUSE) {
         return InputMulti::KeyPressed(m_keyboardIndex, m_mouseIndex, m_controls.RELOAD);

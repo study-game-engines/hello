@@ -407,6 +407,10 @@ namespace RenderDataManager {
         g_renderItems.push_back(renderItem);
     }
 
+    void SubmitRenderItems(const std::vector<RenderItem>& renderItems) {
+        g_renderItems.insert(g_renderItems.begin(), renderItems.begin(), renderItems.end());
+    }
+
     void SubmitHouseRenderItem(const HouseRenderItem& renderItem) {
         g_houseRenderItems.push_back(renderItem);
     }

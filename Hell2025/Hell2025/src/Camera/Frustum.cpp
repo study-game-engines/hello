@@ -65,14 +65,14 @@ void Frustum::Update(const glm::mat4& projectionView) {
 
 bool Frustum::IntersectsAABB(const AABB& aabb) {
     glm::vec3 aabbCorners[8] = {
-        glm::vec3(aabb.boundsMin.x, aabb.boundsMin.y, aabb.boundsMin.z), // Near-bottom-left
-        glm::vec3(aabb.boundsMax.x, aabb.boundsMin.y, aabb.boundsMin.z), // Near-bottom-right
-        glm::vec3(aabb.boundsMin.x, aabb.boundsMax.y, aabb.boundsMin.z), // Near-top-left
-        glm::vec3(aabb.boundsMax.x, aabb.boundsMax.y, aabb.boundsMin.z), // Near-top-right
-        glm::vec3(aabb.boundsMin.x, aabb.boundsMin.y, aabb.boundsMax.z), // Far-bottom-left
-        glm::vec3(aabb.boundsMax.x, aabb.boundsMin.y, aabb.boundsMax.z), // Far-bottom-right
-        glm::vec3(aabb.boundsMin.x, aabb.boundsMax.y, aabb.boundsMax.z), // Far-top-left
-        glm::vec3(aabb.boundsMax.x, aabb.boundsMax.y, aabb.boundsMax.z)  // Far-top-right
+        glm::vec3(aabb.GetBoundsMin().x, aabb.GetBoundsMin().y, aabb.GetBoundsMin().z), // Near-bottom-left
+        glm::vec3(aabb.GetBoundsMax().x, aabb.GetBoundsMin().y, aabb.GetBoundsMin().z), // Near-bottom-right
+        glm::vec3(aabb.GetBoundsMin().x, aabb.GetBoundsMax().y, aabb.GetBoundsMin().z), // Near-top-left
+        glm::vec3(aabb.GetBoundsMax().x, aabb.GetBoundsMax().y, aabb.GetBoundsMin().z), // Near-top-right
+        glm::vec3(aabb.GetBoundsMin().x, aabb.GetBoundsMin().y, aabb.GetBoundsMax().z), // Far-bottom-left
+        glm::vec3(aabb.GetBoundsMax().x, aabb.GetBoundsMin().y, aabb.GetBoundsMax().z), // Far-bottom-right
+        glm::vec3(aabb.GetBoundsMin().x, aabb.GetBoundsMax().y, aabb.GetBoundsMax().z), // Far-top-left
+        glm::vec3(aabb.GetBoundsMax().x, aabb.GetBoundsMax().y, aabb.GetBoundsMax().z)  // Far-top-right
     };
     for (int i = 0; i < 6; ++i) {
         int pointsOutside = 0;
@@ -117,9 +117,9 @@ bool Frustum::IntersectsAABB(const RenderItem& renderItem) {
 bool Frustum::IntersectsAABBFast(const AABB& aabb) {
     for (int i = 0; i < 6; ++i) {
         glm::vec3 min_corner = glm::vec3(
-            m_planes[i].normal.x > 0 ? aabb.boundsMax.x : aabb.boundsMin.x,
-            m_planes[i].normal.y > 0 ? aabb.boundsMax.y : aabb.boundsMin.y,
-            m_planes[i].normal.z > 0 ? aabb.boundsMax.z : aabb.boundsMin.z
+            m_planes[i].normal.x > 0 ? aabb.GetBoundsMax().x : aabb.GetBoundsMin().x,
+            m_planes[i].normal.y > 0 ? aabb.GetBoundsMax().y : aabb.GetBoundsMin().y,
+            m_planes[i].normal.z > 0 ? aabb.GetBoundsMax().z : aabb.GetBoundsMin().z
         );
         if (SignedDistance(min_corner, m_planes[i]) <= 0.0f) {
             return false; 

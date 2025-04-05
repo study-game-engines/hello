@@ -47,6 +47,10 @@ void GameObject::Update(float deltaTime) {
     UpdateRenderItems();
 }
 
+void GameObject::CleanUp() {
+    Physics::MarkRigidStaticForRemoval(m_physicsId);
+}
+
 void GameObject::SetPosition(glm::vec3 position) {
     m_transform.position = position;
 }

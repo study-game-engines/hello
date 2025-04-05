@@ -78,7 +78,9 @@ enum class ObjectType {
     TREE,
     UNDEFINED,
     WALL_SEGMENT,
-    WINDOW
+    WINDOW,
+    PIANO,
+    PIANO_KEY
 };
 
 enum class Axis {

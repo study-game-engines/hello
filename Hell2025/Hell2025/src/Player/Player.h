@@ -91,6 +91,10 @@ struct Player {
     bool StartingWading();
     bool StoppedWading();
 
+    // Piano
+    uint64_t m_heldPianoKeyId = 0;
+    uint64_t m_hoveredPianoKeyId = 0;
+
     // State queries
     bool IsMoving();
     bool IsGrounded();
@@ -115,6 +119,7 @@ struct Player {
     bool PressedWalkLeft();
     bool PressedWalkRight();
     bool PressedInteract();
+    bool PressingInteract();
     bool PressedReload();
     bool PressedFire();
     bool PressingFire();

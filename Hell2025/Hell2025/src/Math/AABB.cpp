@@ -5,35 +5,27 @@
 AABB::AABB(glm::vec3 min, glm::vec3 max) {
     boundsMin = min;
     boundsMax = max;
-    CalculateCenter();
+    CalculateCenterAndExtents();
 }
 void AABB::Grow(AABB& b) {
     if (b.boundsMin.x != 1e30f && b.boundsMin.x != -1e30f) {
         Grow(b.boundsMin); Grow(b.boundsMax);
     }
-    AABB::CalculateCenter();
+    AABB::CalculateCenterAndExtents();
 }
 void AABB::Grow(glm::vec3 p) {
     boundsMin = glm::vec3(std::min(boundsMin.x, p.x), std::min(boundsMin.y, p.y), std::min(boundsMin.z, p.z));
     boundsMax = glm::vec3(std::max(boundsMax.x, p.x), std::max(boundsMax.y, p.y), std::max(boundsMax.z, p.z));
-    CalculateCenter();
+    CalculateCenterAndExtents();
 }
 float AABB::Area() {
     glm::vec3 e = boundsMax - boundsMin; // box extent
     return e.x * e.y + e.y * e.z + e.z * e.x;
 }
-const glm::vec3 AABB::GetCenter() const {
-    return center;
-}
-const glm::vec3 AABB::GetBoundsMin() const {
-    return boundsMin;
-}
-const glm::vec3 AABB::GetBoundsMax() const {
-    return boundsMax;
-}
 
-void AABB::CalculateCenter() {
+void AABB::CalculateCenterAndExtents() {
     center = { (boundsMin.x + boundsMax.x) / 2, (boundsMin.y + boundsMax.y) / 2, (boundsMin.z + boundsMax.z) / 2 };
+    extents = boundsMax - boundsMin;
 }
 
 bool AABB::ContainsPoint(glm::vec3 point) const {

@@ -7,6 +7,7 @@
 #include "API/OpenGL/Types/GL_frameBuffer.h"
 #include "API/OpenGL/Types/GL_shader.h"
 #include "API/OpenGL/Types/GL_shadow_map.h"
+#include "API/OpenGL/Types/GL_shadow_map_array.h"
 #include "API/OpenGL/Types/GL_ssbo.hpp"
 #include "Viewport/Viewport.h"
 

@@ -24,6 +24,11 @@ struct WindowCreateInfo {
     glm::vec3 rotation;
 };
 
+struct PianoCreateInfo {
+    glm::vec3 position = glm::vec3(0.0f);
+    glm::vec3 rotation = glm::vec3(0.0f);
+};
+
 struct WallCreateInfo {
     std::vector<glm::vec3> points;
     std::string materialName = "";
@@ -48,6 +53,12 @@ struct BulletCreateInfo {
     glm::vec3 direction = glm::vec3(0);
     int32_t weaponIndex = 0;
     uint32_t damage = 0;
+};
+
+struct BasicDoorCreateInfo {
+    glm::mat4 parentMatrix = glm::mat4(1.0f);
+    Axis rotationAxis = Axis::NONE;
+    std::vector<MeshRenderingInfo> m_meshRenderingInfoList;
 };
 
 struct PickUpCreateInfo {

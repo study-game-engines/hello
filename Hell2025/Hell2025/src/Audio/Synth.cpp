@@ -38,6 +38,18 @@ namespace Synth {
         }
     }
 
+    void PlayNote(int note) {
+        fluid_synth_set_gain(g_synth, 2.0);
+        std::cout << "Playing note " << note << "\n";
+
+        int velocity = 127;
+        fluid_synth_noteon(g_synth, 0, note, velocity);
+    }
+
+    void ReleaseNote(int note) {
+        fluid_synth_noteoff(g_synth, 0, note);
+    }
+
     void Update(float deltaTime) {
         return;
 

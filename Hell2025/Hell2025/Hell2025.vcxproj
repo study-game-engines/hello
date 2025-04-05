@@ -165,6 +165,7 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <ClCompile Include="src\API\OpenGL\Types\GL_framebuffer.cpp" />
     <ClCompile Include="src\API\OpenGL\Types\GL_heightmap_mesh.cpp" />
     <ClCompile Include="src\API\OpenGL\Types\GL_shader.cpp" />
+    <ClCompile Include="src\API\OpenGL\Types\GL_shadow_map_array.cpp" />
     <ClCompile Include="src\API\OpenGL\Types\GL_shadow_map.cpp" />
     <ClCompile Include="src\API\OpenGL\Types\GL_texture.cpp" />
     <ClCompile Include="src\API\OpenGL\Types\GL_texture_array.cpp" />
@@ -221,6 +222,8 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <ClCompile Include="src\Imgui\Types\Types.cpp" />
     <ClCompile Include="src\File\File_height_map.cpp" />
     <ClCompile Include="src\Math\AABB.cpp" />
+    <ClCompile Include="src\Types\Game\BasicDoor.cpp" />
+    <ClCompile Include="src\Types\Misc\Piano.cpp" />
     <ClCompile Include="src\Types\Renderer\Mesh.cpp" />
     <ClCompile Include="src\Types\Renderer\Model.cpp" />
     <ClCompile Include="src\Types\House\Trim.cpp" />
@@ -409,6 +412,7 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <ClInclude Include="src\API\OpenGL\Types\GL_frameBuffer.h" />
     <ClInclude Include="src\API\OpenGL\Types\GL_pbo.hpp" />
     <ClInclude Include="src\API\OpenGL\Types\GL_shader.h" />
+    <ClInclude Include="src\API\OpenGL\Types\GL_shadow_map_array.h" />
     <ClInclude Include="src\API\OpenGL\Types\GL_shadow_map.h" />
     <ClInclude Include="src\API\OpenGL\Types\GL_ssbo.hpp" />
     <ClInclude Include="src\API\OpenGL\Types\GL_texture.h" />
@@ -451,6 +455,8 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <ClInclude Include="src\Imgui\Types\Types.h" />
     <ClInclude Include="src\Math\AABB.h" />
     <ClInclude Include="src\Physics\CollisionReports.h" />
+    <ClInclude Include="src\Types\Game\BasicDoor.h" />
+    <ClInclude Include="src\Types\Misc\Piano.h" />
     <ClInclude Include="src\Types\Renderer\Mesh.h" />
     <ClInclude Include="src\Types\Renderer\Model.h" />
     <ClInclude Include="src\Types\House\Trim.h" />

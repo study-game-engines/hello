@@ -12,9 +12,11 @@
 namespace OpenGLRenderer {
 
     void RenderFlashLightShadowMaps();
+    void RenderPointLightShadowMaps();
 
     void RenderShadowMaps() {
         RenderFlashLightShadowMaps();
+        RenderPointLightShadowMaps();
     }
 
     void RenderFlashLightShadowMaps() {
@@ -89,5 +91,11 @@ namespace OpenGLRenderer {
 
         glBindVertexArray(0);
         glCullFace(GL_BACK);
+    }
+
+    void RenderPointLightShadowMaps() {
+
+
+
     }
 }

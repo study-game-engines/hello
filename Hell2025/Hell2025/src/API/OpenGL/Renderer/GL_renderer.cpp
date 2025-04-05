@@ -38,6 +38,10 @@ namespace OpenGLRenderer {
     std::unordered_map<std::string, OpenGLCubemapView> g_cubemapViews;
     std::unordered_map<std::string, OpenGLSSBO> g_ssbos;
     std::unordered_map<std::string, OpenGLRasterizerState> g_rasterizerStates;
+    OpenGLShadowMapArray g_shadowMapArrayHiRes;
+    OpenGLShadowMapArray g_shadowMapArrayMidRes;
+    OpenGLShadowMapArray g_shadowMapArrayLowRes;
+
     OpenGLFrameBuffer g_blurBuffers[4][4] = {};
 
     std::vector<float> g_shadowCascadeLevels{ FAR_PLANE / 50.0f, FAR_PLANE / 25.0f, FAR_PLANE / 10.0f, FAR_PLANE / 2.0f };
@@ -121,6 +125,9 @@ namespace OpenGLRenderer {
         g_indirectBuffer.PreAllocate(sizeof(DrawIndexedIndirectCommand) * MAX_INDIRECT_DRAW_COMMAND_COUNT);
 
         LoadShaders();
+
+        // Allocate shadow map array memory
+        g_shadowMapArrayHiRes.Init(6, 1024);
     }
 
     void InitMain() {

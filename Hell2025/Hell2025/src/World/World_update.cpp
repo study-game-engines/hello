@@ -3,90 +3,19 @@
 #include "Core/Game.h"
 #include "Input/Input.h"
 #include "Renderer/RenderDataManager.h"
+#include "Viewport/ViewportManager.h"
 
 namespace World {
 
     void LazyDebugSpawns();
     void ProcessBullets();
     void UpdateDoorAndWindowCubeTransforms();
+    void EvaluatePianoKeyBulletHit(Bullet& bullet);
 
     void Update(float deltaTime) {
         ProcessBullets();
         LazyDebugSpawns();
         UpdateDoorAndWindowCubeTransforms();
-
-
-        //static uint32_t audioId_a = 0;
-        //static uint32_t audioId_b = 0;
-        //static uint32_t audioId_c = 0;
-        //static uint32_t audioId_d = 0;
-        //static uint32_t audioId_e = 0;
-        //
-        //if (Input::KeyPressed(HELL_KEY_G)) {
-        //    Audio::StopAudio(audioId_a);
-        //    audioId_a = Audio::PlayAudio("piano/a3.wav", 1.0f);
-        //}
-        //if (!Input::KeyDown(HELL_KEY_G)) {
-        //    Audio::FadeOut(audioId_a, 0.75f);
-        //}
-        //
-        //if (Input::KeyPressed(HELL_KEY_H)) {
-        //    Audio::StopAudio(audioId_b);
-        //    audioId_b = Audio::PlayAudio("piano/b3.wav", 1.0f);
-        //}
-        //if (!Input::KeyDown(HELL_KEY_H)) {
-        //    Audio::FadeOut(audioId_b, 0.75f);
-        //}
-        //
-        //if (Input::KeyPressed(HELL_KEY_J)) {
-        //    Audio::StopAudio(audioId_c);
-        //    audioId_c = Audio::PlayAudio("piano/c3_sharp.wav", 1.0f);
-        //}
-        //if (!Input::KeyDown(HELL_KEY_J)) {
-        //    Audio::FadeOut(audioId_c, 0.75f);
-        //}
-        //
-        //if (Input::KeyPressed(HELL_KEY_K)) {
-        //    Audio::StopAudio(audioId_d);
-        //    audioId_d = Audio::PlayAudio("piano/d3.wav", 1.0f);
-        //}
-        //if (!Input::KeyDown(HELL_KEY_K)) {
-        //    Audio::FadeOut(audioId_d, 0.75f);
-        //}
-        //
-        //if (Input::KeyPressed(HELL_KEY_L)) {
-        //    Audio::StopAudio(audioId_e);
-        //    audioId_e = Audio::PlayAudio("piano/e3.wav", 1.0f);
-        //}
-        //if (!Input::KeyDown(HELL_KEY_L)) {
-        //    Audio::FadeOut(audioId_e, 0.75f);
-        //}
-
-
-       //bool isPlaying = false;
-       //if (channel.fmodChannel) {
-       //    channel.fmodChannel->isPlaying(&isPlaying);
-       //}
-       //
-       //if (channel.fmodChannel && isPlaying) {
-       //    float blendFactor = 1.0f - powf(0.01f, deltaTime / releaseDuration); // Use powf for floats
-       //    channel.currentVolume = std::lerp(channel.currentVolume, 0.0f, blendFactor);
-       //
-       //    // Apply the volume
-       //    FMOD_ERRCHECK(channel.fmodChannel->setVolume(channel.currentVolume));
-       //
-       //    // Stop when volume is negligible
-       //    if (channel.currentVolume < 0.01f) {
-       //        FMOD_ERRCHECK(channel.fmodChannel->stop());
-       //        channel.fmodChannel = nullptr; // Mark as stopped
-       //        // Remove from your 'releasingNotes' list here
-       //    }
-       //}
-       //else {
-       //  // Channel already stopped or became invalid, remove from 'releasingNotes'
-       //    channel.fmodChannel = nullptr;
-       //    // Remove from your 'releasingNotes' list here
-       //}
 
         std::vector<AnimatedGameObject>& animatedGameObjects = GetAnimatedGameObjects();
         std::vector<BulletCasing>& bulletCasings = GetBulletCasings();
@@ -94,6 +23,7 @@ namespace World {
         std::vector<Door>& doors = GetDoors();
         std::vector<GameObject>& gameObjects = GetGameObjects();
         std::vector<Light>& lights = GetLights();
+        std::vector<Piano>& pianos = GetPianos();
         std::vector<PickUp>& pickUps = GetPickUps();
         std::vector<Tree>& trees = GetTrees();
         std::vector<Wall>& walls = GetWalls();
@@ -123,6 +53,10 @@ namespace World {
             pickUp.Update(deltaTime);
         }
 
+        for (Piano& piano : pianos) {
+            piano.Update(deltaTime);
+        }
+
         for (Tree& tree : trees) {
             tree.Update(deltaTime);
         }
@@ -145,6 +79,9 @@ namespace World {
         bool glassWasHit = false;
 
         for (Bullet& bullet : bullets) {
+
+            // Did it hit a piano key?
+            EvaluatePianoKeyBulletHit(bullet);
 
             // Cast PhysX ray
             glm::vec3 rayOrigin = bullet.GetOrigin();
@@ -180,9 +117,18 @@ namespace World {
                     // Plaster decal
                     if (objectType == ObjectType::WALL_SEGMENT ||
                         objectType == ObjectType::HOUSE_PLANE ||
-                        objectType == ObjectType::DOOR) {
+                        objectType == ObjectType::DOOR ||
+                        objectType == ObjectType::PIANO) {
                         decalCreateInfo.decalType = DecalType::PLASTER;
                         AddDecal(decalCreateInfo);
+                    }
+
+                    // Piano note trigger
+                    if (objectType == ObjectType::PIANO) {
+                        Piano* piano = World::GetPianoByPianoId(objectId);
+                        if (piano) {
+                            piano->TriggerInternalNoteFromExternalBulletHit(rayResult.hitPosition);
+                        }
                     }
 
                     // Glass decal
@@ -257,6 +203,33 @@ namespace World {
             transform.scale.x = 0.2f;
             transform.scale.y = DOOR_HEIGHT * 1.1f;
             transform.scale.z = 1.02f;
+        }
+    }
+
+    void EvaluatePianoKeyBulletHit(Bullet& bullet) {
+
+        for (int i = 0; i < 4; i++) {
+            Viewport* viewport = ViewportManager::GetViewportByIndex(i);
+            if (!viewport->IsVisible()) continue;
+
+            glm::vec3 rayOrigin = bullet.GetOrigin();
+            glm::vec3 rayDir = bullet.GetDirection();
+            float maxRayDistance = 100.0f;
+
+            RayTraversalResult result = ClosestHit(rayOrigin, rayDir, maxRayDistance, i);
+            if (result.hitFound) {
+                if (result.objectType == ObjectType::PIANO_KEY) {
+                    for (Piano& piano : World::GetPianos()) {
+                        if (piano.PianoKeyExists(result.objectId)) {
+                            PianoKey* pianoKey = piano.GetPianoKey(result.objectId);
+                            if (pianoKey) {
+                                pianoKey->ShootKey();
+                            }
+                        }
+                    }
+
+                }
+            }
         }
     }
 }

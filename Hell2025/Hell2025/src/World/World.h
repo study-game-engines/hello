@@ -12,6 +12,7 @@
 #include "Types/House/HousePlane.h"
 #include "Types/House/Wall.h"
 #include "Types/House/Window.h"
+#include "Types/Misc/Piano.h"
 #include "Types/Exterior/Tree.h"
 #include "Util/Util.h"
 #include "glm/gtx/intersect.hpp"
@@ -19,6 +20,12 @@
 #include "Modelling/Clipping.h"
 
 #include "API/OpenGL/Types/GL_detachedMesh.hpp"
+
+struct ViewportBvhData {
+    std::vector<PrimitiveInstance> instances;
+    uint64_t sceneBvhId;
+    RayTraversalResult closestHit;
+};
 
 namespace World {
     void Init();
@@ -42,6 +49,7 @@ namespace World {
     const HeightMapChunk* GetChunk(int x, int z);
 
     void AddBullet(BulletCreateInfo createInfo);
+    void AddDoorBasic(BasicDoorCreateInfo createInfo);
     void AddBulletCasing(BulletCasingCreateInfo createInfo, SpawnOffset spawnOffset = SpawnOffset());
     void AddDecal(const DecalCreateInfo& createInfo);
     void AddGameObject(GameObjectCreateInfo createInfo, SpawnOffset spawnOffset = SpawnOffset());
@@ -53,6 +61,9 @@ namespace World {
     void CreateGameObject();
     void CreateAnimatedGameObject();
 
+    // Piano
+    Piano* GetPianoByPianoId(uint64_t objectId);
+
     // Getters
 
     // Removal
@@ -61,7 +72,7 @@ namespace World {
     // BVH
     void UpdateSceneBvh();
     void TestBvh();
-    
+    RayTraversalResult ClosestHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float maxRayDistance, int viewportIndex);
 
     const float GetWorldSpaceWidth();
     const float GetWorldSpaceDepth();
@@ -86,6 +97,7 @@ namespace World {
     GameObject* GetGameObjectByName(const std::string& name);
     Light* GetLightByIndex(int32_t index);
     PickUp* GetPickUpByIndex(int32_t index);
+    //Piano* GetPianos(int32_t index);
     Tree* GetTreeByIndex(int32_t index);
 
     std::vector<AnimatedGameObject>& GetAnimatedGameObjects();
@@ -99,6 +111,7 @@ namespace World {
     std::vector<HousePlane>& GetHousePlanes();
     std::vector<HouseRenderItem>& GetHouseRenderItems();
     std::vector<Light>& GetLights();
+    std::vector<Piano>& GetPianos();
     std::vector<PickUp>& GetPickUps();
     std::vector<Transform>& GetDoorAndWindowCubeTransforms();
     std::vector<Tree>& GetTrees();

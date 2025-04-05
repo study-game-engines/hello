@@ -55,6 +55,8 @@ void Player::UpdateInteract() {
 
     m_interactFound = (m_interactObjectType == ObjectType::PICK_UP || 
                        m_interactObjectType == ObjectType::DOOR);
+
+
      
     // Pick up selected item
     if (PressedInteract()) {
@@ -76,5 +78,29 @@ void Player::UpdateInteract() {
                 door->Interact();
             }
         }
+
     }
+
+
+    if (PressingInteract()) {
+
+        glm::vec3 rayOrigin = GetCameraPosition();
+        glm::vec3 rayDir = GetCameraForward();
+        float maxRayDistance = 100.0f;
+
+        RayTraversalResult result = World::ClosestHit(rayOrigin, rayDir, maxRayDistance, m_viewportIndex);
+        if (result.hitFound) {
+            if (result.objectType == ObjectType::PIANO_KEY) {
+                for (Piano& piano : World::GetPianos()) {
+                    if (piano.PianoKeyExists(result.objectId)) {
+                        PianoKey* pianoKey = piano.GetPianoKey(result.objectId);
+                        if (pianoKey) {
+                            pianoKey->PressKey();
+                        }
+                    }
+                }
+            }
+        }
+    } 
+
 }
