@@ -72,23 +72,6 @@ void Player::Update(float deltaTime) {
         m_infoTextTimer = 0;
         m_infoText = "";
     }
-
-    if (Input::KeyPressed(HELL_KEY_N) && m_viewportIndex == 0) {
-
-        Transform transform;
-        transform.position = m_position + m_camera.GetForward();
-
-        PhysicsFilterData filterData;
-        filterData.raycastGroup = RAYCAST_DISABLED;
-        filterData.collisionGroup = CollisionGroup::GENERIC_BOUNCEABLE;
-        filterData.collidesWith = (CollisionGroup)(ENVIROMENT_OBSTACLE | GENERIC_BOUNCEABLE | RAGDOLL);
-
-        PxShape* pxShape = Physics::CreateBoxShape(1.0f, 1.0f, 1.0f, Transform());
-        PxRigidDynamic* pxRigid = Physics::CreateRigidDynamic(transform, filterData, pxShape, Transform());
-    }
-
-
-
 }
 
 void Player::Respawn() {

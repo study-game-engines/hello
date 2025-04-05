@@ -165,6 +165,29 @@ namespace Util {
         return screenCoords;
     }
 
+    bool IsWithinThreshold(const glm::ivec2& pointA, const glm::ivec2& pointB, float threshold) {
+        // Calculate the difference in x and y coordinates.
+        float dx = static_cast<float>(pointA.x - pointB.x);
+        float dy = static_cast<float>(pointA.y - pointB.y);
+
+        // Check if the Euclidean distance is within the threshold.
+        return (dx * dx + dy * dy) <= (threshold * threshold);
+    }
+
+    //glm::ivec2 WorldToScreenCoordsOrtho(const glm::vec3& worldPos, const glm::mat4& orthoMatrix, int screenWidth, int screenHeight, bool flipY) {
+    //    glm::vec4 clipCoords = orthoMatrix * glm::vec4(worldPos, 1.0f);
+    //    glm::vec2 ndcCoords(clipCoords.x, clipCoords.y);
+    //    glm::ivec2 screenCoords;
+    //    screenCoords.x = static_cast<int>((ndcCoords.x + 1.0f) * 0.5f * screenWidth);
+    //    if (flipY) {
+    //        screenCoords.y = screenHeight - static_cast<int>(((ndcCoords.y + 1.0f) * 0.5f * screenHeight));
+    //    }
+    //    else {
+    //        screenCoords.y = static_cast<int>((ndcCoords.y + 1.0f) * 0.5f * screenHeight);
+    //    }
+    //    return screenCoords;
+    //}
+
     float FInterpTo(float current, float target, float deltaTime, float interpSpeed) {
         if (interpSpeed <= 0.f)
             return target;

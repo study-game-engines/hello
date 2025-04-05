@@ -131,9 +131,28 @@ namespace RenderDataManager {
     }
 
     void UpdateGPULightData() {
+        int maxLights = 10;
+
         g_gpuLightData.clear();
-        for (Light& light : World::GetLights()) {
-            GPULight& gpuLight = g_gpuLightData.emplace_back();
+        g_gpuLightData.resize(maxLights);
+
+        // Wipe any old light data
+        for (int i = 0; i < g_gpuLightData.size(); i++) {
+            GPULight& gpuLight = g_gpuLightData[i];
+            gpuLight.posX = 0.0f;
+            gpuLight.posY = 0.0f;
+            gpuLight.posZ = 0.0f;
+            gpuLight.colorR = 0.0f;
+            gpuLight.colorG = 0.0f;
+            gpuLight.colorB = 0.0f;
+            gpuLight.radius = 0.0f;
+            gpuLight.strength = 0.0f;
+        }
+
+        // Populate with new light data
+        for (int i = 0; i < World::GetLights().size() && i < maxLights; i++) {
+            Light& light = World::GetLights()[i];
+            GPULight& gpuLight = g_gpuLightData[i];
             gpuLight.posX = light.GetPosition().x;
             gpuLight.posY = light.GetPosition().y;
             gpuLight.posZ = light.GetPosition().z;

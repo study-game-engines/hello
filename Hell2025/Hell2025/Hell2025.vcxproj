@@ -88,6 +88,7 @@ copy /Y "$(ProjectDir)vendor\dll_debug\PhysXCommon_64.dll" "$(TargetDir)PhysXCom
 copy /Y "$(ProjectDir)vendor\dll_debug\PhysXCooking_64.dll" "$(TargetDir)PhysXCooking_64.dll"
 copy /Y "$(ProjectDir)vendor\dll_debug\PhysXFoundation_64.dll" "$(TargetDir)PhysXFoundation_64.dll"
 copy /Y "$(ProjectDir)vendor\dll_debug\PVDRuntime_64.dll" "$(TargetDir)PVDRuntime_64.dll"
+xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -129,6 +130,7 @@ copy /Y "$(ProjectDir)vendor\DLLs\PhysXCommon_64.dll" "$(TargetDir)PhysXCommon_6
 copy /Y "$(ProjectDir)vendor\DLLs\PhysXCooking_64.dll" "$(TargetDir)PhysXCooking_64.dll"
 copy /Y "$(ProjectDir)vendor\DLLs\PhysXFoundation_64.dll" "$(TargetDir)PhysXFoundation_64.dll"
 copy /Y "$(ProjectDir)vendor\DLLs\PVDRuntime_64.dll" "$(TargetDir)PVDRuntime_64.dll"
+xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>

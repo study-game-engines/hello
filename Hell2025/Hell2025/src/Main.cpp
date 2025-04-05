@@ -19,31 +19,6 @@
 #include "UI/UIBackEnd.h"
 #include <iostream>
 
-/*
-#include "Input/InputMulti.h"
-#include "Audio/Synth.h"
-#include "BackEnd/GLFWIntegration.h"
-#include "API/OpenGL/GL_backend.h"
-
-int main() {
-    if (!BackEnd::Init(API::OPENGL, WindowedMode::WINDOWED)) {
-        std::cout << "BackEnd::Init() FAILED!\n";
-        return -1;
-    }
-    glfwSwapInterval(0);
-    Synth::BeginAudioThread();
-
-    while (BackEnd::WindowIsOpen()) {
-        float deltaTime = Game::GetDeltaTime();
-        InputMulti::Update();
-        Synth::Update(deltaTime);
-        glfwPollEvents();
-        GLFWIntegration::EndFrame(API::OPENGL);
-    }
-
-    return 0;
-}*/
-
 int main() {
     std::cout << "We are all alone on life's journey, held captive by the limitations of human consciousness.\n";
 

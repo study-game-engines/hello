@@ -1,14 +1,19 @@
 #include "Editor/Editor.h"
 
-#include "Config/Config.h"
 #include "Audio/Audio.h"
+#include "BackEnd/BackEnd.h"
+#include "Config/Config.h"
 #include "ImGui/EditorImgui.h"
 #include "ImGui/Types/Types.h"
+#include "Input/Input.h"
 #include "Renderer/Renderer.h"
+#include "Renderer/RenderDataManager.h"
+#include "Viewport/ViewportManager.h"
 #include "World/MapManager.h"
 #include "World/World.h"
 
 #include <imgui/imgui.h>
+
 
 namespace Editor {
 
@@ -155,7 +160,23 @@ namespace Editor {
             }
         }
 
-
+        // Test mouse hover on point
+        //glm::vec3 testPoint = glm::vec3(0, 1, 0);
+        //glm::vec3 color = WHITE;
+        //Viewport* viewport = ViewportManager::GetViewportByIndex(0);
+        //SpaceCoords gbufferSpaceCoords = viewport->GetGBufferSpaceCoords();
+        //int mouseX = gbufferSpaceCoords.localMouseX;
+        //int mouseY = gbufferSpaceCoords.localMouseY;
+        //int screenWidth = gbufferSpaceCoords.width;
+        //int screenHeight = gbufferSpaceCoords.height;
+        //glm::mat4 projectionView = RenderDataManager::GetViewportData()[0].projectionView;
+        //glm::ivec2 testPosScreenSpace = Util::WorldToScreenCoords(testPoint, projectionView, screenWidth, screenHeight, true);
+        //glm::ivec2 mousePos = glm::ivec2(mouseX, mouseY);
+        //int threshold = 20;
+        //if (Util::IsWithinThreshold(mousePos, testPosScreenSpace, threshold)) {
+        //    color = OUTLINE_COLOR;
+        //}
+        //Renderer::DrawPoint(testPoint, color);
 
         const Resolutions& resolutions = Config::GetResolutions();
         float pixelSizeX = 2.0f / resolutions.gBuffer.x;

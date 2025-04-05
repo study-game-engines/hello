@@ -31,7 +31,9 @@ namespace Util {
     glm::vec3 LerpVec3(glm::vec3 current, glm::vec3 target, float deltaTime, float interpSpeed);
     float RandomFloat(float min, float max);
     float MapRange(float inValue, float minInRange, float maxInRange, float minOutRange, float maxOutRange);
+    bool IsWithinThreshold(const glm::ivec2& pointA, const glm::ivec2& pointB, float threshold);
     glm::ivec2 WorldToScreenCoords(const glm::vec3& worldPos, const glm::mat4& viewProjection, int screenWidth, int screenHeight, bool flipY = false);
+    //glm::ivec2 WorldToScreenCoordsOrtho(const glm::vec3& worldPos, const glm::mat4& orthoMatrix, int screenWidth, int screenHeight, bool flipY = false);
     glm::vec3 Vec3Min(const glm::vec3& a, const glm::vec3& b);
     glm::vec3 Vec3Max(const glm::vec3& a, const glm::vec3& b);
     bool IsNan(float value);
