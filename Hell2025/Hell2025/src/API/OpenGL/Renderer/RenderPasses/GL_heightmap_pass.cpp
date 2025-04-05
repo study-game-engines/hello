@@ -23,7 +23,7 @@
 
 #include "lodepng/lodepng.h"
 
-#include "Core/Audio.h"
+#include "Audio/Audio.h"
 
 #include "Physics/Physics.h"
 

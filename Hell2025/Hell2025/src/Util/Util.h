@@ -127,9 +127,12 @@ namespace Util {
     LightType StringToLightType(const std::string& str);
     PickUpType StringToPickUpType(const std::string& str);
     BlendingMode StringToBlendingMode(const std::string& str);
+    ObjectType IntToEnum(int value);
+    int32_t EnumToInt(ObjectType type);
 
     // Time
     double GetCurrentTime();
+    std::string TimestampToString(uint64_t timestamp);
 
     // Debug Info
     void PrintDebugInfo(TextureData& textureData);

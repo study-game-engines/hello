@@ -11,7 +11,7 @@ namespace Game {
     void Update();
     float GetDeltaTime();
     float GetTotalTime();
-    void UpdateLazyKeypresses();
+    void RespawnPlayers();
 
     Player* GetLocalPlayerByIndex(uint32_t index);
     void SetPlayerKeyboardAndMouseIndex(int playerIndex, int keyboardIndex, int mouseIndex);

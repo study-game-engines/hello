@@ -45,23 +45,23 @@ namespace OpenGLRenderer {
             shader->SetMat4("u_projectionView", viewportData[i].projectionView);
 
             glDisable(GL_DEPTH_TEST);
-            if (g_debugMeshPoints.GetVertexCount() > 0) {
-                glBindVertexArray(g_debugMeshPoints.GetVAO());
-                glDrawArrays(GL_POINTS, 0, g_debugMeshPoints.GetVertexCount());
-            }
             if (g_debugMeshLines.GetVertexCount() > 0) {
                 glBindVertexArray(g_debugMeshLines.GetVAO());
                 glDrawArrays(GL_LINES, 0, g_debugMeshLines.GetVertexCount());
             }
-
-            glEnable(GL_DEPTH_TEST);
-            if (g_debugMeshDepthAwarePoints.GetVertexCount() > 0) {
+            if (g_debugMeshPoints.GetVertexCount() > 0) {
                 glBindVertexArray(g_debugMeshPoints.GetVAO());
                 glDrawArrays(GL_POINTS, 0, g_debugMeshPoints.GetVertexCount());
             }
+
+            glEnable(GL_DEPTH_TEST);
             if (g_debugMeshDepthAwareLines.GetVertexCount() > 0) {
                 glBindVertexArray(g_debugMeshDepthAwareLines.GetVAO());
                 glDrawArrays(GL_LINES, 0, g_debugMeshDepthAwareLines.GetVertexCount());
+            }
+            if (g_debugMeshDepthAwarePoints.GetVertexCount() > 0) {
+                glBindVertexArray(g_debugMeshPoints.GetVAO());
+                glDrawArrays(GL_POINTS, 0, g_debugMeshPoints.GetVertexCount());
             }
         }
     }

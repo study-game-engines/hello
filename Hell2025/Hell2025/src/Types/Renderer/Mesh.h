@@ -10,7 +10,7 @@ struct Mesh {
     glm::vec3 aabbMin = glm::vec3(0);
     glm::vec3 aabbMax = glm::vec3(0);
     glm::vec3 extents = glm::vec3(0);
-    uint64_t triangleMeshBvhId = 0;
+    uint64_t meshBvhId = 0;
     float boundingSphereRadius = 0;
 
     void SetName(const std::string& name);

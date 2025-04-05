@@ -99,7 +99,7 @@ copy /Y "$(ProjectDir)vendor\dll_debug\PVDRuntime_64.dll" "$(TargetDir)PVDRuntim
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;TRACY_ENABLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>vendor\earcut\include;vendor\clipper\include;src;vendor\compressonator\include\;vendor\gli\include;src\Util;src\Common;vendor\glad\include;vendor\GLFW\include;vendor\glm;vendor\stb_image;vendor\assimp\include;vendor;vendor\fmod\include;vendor\tinyexr;vendor\VkBootstrap;vendor\Vulkan\include;vendor\VulkanMemoryAllocator\include;vendor\physx\include;vendor\nlohmann_json\include;vendor\imgui\include;vendor\lodepng\include;vendor\bvh\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>vendor\earcut\include;vendor\clipper\include;src;vendor\compressonator\include\;vendor\gli\include;src\Util;src\Common;vendor\glad\include;vendor\GLFW\include;vendor\glm;vendor\stb_image;vendor\assimp\include;vendor;vendor\fmod\include;vendor\tinyexr;vendor\VkBootstrap;vendor\Vulkan\include;vendor\VulkanMemoryAllocator\include;vendor\physx\include;vendor\nlohmann_json\include;vendor\imgui\include;vendor\lodepng\include;vendor\bvh\include;vendor\fluidsynth\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
@@ -114,8 +114,8 @@ copy /Y "$(ProjectDir)vendor\dll_debug\PVDRuntime_64.dll" "$(TargetDir)PVDRuntim
       <EnableCOMDATFolding>false</EnableCOMDATFolding>
       <OptimizeReferences>false</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>vendor\assimp\lib;vendor\GLFW\lib\Release;vendor\compressonator\lib;vendor\fmod\lib;vendor\Vulkan;vendor\physx\lib\release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw3.lib;Compressonator_MD.lib;CMP_Framework_MD.lib;assimp-vc143-mt.lib;fmod_vc.lib;vulkan-1.lib;PhysX_64.lib;PhysXCommon_64.lib;PhysXCooking_64.lib;PhysXFoundation_64.lib;PhysXTask_static_64.lib;PhysXPvdSDK_static_64.lib;PVDRuntime_64.lib;PhysXExtensions_static_64.lib;PhysXCharacterKinematic_static_64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>vendor\assimp\lib;vendor\GLFW\lib\Release;vendor\compressonator\lib;vendor\fmod\lib;vendor\Vulkan;vendor\physx\lib\release;vendor\fluidsynth\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;Compressonator_MD.lib;CMP_Framework_MD.lib;assimp-vc143-mt.lib;fmod_vc.lib;vulkan-1.lib;PhysX_64.lib;PhysXCommon_64.lib;PhysXCooking_64.lib;PhysXFoundation_64.lib;PhysXTask_static_64.lib;PhysXPvdSDK_static_64.lib;PVDRuntime_64.lib;PhysXExtensions_static_64.lib;PhysXCharacterKinematic_static_64.lib;fluidsynth-3.lib;dinput8.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <TreatLinkerWarningAsErrors>false</TreatLinkerWarningAsErrors>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
     </Link>
@@ -190,11 +190,12 @@ copy /Y "$(ProjectDir)vendor\DLLs\PVDRuntime_64.dll" "$(TargetDir)PVDRuntime_64.
     <ClCompile Include="src\AssetManagement\AssetManager_spriteSheetTexture.cpp" />
     <ClCompile Include="src\AssetManagement\AssetManager_texture.cpp" />
     <ClCompile Include="src\AssetManagement\AssetManager_vertex_data.cpp" />
+    <ClCompile Include="src\Audio\Synth.cpp" />
     <ClCompile Include="src\BackEnd\BackEnd.cpp" />
     <ClCompile Include="src\BackEnd\GLFWIntegration.cpp" />
     <ClCompile Include="src\Camera\Frustum.cpp" />
     <ClCompile Include="src\Config\Config.cpp" />
-    <ClCompile Include="src\Core\Audio.cpp" />
+    <ClCompile Include="src\Audio\Audio.cpp" />
     <ClCompile Include="src\AssetManagement\BakeQueue.cpp" />
     <ClCompile Include="src\Callbacks\Callbacks.cpp" />
     <ClCompile Include="src\Common\UniqueID.cpp" />
@@ -203,11 +204,11 @@ copy /Y "$(ProjectDir)vendor\DLLs\PVDRuntime_64.dll" "$(TargetDir)PVDRuntime_64.
     <ClCompile Include="src\Editor\Editors\Editor_map.cpp" />
     <ClCompile Include="src\Editor\Editors\Editor_sector.cpp" />
     <ClCompile Include="src\File\File_debug.cpp" />
-    <ClCompile Include="src\File\File_mesh_bvh.cpp" />
-    <ClCompile Include="src\Math\Bvh.cpp" />
-    <ClCompile Include="src\Math\Bvh_debug_draw.cpp" />
-    <ClCompile Include="src\Math\Bvh_math.cpp" />
-    <ClCompile Include="src\Math\Bvh_traversal.cpp" />
+    <ClCompile Include="src\File\File_bvh.cpp" />
+    <ClCompile Include="src\Bvh\Bvh.cpp" />
+    <ClCompile Include="src\Bvh\Bvh_debug_draw.cpp" />
+    <ClCompile Include="src\Bvh\Bvh_math.cpp" />
+    <ClCompile Include="src\Bvh\Bvh_traversal.cpp" />
     <ClCompile Include="src\Modelling\Clipping.cpp" />
     <ClCompile Include="src\Modelling\Types\ClippingCube.cpp" />
     <ClCompile Include="src\Modelling\Unused\EditableMesh.cpp" />
@@ -425,6 +426,7 @@ copy /Y "$(ProjectDir)vendor\DLLs\PVDRuntime_64.dll" "$(TargetDir)PVDRuntime_64.
     <ClInclude Include="src\API\Vulkan\vk_backend.h" />
     <ClInclude Include="src\API\Vulkan\Renderer\vk_renderer.h" />
     <ClInclude Include="src\API\Vulkan\vk_util.h" />
+    <ClInclude Include="src\Audio\Synth.h" />
     <ClInclude Include="src\BackEnd\BackEnd.h" />
     <ClInclude Include="src\BackEnd\GLFWIntegration.h" />
     <ClInclude Include="src\Camera\Frustum.h" />
@@ -432,11 +434,11 @@ copy /Y "$(ProjectDir)vendor\DLLs\PVDRuntime_64.dll" "$(TargetDir)PVDRuntime_64.
     <ClInclude Include="src\Common\HellDefines.h" />
     <ClInclude Include="src\Common\HellFunctionTypes.h" />
     <ClInclude Include="src\Config\Config.h" />
-    <ClInclude Include="src\Core\Audio.h" />
+    <ClInclude Include="src\Audio\Audio.h" />
     <ClInclude Include="src\AssetManagement\BakeQueue.h" />
     <ClInclude Include="src\Callbacks\Callbacks.h" />
     <ClInclude Include="src\Common\UniqueID.h" />
-    <ClInclude Include="src\Math\Bvh.h" />
+    <ClInclude Include="src\Bvh\Bvh.h" />
     <ClInclude Include="src\Modelling\Clipping.h" />
     <ClInclude Include="src\Modelling\Types\ClippingCube.h" />
     <ClInclude Include="src\Modelling\Unused\EditableMesh.h" />

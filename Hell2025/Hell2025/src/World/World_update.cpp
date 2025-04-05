@@ -1,5 +1,5 @@
 #include "World.h"
-#include "Core/Audio.h"
+#include "Audio/Audio.h"
 #include "Core/Game.h"
 #include "Input/Input.h"
 #include "Renderer/RenderDataManager.h"
@@ -14,6 +14,79 @@ namespace World {
         ProcessBullets();
         LazyDebugSpawns();
         UpdateDoorAndWindowCubeTransforms();
+
+
+        //static uint32_t audioId_a = 0;
+        //static uint32_t audioId_b = 0;
+        //static uint32_t audioId_c = 0;
+        //static uint32_t audioId_d = 0;
+        //static uint32_t audioId_e = 0;
+        //
+        //if (Input::KeyPressed(HELL_KEY_G)) {
+        //    Audio::StopAudio(audioId_a);
+        //    audioId_a = Audio::PlayAudio("piano/a3.wav", 1.0f);
+        //}
+        //if (!Input::KeyDown(HELL_KEY_G)) {
+        //    Audio::FadeOut(audioId_a, 0.75f);
+        //}
+        //
+        //if (Input::KeyPressed(HELL_KEY_H)) {
+        //    Audio::StopAudio(audioId_b);
+        //    audioId_b = Audio::PlayAudio("piano/b3.wav", 1.0f);
+        //}
+        //if (!Input::KeyDown(HELL_KEY_H)) {
+        //    Audio::FadeOut(audioId_b, 0.75f);
+        //}
+        //
+        //if (Input::KeyPressed(HELL_KEY_J)) {
+        //    Audio::StopAudio(audioId_c);
+        //    audioId_c = Audio::PlayAudio("piano/c3_sharp.wav", 1.0f);
+        //}
+        //if (!Input::KeyDown(HELL_KEY_J)) {
+        //    Audio::FadeOut(audioId_c, 0.75f);
+        //}
+        //
+        //if (Input::KeyPressed(HELL_KEY_K)) {
+        //    Audio::StopAudio(audioId_d);
+        //    audioId_d = Audio::PlayAudio("piano/d3.wav", 1.0f);
+        //}
+        //if (!Input::KeyDown(HELL_KEY_K)) {
+        //    Audio::FadeOut(audioId_d, 0.75f);
+        //}
+        //
+        //if (Input::KeyPressed(HELL_KEY_L)) {
+        //    Audio::StopAudio(audioId_e);
+        //    audioId_e = Audio::PlayAudio("piano/e3.wav", 1.0f);
+        //}
+        //if (!Input::KeyDown(HELL_KEY_L)) {
+        //    Audio::FadeOut(audioId_e, 0.75f);
+        //}
+
+
+       //bool isPlaying = false;
+       //if (channel.fmodChannel) {
+       //    channel.fmodChannel->isPlaying(&isPlaying);
+       //}
+       //
+       //if (channel.fmodChannel && isPlaying) {
+       //    float blendFactor = 1.0f - powf(0.01f, deltaTime / releaseDuration); // Use powf for floats
+       //    channel.currentVolume = std::lerp(channel.currentVolume, 0.0f, blendFactor);
+       //
+       //    // Apply the volume
+       //    FMOD_ERRCHECK(channel.fmodChannel->setVolume(channel.currentVolume));
+       //
+       //    // Stop when volume is negligible
+       //    if (channel.currentVolume < 0.01f) {
+       //        FMOD_ERRCHECK(channel.fmodChannel->stop());
+       //        channel.fmodChannel = nullptr; // Mark as stopped
+       //        // Remove from your 'releasingNotes' list here
+       //    }
+       //}
+       //else {
+       //  // Channel already stopped or became invalid, remove from 'releasingNotes'
+       //    channel.fmodChannel = nullptr;
+       //    // Remove from your 'releasingNotes' list here
+       //}
 
         std::vector<AnimatedGameObject>& animatedGameObjects = GetAnimatedGameObjects();
         std::vector<BulletCasing>& bulletCasings = GetBulletCasings();

@@ -4,7 +4,10 @@
 #include <string>
 #include <cstdint>
 #include <chrono>
-#include "../Util/Util.h"
+#include <cstring> // For std::memset, std::memcpy
+#include <string>
+#include <cstddef> // For size_t
+#include "Util.h"
 
 #define PRINT_MODEL_HEADERS_ON_READ 0
 #define PRINT_MODEL_HEADERS_ON_WRITE 0
@@ -14,6 +17,24 @@
 #define PRINT_SKINNED_MODEL_HEADERS_ON_WRITE 0
 #define PRINT_SKINNED_MESH_HEADERS_ON_READ 0
 #define PRINT_SKINNED_MESH_HEADERS_ON_WRITE 0
+
+namespace File {
+
+    void MemCopyFileSignature(char* signatureBuffer, const std::string& signatureName) {
+        std::memset(signatureBuffer, 0, HELL_SIGNATURE_BUFFER_SIZE);
+        std::memcpy(signatureBuffer, signatureName.data(), signatureName.length());
+        signatureBuffer[signatureName.length()] = '\0';
+    }
+
+    bool CompareFileSignature(char* signatureBuffer, const std::string& signatureName) {
+        if (signatureName.length() >= HELL_SIGNATURE_BUFFER_SIZE) return false;
+
+        char expectedSignature[HELL_SIGNATURE_BUFFER_SIZE];
+        std::memset(expectedSignature, 0, HELL_SIGNATURE_BUFFER_SIZE);
+        std::memcpy(expectedSignature, signatureName.data(), signatureName.length());
+        return (std::memcmp(signatureBuffer, expectedSignature, HELL_SIGNATURE_BUFFER_SIZE) == 0);
+    }
+}
 
 /*
 █▄ ▄█ █▀█ █▀▄ █▀▀ █   █▀▀

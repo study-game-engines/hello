@@ -1,5 +1,5 @@
 #include "AssetManager.h"
-#include "Math/Bvh.h"
+#include "Bvh/Bvh.h"
 #include "Timer.hpp"
 #include <mutex>
 
@@ -100,12 +100,54 @@ namespace AssetManager {
         return result;
     }
 
+    std::span<Vertex> GetMeshVerticesSpan(Mesh* mesh) {
+        std::vector<Vertex>& vertices = GetVertices();
+        static const std::span<Vertex> empty;
+    
+        if (!mesh || mesh->baseVertex < 0 || mesh->vertexCount + mesh->vertexCount > vertices.size()) return empty;
+        return std::span<Vertex>(vertices.data() + mesh->baseVertex, mesh->vertexCount);
+    }
+    
+    std::span<uint32_t> GetMeshIndicesSpan(Mesh* mesh) {
+        std::vector<uint32_t>& indices = GetIndices();
+        static const std::span<uint32_t> empty;
+    
+        if (!mesh || mesh->baseVertex < 0 || mesh->baseIndex + mesh->indexCount > indices.size()) return empty;
+        return std::span<uint32_t>(indices.data() + mesh->baseIndex, mesh->indexCount);
+    }
+
     void CreateMeshBvhs() {
         Timer timer ("CreateMeshBVHs()");
+       
         for (Mesh& mesh : GetMeshes()) {
             Timer timer("CreateMeshBVHs() " + mesh.GetName() + " " + std::to_string(mesh.indexCount));
+            
             std::vector<Vertex> vertices = GetMeshVertices(&mesh);
-            mesh.triangleMeshBvhId = BVH::CreateMeshBvhFromVertices(vertices);
+        
+            std::vector<uint32_t> indices(vertices.size());
+            for (uint32_t i = 0; i < indices.size(); i++) {
+                indices[i] = i;
+            }
+        
+            std::span<Vertex> verticesSpan = GetMeshVerticesSpan(&mesh);
+            std::span<uint32_t> indicesSpan = GetMeshIndicesSpan(&mesh);
+
+            vertices.clear();
+            indices.clear();
+           
+            vertices.reserve(verticesSpan.size());
+            indices.reserve(indicesSpan.size());
+           
+            for (Vertex& vertex : verticesSpan) {
+                vertices.push_back(vertex);
+            }
+           
+            for (uint32_t& index : indicesSpan) {
+                indices.push_back(index);
+            }
+
+            BVH::DestroyMeshBvh(mesh.meshBvhId);
+            mesh.meshBvhId = BVH::CreateMeshBvhFromVertexData(vertices, indices);
         }
         BVH::FlatternMeshBvhNodes();
     }

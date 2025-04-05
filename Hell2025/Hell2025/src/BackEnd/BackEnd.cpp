@@ -8,7 +8,8 @@
 #include "API/Vulkan/VK_backEnd.h"
 #include "AssetManagement/AssetManager.h"
 #include "Config/Config.h"
-#include "Core/Audio.h"
+#include "Audio/Audio.h"
+#include "Audio/Synth.h"
 #include "Core/Debug.h"
 #include "Core/Game.h"
 #include "Editor/Editor.h"
@@ -75,6 +76,7 @@ namespace BackEnd {
         ViewportManager::Init();
         Editor::Init();
         //EditorImGui::Init();
+        Synth::Init();
         WeaponManager::Init();
         Physics::Init();
         ImGuiBackEnd::Init();
@@ -146,9 +148,14 @@ namespace BackEnd {
     }
 
     void UpdateSubSystems() {
-        Input::Update();
+        float deltaTime = Game::GetDeltaTime();
+        //glfwSwapInterval(0);
+
         InputMulti::Update();
-        Audio::Update();
+        Synth::Update(deltaTime);
+        Audio::Update(deltaTime);
+        Input::Update();
+
         UpdateLazyKeypresses();
     }
 
@@ -304,6 +311,18 @@ namespace BackEnd {
 
         if (ImGuiBackEnd::HasKeyboardFocus()) {
             return;
+        }
+
+        static bool pianoMode = false;
+        if (Input::KeyPressed(HELL_KEY_P)) {
+            pianoMode = !pianoMode;
+        }
+        if (pianoMode) {
+            return;
+        }
+
+        if (Input::KeyPressed(HELL_KEY_K)) {
+            Game::RespawnPlayers();
         }
 
         if (Input::KeyPressed(HELL_KEY_H)) {

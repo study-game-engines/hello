@@ -1,4 +1,5 @@
 #include "AssetManager.h"
+#include "Bvh/Bvh.h"
 #include "File/AssimpImporter.h"
 #include "Util/Util.h"
 #include <future>
@@ -40,8 +41,10 @@ namespace AssetManager {
 
     void LoadModel(Model* model) {
         const FileInfo& fileInfo = model->GetFileInfo();
-        std::string filepath = "res/models/" + fileInfo.name + "." + fileInfo.ext;
-        model->m_modelData = File::ImportModel(filepath);
+        std::string modelPath = "res/models/" + fileInfo.name + "." + fileInfo.ext;
+        std::string bvhPath = "res/models/bvh/" + fileInfo.name + ".bvh";
+        model->m_modelData = File::ImportModel(modelPath);
+        model->m_modelBvhData = File::ImportModelBvh(bvhPath);
         model->SetLoadingState(LoadingState::LOADING_COMPLETE);
     }
 
@@ -76,6 +79,70 @@ namespace AssetManager {
                 File::ExportModel(modelData);
             }
         }
+    }
+
+    void ExportMissingModelBvhs() {
+        // Iterate over all .model files
+        for (FileInfo& fileInfo : Util::IterateDirectory("res/models", { "model" })) {
+            std::string modelPath = "res/models/" + fileInfo.name + ".model";
+            std::string bvhPath = "res/models/bvh/" + fileInfo.name + ".bvh";
+
+            bool exportRequired = false;
+
+            // If the file exists..
+            if (Util::FileExists(bvhPath)) {
+                ModelHeader modelHeader = File::ReadModelHeader(modelPath);
+                ModelBvhHeader modelBvhHeader = File::ReadModelBvhHeader(bvhPath);
+                
+                // ... but timestamps don't match, then delete the old bvh file and trigger a re-export
+                if (modelHeader.timestamp != modelBvhHeader.timestamp) {
+                    File::DeleteFile(bvhPath);
+                    exportRequired = true;
+                }
+            }
+            // Bvh file doesn't even exist yet, so trigger an export
+            else {
+                exportRequired = true;
+            }
+
+            // Export the bvh from re-imported model data, not the most optimal, but this only happens once when there is no .bvh file
+            if (exportRequired) {
+                ModelData modelData = File::ImportModel(modelPath);
+                File::ExportModelBvh(modelData);
+            }
+        }
+    }
+
+    void CopyInAllLoadedModelBvhData() {
+        std::vector<Model>& models = GetModels();
+
+        for (Model& model : models) {
+            // Quick error check that bvh count matches mesh count
+            if (model.m_modelBvhData.bvhs.size() != model.GetMeshCount()) {
+                std::cout << "CopyInAllLoadedModelBvhData() error: bvh count does not equal mesh count for " << model.GetName() << "\n";
+                continue;
+            }
+
+            // Itereate each preloaded MeshBvh and extract the data
+            for (int i = 0; i < model.m_modelBvhData.bvhs.size(); i++) {
+                MeshBvh& sourceMeshBvh = model.m_modelBvhData.bvhs[i];
+                uint32_t meshIndex = model.GetMeshIndices()[i];
+
+                Mesh* mesh = AssetManager::GetMeshByIndex(meshIndex);
+                if (!mesh) {
+                    std::cout << "CopyInAllLoadedModelBvhData() error: mesh with index " << meshIndex << " was invalid for " << model.GetName() << "\n";
+                    continue;
+                }
+
+                // Swap data out of source MeshBvh and into the unordered map within BVH namespace, returning a new id
+                mesh->meshBvhId = BVH::CreateMeshBvhFromMeshBvh(sourceMeshBvh);
+            }
+
+            // Clean up
+            model.m_modelBvhData.bvhs.clear();
+        }
+
+        BVH::FlatternMeshBvhNodes();
     }
 
     Model* CreateModel(const std::string& name) {

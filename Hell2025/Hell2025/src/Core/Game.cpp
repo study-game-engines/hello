@@ -6,7 +6,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "Backend/Backend.h"
-#include "Core/Audio.h"
+#include "Audio/Audio.h"
 #include "Core/JSON.h"
 #include "Editor/Editor.h"
 #include "Imgui/ImGuiBackEnd.h"
@@ -123,6 +123,12 @@ namespace Game {
 
     float GetTotalTime() {
         return g_totalTime;
+    }
+
+    void RespawnPlayers() {
+        for (Player& player : g_localPlayers) {
+            player.Respawn();
+        }
     }
 
     Player* GetLocalPlayerByIndex(uint32_t index) {

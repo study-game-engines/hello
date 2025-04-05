@@ -75,6 +75,7 @@ void Tree::UpdateRenderItems() {
             renderItem.normalMapTextureIndex = m_material->m_normal;
             renderItem.rmaTextureIndex = m_material->m_rma;
             Util::UpdateRenderItemAABB(renderItem);
+            Util::PackUint64(m_objectId, renderItem.objectIdLowerBit, renderItem.objectIdUpperBit);
         }
     }
 }

@@ -56,6 +56,7 @@ namespace AssetManager {
     void Init() {
         CompressMissingDDSTexutres();
         ExportMissingModels();
+        ExportMissingModelBvhs();
         ExportMissingSkinnedModels();
         LoadMinimumTextures();
         FindAssetPaths();
@@ -91,7 +92,6 @@ namespace AssetManager {
         for (Model& model : g_models) {
             if (model.GetLoadingState() != LoadingState::LOADING_COMPLETE) {
                 g_loadingComplete = false;
-                std::cout << model.GetFileInfo().name;
                 return;
             }
         }
@@ -126,8 +126,9 @@ namespace AssetManager {
             BuildGoldenMaterialVariants();
             BuildIndexMaps();
             BuildSpriteSheetTextures();
+            CopyInAllLoadedModelBvhData();
 
-            CreateMeshBvhs();
+            //CreateMeshBvhs();
 
 
             HeightMapManager::Init();

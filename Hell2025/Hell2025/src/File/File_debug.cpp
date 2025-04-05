@@ -45,14 +45,16 @@ namespace File {
 
     void PrintModelBvhHeader(ModelBvhHeader header, const std::string& identifier) {
         std::cout << identifier << "\n";
-        std::cout << " Version: " << header.version << "\n";
+        std::cout << " Signature:  " << header.signature << "\n";
+        std::cout << " Version:    " << header.version << "\n";
         std::cout << " Mesh Count: " << header.meshCount << "\n";
-        std::cout << " Timestamp: " << header.timestamp << "\n\n";
+        std::cout << " Time Stamp: " << Util::TimestampToString(header.timestamp) << "\n\n";
     }
 
     void PrintMeshBvhHeader(MeshBvhHeader header, const std::string& identifier) {
         std::cout << identifier << "\n";
-        std::cout << " Float Count: " << header.nodeCount << "\n";
-        std::cout << " Node Count: " << header.floatCount << "\n";
+        std::cout << " Signature:   " << header.signature << "\n";
+        std::cout << " Node Count:  " << header.floatCount << "\n";
+        std::cout << " Float Count: " << header.nodeCount << "\n\n";
     }
 }

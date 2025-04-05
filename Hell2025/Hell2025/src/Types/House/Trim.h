@@ -11,6 +11,7 @@ private:
     Material* m_material;
     Model* m_model;
     RenderItem m_renderItem;
+    uint64_t m_objectId = 0;
 
     void UpdateRenderItem();
 };

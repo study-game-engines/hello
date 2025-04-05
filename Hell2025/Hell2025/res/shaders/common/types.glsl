@@ -61,14 +61,14 @@ struct RenderItem {
     int ignoredViewportIndex;
 
     int exclusiveViewportIndex;
-    int skinned;     // true or false
-    float emissiveR;    
-    float emissiveG;
+    int skinned;    // True or false
+    uint objectIdLowerBit;
+    uint objectIdUpperBit;
 
+    float emissiveR;
+    float emissiveG;
     float emissiveB;
-    float padding0;
-    float padding1;
-    float padding2;
+    int padding;
 };
 
 struct Light {

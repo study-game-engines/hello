@@ -114,6 +114,7 @@ void Light::UpdateRenderItems() {
 
     for (RenderItem& renderItem : m_renderItems) {
         Util::UpdateRenderItemAABB(renderItem);
+        Util::PackUint64(m_objectId, renderItem.objectIdLowerBit, renderItem.objectIdUpperBit);
     }
 }
 

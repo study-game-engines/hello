@@ -31,25 +31,25 @@ struct RenderItem {
     glm::vec4 aabbMin = glm::vec4(0);
     glm::vec4 aabbMax = glm::vec4(0);
 
-    int meshIndex = 0;
-    int baseColorTextureIndex = 0;
-    int normalMapTextureIndex = 0;
-    int rmaTextureIndex = 0;
+    int32_t meshIndex = 0;
+    int32_t baseColorTextureIndex = 0;
+    int32_t normalMapTextureIndex = 0;
+    int32_t rmaTextureIndex = 0;
 
-    int objectType = 0;
-    int mousePickIndex = 0;
-    int baseSkinnedVertex = 0;
-    int ignoredViewportIndex = -1;
+    int32_t objectType = 0;
+    int32_t mousePickIndex = 0;
+    int32_t baseSkinnedVertex = 0;
+    int32_t ignoredViewportIndex = -1;
 
-    int exclusiveViewportIndex = -1;
-    int skinned = 0;    // True or false
+    int32_t exclusiveViewportIndex = -1;
+    int32_t skinned = 0;    // True or false
+    uint32_t objectIdUpperBit = 0;
+    uint32_t objectIdLowerBit = 0;
+
     float emissiveR = 0.0f;
     float emissiveG = 0.0f;
-
     float emissiveB = 0.0f;
-    float padding0 = 0.0f;
-    float padding1 = 0.0f;
-    float padding2 = 0.0f;
+    int32_t padding = 0;
 };
 
 struct HouseRenderItem {
@@ -544,12 +544,14 @@ struct CubeRayResult {
     bool hitFound = false;
 };
 
+#pragma pack(push, 1)
 struct BvhNode {
     glm::vec3 boundsMin;
     uint32_t firstChildOrPrimitive;
     glm::vec3 boundsMax;
     uint32_t primitiveCount;
 };
+#pragma pack(pop)
 
 struct RayData {
     float origin[3];
@@ -574,10 +576,10 @@ struct PrimitiveInstance {
 struct GpuPrimitiveInstance {
     glm::mat4 worldTransform;
     glm::mat4 inverseWorldTransform;
-    int bvhRootNodeIndex;
-    int padding0;
-    int padding1;
-    int padding2;
+    int32_t rootNodeIndex;
+    int32_t objectType;
+    uint32_t objectIdLowerBit;
+    uint32_t objectIdUpperBit;
 };
 
 struct SceneBvh {
@@ -593,6 +595,8 @@ struct MeshBvh {
 struct RayTraversalResult {
     bool hitFound = false;
     size_t primtiviveId = 0;
+    uint64_t objectId = 0;
+    ObjectType objectType = ObjectType::NONE;
     float distanceToHit = std::numeric_limits<float>::max();
     glm::vec3 hitPosition = glm::vec3(0);
     glm::mat4 primitiveTransform = glm::mat4(1.0f);

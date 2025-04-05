@@ -3,7 +3,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "BackEnd/BackEnd.h"
-#include "Core/Audio.h"
+#include "Audio/Audio.h"
 #include "Core/Game.h"
 #include "Editor/Editor.h"
 #include "Input/Input.h"
@@ -64,10 +64,6 @@ void Player::Update(float deltaTime) {
     UpdateUI();
     UpdateFlashlight(deltaTime);
     UpdateFlashlightFrustum();
-    if (Input::KeyPressed(HELL_KEY_K)) {
-        m_awaitingSpawn = true;
-        WeaponManager::Init(); // remove me
-    }
 
     if (m_infoTextTimer > 0) {
         m_infoTextTimer -= deltaTime;

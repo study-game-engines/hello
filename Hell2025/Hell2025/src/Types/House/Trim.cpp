@@ -1,9 +1,13 @@
 #include "Trim.h"
 #include "AssetManagement/AssetManager.h"
 #include "Renderer/RenderDataManager.h"
+#include "Util.h"
+#include "UniqueID.h"
 
 void Trim::Init(Transform transform, const std::string& modelName, const std::string& materialName) {
     m_transform = transform;
+    m_objectId = UniqueID::GetNext();
+
     Model* model = AssetManager::GetModelByName(modelName);
     Material* material = AssetManager::GetMaterialByName(materialName);
 
@@ -17,6 +21,7 @@ void Trim::Init(Transform transform, const std::string& modelName, const std::st
     m_renderItem.baseColorTextureIndex = material->m_basecolor;
     m_renderItem.rmaTextureIndex = material->m_rma;
     m_renderItem.normalMapTextureIndex = material->m_normal;
+    Util::PackUint64(m_objectId, m_renderItem.objectIdLowerBit, m_renderItem.objectIdUpperBit);
 }
 
 void Trim::SubmitRenderItem() {

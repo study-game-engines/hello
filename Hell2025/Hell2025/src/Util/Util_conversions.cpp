@@ -190,4 +190,12 @@ namespace Util {
             default:                                            return "UNDEFINED";
         }
     }
+
+    ObjectType IntToEnum(int value) {
+        return static_cast<ObjectType>(value);
+    }
+
+    int32_t EnumToInt(ObjectType type) {
+        return static_cast<int32_t>(type);
+    }
 }

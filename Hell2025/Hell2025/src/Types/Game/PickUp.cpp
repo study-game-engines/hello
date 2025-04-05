@@ -175,6 +175,7 @@ void PickUp::UpdateRenderItems() {
             renderItem.baseColorTextureIndex = material->m_basecolor;
             renderItem.normalMapTextureIndex = material->m_normal;
             renderItem.rmaTextureIndex = material->m_rma;
+            Util::PackUint64(m_objectId, renderItem.objectIdLowerBit, renderItem.objectIdUpperBit);
             Util::UpdateRenderItemAABB(renderItem);
         }
     }

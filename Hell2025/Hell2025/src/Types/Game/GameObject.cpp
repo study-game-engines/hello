@@ -168,6 +168,7 @@ void GameObject::UpdateRenderItems() {
         renderItem.baseColorTextureIndex = material->m_basecolor;
         renderItem.normalMapTextureIndex = material->m_normal;
         renderItem.rmaTextureIndex = material->m_rma;
+        Util::PackUint64(m_objectId, renderItem.objectIdLowerBit, renderItem.objectIdUpperBit);
 
         // get me out of here
         Util::UpdateRenderItemAABB(renderItem);

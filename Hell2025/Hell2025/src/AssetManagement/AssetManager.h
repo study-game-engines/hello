@@ -50,6 +50,8 @@ namespace AssetManager {
     Mesh* GetMeshByModelNameMeshIndex(const std::string& modelName, uint32_t meshIndex);
     int GetMeshIndexByModelNameMeshName(const std::string& modelName, const std::string& meshName);
     std::vector<Vertex> GetMeshVertices(Mesh* mesh);
+    std::span<Vertex> GetMeshVerticesSpan(Mesh* mesh);
+    std::span<uint32_t> GetMeshIndicesSpan(Mesh* mesh);
     void CreateMeshBvhs();
 
     // Models
@@ -112,6 +114,10 @@ namespace AssetManager {
     // Import/Export
     void ExportMissingModels();
     void ExportMissingSkinnedModels();
+    void ExportMissingModelBvhs();
+
+    // BVH
+    void CopyInAllLoadedModelBvhData();
 
     // Vertex data
     std::vector<Vertex>& GetVertices();

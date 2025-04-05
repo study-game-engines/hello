@@ -1,5 +1,5 @@
 #include "Door.h"
-#include "Core/Audio.h"
+#include "Audio/Audio.h"
 #include "AssetManagement/AssetManager.h"
 #include "Physics/Physics.h"
 #include "Physics/Physics.h"
@@ -105,6 +105,7 @@ void Door::UpdateRenderItems() {
         renderItem.rmaTextureIndex = m_material->m_rma;
         renderItem.normalMapTextureIndex = m_material->m_normal;
         Util::UpdateRenderItemAABB(renderItem);
+        Util::PackUint64(m_objectId, renderItem.objectIdLowerBit, renderItem.objectIdUpperBit);
     }
 
     for (const uint32_t& meshIndex : m_frameModel->GetMeshIndices()) {
@@ -117,6 +118,7 @@ void Door::UpdateRenderItems() {
         renderItem.rmaTextureIndex = m_material->m_rma;
         renderItem.normalMapTextureIndex = m_material->m_normal;
         Util::UpdateRenderItemAABB(renderItem);
+        Util::PackUint64(m_objectId, renderItem.objectIdLowerBit, renderItem.objectIdUpperBit);
     }
 }
 

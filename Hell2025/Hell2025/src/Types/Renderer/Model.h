@@ -30,6 +30,7 @@ struct Model {
     bool m_awaitingLoadingFromDisk = true;
     std::string m_fullPath = "";
     ModelData m_modelData;
+    ModelBvhData m_modelBvhData;
 
 
 private:

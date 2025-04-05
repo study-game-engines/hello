@@ -94,6 +94,7 @@ void Window::UpdateRenderItems() {
         renderItem.rmaTextureIndex = material->m_rma;
         renderItem.normalMapTextureIndex = material->m_normal;
         Util::UpdateRenderItemAABB(renderItem);
+        Util::PackUint64(m_objectId, renderItem.objectIdLowerBit, renderItem.objectIdUpperBit);
     }
 
     // Bail if model is invalid
@@ -109,6 +110,7 @@ void Window::UpdateRenderItems() {
         renderItem.rmaTextureIndex = m_exteriorMaterial->m_rma;
         renderItem.normalMapTextureIndex = m_exteriorMaterial->m_normal;
         Util::UpdateRenderItemAABB(renderItem);
+        Util::PackUint64(m_objectId, renderItem.objectIdLowerBit, renderItem.objectIdUpperBit);
     }
 }
 

@@ -1,7 +1,7 @@
 #include "BulletCasing.h"
 #include "Util.h"
 #include "AssetManagement/AssetManager.h"
-#include "Core/Audio.h"
+#include "Audio/Audio.h"
 #include "Physics/Physics.h"
 
 BulletCasing::BulletCasing(BulletCasingCreateInfo createInfo) {

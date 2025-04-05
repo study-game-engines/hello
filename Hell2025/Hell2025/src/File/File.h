@@ -19,8 +19,10 @@ namespace File {
     SkinnedModelHeader ReadSkinnedModelHeader(const std::string& filepath);
     
     // BVHs
-    void ExportMeshBvh(const MeshBvh& meshBvh);
-    MeshBvh LoadMeshBvh(const std::string& filePath);
+    void ExportModelBvh(const ModelData& modelData);
+    ModelBvhData ImportModelBvh(const std::string& filepath);
+    ModelBvhHeader ReadModelBvhHeader(const std::string& filepath);
+    //MeshBvhHeader ReadMeshBvhHeader(const std::string& filepath);
 
     // I/O
     void DeleteFile(const std::string& filePath);
@@ -29,6 +31,10 @@ namespace File {
     uint64_t GetCurrentTimestamp();
     std::string TimestampToString(uint64_t timestamp);
     uint64_t GetLastModifiedTime(const std::string& filePath);
+
+    // Signatures
+    void MemCopyFileSignature(char* signatureBuffer, const std::string& signatureName);
+    bool CompareFileSignature(char* signatureBuffer, const std::string& signatureName);
 
     // Debug
     void ExportMeshDataToOBJ(const std::string& filepath, const MeshData& mesh);

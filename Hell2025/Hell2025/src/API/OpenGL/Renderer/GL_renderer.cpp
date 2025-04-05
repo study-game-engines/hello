@@ -7,7 +7,7 @@
 #include "API/OpenGL/Types/GL_ssbo.hpp"
 #include "AssetManagement/AssetManager.h"
 #include "BackEnd/BackEnd.h"
-#include "Core/Audio.h"
+#include "Audio/Audio.h"
 #include "Core/Game.h"
 #include "Config/Config.h"
 #include "Input/Input.h"

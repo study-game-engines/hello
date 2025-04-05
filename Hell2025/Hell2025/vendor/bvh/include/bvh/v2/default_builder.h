@@ -51,8 +51,9 @@ public:
         std::span<const Vec> centers,
         const Config& config = {})
     {
-        if (config.quality == Quality::Low)
+        if (config.quality == Quality::Low) {
             return BinnedSahBuilder<Node>::build(bboxes, centers, config);
+        }
         else {
             auto bvh = SweepSahBuilder<Node>::build(bboxes, centers, config);
             if (config.quality == Quality::High)

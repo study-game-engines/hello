@@ -19,15 +19,30 @@
 #include "UI/UIBackEnd.h"
 #include <iostream>
 
+/*
+#include "Input/InputMulti.h"
+#include "Audio/Synth.h"
+#include "BackEnd/GLFWIntegration.h"
+#include "API/OpenGL/GL_backend.h"
 
-#include "File/File.h"
+int main() {
+    if (!BackEnd::Init(API::OPENGL, WindowedMode::WINDOWED)) {
+        std::cout << "BackEnd::Init() FAILED!\n";
+        return -1;
+    }
+    glfwSwapInterval(0);
+    Synth::BeginAudioThread();
 
-int main2() {
-
-    File::ImportModel("res/models/Bench.model");
+    while (BackEnd::WindowIsOpen()) {
+        float deltaTime = Game::GetDeltaTime();
+        InputMulti::Update();
+        Synth::Update(deltaTime);
+        glfwPollEvents();
+        GLFWIntegration::EndFrame(API::OPENGL);
+    }
 
     return 0;
-}
+}*/
 
 int main() {
     std::cout << "We are all alone on life's journey, held captive by the limitations of human consciousness.\n";
@@ -41,8 +56,8 @@ int main() {
     // Program loop
     while (BackEnd::WindowIsOpen()) {
 
-        BackEnd::BeginFrame();
         BackEnd::UpdateSubSystems();
+        BackEnd::BeginFrame();
 
         // Render loading screen
         if (!AssetManager::LoadingComplete()) {
