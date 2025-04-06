@@ -60,12 +60,12 @@ void Player::UpdateCamera(float deltaTime) {
     m_currentViewHeight = Util::FInterpTo(m_currentViewHeight, viewHeightTarget, deltaTime, crouchDownSpeed);
 
     static float viewHeightModifer = 0.0f;
-    if (Input::KeyDown(HELL_KEY_EQUAL)) {
-        viewHeightModifer += 2.0 * deltaTime;
-    }
-    if (Input::KeyDown(HELL_KEY_MINUS)) {
-        viewHeightModifer -= 2.0 * deltaTime;
-    }
+    //if (Input::KeyDown(HELL_KEY_EQUAL)) {
+    //    viewHeightModifer += 2.0 * deltaTime;
+    //}
+    //if (Input::KeyDown(HELL_KEY_MINUS)) {
+    //    viewHeightModifer -= 2.0 * deltaTime;
+    //}
     if (Input::KeyDown(HELL_KEY_BACKSPACE)) {
         viewHeightModifer = 0.0f;
     }

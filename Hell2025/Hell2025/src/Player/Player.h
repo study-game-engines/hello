@@ -46,6 +46,7 @@ struct Player {
     void UpdateFlashlight(float deltaTime);
     void UpdateFlashlightFrustum();
     void UpdateAnimatedGameObjects(float deltaTime);
+    void UpdatePlayingPiano(float deltaTime);
     void UpdateWeaponSlide();
 
     PhysXRayResult m_cameraRayResult;
@@ -92,8 +93,9 @@ struct Player {
     bool StoppedWading();
 
     // Piano
-    uint64_t m_heldPianoKeyId = 0;
-    uint64_t m_hoveredPianoKeyId = 0;
+    uint64_t m_pianoId = 0;
+    bool m_isPlayingPiano = false;
+    void SitAtPiano(uint64_t pianoId);
 
     // State queries
     bool IsMoving();
@@ -103,6 +105,7 @@ struct Player {
     bool IsAlive();
     bool IsOverlappingLadder();
     bool IsAtShop();
+    bool IsPlayingPiano();
 
     // Input
     int32_t GetKeyboardIndex();

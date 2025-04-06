@@ -56,6 +56,9 @@
 
 // Shadow maps
 #define FLASHLIGHT_SHADOWMAP_SIZE 2048
+#define SHADOW_MAP_HI_RES_SIZE 1024
+#define SHADOW_NEAR_PLANE 0.05f
+#define SHADOWMAP_HI_RES_COUNT 4
 
 // Height map
 #define HEIGHT_MAP_SIZE 256

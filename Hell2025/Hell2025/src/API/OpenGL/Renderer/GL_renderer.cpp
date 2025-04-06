@@ -127,7 +127,7 @@ namespace OpenGLRenderer {
         LoadShaders();
 
         // Allocate shadow map array memory
-        g_shadowMapArrayHiRes.Init(6, 1024);
+        g_shadowMapArrayHiRes.Init(SHADOWMAP_HI_RES_COUNT, SHADOW_MAP_HI_RES_SIZE);
     }
 
     void InitMain() {

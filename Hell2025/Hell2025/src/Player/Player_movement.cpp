@@ -12,7 +12,7 @@ void Player::UpdateMovement(float deltaTime) {
     if (!ViewportIsVisible()) {
         //return;
     }
-
+    
     if (!Editor::IsEditorOpen() && m_controlEnabled) {
         // Speed factor
         float speedFactor = 1.0f;
@@ -93,7 +93,17 @@ void Player::UpdateMovement(float deltaTime) {
         glm::vec3 aabbMin = glm::vec3(bounds.minimum.x, bounds.minimum.y, bounds.minimum.z);
         glm::vec3 aabbMax = glm::vec3(bounds.maximum.x, bounds.maximum.y, bounds.maximum.z);
         m_characterControllerAABB = AABB(aabbMin, aabbMax);
+
+        // Piano hacks
+        if (IsPlayingPiano()) {
+            m_crouching = true;
+            m_moving = false;
+        }
     }
+}
+
+bool Player::IsPlayingPiano() {
+    return m_isPlayingPiano;
 }
 
 bool Player::IsMoving() {

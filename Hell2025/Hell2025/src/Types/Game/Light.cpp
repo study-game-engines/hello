@@ -42,6 +42,7 @@ Light::Light(LightCreateInfo createInfo) {
 
 void Light::Update(float deltaTime) {
     UpdateRenderItems();
+    UpdateMatricesAndFrustum();
 }
 
 void Light::UpdateRenderItems() {
@@ -140,6 +141,35 @@ float Light::GetStrength() {
 
 float Light::GetRadius() {
     return m_radius;
+}
+
+
+Frustum* Light::GetFrustumByFaceIndex(uint32_t faceIndex) {
+    if (faceIndex < 0 || faceIndex >= 6) return nullptr;
+
+    return &m_frustum[faceIndex];
+}
+
+void Light::UpdateMatricesAndFrustum() {
+    glm::mat4 projectionMatrix = glm::perspective(glm::radians(90.0f), (float)SHADOW_MAP_HI_RES_SIZE / (float)SHADOW_MAP_HI_RES_SIZE, SHADOW_NEAR_PLANE, m_radius);
+
+    m_viewMatrix[0] = glm::lookAt(m_position, m_position + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+    m_viewMatrix[1] = glm::lookAt(m_position, m_position + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+    m_viewMatrix[2] = glm::lookAt(m_position, m_position + glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    m_viewMatrix[3] = glm::lookAt(m_position, m_position + glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f));
+    m_viewMatrix[4] = glm::lookAt(m_position, m_position + glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+    m_viewMatrix[5] = glm::lookAt(m_position, m_position + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+
+    m_projectionTransforms[0] = projectionMatrix * glm::lookAt(m_position, m_position + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+    m_projectionTransforms[1] = projectionMatrix * glm::lookAt(m_position, m_position + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+    m_projectionTransforms[2] = projectionMatrix * glm::lookAt(m_position, m_position + glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    m_projectionTransforms[3] = projectionMatrix * glm::lookAt(m_position, m_position + glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f));
+    m_projectionTransforms[4] = projectionMatrix * glm::lookAt(m_position, m_position + glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+    m_projectionTransforms[5] = projectionMatrix * glm::lookAt(m_position, m_position + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+
+    for (int i = 0; i < 6; i++) {
+        m_frustum[i].Update(m_projectionTransforms[i]);
+    }
 }
 
 LightCreateInfo Light::GetCreateInfo() {

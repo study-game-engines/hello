@@ -44,19 +44,28 @@ struct Piano {
     void CleanUp();
     void SubmitRenderItems();
     void TriggerInternalNoteFromExternalBulletHit(glm::vec3 bulletHitPositon);
+    
+    void PlayMajorFirstInversion(int rootNote); 
+    void PlayMajor7th(int rootNote);
+    void PlayMinor(int rootNote);
+    void PlayMajor(int rootNote);
+    void PlayKey(int note);
+
     bool PianoKeyExists(uint64_t pianoKeyId);
+    bool PianoBodyPartKeyExists(uint64_t pianoBodyPartId);
     PianoKey* GetPianoKey(uint64_t pianoKeyId);
+    PianoBodyPart* GetPianoBodyPart(uint64_t pianoBodyPartId);
 
     const std::vector<RenderItem>& GetRenderItems() const { return m_renderItems; }
     const uint64_t& GetPianoObjectId()              const { return m_pianoObjectId; };
+    const glm::vec3& GetSeatPosition()              const { return m_seatPosition; }
 
     static uint32_t MeshNameToNote(const std::string& meshName);
 
 private:
     void UpdateRenderItems();
 
-    //BasicDoor m_topLid;
-    //BasicDoor m_keyboardLid;
+    glm::vec3 m_seatPosition = glm::vec3(0.0f);
     uint64_t m_pianoObjectId = 0;
     uint64_t m_rigidStaticId = 0;
     Model* m_model = nullptr;

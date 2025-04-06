@@ -130,9 +130,9 @@ namespace OpenGLRenderer {
         RendererSettings& rendererSettings = Renderer::GetCurrentRendererSettings();
         if (!rendererSettings.drawGrass) return;
 
-        if (Input::KeyPressed(HELL_KEY_X)) {
-            CreateGrassGeometry();
-        }
+        //if (Input::KeyPressed(HELL_KEY_X)) {
+        //    CreateGrassGeometry();
+        //}
 
         static bool runOnce = true;
         if (runOnce) {

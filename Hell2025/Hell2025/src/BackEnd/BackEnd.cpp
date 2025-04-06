@@ -313,12 +313,10 @@ namespace BackEnd {
             return;
         }
 
-        static bool pianoMode = false;
-        if (Input::KeyPressed(HELL_KEY_P)) {
-            pianoMode = !pianoMode;
-        }
-        if (pianoMode) {
-            return;
+        // Bail early if player 1 is playing piano
+        Player* player = Game::GetLocalPlayerByIndex(0);
+        if (player && player->IsPlayingPiano()) {
+              return;
         }
 
         if (Input::KeyPressed(HELL_KEY_K)) {

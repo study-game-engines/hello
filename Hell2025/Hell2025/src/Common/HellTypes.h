@@ -318,8 +318,8 @@ struct DrawCommandsSet {
     DrawCommands geometryAlphaDiscarded;
     DrawCommands hairTopLayer;
     DrawCommands hairBottomLayer;
-
     DrawCommands skinnedGeometry;
+    DrawCommands shadowMapHiRes[SHADOWMAP_HI_RES_COUNT][6];
 };
 
 struct WaterState {

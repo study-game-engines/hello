@@ -4,6 +4,7 @@
 #include "Util/Util.h"
 #include "World/World.h"
 #include <algorithm>
+#include "Input/Input.h"
 
 void Player::UpdateInteract() {
     m_interactObjectId = 0;
@@ -90,6 +91,8 @@ void Player::UpdateInteract() {
 
         RayTraversalResult result = World::ClosestHit(rayOrigin, rayDir, maxRayDistance, m_viewportIndex);
         if (result.hitFound) {
+
+            // Play keys
             if (result.objectType == ObjectType::PIANO_KEY) {
                 for (Piano& piano : World::GetPianos()) {
                     if (piano.PianoKeyExists(result.objectId)) {
@@ -100,7 +103,35 @@ void Player::UpdateInteract() {
                     }
                 }
             }
+
+            //// Sit at 
+            //if (result.objectType == ObjectType::PIANO) {
+            //    for (Piano& potentialPiano : World::GetPianos()) {
+            //        if (potentialPiano.PianoBodyPartKeyExists(result.objectId)) {
+            //            SitAtPiano(potentialPiano.GetPianoObjectId());
+            //        }
+            //    }
+            //}
         }
     } 
 
+    if (Input::KeyPressed(HELL_KEY_P)) {
+
+        glm::vec3 rayOrigin = GetCameraPosition();
+        glm::vec3 rayDir = GetCameraForward();
+        float maxRayDistance = 100.0f;
+
+        RayTraversalResult result = World::ClosestHit(rayOrigin, rayDir, maxRayDistance, m_viewportIndex);
+        if (result.hitFound) {
+
+            // Sit at 
+            if (result.objectType == ObjectType::PIANO) {
+                for (Piano& potentialPiano : World::GetPianos()) {
+                    if (potentialPiano.PianoBodyPartKeyExists(result.objectId)) {
+                        SitAtPiano(potentialPiano.GetPianoObjectId());
+                    }
+                }
+            }
+        }
+    }
 }

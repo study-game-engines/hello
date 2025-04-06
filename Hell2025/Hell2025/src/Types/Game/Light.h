@@ -1,7 +1,8 @@
 #pragma once
-#include "HellTypes.h"
-#include "CreateInfo.h"
+#include "Camera/Frustum.h"
 #include "Types/Renderer/Model.h"
+#include "CreateInfo.h"
+#include "HellTypes.h"
 
 struct Light {
     Light() = default;
@@ -15,6 +16,9 @@ struct Light {
     float GetRadius();
     void SetMousePickIndex(int index);
     void SetPosition(glm::vec3 position);
+    void UpdateMatricesAndFrustum();
+
+    Frustum* GetFrustumByFaceIndex(uint32_t faceIndex);
 
     const std::vector<RenderItem>& GetRenderItems() const   { return m_renderItems; }
     const uint64_t GetObjectId() const                      { return m_objectId; }
@@ -35,6 +39,10 @@ private:
     Transform m_transform1;
     Transform m_transform2;
     std::vector<RenderItem> m_renderItems;
+
+    Frustum m_frustum[6];
+    glm::mat4 m_projectionTransforms[6];
+    glm::mat4 m_viewMatrix[6];
 
     void UpdateRenderItems();
 };

@@ -36,12 +36,11 @@ namespace Synth {
         if (sfid == FLUID_FAILED) {
             return;
         }
+        
+        fluid_synth_set_gain(g_synth, 2.0);
     }
 
-    void PlayNote(int note) {
-        fluid_synth_set_gain(g_synth, 2.0);
-        std::cout << "Playing note " << note << "\n";
-
+    void PlayNote(int note) {        
         int velocity = 127;
         fluid_synth_noteon(g_synth, 0, note, velocity);
     }
@@ -51,54 +50,7 @@ namespace Synth {
     }
 
     void Update(float deltaTime) {
-        return;
-
-        // Keys range from #21 (A0) to #108 (C8)
-
-        int velocity = 127;
-        fluid_synth_set_gain(g_synth, 2.0);
-
-        if (InputMulti::KeyPressed(0, 0, HELL_KEY_C)) {
-            std::cout << "b \n";
-            fluid_synth_noteon(g_synth, 0, 60, velocity);
-        }
-        if (!InputMulti::KeyDown(0, 0, HELL_KEY_C)) {
-            fluid_synth_noteoff(g_synth, 0, 60);
-        }
-
-        if (InputMulti::KeyPressed(0, 0, HELL_KEY_V)) {
-            std::cout << "n \n";
-            fluid_synth_noteon(g_synth, 0, 62, velocity);
-        }
-        if (!InputMulti::KeyDown(0, 0, HELL_KEY_V)) {
-            fluid_synth_noteoff(g_synth, 0, 62);
-        }
-
-        if (InputMulti::KeyPressed(0, 0, HELL_KEY_B)) {
-            std::cout << "n \n";
-            fluid_synth_noteon(g_synth, 0, 64, velocity);
-        }
-        if (!InputMulti::KeyDown(0, 0, HELL_KEY_B)) {
-            fluid_synth_noteoff(g_synth, 0, 64);
-        }
-
-        if (InputMulti::KeyPressed(0, 0, HELL_KEY_N)) {
-            std::cout << "m \n";
-            fluid_synth_noteon(g_synth, 0, 65, velocity);
-        }
-
-        if (!InputMulti::KeyDown(0, 0, HELL_KEY_N)) {
-            fluid_synth_noteoff(g_synth, 0, 65);
-        }
-
-        if (InputMulti::KeyPressed(0, 0, HELL_KEY_M)) {
-            std::cout << "b \n";
-            fluid_synth_noteon(g_synth, 0, 67, velocity);
-        }
-        if (!InputMulti::KeyDown(0, 0, HELL_KEY_M)) {
-            fluid_synth_noteoff(g_synth, 0, 67);
-        }
-
+       
     }
 
     void CleanUp() {

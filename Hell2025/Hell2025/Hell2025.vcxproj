@@ -222,6 +222,7 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <ClCompile Include="src\Imgui\Types\Types.cpp" />
     <ClCompile Include="src\File\File_height_map.cpp" />
     <ClCompile Include="src\Math\AABB.cpp" />
+    <ClCompile Include="src\Player\Player_Piano.cpp" />
     <ClCompile Include="src\Types\Game\BasicDoor.cpp" />
     <ClCompile Include="src\Types\Misc\Piano.cpp" />
     <ClCompile Include="src\Types\Renderer\Mesh.cpp" />

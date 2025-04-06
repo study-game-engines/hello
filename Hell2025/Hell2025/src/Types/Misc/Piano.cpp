@@ -24,6 +24,13 @@ void Piano::Init(PianoCreateInfo& createInfo) {
         return;
     }
 
+ // Transform seatTransform;
+ // seatTransform.position.x = 0.75f;
+
+    m_seatPosition = m_transform.to_mat4() * glm::vec4(0.75f, 0.0f, 0.75f, 1.0f);
+
+  //  m_seatPosition = 
+
     //BasicDoorCreateInfo keyboardLidCreateInfo;
     //keyboardLidCreateInfo.parentMatrix = m_transform.to_mat4();
     //keyboardLidCreateInfo.rotationAxis = Axis::X;
@@ -282,10 +289,116 @@ bool Piano::PianoKeyExists(uint64_t pianoKeyId) {
     return (m_keys.find(pianoKeyId) != m_keys.end());
 }
 
+bool Piano::PianoBodyPartKeyExists(uint64_t pianoBodyPartId) {
+    return (m_bodyParts.find(pianoBodyPartId) != m_bodyParts.end());
+}
+
+void Piano::PlayMajorFirstInversion(int rootNote) {
+
+    int fifth = rootNote - 5;
+    int majorThird = rootNote + 4;
+
+    for (auto& pair : m_keys) {
+        const uint64_t& objectId = pair.first;
+        PianoKey& key = pair.second;
+
+        if (key.m_note == rootNote) {
+            key.PressKey();
+        }
+        if (key.m_note == majorThird) {
+            key.PressKey();
+        }
+        if (key.m_note == fifth) {
+            key.PressKey();
+        }
+    }
+}
+
+void Piano::PlayMajor7th(int rootNote) {
+
+    int seventh = rootNote - 2;
+    int majorThird = rootNote - 5 - 3;
+
+    for (auto& pair : m_keys) {
+        const uint64_t& objectId = pair.first;
+        PianoKey& key = pair.second;
+
+        if (key.m_note == rootNote) {
+            key.PressKey();
+        }
+        if (key.m_note == seventh) {
+            key.PressKey();
+        }
+        if (key.m_note == majorThird) {
+            key.PressKey();
+        }
+    }
+}
+
+void Piano::PlayMinor(int rootNote) {
+
+    int minorThird = rootNote + 3;
+    int fifth = rootNote + 7;
+
+    for (auto& pair : m_keys) {
+        const uint64_t& objectId = pair.first;
+        PianoKey& key = pair.second;
+
+        if (key.m_note == rootNote) {
+            key.PressKey();
+        }
+        if (key.m_note == minorThird) {
+            key.PressKey();
+        }
+        if (key.m_note == fifth) {
+            key.PressKey();
+        }
+    }
+}
+
+
+void Piano::PlayMajor(int rootNote) {
+
+    int third = rootNote + 4;
+    int fifth = rootNote + 7;
+
+    for (auto& pair : m_keys) {
+        const uint64_t& objectId = pair.first;
+        PianoKey& key = pair.second;
+
+        if (key.m_note == rootNote) {
+            key.PressKey();
+        }
+        if (key.m_note == third) {
+            key.PressKey();
+        }
+        if (key.m_note == fifth) {
+            key.PressKey();
+        }
+    }
+}
+
+void Piano::PlayKey(int note) {
+    for (auto& pair : m_keys) {
+        const uint64_t& objectId = pair.first;
+        PianoKey& key = pair.second;
+        if (key.m_note == note) {
+            key.PressKey();
+        }
+    }
+}
+
+
 PianoKey* Piano::GetPianoKey(uint64_t pianoKeyId) {
     if (!PianoKeyExists(pianoKeyId)) return nullptr;
 
     return &m_keys[pianoKeyId];
+}
+
+PianoBodyPart* Piano::GetPianoBodyPart(uint64_t pianoBodyPartId) {
+    if (!PianoBodyPartKeyExists(pianoBodyPartId)) return nullptr;
+
+    return &m_bodyParts[pianoBodyPartId];
 }
 
 uint32_t Piano::MeshNameToNote(const std::string& meshName) {

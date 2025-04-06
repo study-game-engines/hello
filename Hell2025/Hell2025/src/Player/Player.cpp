@@ -64,6 +64,7 @@ void Player::Update(float deltaTime) {
     UpdateUI();
     UpdateFlashlight(deltaTime);
     UpdateFlashlightFrustum();
+    UpdatePlayingPiano(deltaTime);
 
     if (m_infoTextTimer > 0) {
         m_infoTextTimer -= deltaTime;

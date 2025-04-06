@@ -26,6 +26,7 @@ namespace RenderDataManager {
     std::vector<RenderItem> g_decalRenderItems;
     std::vector<RenderItem> g_renderItems;
     std::vector<RenderItem> g_outlineRenderItems;
+    std::vector<RenderItem> g_shadowMapRenderItems;
 
     std::vector<RenderItem> g_instanceData;
     std::vector<ViewportData> g_viewportData;
@@ -40,7 +41,8 @@ namespace RenderDataManager {
     void CreateDrawCommandsSkinned(DrawCommands& drawCommands, std::vector<RenderItem>& renderItems);
     void CreateMultiDrawIndirectCommands(std::vector<DrawIndexedIndirectCommand>& commands, std::span<RenderItem> renderItems, int playerIndex, int instanceOffset);
     void CreateMultiDrawIndirectCommandsSkinned(std::vector<DrawIndexedIndirectCommand>& commands, std::span<RenderItem> renderItems, int playerIndex, int instanceOffset);
-    
+    void CreateShadowMapMultiDrawIndirectCommands();
+
     int EncodeBaseInstance(int playerIndex, int instanceOffset);
     void DecodeBaseInstance(int baseInstance, int& playerIndex, int& instanceOffset);
    
@@ -57,7 +59,9 @@ namespace RenderDataManager {
         UpdateViewportFrustums();
         UpdateGPULightData();
         UpdateRendererData();
-        UpdateDrawCommandsSet();   }
+        UpdateDrawCommandsSet();   
+        CreateShadowMapMultiDrawIndirectCommands();
+    }
 
     void UpdateViewportData() {
         const Resolutions& resolutions = Config::GetResolutions();
@@ -278,6 +282,44 @@ namespace RenderDataManager {
             std::span<RenderItem> instanceView(g_instanceData.begin() + instanceStart, g_instanceData.end());
             CreateMultiDrawIndirectCommandsSkinned(drawCommands.perViewport[i], instanceView, i, instanceStart);
         }
+    }
+
+    void CreateShadowMapMultiDrawIndirectCommands() {
+
+            //    std::vector<Light>& lights = World::GetLights();
+            //
+            //    // ATTENTION: This is for hi res shadow maps only!
+            //    // ATTENTION: This is for hi res shadow maps only!
+            //    // ATTENTION: This is for hi res shadow maps only!
+            //
+            //    // Shadow map render draw commandsX
+            //    for (int i = 0; i < lights.size() && i < SHADOWMAP_HI_RES_COUNT; i++) {
+            //        Light& light = lights[i];
+            //           
+            //        for (int face = 0; face < 6; face++) {
+            //            Frustum* frustum = light.GetFrustumByFaceIndex(face);
+            //
+            //
+            //
+            //            for (auto& renderItem : g_renderItems) {
+            //
+            //            }
+            //
+            //            //CreateMultiDrawIndirectCommands(drawCommands.perViewport[i], instanceView, i, instanceStart);
+            //
+            //            // Geometry
+            //            //g_shadowMapGeometryDrawInfo[i][face].baseInstance = g_shadowMapGeometryRenderItems.size();
+            //            //g_shadowMapGeometryDrawInfo[i][face].instanceCount = 0;
+            //            //for (auto& renderItem : g_sceneGeometryRenderItems) {
+            //            //    if (renderItem.castShadow && frustum.IntersectsAABBFast(renderItem)) {
+            //            //        g_shadowMapGeometryRenderItems.push_back(renderItem);
+            //            //        g_shadowMapGeometryDrawInfo[i][face].instanceCount++;
+            //            //    }
+            //            //}
+            //            //g_shadowMapGeometryDrawInfo[i][face].commands = CreateMultiDrawIndirectCommands(g_shadowMapGeometryRenderItems, g_shadowMapGeometryDrawInfo[i][face].baseInstance, g_shadowMapGeometryDrawInfo[i][face].instanceCount);
+            //        }
+            //}
+
     }
 
     void CreateMultiDrawIndirectCommands(std::vector<DrawIndexedIndirectCommand>& commands, std::span<RenderItem> renderItems, int playerIndex, int instanceOffset) {
