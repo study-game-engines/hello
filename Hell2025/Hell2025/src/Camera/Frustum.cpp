@@ -168,14 +168,14 @@ bool Frustum::IntersectsPoint(const glm::vec3 point) {
 //
 //}
 
-Plane Frustum::CreatePlane(const glm::vec3& p1, const glm::vec3& p2, const glm::vec3& p3) {
-    Plane plane;
+FrustumPlane Frustum::CreatePlane(const glm::vec3& p1, const glm::vec3& p2, const glm::vec3& p3) {
+    FrustumPlane plane;
     plane.normal = glm::normalize(glm::cross(p2 - p1, p3 - p1));
     plane.offset = -glm::dot(plane.normal, p1);
     return plane;
 }
 
-float Frustum::SignedDistance(const glm::vec3& point, const Plane& plane) const {
+float Frustum::SignedDistance(const glm::vec3& point, const FrustumPlane& plane) const {
     return glm::dot(plane.normal, point) + plane.offset;
 }
 

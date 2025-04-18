@@ -47,7 +47,7 @@ void Player::UpdateBreatheBob(float deltaTime) {
 
 void Player::UpdateCamera(float deltaTime) {
     // Mouselook
-    if (!Editor::IsEditorOpen() && m_controlEnabled) {
+    if (!Editor::IsOpen() && m_controlEnabled) {
         float xOffset = (float)InputMulti::GetMouseXOffset(m_mouseIndex);
         float yOffset = (float)InputMulti::GetMouseYOffset(m_mouseIndex);
         m_camera.AddPitch(-yOffset * m_mouseSensitivity);
@@ -60,14 +60,16 @@ void Player::UpdateCamera(float deltaTime) {
     m_currentViewHeight = Util::FInterpTo(m_currentViewHeight, viewHeightTarget, deltaTime, crouchDownSpeed);
 
     static float viewHeightModifer = 0.0f;
-    //if (Input::KeyDown(HELL_KEY_EQUAL)) {
-    //    viewHeightModifer += 2.0 * deltaTime;
-    //}
-    //if (Input::KeyDown(HELL_KEY_MINUS)) {
-    //    viewHeightModifer -= 2.0 * deltaTime;
-    //}
-    if (Input::KeyDown(HELL_KEY_BACKSPACE)) {
-        viewHeightModifer = 0.0f;
+    if (!IsPlayingPiano()) {
+        if (Input::KeyDown(HELL_KEY_EQUAL)) {
+            viewHeightModifer += 1.0 * deltaTime;
+        }
+        if (Input::KeyDown(HELL_KEY_MINUS)) {
+            viewHeightModifer -= 1.0 * deltaTime;
+        }
+        if (Input::KeyDown(HELL_KEY_BACKSPACE)) {
+            viewHeightModifer = 0.0f;
+        }
     }
    // m_currentViewHeight += viewHeightModifer;
 

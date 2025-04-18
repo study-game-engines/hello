@@ -82,7 +82,7 @@ namespace Physics {
         PxRigidStatic* groundPlane = NULL;
         PxShape* groundShape = NULL;
 
-        groundPlane = PxCreatePlane(*g_physics, PxPlane(0, 1, 0, 0.0f), *g_defaultMaterial);
+        groundPlane = PxCreatePlane(*g_physics, PxPlane(0, 1, 0, 0.01f), *g_defaultMaterial);
         g_scene->addActor(*groundPlane);
         groundPlane->getShapes(&groundShape, 1);
         PxFilterData filterData;
@@ -91,21 +91,33 @@ namespace Physics {
         filterData.word2 = CollisionGroup::BULLET_CASING | CollisionGroup::GENERIC_BOUNCEABLE | CollisionGroup::PLAYER;
         groundShape->setQueryFilterData(filterData);
         groundShape->setSimulationFilterData(filterData); // sim is for ragz
+
+        PhysicsUserData userData;
+        userData.physicsId = 0;
+        userData.objectId = 0;
+        userData.physicsType = PhysicsType::GROUND_PLANE;
+        userData.objectType = ObjectType::NONE;
+        groundPlane->userData = new PhysicsUserData(userData);
     }
 
     void BeginFrame() {
         RemoveAnyHeightFieldMarkedForRemoval();
-        RemoveAnyRigidDynamicForRemoval();
-        RemoveAnyRigidStaticForRemoval();
+        RemoveAnyRigidDynamicMarkedForRemoval();
+        RemoveAnyRigidStaticMarkedForRemoval();
     }
 
     void StepPhysics(float deltaTime) {
         ClearCollisionReports();
         g_scene->simulate(deltaTime);
         g_scene->fetchResults(true);
-
-        //UpdateRigidDynamicAABBs();
     }
+
+    void ForceZeroStepUpdate() {
+        g_scene->simulate(0.0f, nullptr);
+        //pxScene->flushQueryUpdates();
+        g_scene->fetchResults(true);
+    }
+
 
     void AddCollisionReport(CollisionReport& collisionReport) {
         g_collisionReports.push_back(collisionReport);

@@ -220,7 +220,7 @@ namespace Physics {
         }
     }
 
-    void RemoveAnyRigidDynamicForRemoval() {
+    void RemoveAnyRigidDynamicMarkedForRemoval() {
         PxScene* pxScene = Physics::GetPxScene();
 
         for (auto it = g_rigidDynamics.begin(); it != g_rigidDynamics.end(); ) {

@@ -22,6 +22,9 @@ namespace Renderer {
             // TODO: VulkanRenderer::InitMain();
         }
 
+        g_rendererSettingsSet.houseEditor.rendererOverrideState = RendererOverrideState::CAMERA_NDOTL;
+        g_rendererSettingsSet.houseEditor.drawGrass = false;
+
         g_rendererSettingsSet.mapEditor.rendererOverrideState = RendererOverrideState::NORMALS;
         g_rendererSettingsSet.mapEditor.drawGrass = false;
 
@@ -105,7 +108,7 @@ namespace Renderer {
     }
 
     RendererSettings& GetCurrentRendererSettings() {
-        if (Editor::IsEditorOpen()) {
+        if (Editor::IsOpen()) {
             switch (Editor::GetEditorMode()) {
                 case EditorMode::HEIGHTMAP_EDITOR: return g_rendererSettingsSet.heightMapEditor;
                 case EditorMode::HOUSE_EDITOR:     return g_rendererSettingsSet.houseEditor;

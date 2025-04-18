@@ -16,6 +16,7 @@ namespace Physics {
     void Init();
     void BeginFrame();
     void StepPhysics(float deltaTime);
+    void ForceZeroStepUpdate();
     void SubmitDebugLinesToRenderer(const DebugRenderMode& debugRenderMode);
     void AddCollisionReport(CollisionReport& collisionReport);
     void ClearCollisionReports();
@@ -51,7 +52,7 @@ namespace Physics {
     uint64_t CreateRigidDynamicFromConvexMeshVertices(Transform transform, const std::span<Vertex>& vertices, const std::span<uint32_t>& indices, float mass, PhysicsFilterData filterData, glm::vec3 initialForce = glm::vec3(0.0f), glm::vec3 initialTorque = glm::vec3(0.0f));
     uint64_t CreateRigidDynamicFromBoxExtents(Transform transform, glm::vec3 boxExtents, float mass, PhysicsFilterData filterData, glm::vec3 initialForce = glm::vec3(0.0f), glm::vec3 initialTorque = glm::vec3(0.0f));
     glm::mat4 GetRigidDynamicWorldMatrix(uint64_t rigidDynamicId);
-    void RemoveAnyRigidDynamicForRemoval();
+    void RemoveAnyRigidDynamicMarkedForRemoval();
     void ActivateRigidDynamicPhysics(uint64_t rigidDynamicId);
     void DeactivateRigidDynamicPhysics(uint64_t rigidDynamicId);
     void SetRigidDynamicUserData(uint64_t rigidDynamicId, PhysicsUserData physicsUserData);
@@ -61,7 +62,7 @@ namespace Physics {
     // Rigid statics
     void MarkRigidStaticForRemoval(uint64_t rigidStaticId);
     void RemoveRigidStatic(uint64_t rigidStaticId);
-    void RemoveAnyRigidStaticForRemoval();
+    void RemoveAnyRigidStaticMarkedForRemoval();
     void SetRigidStaticGlobalPose(uint64_t rigidStaticId, glm::mat4 globalPoseMatrix);
     glm::mat4 GetRigidStaticGlobalPose(uint64_t rigidStaticId);
     bool RigidStaticExists(uint64_t rigidStaticId);
@@ -88,6 +89,6 @@ namespace Physics {
     PxQuat GlmQuatToPxQuat(glm::quat quat);
     PxMat44 GlmMat4ToPxMat44(glm::mat4 glmMatrix);
     PhysXRayResult CastPhysXRay(glm::vec3 rayOrigin, glm::vec3 rayDirection, float rayLength, PxU32 collisionFlags, bool cullBackFacing = false);
-    OverlapReport OverlapTest(const PxGeometry& overlapShape, const PxTransform& shapePose, PxU32 collisionGroup);
+    PhysXOverlapReport OverlapTest(const PxGeometry& overlapShape, const PxTransform& shapePose, PxU32 collisionGroup);
 }
 

@@ -24,6 +24,18 @@ struct WindowCreateInfo {
     glm::vec3 rotation;
 };
 
+struct PlaneCreateInfo {
+    glm::vec3 p0 = glm::vec3(0.0f);
+    glm::vec3 p1 = glm::vec3(0.0f);
+    glm::vec3 p2 = glm::vec3(0.0f);
+    glm::vec3 p3 = glm::vec3(0.0f);
+    std::string materialName = "";
+    float textureScale = 1.0f;
+    float textureOffsetU = 0.0f;
+    float textureOffsetV = 0.0f;
+    float textureRotation = 0.0f;
+};
+
 struct PianoCreateInfo {
     glm::vec3 position = glm::vec3(0.0f);
     glm::vec3 rotation = glm::vec3(0.0f);
@@ -32,10 +44,12 @@ struct PianoCreateInfo {
 struct WallCreateInfo {
     std::vector<glm::vec3> points;
     std::string materialName = "";
-    float height;
-    float textureScale;
-    float textureOffsetX;
-    float textureOffsetY;
+    float height = 2.4f;
+    float textureScale = 1.0f;
+    float textureOffsetU = 0.0f;
+    float textureOffsetV = 0.0f;
+    float textureRotation = 0.0f;
+    bool useReversePointOrder = false;
     TrimType ceilingTrimType = TrimType::NONE;
     TrimType floorTrimType = TrimType::NONE;
 };
@@ -45,7 +59,7 @@ struct LightCreateInfo {
     glm::vec3 color = glm::vec3(1, 0.7799999713897705, 0.5289999842643738);
     float radius = 6.0f;
     float strength = 1.0f;
-    std::string type = "LAMP_POST";
+    LightType type = LightType::HANGING_LIGHT;
 };
 
 struct BulletCreateInfo {
@@ -114,6 +128,15 @@ struct SectorCreateInfo {
     //std::vector<InteractTextCreateInfo> interactTexts;
     //std::vector<HouseLocation> houseLocations;
     //glm::vec3 mermaidsLocation;
+};
+
+struct HouseCreateInfo {
+    std::vector<DoorCreateInfo> doors;
+    std::vector<PlaneCreateInfo> planes;
+    std::vector<LightCreateInfo> lights;
+    std::vector<PianoCreateInfo> pianos;
+    std::vector<WallCreateInfo> walls;
+    std::vector<WindowCreateInfo> windows;
 };
 
 struct MapCreateInfo {

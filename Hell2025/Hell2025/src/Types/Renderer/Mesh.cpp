@@ -1,7 +1,7 @@
 #include "Mesh.h"
 
-void Mesh::SetName(const std::string& name) {
-    m_name = name;
+void Mesh::SetName(const std::string& name_) {
+    name = name_;
 }
 
 int32_t Mesh::GetIndexCount() {
@@ -9,5 +9,5 @@ int32_t Mesh::GetIndexCount() {
 }
 
 const std::string& Mesh::GetName() {
-    return m_name;
+    return name;
 }

@@ -5,11 +5,13 @@
 #include "UniqueID.h"
 
 Light::Light(LightCreateInfo createInfo) {   
+    m_createInfo = createInfo;
+
     m_position = createInfo.position;
     m_color = createInfo.color;
     m_radius = createInfo.radius;
     m_strength = createInfo.strength;
-    m_type = Util::StringToLightType(createInfo.type);
+    m_type = createInfo.type;
 
     if (m_type == LightType::LAMP_POST) {
         m_material = AssetManager::GetMaterialByIndex(AssetManager::GetMaterialIndexByName("LampPost"));
@@ -125,24 +127,8 @@ void Light::SetMousePickIndex(int index) {
 
 void Light::SetPosition(glm::vec3 position) {
     m_position = position;
+    m_createInfo.position = m_position;
 }
-
-glm::vec3 Light::GetPosition() {
-    return m_position;
-}
-
-glm::vec3 Light::GetColor() {
-    return m_color;
-}
-
-float Light::GetStrength() {
-    return m_strength;
-}
-
-float Light::GetRadius() {
-    return m_radius;
-}
-
 
 Frustum* Light::GetFrustumByFaceIndex(uint32_t faceIndex) {
     if (faceIndex < 0 || faceIndex >= 6) return nullptr;
@@ -170,14 +156,4 @@ void Light::UpdateMatricesAndFrustum() {
     for (int i = 0; i < 6; i++) {
         m_frustum[i].Update(m_projectionTransforms[i]);
     }
-}
-
-LightCreateInfo Light::GetCreateInfo() {
-    LightCreateInfo createInfo;
-    createInfo.position = m_position;
-    createInfo.color = m_color;
-    createInfo.strength = m_strength;
-    createInfo.radius = m_radius;
-    createInfo.type = Util::LightTypeToString(m_type);
-    return createInfo;
 }

@@ -4,9 +4,71 @@
 #include "Util.h"
 #include <fstream>
 
+std::vector<WallCreateInfo> walls;
+
 namespace nlohmann {
     void to_json(nlohmann::json& j, const glm::vec3& v) {
         j = json::array({ v.x, v.y, v.z });
+    }
+
+    void to_json(nlohmann::json& j, const DoorCreateInfo& createInfo) {
+        j = nlohmann::json{
+            {"Position", createInfo.position},
+            {"Rotation", createInfo.rotation}
+        };
+    }
+
+    void to_json(nlohmann::json& j, const LightCreateInfo& createInfo) {
+        j = nlohmann::json{
+            {"Color", createInfo.color},
+            {"Position", createInfo.position},
+            {"Radius", createInfo.radius},
+            {"Strength", createInfo.strength},
+            {"Type", Util::LightTypeToString(createInfo.type)},
+        };
+    }
+
+    void to_json(nlohmann::json& j, const PianoCreateInfo& createInfo) {
+        j = nlohmann::json{
+            {"Position", createInfo.position},
+            {"Rotation", createInfo.rotation}
+        };
+    }
+
+    void to_json(nlohmann::json& j, const PlaneCreateInfo& createInfo) {
+        j = nlohmann::json{
+            {"P0", createInfo.p0},
+            {"P1", createInfo.p1},
+            {"P2", createInfo.p2},
+            {"P3", createInfo.p3},
+            {"TextureScale", createInfo.textureScale},
+            {"TextureOffsetU", createInfo.textureOffsetU},
+            {"TextureOffsetV", createInfo.textureOffsetV},
+            {"TextureRotation", createInfo.textureRotation},
+            {"Material", createInfo.materialName},
+        };
+    }
+
+    void to_json(nlohmann::json& j, const WallCreateInfo& createInfo) {
+        j = nlohmann::json{
+            {"Height", createInfo.height},
+            {"Material", createInfo.materialName},
+            {"Points", createInfo.points},
+            {"TextureScale", createInfo.textureScale},
+            {"TextureOffsetU", createInfo.textureOffsetU},
+            {"TextureOffsetV", createInfo.textureOffsetV},
+            {"TextureRotation", createInfo.textureRotation},
+            {"TrimTypeCeiling", Util::TrimTypeToString(createInfo.ceilingTrimType)},
+            {"TrimTypeFloor",  Util::TrimTypeToString(createInfo.floorTrimType)},
+            {"UseReversePointOrder", createInfo.useReversePointOrder}
+        };
+    }
+
+    void to_json(nlohmann::json& j, const WindowCreateInfo& createInfo) {
+        j = nlohmann::json{
+            {"Position", createInfo.position},
+            {"Rotation", createInfo.rotation}
+        };
     }
 
     void to_json(nlohmann::json& j, const MeshRenderingInfo& info) {
@@ -35,10 +97,62 @@ namespace nlohmann {
         j = arr;
     }
 
+    void from_json(const nlohmann::json& j, DoorCreateInfo& info) {
+        info.position = j.value("Position", glm::vec3(0.0f));
+        info.rotation = j.value("Rotation", glm::vec3(0.0f));
+    }
+
+    void from_json(const nlohmann::json& j, LightCreateInfo& info) {
+        info.color = j.value("Color", glm::vec3(1.0f));
+        info.position = j.value("Position", glm::vec3(0.0f));
+        info.radius = j.value("Radius", 1.0f);
+        info.strength = j.value("Strength", 1.0f);
+        info.type = Util::StringToLightType(j.value("Type", "HANGING_LIGHT"));
+    }
+
+    void from_json(const nlohmann::json& j, PianoCreateInfo& info) {
+        info.position = j.value("Position", glm::vec3(0.0f));
+        info.rotation = j.value("Rotation", glm::vec3(0.0f));
+    }
+
+    void from_json(const nlohmann::json& j, PlaneCreateInfo& info) {
+        info.p0 = j.value("P0", glm::vec3(0.0f));
+        info.p1 = j.value("P1", glm::vec3(0.0f));
+        info.p2 = j.value("P2", glm::vec3(0.0f));
+        info.p3 = j.value("P3", glm::vec3(0.0f));
+        info.textureScale = j.value("TextureScale", 1.0f);
+        info.textureOffsetU = j.value("TextureOffsetU", 0.0f);
+        info.textureOffsetV = j.value("TextureOffsetV", 0.0f);
+        info.textureRotation = j.value("TextureRotation", 0.0f);
+        info.materialName = j.value("Material", "CheckerBoard");
+    }
+
+    void from_json(const nlohmann::json& j, WallCreateInfo& info) {
+        info.height = j.value("Height", 2.4f);
+        info.materialName = j.value("Material", "CheckerBoard");
+        info.points = j.value("Points", std::vector<glm::vec3>{});
+        info.textureScale = j.value("TextureScale", 1.0f);
+        info.textureOffsetU = j.value("TextureOffsetU", 0.0f);
+        info.textureOffsetV = j.value("TextureOffsetV", 0.0f);
+        info.textureRotation = j.value("TextureRotation", 0.0f);
+        info.ceilingTrimType = Util::StringToTrimType(j.value("TrimTypeCeiling", "NONE"));
+        info.floorTrimType = Util::StringToTrimType(j.value("TrimTypeCeiling", "NONE"));
+        info.useReversePointOrder = j.value("UseReversePointOrder", false);
+    }
+
+    void from_json(const nlohmann::json& j, WindowCreateInfo& info) {
+        info.position = j.value("Position", glm::vec3(0.0f));
+        info.rotation = j.value("Rotation", glm::vec3(0.0f));
+    }
+
     void from_json(const nlohmann::json& j, glm::vec3& v) {
-        v.x = j.at(0).get<float>();
-        v.y = j.at(1).get<float>();
-        v.z = j.at(2).get<float>();
+        try {
+            std::array<float, 3> arr = j.get<std::array<float, 3>>();
+            v = glm::vec3(arr[0], arr[1], arr[2]);
+        }
+        catch (const nlohmann::json::exception& e) {
+            v = glm::vec3(0.0f, 0.0f, 0.0f);
+        }
     }
 
     void from_json(const nlohmann::json& j, MeshRenderingInfo& info) {
@@ -131,7 +245,7 @@ namespace JSON {
             createInfo.color = jsonObject["color"];
             createInfo.radius = jsonObject["radius"];
             createInfo.strength = jsonObject["strength"];
-            createInfo.type = jsonObject["type"];
+            createInfo.type = Util::StringToLightType(jsonObject["type"]);
         }
 
         // Load Pickups
@@ -211,6 +325,57 @@ namespace JSON {
         // TODO: 
         std::cout << "TODO: JSON::LoadMap()\n";
         return mapCreateInfo;
+    }
+
+    HouseCreateInfo LoadHouse(const std::string& filepath) {
+        nlohmann::json json;
+        if (!LoadJsonFromFile(json, filepath)) {
+            std::cerr << "JSON::LoadHouse() failed to open file: " << filepath << "\n";
+            return HouseCreateInfo();
+        }
+
+        HouseCreateInfo houseCreateInfo;
+        houseCreateInfo.doors = json.value("Doors", std::vector<DoorCreateInfo>{});
+        houseCreateInfo.lights = json.value("Lights", std::vector<LightCreateInfo>{});
+        houseCreateInfo.planes = json.value("Planes", std::vector<PlaneCreateInfo>{});
+        houseCreateInfo.pianos = json.value("Pianos", std::vector<PianoCreateInfo>{});
+        houseCreateInfo.walls = json.value("Walls", std::vector<WallCreateInfo>{});
+        houseCreateInfo.windows = json.value("Windows", std::vector<WindowCreateInfo>{});
+        return houseCreateInfo;
+    }
+    
+    void SaveHouse(const std::string& filepath, HouseCreateInfo& houseCreateInfo) {
+        nlohmann::json json;
+        json["Doors"] = houseCreateInfo.doors;
+        json["Lights"] = houseCreateInfo.lights;
+        json["Planes"] = houseCreateInfo.planes;
+        json["Pianos"] = houseCreateInfo.pianos;
+        json["Walls"] = houseCreateInfo.walls;
+        json["Windows"] = houseCreateInfo.windows;
+        JSON::SaveToFile(json, filepath);
+
+        //nlohmann::json json;
+        //
+        //for (const DoorCreateInfo& createInfo : houseCreateInfo.doors) {
+        //    json["Doors"].push_back(nlohmann::json(createInfo));
+        //}
+        //for (const LightCreateInfo& createInfo : houseCreateInfo.lights) {
+        //    json["Lights"].push_back(nlohmann::json(createInfo));
+        //}
+        //for (const PlaneCreateInfo& createInfo : houseCreateInfo.planes) {
+        //    json["Planes"].push_back(nlohmann::json(createInfo));
+        //}
+        //for (const PianoCreateInfo& createInfo : houseCreateInfo.pianos) {
+        //    json["Pianos"].push_back(nlohmann::json(createInfo));
+        //}
+        //for (const WallCreateInfo& createInfo : houseCreateInfo.walls) {
+        //    json["Walls"].push_back(nlohmann::json(createInfo));
+        //}
+        //for (const WindowCreateInfo& createInfo : houseCreateInfo.windows) {
+        //    json["Windows"].push_back(nlohmann::json(createInfo));
+        //}
+        //
+        //JSON::SaveToFile(json, filepath);
     }
 
     void SaveMap(const std::string& filepath, MapCreateInfo& mapCreateInfo) {

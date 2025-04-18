@@ -35,6 +35,12 @@ namespace Util {
         return PickUpType::UNDEFINED;
     }
 
+    TrimType StringToTrimType(const std::string& str) {
+        if (str == "PLASTER") return TrimType::PLASTER;
+        if (str == "TIMBER") return TrimType::TIMBER;
+        return TrimType::NONE;
+    }
+
     std::string BlendingModeToString(BlendingMode mode) {
         switch (mode) {
             case BlendingMode::NONE:                return "NONE";
@@ -52,15 +58,17 @@ namespace Util {
             case ObjectType::NONE:          return "NONE";
             case ObjectType::DECAL:         return "DECAL";
             case ObjectType::DOOR:          return "DOOR";
+            case ObjectType::DOOR_FRAME:    return "DOOR_FRAME";
             case ObjectType::GAME_OBJECT:   return "GAME_OBJECT";
             case ObjectType::HEIGHT_MAP:    return "HEIGHT_MAP";
-            case ObjectType::HOUSE_PLANE:   return "HOUSE_PLANE";
+            case ObjectType::PLANE:   return "HOUSE_PLANE";
             case ObjectType::LIGHT:         return "LIGHT";
             case ObjectType::PICK_UP:       return "PICK_UP";
             case ObjectType::PIANO:         return "PIANO";
-            case ObjectType::PIANO_KEY:         return "PIANO_KEY";
+            case ObjectType::PIANO_KEY:     return "PIANO_KEY";
             case ObjectType::TREE:          return "TREE";
             case ObjectType::UNDEFINED:     return "UNDEFINED";
+            case ObjectType::WALL:          return "WALL";
             case ObjectType::WALL_SEGMENT:  return "WALL_SEGMENT";
             case ObjectType::WINDOW:        return "WINDOW";
             default:                        return "UNKNOWN";
@@ -73,8 +81,18 @@ namespace Util {
             case PhysicsType::RIGID_DYNAMIC:    return "RIGID_DYNAMIC";
             case PhysicsType::RIGID_STATIC:     return "RIGID_STATIC";
             case PhysicsType::HEIGHT_FIELD:     return "HEIGHT_FIELD";
+            case PhysicsType::GROUND_PLANE:     return "GROUND_PLANE";
             case PhysicsType::UNDEFINED:        return "UNDEFINED";
             default:                            return "UNKNOWN";
+        }
+    }
+
+    std::string TrimTypeToString(TrimType type) {
+        switch (type) {
+            case TrimType::NONE:             return "NONE";
+            case TrimType::PLASTER :         return "PLASTER";
+            case TrimType::TIMBER:           return "TIMBER";
+            default:                         return "UNKNOWN";
         }
     }
 

@@ -13,7 +13,7 @@ namespace OpenGLRenderer {
         OpenGLShader* shader = GetShader("SolidColor");
 
         if (!shader) return;
-        if (!Editor::IsEditorOpen()) return;
+        if (!Editor::IsOpen()) return;
 
         gBuffer->Bind();
         gBuffer->DrawBuffers({ "FinalLighting" });
@@ -38,18 +38,18 @@ namespace OpenGLRenderer {
                 shader->SetMat4("view", viewportData[i].view);
                 shader->SetBool("useUniformColor", true);
 
-                //if (Editor::GetSelectedObjectType() != ObjectType::NONE) {
+                if (Editor::GetSelectedObjectType() != ObjectType::NONE) {
                     for (GizmoRenderItem& renderItem : Gizmo::GetRenderItemsByViewportIndex(i)) {
-                        DetachedMesh* mesh = Gizmo::GetDetachedMeshByIndex(renderItem.meshIndex);
+                        MeshBuffer* mesh = Gizmo::GetMeshBufferByIndex(renderItem.meshIndex);
                         if (mesh) {
-                            OpenGLDetachedMesh glMesh = mesh->GetGLMesh();
+                            OpenGLMeshBuffer glMesh = mesh->GetGLMeshBuffer();
                             shader->SetMat4("model", renderItem.modelMatrix);
                             shader->SetVec4("uniformColor", renderItem.color);
                             glBindVertexArray(glMesh.GetVAO());
                             glDrawElements(GL_TRIANGLES, glMesh.GetIndexCount(), GL_UNSIGNED_INT, 0);
                         }
                     }
-               // }
+                }
             }
         }
 

@@ -3,7 +3,7 @@
 #include <vector>
 #include <glm/glm.hpp>
 #include "HellTypes.h"
-#include "API/OpenGL/Types/GL_detachedMesh.hpp"
+#include "API/OpenGL/Types/GL_mesh_buffer.h"
 
 //struct Edge;
 
@@ -28,7 +28,7 @@ public:
     std::vector<EditableVertex*> m_vertices;
     std::vector<Face*>           m_faces;
 
-    OpenGLDetachedMesh m_glMesh;
+    OpenGLMeshBuffer m_glMesh;
 
     void InitAsCube(const glm::vec3& spawnOffset = glm::vec3(0.0f));
     void CleanUp();

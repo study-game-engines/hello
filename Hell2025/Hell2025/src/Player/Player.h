@@ -34,6 +34,7 @@ struct Player {
     AnimatedGameObject* GetViewWeaponAnimatedGameObject();
     Camera& GetCamera();
 
+    void UpdateCursorRays();
     void UpdateInteract();
     void UpdateCamera(float deltaTime);
     void UpdateViewWeapon(float deltaTime);
@@ -48,8 +49,6 @@ struct Player {
     void UpdateAnimatedGameObjects(float deltaTime);
     void UpdatePlayingPiano(float deltaTime);
     void UpdateWeaponSlide();
-
-    PhysXRayResult m_cameraRayResult;
 
     // Weapon shit
     int GetCurrentWeaponMagAmmo();
@@ -155,17 +154,23 @@ struct Player {
     Frustum& GetFlashlightFrustum()     { return m_flashlightFrustum; }
 
 private:
+    // Interact
+    PhysXRayResult m_physXRayResult;
+    BvhRayResult m_bvhRayResult;
+    ObjectType m_rayHitObjectType = ObjectType::UNDEFINED;
+    ObjectType m_interactObjectType = ObjectType::UNDEFINED;
+    uint64_t m_rayhitObjectId = 0;
+    uint64_t m_interactObjectId = 0;
+    glm::vec3 m_rayHitPosition = glm::vec3(0.0f);
+    bool m_rayHitFound = false;
+    bool m_interactFound = false;
+
     glm::vec3 m_position = glm::vec3(0.0f);
     ivecXZ m_chunkPos;
 
     // Interact
 
     Frustum m_flashlightFrustum;
-    bool m_interactFound = false;
-    uint64_t m_interactObjectId = 0;
-    uint64_t m_interactPhysicsId = 0;
-    ObjectType m_interactObjectType = ObjectType::UNDEFINED;
-    PhysicsType m_interactPhysicsType = PhysicsType::UNDEFINED;
 
 
     // Flashlight
@@ -312,6 +317,7 @@ private:
         bool ViewportIsVisible();
 
         // Physics 
+        void SetFootPosition(glm::vec3 position);
         void UpdateCharacterController();
         PxShape* GetCharacterControllerShape();
         PxRigidDynamic* GetCharacterControllerActor();

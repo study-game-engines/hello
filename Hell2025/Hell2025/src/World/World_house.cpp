@@ -1,87 +1,91 @@
 #include "World.h"
 #include "AssetManagement/AssetManager.h"
+#include "Core/JSON.h"
 #include "Renderer/RenderDataManager.h"
+#include "World/HouseManager.h"
 
 namespace World {
 
-    OpenGLDetachedMesh g_houseMesh;
-    std::vector<Vertex> g_houseMeshVertices;
-    std::vector<uint32_t> g_houseMeshIndices;
+    MeshBuffer g_houseMeshBuffer;
 
-    void UpdateHouseMeshVertexDataAndRenderItems() {
-        std::vector<Wall>& walls = GetWalls();
-        std::vector<HousePlane>& housePlanes = GetHousePlanes();
-        std::vector<HouseRenderItem>& houseRenderItems = GetHouseRenderItems();
-
-        g_houseMeshVertices.clear();
-        g_houseMeshIndices.clear();
-        houseRenderItems.clear();
-
-        int baseVertex = 0;
-        int baseIndex = 0;
-
-        // House walls
-        for (Wall& wall : walls) {
-            const Material* material = wall.GetMaterial() ? wall.GetMaterial() : AssetManager::GetDefaultMaterial();
-            const std::vector<WallSegment>& wallSegments = wall.GetWallSegments();
-
-            for (const WallSegment& wallSegment : wallSegments) {
-
-                const std::vector<Vertex>& vertices = wallSegment.GetVertices();
-                const std::vector<uint32_t>& indices = wallSegment.GetIndices();
-
-                HouseRenderItem& renderItem = houseRenderItems.emplace_back();
-                renderItem.baseColorTextureIndex = material->m_basecolor;
-                renderItem.normalMapTextureIndex = material->m_normal;
-                renderItem.rmaTextureIndex = material->m_rma;
-                renderItem.baseVertex = baseVertex;
-                renderItem.baseIndex = baseIndex;
-                renderItem.vertexCount = vertices.size();
-                renderItem.indexCount = indices.size();
-                renderItem.aabbMin = glm::vec4(0); // TODO
-                renderItem.aabbMax = glm::vec4(0); // TODO
-
-                g_houseMeshVertices.insert(g_houseMeshVertices.end(), vertices.begin(), vertices.end());
-                g_houseMeshIndices.insert(g_houseMeshIndices.end(), indices.begin(), indices.end());
-
-                baseVertex = g_houseMeshVertices.size();
-                baseIndex = g_houseMeshIndices.size();
-            }
+    void AddHouse(HouseCreateInfo houseCreateInfo, SpawnOffset spawnOffset) {
+        for (DoorCreateInfo& createInfo : houseCreateInfo.doors) {
+            AddDoor(createInfo, spawnOffset);
+        }
+        for (PlaneCreateInfo& createInfo : houseCreateInfo.planes) {
+            AddHousePlane(createInfo, spawnOffset);
+        }
+        for (LightCreateInfo& createInfo : houseCreateInfo.lights) {
+            AddLight(createInfo, spawnOffset);
+        }
+        for (PianoCreateInfo& createInfo : houseCreateInfo.pianos) {
+            AddPiano(createInfo, spawnOffset);
+        }
+        for (WindowCreateInfo& createInfo : houseCreateInfo.windows) {
+            AddWindow(createInfo, spawnOffset);
         }
 
-        // House planes
-        for (HousePlane& housePlane : housePlanes) {
-            const Material* material = housePlane.GetMaterial() ? housePlane.GetMaterial() : AssetManager::GetDefaultMaterial();
-
-            std::vector<Vertex>& vertices = housePlane.GetVertices();
-            std::vector<uint32_t>& indices = housePlane.GetIndices();
-
-            HouseRenderItem& renderItem = houseRenderItems.emplace_back();
-            renderItem.baseColorTextureIndex = material->m_basecolor;
-            renderItem.normalMapTextureIndex = material->m_normal;
-            renderItem.rmaTextureIndex = material->m_rma;
-            renderItem.baseVertex = baseVertex;
-            renderItem.baseIndex = baseIndex;
-            renderItem.vertexCount = vertices.size();
-            renderItem.indexCount = indices.size();
-            renderItem.aabbMin = glm::vec4(0); // TODO
-            renderItem.aabbMax = glm::vec4(0); // TODO
-
-            g_houseMeshVertices.insert(g_houseMeshVertices.end(), vertices.begin(), vertices.end());
-            g_houseMeshIndices.insert(g_houseMeshIndices.end(), indices.begin(), indices.end());
-
-            baseVertex = g_houseMeshVertices.size();
-            baseIndex = g_houseMeshIndices.size();
+        // Update the clipping cubes, so the walls have correct cut outs for doors/windows
+        UpdateClippingCubes();
+        
+        for (WallCreateInfo& createInfo : houseCreateInfo.walls) {
+            AddWall(createInfo, spawnOffset);
         }
 
-        g_houseMesh.UpdateBuffers(g_houseMeshVertices, g_houseMeshIndices);
-
-        // Ceiling trims
-
-        // Floor trims
+        UpdateHouseMeshBuffer();
     }
 
-    OpenGLDetachedMesh& GetHouseMesh() {
-        return g_houseMesh;
+    void SaveHouse() {
+
+        std::string filename = "TestHouse.json";
+
+        HouseCreateInfo houseCreateInfo;
+
+        for (Door& door : GetDoors()) {
+            houseCreateInfo.doors.emplace_back(door.GetCreateInfo());
+        }
+        for (Light& light : GetLights()) {
+            houseCreateInfo.lights.emplace_back(light.GetCreateInfo());
+        }
+        for (Piano& piano : GetPianos()) {
+            houseCreateInfo.pianos.emplace_back(piano.GetCreateInfo());
+        }
+        for (Plane& plane: GetPlanes()) {
+            houseCreateInfo.planes.emplace_back(plane.GetCreateInfo());
+        }
+        for (Window& window : GetWindows()) {
+            houseCreateInfo.windows.emplace_back(window.GetCreateInfo());
+        }
+        for (Wall& wall: GetWalls()) {
+            houseCreateInfo.walls.emplace_back(wall.GetCreateInfo());
+        }
+
+        JSON::SaveHouse("res/houses/" + filename, houseCreateInfo);
+    }
+
+
+    void UpdateHouseMeshBuffer() {
+        g_houseMeshBuffer.Reset();
+
+        for (Wall& wall : GetWalls()) {
+            for (WallSegment& wallSegment : wall.GetWallSegments()) {
+                uint32_t meshIndex = g_houseMeshBuffer.AddMesh(wallSegment.GetVertices(), wallSegment.GetIndices());
+                wallSegment.SetMeshIndex(meshIndex);
+            }
+        }
+        for (Plane& housePlane : GetPlanes()) {
+            uint32_t meshIndex = g_houseMeshBuffer.AddMesh(housePlane.GetVertices(), housePlane.GetIndices());
+            housePlane.SetMeshIndex(meshIndex);
+        }
+
+        g_houseMeshBuffer.UpdateBuffers();
+    }
+
+    MeshBuffer& GetHouseMeshBuffer() {
+        return g_houseMeshBuffer;
+    }
+
+    Mesh* GetHouseMeshByIndex(uint32_t meshIndex) {
+        return g_houseMeshBuffer.GetMeshByIndex(meshIndex);
     }
 }

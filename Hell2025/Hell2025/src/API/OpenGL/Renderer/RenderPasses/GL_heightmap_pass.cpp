@@ -50,7 +50,7 @@ namespace OpenGLRenderer {
         DrawHeightMap();
         PaintHeightMap();
 
-        if (Editor::IsEditorOpen() && Editor::GetEditorMode() == EditorMode::HEIGHTMAP_EDITOR) {
+        if (Editor::IsOpen() && Editor::GetEditorMode() == EditorMode::HEIGHTMAP_EDITOR) {
 
             //if (Input::KeyPressed(HELL_KEY_L)) {                
             //    HeightMapData heightMapData = File::LoadHeightMap("TEST.heightmap");
@@ -153,7 +153,7 @@ namespace OpenGLRenderer {
 
     void PaintHeightMap() {
         if (!IsMouseRayWorldPositionReadBackReady()) return;
-        if (!Editor::IsEditorOpen()) return;
+        if (!Editor::IsOpen()) return;
         if (Editor::GetEditorMode() != EditorMode::HEIGHTMAP_EDITOR) return;
         if (ImGuiBackEnd::OwnsMouse()) return;
 

@@ -24,7 +24,7 @@ namespace Gizmo {
     glm::vec3 g_gizmoPosition = glm::vec3(0.0, 0.0f, 0.0f);
     glm::vec3 g_eulerRotation = glm::vec3(0.0f, 0.0f, 0.0f);
     std::vector<GizmoRenderItem> g_renderItems[4];
-    std::vector<DetachedMesh> g_meshes;
+    std::vector<MeshBuffer> g_meshBuffers;
     GizmoFlag g_hoverFlag = GizmoFlag::NONE;
     GizmoFlag g_actionFlag = GizmoFlag::NONE;
     GizmoAction g_action = GizmoAction::IDLE;
@@ -45,7 +45,7 @@ namespace Gizmo {
     void UpdateLocalAxes();
 
     void Init() {        
-        g_meshes.resize(MESH_COUNT);
+        g_meshBuffers.resize(MESH_COUNT);
 
         // Generate ring mesh
         float ringThickness = 0.03f;
@@ -53,14 +53,16 @@ namespace Gizmo {
         int ringThicknessSegments = 5;
         std::vector<Vertex> ringVertices = Util::GenerateRingVertices(g_gizmoSize, ringThickness, ringSegments, ringThicknessSegments);
         std::vector<uint32_t> ringIndices = Util::GenerateRingIndices(ringSegments, ringThicknessSegments);
-        g_meshes[RING].UpdateBuffers(ringVertices, ringIndices);
+        g_meshBuffers[RING].AddMesh(ringVertices, ringIndices);
+        g_meshBuffers[RING].UpdateBuffers();
 
         // Generate sphere mesh
         float sphereRadius = g_gizmoSize - (ringThickness * 2);
         int sphereSegments = 32;
         std::vector<Vertex> sphereVerices = Util::GenerateSphereVertices(sphereRadius, sphereSegments);
         std::vector<uint32_t> sphereIndices = Util::GenerateSphereIndices(sphereSegments);
-        g_meshes[SPHERE].UpdateBuffers(sphereVerices, sphereIndices);
+        g_meshBuffers[SPHERE].AddMesh(sphereVerices, sphereIndices);
+        g_meshBuffers[SPHERE].UpdateBuffers();
 
         // Generate cone mesh
         int coneSegments = 12;
@@ -68,7 +70,8 @@ namespace Gizmo {
         float coneHeight = 0.6f;
         std::vector<Vertex> coneVertices = Util::GenerateConeVertices(coneRadius, coneHeight, coneSegments);
         std::vector<uint32_t> coneIndices = Util::GenerateConeIndices(coneSegments);
-        g_meshes[CONE].UpdateBuffers(coneVertices, coneIndices);
+        g_meshBuffers[CONE].AddMesh(coneVertices, coneIndices);
+        g_meshBuffers[CONE].UpdateBuffers();
 
         // Generate cone mesh
         float cylinderRadius = 0.015f;
@@ -76,17 +79,19 @@ namespace Gizmo {
         int cylinderSegments = 5;
         std::vector<Vertex> cylinderVertices = Util::GenerateCylinderVertices(cylinderRadius, cylinderHeight, cylinderSegments);
         std::vector<uint32_t> cylinderIndices = Util::GenerateCylinderIndices(cylinderSegments);
-        g_meshes[CYLINDER].UpdateBuffers(cylinderVertices, cylinderIndices);
+        g_meshBuffers[CYLINDER].AddMesh(cylinderVertices, cylinderIndices);
+        g_meshBuffers[CYLINDER].UpdateBuffers();
 
         // Generate cube one mesh
         std::vector<Vertex> cubeVertices = Util::GenerateCubeVertices();
         std::vector<uint32_t> cubeIndices = Util::GenerateCubeIndices();
-        g_meshes[CUBE].UpdateBuffers(cubeVertices, cubeIndices);
+        g_meshBuffers[CUBE].AddMesh(cubeVertices, cubeIndices);
+        g_meshBuffers[CUBE].UpdateBuffers();
     }
 
-    DetachedMesh* GetDetachedMeshByIndex(int index) {
-        if (index >= 0 && index < static_cast<int>(g_meshes.size())) {
-            return g_meshes.data() + index;
+    MeshBuffer* GetMeshBufferByIndex(int index) {
+        if (index >= 0 && index < static_cast<int>(g_meshBuffers.size())) {
+            return g_meshBuffers.data() + index;
         }
         else {
             return nullptr;
@@ -94,7 +99,7 @@ namespace Gizmo {
     }
 
     void Update() {
-        if (!Editor::IsEditorOpen()) return;
+        if (!Editor::IsOpen()) return;
         UpdateLocalAxes();
         UpdateInput();
         UpdateRenderItems();
@@ -158,7 +163,7 @@ namespace Gizmo {
         g_gizmoHasHover = false;
         g_hoverFlag = GizmoFlag::NONE;
         for (GizmoRenderItem& renderItem : g_renderItems[viewportIndex]) {
-            DetachedMesh* mesh = Gizmo::GetDetachedMeshByIndex(renderItem.meshIndex);
+            MeshBuffer* mesh = Gizmo::GetMeshBufferByIndex(renderItem.meshIndex);
             if (mesh) {
                 std::vector<Vertex>& vertices = mesh->GetVertices();
                 std::vector<uint32_t>& indices = mesh->GetIndices();
@@ -337,7 +342,7 @@ namespace Gizmo {
 
     void UpdateRenderItems() {
 
-        if (!Editor::IsEditorOpen()) return;
+        if (!Editor::IsOpen()) return;
 
         for (int i = 0; i < 4; i++) {
             g_renderItems[i].clear();

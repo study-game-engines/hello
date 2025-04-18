@@ -126,9 +126,11 @@ namespace Util {
     std::string BlendingModeToString(BlendingMode mode);
     std::string ObjectTypeToString(ObjectType type);
     std::string PhysicsTypeToString(PhysicsType type);
+    std::string TrimTypeToString(TrimType type);
+    BlendingMode StringToBlendingMode(const std::string& str);
     LightType StringToLightType(const std::string& str);
     PickUpType StringToPickUpType(const std::string& str);
-    BlendingMode StringToBlendingMode(const std::string& str);
+    TrimType StringToTrimType(const std::string& str);
     ObjectType IntToEnum(int value);
     int32_t EnumToInt(ObjectType type);
 

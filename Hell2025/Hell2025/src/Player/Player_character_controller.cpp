@@ -13,7 +13,7 @@ void Player::CreateCharacterController(glm::vec3 position) {
     desc->radius = PLAYER_CAPSULE_RADIUS;
     desc->position = PxExtendedVec3(position.x, position.y + (height / 2) + (PLAYER_CAPSULE_RADIUS * 2), position.z);
     desc->material = material;
-    desc->stepOffset = 0.05f;
+    desc->stepOffset = 0.25f;
     desc->contactOffset = 0.001;
     desc->scaleCoeff = .99f;
     desc->reportCallback = &Physics::GetCharacterControllerHitCallback();
@@ -40,6 +40,12 @@ void Player::MoveCharacterController(glm::vec3 displacement) {
     float fixedDeltaTime = (1.0f / 60.0f);
     m_characterController->move(PxVec3(displacement.x, displacement.y, displacement.z), minDist, fixedDeltaTime, data);
     m_position = Physics::PxVec3toGlmVec3(m_characterController->getFootPosition());
+}
+
+
+void Player::SetFootPosition(glm::vec3 position) {
+    PxExtendedVec3 pxVec3 = PxExtendedVec3(position.x, position.y, position.z);
+    m_characterController->setFootPosition(pxVec3);
 }
 
 void Player::UpdateCharacterController() {

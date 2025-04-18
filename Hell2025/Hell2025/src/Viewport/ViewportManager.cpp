@@ -27,7 +27,7 @@ namespace ViewportManager {
 
         // Set state / recreate matrices based on editor/splitscreen mode
         // Clean this up when you have a moment.
-        if (Editor::IsEditorOpen()) {
+        if (Editor::IsOpen()) {
             float splitX = Editor::GetVerticalDividerXPos();
             float splitY = Editor::GetHorizontalDividerYPos();
                       

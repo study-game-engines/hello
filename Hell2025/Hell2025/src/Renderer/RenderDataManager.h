@@ -24,13 +24,19 @@ namespace RenderDataManager {
     void SubmitDecalRenderItem(const RenderItem& renderItem);
     void SubmitRenderItem(const RenderItem& renderItem);
     void SubmitRenderItems(const std::vector<RenderItem>& renderItems);
-    void SubmitHouseRenderItem(const HouseRenderItem& renderItem);
     void SubmitOutlineRenderItem(const RenderItem& renderItem);
     void SubmitOutlineRenderItems(const std::vector<RenderItem>& renderItems);
+
+    // House submissions
+    void SubmitRenderItem(const HouseRenderItem& renderItem);
+    void SubmitRenderItems(const std::vector<HouseRenderItem>& renderItems);
+    void SubmitOutlineRenderItem(const HouseRenderItem& renderItem);
+    void SubmitOutlineRenderItems(const std::vector<HouseRenderItem>& renderItems);
 
     const RendererData& GetRendererData();
     const std::vector<GPULight>& GetGPULightData();
     const std::vector<HouseRenderItem>& GetHouseRenderItems();
+    const std::vector<HouseRenderItem>& GetHouseOutlineRenderItems();
     const std::vector<RenderItem>& GetDecalRenderItems();
     const std::vector<RenderItem>& GetInstanceData();
     const std::vector<RenderItem>& GetOutlineRenderItems();

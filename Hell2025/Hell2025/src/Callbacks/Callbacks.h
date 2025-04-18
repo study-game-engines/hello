@@ -11,6 +11,9 @@ namespace Callbacks {
     void OpenHeightMap(const std::string& filename);
     void OpenHouse(const std::string& filename);
     void OpenSector(const std::string& filename);
+
+    void SaveHouse();
+
     void SaveHeightMaps();
 
     void TestCurrentMap();
@@ -25,4 +28,7 @@ namespace Callbacks {
     void RevertEditorSector();
 
     void QuitProgram();
+
+    // House editor
+    void BeginAddingWall();
 }

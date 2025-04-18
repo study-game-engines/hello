@@ -228,6 +228,15 @@ namespace Physics {
        meshDesc.triangles.count = indices.size() / 3;
        meshDesc.triangles.data = indices.data();
        meshDesc.triangles.stride = 3 * sizeof(PxU32);
+
+       if (!meshDesc.isValid()) {
+           std::cout << "PxTriangleMeshDesc is invalid!\n";
+           std::cout << "Vertex count: " << meshDesc.points.count << "\n";
+           std::cout << "Vertex stride: " << meshDesc.points.stride << "\n";
+           std::cout << "Triangle count: " << meshDesc.triangles.count << "\n";
+           std::cout << "Triangle stride: " << meshDesc.triangles.stride << "\n";
+           return 0;
+       }
        
        PxCookingParams params{ PxTolerancesScale() };
        params.midphaseDesc = PxMeshMidPhase::eBVH33;
@@ -319,7 +328,7 @@ namespace Physics {
        }
    }
 
-   void RemoveAnyRigidStaticForRemoval() {
+   void RemoveAnyRigidStaticMarkedForRemoval() {
        PxScene* pxScene = Physics::GetPxScene();
 
        for (auto it = g_rigidStatics.begin(); it != g_rigidStatics.end(); ) {

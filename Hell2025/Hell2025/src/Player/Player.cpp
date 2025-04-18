@@ -38,12 +38,12 @@ void Player::BeginFrame() {
     m_interactFound = false;
     m_interactObjectId = 0;
     m_interactObjectType = ObjectType::NONE;
-    m_interactPhysicsId = 0;
-    m_interactPhysicsType = PhysicsType::NONE;
+    //m_interactPhysicsId = 0;
+    //m_interactPhysicsType = PhysicsType::NONE;
 }
 
 void Player::Update(float deltaTime) {
-    if (Editor::IsEditorOpen()) {
+    if (Editor::IsOpen()) {
         return;
     }
 
@@ -54,6 +54,7 @@ void Player::Update(float deltaTime) {
     UpdateHeadBob(deltaTime);
     UpdateBreatheBob(deltaTime);
     UpdateCamera(deltaTime);
+    UpdateCursorRays();
     UpdateInteract();
     UpdateWeaponLogic(deltaTime);
     UpdateViewWeapon(deltaTime);

@@ -1,9 +1,8 @@
 #pragma once
-#include "Common.h"
 #include "Math/AABB.h"
 #include <string>
 #include "API/OpenGL/Types/GL_cubemapView.h"
-#include "API/OpenGL/Types/GL_detachedMesh.hpp"
+#include "API/OpenGL/Types/GL_mesh_buffer.h"
 #include "API/OpenGL/Types/GL_frameBuffer.h"
 #include "API/OpenGL/Types/GL_shader.h"
 #include "API/OpenGL/Types/GL_shadow_map.h"

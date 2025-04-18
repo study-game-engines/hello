@@ -12,7 +12,7 @@ void Player::UpdatePlayingPiano(float deltaTime) {
     if (!m_isPlayingPiano) return;
         
     // Error check, in case your piano is nullptr somehow
-    Piano* piano = World::GetPianoByPianoId(m_pianoId);
+    Piano* piano = World::GetPianoByObjectId(m_pianoId);
     if (!piano) {
         std::cout << "UpdatePlayingPiano() failed: tried to play a nullptr piano! m_pianoId is " << m_pianoId << "\n";
         m_isPlayingPiano = false;
@@ -51,49 +51,49 @@ void Player::UpdatePlayingPiano(float deltaTime) {
     int lowerFifth = fifth - 12;
 
     // Chords
-    if (Input::KeyPressed(HELL_KEY_Z)) {
+    if (Input::KeyDown(HELL_KEY_Z)) {
         piano->PlayMajorFirstInversion(g3);
     }
-    if (Input::KeyPressed(HELL_KEY_X)) {
+    if (Input::KeyDown(HELL_KEY_X)) {
         piano->PlayMajor7th(b3);
     }
-    if (Input::KeyPressed(HELL_KEY_C)) {
+    if (Input::KeyDown(HELL_KEY_C)) {
         piano->PlayMinor(e3);
     }
-    if (Input::KeyPressed(HELL_KEY_V)) {
+    if (Input::KeyDown(HELL_KEY_V)) {
         piano->PlayMajor(c3);
     }
 
 
 
-    if (Input::KeyPressed(HELL_KEY_R)) {
+    if (Input::KeyDown(HELL_KEY_R)) {
         piano->PlayKey(lowerFifth);
     }
-    if (Input::KeyPressed(HELL_KEY_T)) {
+    if (Input::KeyDown(HELL_KEY_T)) {
         piano->PlayKey(lowerSixth);
     }
-    if (Input::KeyPressed(HELL_KEY_Y)) {
+    if (Input::KeyDown(HELL_KEY_Y)) {
         piano->PlayKey(seventh);
     }
-    if (Input::KeyPressed(HELL_KEY_U)) {
+    if (Input::KeyDown(HELL_KEY_U)) {
         piano->PlayKey(root);
     }
-    if (Input::KeyPressed(HELL_KEY_I)) {
+    if (Input::KeyDown(HELL_KEY_I)) {
         piano->PlayKey(second);
     }
-    if (Input::KeyPressed(HELL_KEY_O)) {
+    if (Input::KeyDown(HELL_KEY_O)) {
         piano->PlayKey(third);
     }
-    if (Input::KeyPressed(HELL_KEY_P)) {
+    if (Input::KeyDown(HELL_KEY_P)) {
         piano->PlayKey(fourth);
     }
-    if (Input::KeyPressed(HELL_KEY_LEFT_BRACKET)) {
+    if (Input::KeyDown(HELL_KEY_LEFT_BRACKET)) {
         piano->PlayKey(fifth);
     }
-    if (Input::KeyPressed(HELL_KEY_EQUAL)) {
+    if (Input::KeyDown(HELL_KEY_EQUAL)) {
         piano->PlayKey(minorSixth);
     }
-    if (Input::KeyPressed(HELL_KEY_RIGHT_BRACKET)) {
+    if (Input::KeyDown(HELL_KEY_RIGHT_BRACKET)) {
         piano->PlayKey(sixth);
     }
 

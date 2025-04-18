@@ -182,7 +182,7 @@ namespace OpenGLRenderer {
             int32_t zBegin = cameraChunk.z - maxChunkDrawDistance;
             int32_t zEnd = cameraChunk.z + maxChunkDrawDistance;
 
-            if (Editor::IsEditorOpen()) {
+            if (Editor::IsOpen()) {
                 xBegin = 0;
                 zBegin = 0;
                 xEnd = World::GetChunkCountX();

@@ -18,7 +18,6 @@
 
 namespace Editor {
 
-    void UpdateGizmoInteract();
     void UpdateSelectRect();
     void UpdateMouseWrapping();
 
@@ -34,6 +33,40 @@ namespace Editor {
             Input::MiddleMousePressed() ||
             Input::RightMousePressed()) {
             SetActiveViewportIndex(GetHoveredViewportIndex());
+        }
+
+        if (!ImGuiBackEnd::HasKeyboardFocus()) {
+
+            // Axis constraint
+            if (Input::KeyPressed(HELL_KEY_X) && GetAxisConstraint() != Axis::X) {
+                Audio::PlayAudio(AUDIO_SELECT, 1.0f);
+                SetAxisConstraint(Axis::X);
+            }
+            else if (Input::KeyPressed(HELL_KEY_Y) && GetAxisConstraint() != Axis::Y) {
+                Audio::PlayAudio(AUDIO_SELECT, 1.0f);
+                SetAxisConstraint(Axis::Y);
+            }
+            else if (Input::KeyPressed(HELL_KEY_Z) && GetAxisConstraint() != Axis::Z) {
+                Audio::PlayAudio(AUDIO_SELECT, 1.0f);
+                SetAxisConstraint(Axis::Z);
+            }
+            else {
+                if (Input::KeyPressed(HELL_KEY_X) ||
+                    Input::KeyPressed(HELL_KEY_Y) ||
+                    Input::KeyPressed(HELL_KEY_Z)) {
+                    Audio::PlayAudio(AUDIO_SELECT, 1.0f);
+                    SetAxisConstraint(Axis::NONE);
+                }
+            }
+
+            // Object deletion
+            if (Input::KeyPressed(HELL_KEY_BACKSPACE)) {
+                if (GetSelectedObjectType() != ObjectType::NONE) {
+                    World::RemoveObject(GetSelectedObjectId());
+                    Audio::PlayAudio(AUDIO_SELECT, 1.0f);
+                    UnselectAnyObject();
+                }
+            }
         }
 
         // Toggle viewport types
@@ -74,14 +107,14 @@ namespace Editor {
         }
 
         if (GetEditorMode() == EditorMode::SECTOR_EDITOR) {
-            UpdateObjectSelection();
+            //UpdateObjectSelection();
             UpdateGizmoInteract();
             UpdateSelectRect();
             UpdateMouseWrapping();
         }
     }
 
-    void UpdateObjectSelection() {
+    /*void UpdateObjectSelection() {
         uint16_t mousePickType = BackEnd::GetMousePickR();
         uint16_t mousePickIndex = BackEnd::GetMousePickG();
 
@@ -141,7 +174,7 @@ namespace Editor {
             Tree& tree = World::GetTrees()[GetSelectedObjectIndex()];
             tree.MarkAsSelected();
         }
-    }
+    }*/
 
     void UpdateGizmoInteract() {
         // Start translate/rotate/scale
@@ -161,45 +194,45 @@ namespace Editor {
         }
 
         // Translate the selected object
-        if (GetEditorState() == EditorState::GIZMO_TRANSLATING) {
-
-            if (GetSelectedObjectType() == ObjectType::GAME_OBJECT) {
-                GameObject* gameObject = World::GetGameObjectByIndex(GetSelectedObjectIndex());
-                if (gameObject) {
-                    gameObject->m_transform.position = Gizmo::GetPosition();
-                }
-            }
-
-            if (GetSelectedObjectType() == ObjectType::LIGHT) {
-                Light* light = World::GetLightByIndex(GetSelectedObjectIndex());
-                if (light) {
-                    light->SetPosition(Gizmo::GetPosition());
-                }
-            }
-
-            if (GetSelectedObjectType() == ObjectType::PICK_UP) {
-                PickUp* pickUp = World::GetPickUpByIndex(GetSelectedObjectIndex());
-                if (pickUp) {
-                    pickUp->SetPosition(Gizmo::GetPosition());
-                }
-            }
-
-            if (GetSelectedObjectType() == ObjectType::TREE) {
-                Tree* tree = World::GetTreeByIndex(GetSelectedObjectIndex());
-                if (tree) {
-                    tree->SetPosition(Gizmo::GetPosition());
-                }
-            }
-        }
+        //if (GetEditorState() == EditorState::GIZMO_TRANSLATING) {
+        //
+        //    if (GetSelectedObjectType() == ObjectType::GAME_OBJECT) {
+        //        GameObject* gameObject = World::GetGameObjectByIndex(GetSelectedObjectIndex());
+        //        if (gameObject) {
+        //            gameObject->m_transform.position = Gizmo::GetPosition();
+        //        }
+        //    }
+        //
+        //    if (GetSelectedObjectType() == ObjectType::LIGHT) {
+        //        Light* light = World::GetLightByIndex(GetSelectedObjectIndex());
+        //        if (light) {
+        //            light->SetPosition(Gizmo::GetPosition());
+        //        }
+        //    }
+        //
+        //    if (GetSelectedObjectType() == ObjectType::PICK_UP) {
+        //        PickUp* pickUp = World::GetPickUpByIndex(GetSelectedObjectIndex());
+        //        if (pickUp) {
+        //            pickUp->SetPosition(Gizmo::GetPosition());
+        //        }
+        //    }
+        //
+        //    if (GetSelectedObjectType() == ObjectType::TREE) {
+        //        Tree* tree = World::GetTreeByIndex(GetSelectedObjectIndex());
+        //        if (tree) {
+        //            tree->SetPosition(Gizmo::GetPosition());
+        //        }
+        //    }
+        //}
         // Rotate the selected object
-        if (GetEditorState() == EditorState::GIZMO_ROTATING) {
-            if (GetSelectedObjectType() == ObjectType::GAME_OBJECT) {
-                GameObject* gameObject = World::GetGameObjectByIndex(GetSelectedObjectIndex());
-                if (gameObject) {
-                    gameObject->m_transform.rotation = Gizmo::GetEulerRotation() + m_selectedObjectGizmoRotateOffset;
-                }
-            }
-        }
+        //if (GetEditorState() == EditorState::GIZMO_ROTATING) {
+        //    if (GetSelectedObjectType() == ObjectType::GAME_OBJECT) {
+        //        GameObject* gameObject = World::GetGameObjectByIndex(GetSelectedObjectIndex());
+        //        if (gameObject) {
+        //            gameObject->m_transform.rotation = Gizmo::GetEulerRotation() + m_selectedObjectGizmoRotateOffset;
+        //        }
+        //    }
+        //}
     }
 
     void UpdateSelectRect() {

@@ -1,7 +1,9 @@
 #include "World.h"
 #include "AssetManagement/AssetManager.h"
-#include "Core/Game.h"
 #include "Bvh/Bvh.h";
+#include "Core/Game.h"
+#include "Editor/Editor.h"
+#include "Renderer/RenderDataManager.h";
 #include "Viewport/ViewportManager.h";
 
 #include "Renderer/Renderer.h"
@@ -24,8 +26,7 @@ namespace World {
         }
     }
 
-
-    void UpdateSceneBvh() {
+    void UpdatePlayerBvhs() {
 
         for (int i = 0; i < 4; i++) {
             Viewport* viewport = ViewportManager::GetViewportByIndex(i);
@@ -35,14 +36,21 @@ namespace World {
             viewportBvhData.instances.clear();
 
             Player* player = Game::GetLocalPlayerByIndex(i);
-            Frustum& frustum = player->GetFlashlightFrustum();
+            if (!player) continue;
 
-        //for (Door& door : GetDoors()) {
-        //    const std::vector<RenderItem>& renderItems = door.GetRenderItems();
-        //    for (const RenderItem& renderItem : renderItems) {
-        //        g_instances.push_back(CreateObjectInstanceDataFromRenderItem(renderItem, door.GetObjectId()));
-        //    }
-        //}
+            Frustum frustum = player->GetFlashlightFrustum();
+
+            // If the editor is open, reset the frustum to the editor viewport
+            if (Editor::IsOpen()) {
+                frustum.Update(RenderDataManager::GetViewportData()[i].projectionView);
+            }
+            
+            for (Door& door : GetDoors()) {
+                const std::vector<RenderItem>& renderItems = door.GetRenderItems();
+                for (const RenderItem& renderItem : renderItems) {
+                    CreateObjectInstanceDataFromRenderItem(renderItem, frustum, viewportBvhData.instances);
+                }
+            }
 
             for (GameObject& gameObject : GetGameObjects()) {
                 const std::vector<RenderItem>& renderItems = gameObject.GetRenderItems();
@@ -53,6 +61,13 @@ namespace World {
 
             for (Light& light : GetLights()) {
                 const std::vector<RenderItem>& renderItems = light.GetRenderItems();
+                for (const RenderItem& renderItem : renderItems) {
+                    CreateObjectInstanceDataFromRenderItem(renderItem, frustum, viewportBvhData.instances);
+                }
+            }
+
+            for (Piano& piano : GetPianos()) {
+                const std::vector<RenderItem>& renderItems = piano.GetRenderItems();
                 for (const RenderItem& renderItem : renderItems) {
                     CreateObjectInstanceDataFromRenderItem(renderItem, frustum, viewportBvhData.instances);
                 }
@@ -77,6 +92,13 @@ namespace World {
                 for (const RenderItem& renderItem : renderItems) {
                     CreateObjectInstanceDataFromRenderItem(renderItem, frustum, viewportBvhData.instances);
                 }
+            }           
+            
+            for (Window& window : GetWindows()) {
+                const std::vector<RenderItem>& renderItems = window.GetRenderItems();
+                for (const RenderItem& renderItem : renderItems) {
+                    CreateObjectInstanceDataFromRenderItem(renderItem, frustum, viewportBvhData.instances);
+                }
             }
 
             // Rebuild TLAS
@@ -85,50 +107,14 @@ namespace World {
             }
             BVH::UpdateSceneBvh(viewportBvhData.sceneBvhId, viewportBvhData.instances);
         }
-
-
-
-
-       // for (int i = 0; i < 4; i++) {
-       //     Viewport* viewport = ViewportManager::GetViewportByIndex(i);
-       //     if (!viewport->IsVisible()) continue;
-       //
-       //     ViewportBvhData& viewportBvhData = g_viewportBvhData[i];
-       //     SceneBvh* sceneBVH = BVH::GetSceneBvhById(viewportBvhData.sceneBvhId);
-       //
-       //     Player* player = Game::GetLocalPlayerByIndex(i);
-       //
-       //     glm::vec3 rayOrigin = player->GetCameraPosition();
-       //     glm::vec3 rayDir = player->GetCameraForward();
-       //     float maxRayDistance = 4;
-       //
-       //     RayTraversalResult result = ClosestHit(rayOrigin, rayDir, maxRayDistance, i);
-       //     if (result.hitFound) {
-       //
-       //         std::vector<PrimitiveInstance>& instances = g_viewportBvhData[i].instances;
-       //
-       //         PrimitiveInstance& instanceData = instances[result.primtiviveId];
-       //         BVH::RenderRayResultTriangle(result, GREEN);
-       //     }
-       //
-       //     //for (PrimitiveInstance& instance : viewportBvhData.instances) {
-       //     //   //BVH::RenderMeshBvh(instance.meshBvhId, GREY, instance.worldTransform);            
-       //     //}
-       //     //BVH::RenderSceneBvh(viewportBvhData.sceneBvhId, GREEN);
-       //                 
-       // }
     }
 
-    RayTraversalResult ClosestHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float maxRayDistance, int viewportIndex) {
+    BvhRayResult ClosestHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float maxRayDistance, int viewportIndex) {
         std::vector<PrimitiveInstance>& instances = g_viewportBvhData[viewportIndex].instances;
         uint64_t& sceneBvhId = g_viewportBvhData[viewportIndex].sceneBvhId;
         if (Util::IsNan(rayDir)) {
-            return RayTraversalResult();
+            return BvhRayResult();
         }
         return BVH::ClosestHit(sceneBvhId, rayOrigin, rayDir, maxRayDistance);;
-    }
-
-    void TestBvh() {
-
     }
 }

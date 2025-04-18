@@ -1,12 +1,12 @@
 #pragma once
 #include "HellTypes.h"
-#include "API/OpenGL/Types/GL_detachedMesh.hpp"
+#include "API/OpenGL/Types/GL_mesh_buffer.h"
 #include "Util.h"
 
 struct EditorMesh {
 
     glm::vec3 m_corners[8];
-    OpenGLDetachedMesh m_glMesh;
+    OpenGLMeshBuffer m_glMesh;
 
     enum EditorMeshCorners {
         FTL = 0,

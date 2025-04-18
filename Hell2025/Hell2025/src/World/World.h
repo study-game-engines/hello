@@ -9,7 +9,7 @@
 #include "Types/Game/Light.h"
 #include "Types/Game/PickUp.h"
 #include "Types/House/Door.h"
-#include "Types/House/HousePlane.h"
+#include "Types/House/Plane.h"
 #include "Types/House/Wall.h"
 #include "Types/House/Window.h"
 #include "Types/Misc/Piano.h"
@@ -19,12 +19,12 @@
 #include <vector>
 #include "Modelling/Clipping.h"
 
-#include "API/OpenGL/Types/GL_detachedMesh.hpp"
+#include "Types/Renderer/MeshBuffer.h"
 
 struct ViewportBvhData {
     std::vector<PrimitiveInstance> instances;
     uint64_t sceneBvhId;
-    RayTraversalResult closestHit;
+    BvhRayResult closestHit;
 };
 
 namespace World {
@@ -35,8 +35,13 @@ namespace World {
 
     void LoadMap(const std::string& mapName);
     void LoadMap(MapCreateInfo* mapCreateInfo);
+
     void LoadSingleSector(SectorCreateInfo* sectorCreateInfo);
+    void LoadSingleHouse(HouseCreateInfo* houseCreateInfo);
+    
     void LoadDeathMatchMap();
+
+    void SetObjectsToInitalState(); // currently empty
 
     void ResetWorld();
     void LoadEmptyWorld();
@@ -49,30 +54,36 @@ namespace World {
     const HeightMapChunk* GetChunk(int x, int z);
 
     void AddBullet(BulletCreateInfo createInfo);
+    void AddDoor(DoorCreateInfo createInfo, SpawnOffset spawnOffset = SpawnOffset());
     void AddDoorBasic(BasicDoorCreateInfo createInfo);
     void AddBulletCasing(BulletCasingCreateInfo createInfo, SpawnOffset spawnOffset = SpawnOffset());
     void AddDecal(const DecalCreateInfo& createInfo);
+    void AddHousePlane(PlaneCreateInfo createInfo, SpawnOffset spawnOffset);
     void AddGameObject(GameObjectCreateInfo createInfo, SpawnOffset spawnOffset = SpawnOffset());
     void AddLight(LightCreateInfo createInfo, SpawnOffset spawnOffset = SpawnOffset());
+    void AddPiano(PianoCreateInfo createInfo, SpawnOffset spawnOffset);
     void AddPickUp(PickUpCreateInfo createInfo, SpawnOffset spawnOffset = SpawnOffset());
     void AddTree(TreeCreateInfo createInfo, SpawnOffset spawnOffset = SpawnOffset());
+    uint64_t AddWall(WallCreateInfo createInfo, SpawnOffset spawnOffset = SpawnOffset());
+    void AddWindow(WindowCreateInfo createInfo, SpawnOffset spawnOffset);
+
+    void AddHouse(HouseCreateInfo houseCreateInfo, SpawnOffset spawnOffset);
 
     // Creation
     void CreateGameObject();
     void CreateAnimatedGameObject();
 
-    // Piano
-    Piano* GetPianoByPianoId(uint64_t objectId);
 
     // Getters
 
     // Removal
-    void RemovePickUp(uint64_t objectID);
+    void SetObjectPosition(uint64_t objectID, glm::vec3 position);
+    void RemoveObject(uint64_t objectID);
+    //void RemoveAnyObjectMarkedForRemoval();
     
     // BVH
-    void UpdateSceneBvh();
-    void TestBvh();
-    RayTraversalResult ClosestHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float maxRayDistance, int viewportIndex);
+    void UpdatePlayerBvhs();
+    BvhRayResult ClosestHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float maxRayDistance, int viewportIndex);
 
     const float GetWorldSpaceWidth();
     const float GetWorldSpaceDepth();
@@ -84,15 +95,32 @@ namespace World {
     bool IsMapCellInRange(int x, int z);
     void PrintMapCreateInfoDebugInfo();
 
+    // Util
+    bool ObjectTypeIsInteractable(ObjectType objectType, uint64_t objectId, glm::vec3 playerCameraPosition);
+
     // Map
     const std::string& GetCurrentMapName();
 
-    void UpdateHouseMeshVertexDataAndRenderItems();
+    // House
+    void SaveHouse();
+    void UpdateClippingCubes();
+    void UpdateAllWallCSG();
+    void UpdateHouseMeshBuffer();
 
-    OpenGLDetachedMesh& GetHouseMesh();
+    MeshBuffer& GetHouseMeshBuffer();
+    Mesh* GetHouseMeshByIndex(uint32_t meshIndex);
 
     Door* GetDoorByObjectId(uint64_t objectID);
+    Door* GetDoorByDoorFrameObjectId(uint64_t objectID);
+    Piano* GetPianoByObjectId(uint64_t objectId);
+    Piano* GetPianoByPianoKeyObjectId(uint64_t objectId);
+    PianoKey* GetPianoKeyByObjectId(uint64_t objectId);
     PickUp* GetPickUpByObjectId(uint64_t objectID);
+    Plane* GetPlaneByObjectId(uint64_t objectID);
+    Wall* GetWallByObjectId(uint64_t objectID);
+    Wall* GetWallByWallSegmentObjectId(uint64_t objectID);
+    Window* GetWindowByObjectId(uint64_t objectId);
+
     GameObject* GetGameObjectByIndex(int32_t index);
     GameObject* GetGameObjectByName(const std::string& name);
     Light* GetLightByIndex(int32_t index);
@@ -108,8 +136,7 @@ namespace World {
     std::vector<Door>& GetDoors();
     std::vector<GameObject>& GetGameObjects();
     std::vector<HeightMapChunk>& GetHeightMapChunks();
-    std::vector<HousePlane>& GetHousePlanes();
-    std::vector<HouseRenderItem>& GetHouseRenderItems();
+    std::vector<Plane>& GetPlanes();
     std::vector<Light>& GetLights();
     std::vector<Piano>& GetPianos();
     std::vector<PickUp>& GetPickUps();

@@ -5,113 +5,138 @@
 #include "World/World.h"
 #include <algorithm>
 #include "Input/Input.h"
+#include "Viewport/ViewportManager.h"
 
-void Player::UpdateInteract() {
-    m_interactObjectId = 0;
-    m_interactPhysicsId = 0;
-    m_interactObjectType = ObjectType::NONE;
-    m_interactPhysicsType = PhysicsType::NONE;
+#pragma warning(disable : 26498)
 
-    OverlapReport m_overlapReport;
+void Player::UpdateCursorRays() {
+    m_physXRayResult.hitFound = false;
+    m_bvhRayResult.hitFound = false;
+    m_rayHitFound = false;
+    if (!ViewportIsVisible()) return;
 
-    float sphereRadius = 0.25f;
-    PxCapsuleGeometry overlapSphereShape = PxCapsuleGeometry(sphereRadius, 0);
+    float maxRayDistance = 1000.0f;
 
-    // Camera ray
+    // PhysX Ray
     uint32_t cameraRayFlags = RaycastGroup::RAYCAST_ENABLED;
     glm::vec3 cameraRayOrigin = GetCameraPosition();
     glm::vec3 cameraRayDirection = GetCameraForward();
-    m_cameraRayResult = Physics::CastPhysXRay(cameraRayOrigin, cameraRayDirection, 100, cameraRayFlags);
+    m_physXRayResult = Physics::CastPhysXRay(cameraRayOrigin, cameraRayDirection, maxRayDistance, cameraRayFlags);
 
-    // Interact overlap test
-    if (m_cameraRayResult.hitFound) {
-        PhysicsUserData& userData = m_cameraRayResult.userData;
-        m_interactObjectType = userData.objectType;
-        m_interactObjectId = userData.objectId;
-        m_interactPhysicsType = userData.physicsType;
-        m_interactPhysicsId = userData.physicsId;
+    // Bvh Ray result
+    glm::vec3 rayOrigin = GetCameraPosition();
+    glm::vec3 rayDir = GetCameraForward();
+    m_bvhRayResult = World::ClosestHit(rayOrigin, rayDir, maxRayDistance, m_viewportIndex);
+
+    // Store the closest of the two hits
+    m_rayHitObjectType = ObjectType::UNDEFINED;
+    m_rayhitObjectId = 0;
+    m_rayHitPosition = glm::vec3(0.0f);
+
+    if (m_physXRayResult.hitFound && m_bvhRayResult.hitFound) {
+        float physXDistance = glm::distance(m_physXRayResult.hitPosition, GetCameraPosition());
+        float bvhDistance = glm::distance(m_bvhRayResult.hitPosition, GetCameraPosition());
+
+        if (physXDistance < bvhDistance) {
+            m_rayHitObjectType = m_physXRayResult.userData.objectType;
+            m_rayhitObjectId = m_physXRayResult.userData.objectId;
+            m_rayHitPosition = m_physXRayResult.hitPosition;
+            m_rayHitFound = true;
+        }
+        else {
+            m_rayHitObjectType = m_bvhRayResult.objectType;
+            m_rayhitObjectId = m_bvhRayResult.objectId;
+            m_rayHitPosition = m_bvhRayResult.hitPosition;
+            m_rayHitFound = true;
+        }
+    }    
+    // Or if there was only a physx ray hit...
+    else if (m_physXRayResult.hitFound) {
+        m_rayHitObjectType = m_physXRayResult.userData.objectType;
+        m_rayhitObjectId = m_physXRayResult.userData.objectId;
+        m_rayHitPosition = m_physXRayResult.hitPosition;
+        m_rayHitFound = true;
     }
-    glm::vec3 cameraRayHitPosition = m_cameraRayResult.hitPosition;
+    // Or if there was only a bvh ray hit...
+    else if (m_bvhRayResult.hitFound) {
+        m_rayHitObjectType = m_bvhRayResult.objectType;
+        m_rayhitObjectId = m_bvhRayResult.objectId;
+        m_rayHitPosition = m_bvhRayResult.hitPosition;
+        m_rayHitFound = true;
+    }
+    else {
+        // No ray hit
+    }
+}
 
 
-    // Get overlap report
-    const PxTransform overlapSphereTranform = PxTransform(Physics::GlmVec3toPxVec3(cameraRayHitPosition));
-    m_overlapReport = Physics::OverlapTest(overlapSphereShape, overlapSphereTranform, CollisionGroup(GENERIC_BOUNCEABLE | GENERTIC_INTERACTBLE | ITEM_PICK_UP | ENVIROMENT_OBSTACLE));
+void Player::UpdateInteract() {
+    m_interactObjectType = ObjectType::NONE;
+    m_interactObjectId = 0;
 
-    // Sort by distance to player
-    sort(m_overlapReport.hits.begin(), m_overlapReport.hits.end(), [this, cameraRayHitPosition](OverlapResult& lhs, OverlapResult& rhs) {
-        float distanceA = glm::distance(cameraRayHitPosition, lhs.objectPosition);
-        float distanceB = glm::distance(cameraRayHitPosition, rhs.objectPosition);
-        return distanceA < distanceB;
-    });
+    if (!ViewportIsVisible()) return;
 
-    // Store closest overlap data
-    if (m_overlapReport.hits.size()) {
-        PhysicsUserData userData = m_overlapReport.hits[0].userData;
-        m_interactObjectType = userData.objectType;
-        m_interactObjectId = userData.objectId;
-        m_interactPhysicsType = userData.physicsType;
-        m_interactPhysicsId = userData.physicsId;
+    // If ray hit object is interactable, store it
+    if (World::ObjectTypeIsInteractable(m_rayHitObjectType, m_rayhitObjectId, GetCameraPosition())) {
+        m_interactObjectType = m_rayHitObjectType;
+        m_interactObjectId = m_rayhitObjectId;
     }
 
-    m_interactFound = (m_interactObjectType == ObjectType::PICK_UP || 
-                       m_interactObjectType == ObjectType::DOOR);
+    // Overwrite with PhysX overlap test if an overlap with interactle object is found
+    if (m_rayHitObjectType != ObjectType::NONE) {
 
+        glm::vec3 spherePosition = m_rayHitPosition;
+        float sphereRadius = 0.15f;
+        PxCapsuleGeometry overlapSphereShape = PxCapsuleGeometry(sphereRadius, 0);
+        const PxTransform overlapSphereTranform = PxTransform(Physics::GlmVec3toPxVec3(spherePosition));
+        PhysXOverlapReport overlapReport = Physics::OverlapTest(overlapSphereShape, overlapSphereTranform, CollisionGroup(GENERIC_BOUNCEABLE | GENERTIC_INTERACTBLE | ITEM_PICK_UP | ENVIROMENT_OBSTACLE));
+    
+        // Sort by distance to player
+        sort(overlapReport.hits.begin(), overlapReport.hits.end(), [this, spherePosition](PhysXOverlapResult& lhs, PhysXOverlapResult& rhs) {
+            float distanceA = glm::distance(spherePosition, lhs.objectPosition);
+            float distanceB = glm::distance(spherePosition, rhs.objectPosition);
+            return distanceA < distanceB;
+        });
+    
+        if (overlapReport.hits.size()) {
+            PhysicsUserData userData = overlapReport.hits[0].userData;
+            if (World::ObjectTypeIsInteractable(userData.objectType, userData.objectId, GetCameraPosition())) {
+                if (userData.objectType != ObjectType::DOOR) {
+                    m_interactObjectType = userData.objectType;
+                    m_interactObjectId = userData.objectId;
+                }
+            }
+        }
+    }
 
-     
-    // Pick up selected item
+    // Convenience bool for setting crosshair
+    m_interactFound = (m_interactObjectType != ObjectType::NONE);
+
     if (PressedInteract()) {
+        // Pickups
         if (m_interactObjectType == ObjectType::PICK_UP) {
             PickUp* pickUp = World::GetPickUpByObjectId(m_interactObjectId);
             if (pickUp) {
-                World::RemovePickUp(m_interactObjectId);
+                World::RemoveObject(m_interactObjectId);
                 Audio::PlayAudio("ItemPickUp.wav", 1.0f);
-
-                m_interactObjectType = ObjectType::NONE;
-                m_interactObjectId = 0;
-                m_interactFound = false;
             }
         }
-
+        // Doors
         if (m_interactObjectType == ObjectType::DOOR) {
             Door* door = World::GetDoorByObjectId(m_interactObjectId);
             if (door) {
                 door->Interact();
             }
         }
-
     }
 
-
     if (PressingInteract()) {
-
-        glm::vec3 rayOrigin = GetCameraPosition();
-        glm::vec3 rayDir = GetCameraForward();
-        float maxRayDistance = 100.0f;
-
-        RayTraversalResult result = World::ClosestHit(rayOrigin, rayDir, maxRayDistance, m_viewportIndex);
-        if (result.hitFound) {
-
-            // Play keys
-            if (result.objectType == ObjectType::PIANO_KEY) {
-                for (Piano& piano : World::GetPianos()) {
-                    if (piano.PianoKeyExists(result.objectId)) {
-                        PianoKey* pianoKey = piano.GetPianoKey(result.objectId);
-                        if (pianoKey) {
-                            pianoKey->PressKey();
-                        }
-                    }
-                }
+        // Piano keys
+        if (m_interactObjectType == ObjectType::PIANO_KEY) {
+            PianoKey* pianoKey = World::GetPianoKeyByObjectId(m_interactObjectId);
+            if (pianoKey) {
+                pianoKey->PressKey();
             }
-
-            //// Sit at 
-            //if (result.objectType == ObjectType::PIANO) {
-            //    for (Piano& potentialPiano : World::GetPianos()) {
-            //        if (potentialPiano.PianoBodyPartKeyExists(result.objectId)) {
-            //            SitAtPiano(potentialPiano.GetPianoObjectId());
-            //        }
-            //    }
-            //}
         }
     } 
 
@@ -121,14 +146,14 @@ void Player::UpdateInteract() {
         glm::vec3 rayDir = GetCameraForward();
         float maxRayDistance = 100.0f;
 
-        RayTraversalResult result = World::ClosestHit(rayOrigin, rayDir, maxRayDistance, m_viewportIndex);
+        BvhRayResult result = World::ClosestHit(rayOrigin, rayDir, maxRayDistance, m_viewportIndex);
         if (result.hitFound) {
 
             // Sit at 
             if (result.objectType == ObjectType::PIANO) {
                 for (Piano& potentialPiano : World::GetPianos()) {
                     if (potentialPiano.PianoBodyPartKeyExists(result.objectId)) {
-                        SitAtPiano(potentialPiano.GetPianoObjectId());
+                        SitAtPiano(potentialPiano.GetObjectId());
                     }
                 }
             }

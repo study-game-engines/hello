@@ -1,12 +1,16 @@
 #include "Window.h"
 #include "AssetManagement/AssetManager.h"
+#include "Editor/Editor.h"
 #include "Physics/Physics.h"
 #include "Physics/Physics.h"
+#include "Renderer/RenderDataManager.h"
 #include "UniqueID.h"
 #include "Util.h"
 #include <unordered_map>
 
 void Window::Init(WindowCreateInfo createInfo) {
+    m_createInfo = createInfo;
+
     m_position = createInfo.position;
     m_rotation = createInfo.rotation;
 
@@ -40,9 +44,6 @@ void Window::Init(WindowCreateInfo createInfo) {
     userData.physicsType = PhysicsType::RIGID_STATIC;
     userData.objectType = ObjectType::WINDOW;
     Physics::SetRigidStaticUserData(m_physicsId, userData);
-
-    // Get next unique ID
-    m_objectId = UniqueID::GetNext();
 }
 
 void Window::CleanUp() {
@@ -56,6 +57,10 @@ void Window::Update(float deltaTime) {
 void Window::UpdateRenderItems() {
     m_renderItems.clear();
     m_glassRenderItems.clear();
+    
+    // Bail if models are invalid
+    if (!m_model) return;
+    if (!m_glassModel) return;
 
     // Handle missing materials
     if (!m_interiorMaterial) {
@@ -76,15 +81,14 @@ void Window::UpdateRenderItems() {
         meshMaterialMap["SM_Window_FaceB_Top"] = m_exteriorMaterial;
     }
 
-    // Bail if model is invalid
-    if (!m_model) return;
-
+    // Window render items
     for (const uint32_t& meshIndex : m_model->GetMeshIndices()) {
         Mesh* mesh = AssetManager::GetMeshByIndex(meshIndex);
         RenderItem& renderItem = m_renderItems.emplace_back();
         renderItem.modelMatrix = m_modelMatrix;
         renderItem.inverseModelMatrix = inverse(renderItem.modelMatrix);
         renderItem.meshIndex = meshIndex;
+        renderItem.objectType = Util::EnumToInt(ObjectType::WINDOW);
 
         // Dirty. Fix me. 
         // Very error prone. Returns invalid pointer if name not found;
@@ -96,10 +100,8 @@ void Window::UpdateRenderItems() {
         Util::UpdateRenderItemAABB(renderItem);
         Util::PackUint64(m_objectId, renderItem.objectIdLowerBit, renderItem.objectIdUpperBit);
     }
-
-    // Bail if model is invalid
-    if (!m_glassModel) return;
-    
+        
+    // Glass render items
     for (const uint32_t& meshIndex : m_glassModel->GetMeshIndices()) {
         Mesh* mesh = AssetManager::GetMeshByIndex(meshIndex);
         RenderItem& renderItem = m_glassRenderItems.emplace_back();
@@ -111,6 +113,13 @@ void Window::UpdateRenderItems() {
         renderItem.normalMapTextureIndex = m_exteriorMaterial->m_normal;
         Util::UpdateRenderItemAABB(renderItem);
         Util::PackUint64(m_objectId, renderItem.objectIdLowerBit, renderItem.objectIdUpperBit);
+    }
+}
+
+void Window::SubmitRenderItems() {
+    RenderDataManager::SubmitRenderItems(m_renderItems);
+    if (Editor::GetSelectedObjectId() == m_objectId) {
+        RenderDataManager::SubmitOutlineRenderItems(m_renderItems);
     }
 }
 

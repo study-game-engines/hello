@@ -18,7 +18,6 @@ namespace World {
         std::vector<Decal>& decals = GetDecals();
         std::vector<Door>& doors = GetDoors();
         std::vector<GameObject>& gameObjects = GetGameObjects();
-        std::vector<HouseRenderItem>& houseRenderItems = GetHouseRenderItems();
         std::vector<Light>& lights = GetLights();
         std::vector<PickUp>& pickUps = GetPickUps();
         std::vector<Piano>& pianos = GetPianos();
@@ -56,16 +55,13 @@ namespace World {
             decal.SubmitRenderItem();
         }
 
-        // Doors
-        mousePickIndex = 0;
-        for (Door& door : doors) {
-            door.SetMousePickIndex(mousePickIndex++);
-            g_renderItems.insert(g_renderItems.end(), door.GetRenderItems().begin(), door.GetRenderItems().end());
+        for (Plane& housePlane : GetPlanes()) {
+            housePlane.SubmitRenderItem();
         }
 
-        // House render items
-        for (HouseRenderItem& houseRenderItem : houseRenderItems) {
-            RenderDataManager::SubmitHouseRenderItem(houseRenderItem);
+        // Doors
+        for (Door& door : doors) {
+            door.SubmitRenderItems();
         }
 
         for (Piano& piano : pianos) {
@@ -73,16 +69,12 @@ namespace World {
         }
 
         // Window
-        mousePickIndex = 0;
         for (Window& window : windows) {
-            window.SetMousePickIndex(mousePickIndex++);
-            g_renderItems.insert(g_renderItems.end(), window.GetRenderItems().begin(), window.GetRenderItems().end());
+            window.SubmitRenderItems();
         }
 
         // Trees
-        mousePickIndex = 0;
         for (Tree& tree : trees) {
-            tree.SetMousePickIndex(mousePickIndex++);
             g_renderItems.insert(g_renderItems.end(), tree.GetRenderItems().begin(), tree.GetRenderItems().end());
 
             // Selected outline?
@@ -92,9 +84,7 @@ namespace World {
         }
 
         // Update each GameObject and collect render items
-        mousePickIndex = 0;
         for (GameObject& gameObject : gameObjects) {
-            gameObject.SetMousePickIndex(mousePickIndex++);
             // Merge render items into global vectors
             g_renderItems.insert(g_renderItems.end(), gameObject.GetRenderItems().begin(), gameObject.GetRenderItems().end());
             g_renderItemsBlended.insert(g_renderItemsBlended.end(), gameObject.GetRenderItemsBlended().begin(), gameObject.GetRenderItemsBlended().end());
@@ -104,9 +94,7 @@ namespace World {
         }
 
         // Lights
-        mousePickIndex = 0;
         for (Light& light : lights) {
-            light.SetMousePickIndex(mousePickIndex++);
             g_renderItems.insert(g_renderItems.end(), light.GetRenderItems().begin(), light.GetRenderItems().end());
         }
 
@@ -130,8 +118,8 @@ namespace World {
             g_skinnedRenderItems.insert(g_skinnedRenderItems.end(), animatedGameObject.GetRenderItems().begin(), animatedGameObject.GetRenderItems().end());
         }
 
-        for (Wall& wall : walls) {
-            wall.SubmitTrimRenderItems();
+        for (Wall& wall : GetWalls()) {
+            wall.SubmitRenderItems();
         }
 
         // Hack to render door and window cube transforms

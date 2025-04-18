@@ -76,9 +76,10 @@ namespace OpenGLRenderer {
             }
 
             // House render items
-            OpenGLDetachedMesh& houseMesh = World::GetHouseMesh();
-            glBindVertexArray(houseMesh.GetVAO());
+            OpenGLMeshBuffer& houseMeshBuffer = World::GetHouseMeshBuffer().GetGLMeshBuffer();
+            glBindVertexArray(houseMeshBuffer.GetVAO());
             shader->SetMat4("u_modelMatrix", glm::mat4(1.0f));
+
             const std::vector<HouseRenderItem>& renderItems = RenderDataManager::GetHouseRenderItems();
             for (const HouseRenderItem& renderItem : renderItems) {
                 int indexCount = renderItem.indexCount;

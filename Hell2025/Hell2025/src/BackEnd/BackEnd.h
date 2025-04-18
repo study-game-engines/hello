@@ -9,6 +9,7 @@ namespace BackEnd {
     void UpdateSubSystems();
     void EndFrame();
     void CleanUp(); 
+    void ToggleBindlessTextures();
     bool RenderDocFound();
 
     // API

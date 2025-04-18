@@ -59,7 +59,7 @@ namespace OpenGLRenderer {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui::NewFrame();
 
-        if (Editor::IsEditorOpen()) {
+        if (Editor::IsOpen()) {
             switch (Editor::GetEditorMode()) {
                 case EditorMode::HEIGHTMAP_EDITOR:   Editor::CreateHeigthMapEditorImGuiElements();   break;
                 case EditorMode::HOUSE_EDITOR:       Editor::CreateHouseEditorImGuiElements();       break;

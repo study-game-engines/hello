@@ -8,8 +8,8 @@
 #include "World/World.h"
 
 void PickUp::Init(PickUpCreateInfo createInfo) {
-    m_transform.position = createInfo.position;
-    m_transform.rotation = createInfo.rotation;
+    m_initialTransform.position = createInfo.position;
+    m_initialTransform.rotation = createInfo.rotation;
     m_pickUpType = Util::StringToPickUpType(createInfo.pickUpType);
 
     PhysicsFilterData filterData;
@@ -22,14 +22,14 @@ void PickUp::Init(PickUpCreateInfo createInfo) {
         SetModel("Shotgun_AmmoBox");
         SetAllMeshMaterials("Shotgun_AmmoBox");
         float mass = 0.45f;
-        m_physicsId = Physics::CreateRigidDynamicFromBoxExtents(m_transform, m_model->GetExtents(), mass, filterData);
+        m_physicsId = Physics::CreateRigidDynamicFromBoxExtents(m_initialTransform, m_model->GetExtents(), mass, filterData);
     }
     // Shotty slug
     else if (m_pickUpType == PickUpType::SHOTGUN_AMMO_SLUG) {
         SetModel("Shotgun_AmmoBox");
         SetAllMeshMaterials("Shotgun_AmmoBoxSlug");
         float mass = 0.45f;
-        m_physicsId = Physics::CreateRigidDynamicFromBoxExtents(m_transform, m_model->GetExtents(), mass, filterData);
+        m_physicsId = Physics::CreateRigidDynamicFromBoxExtents(m_initialTransform, m_model->GetExtents(), mass, filterData);
     }
     // AKS74U
     else if (m_pickUpType == PickUpType::AKS74U) {
@@ -49,7 +49,7 @@ void PickUp::Init(PickUpCreateInfo createInfo) {
             if (mesh) {
                 std::span<Vertex> vertices = AssetManager::GetVerticesSpan(mesh->baseVertex, mesh->vertexCount);
                 std::span<uint32_t> indices = AssetManager::GetIndicesSpan(mesh->baseIndex, mesh->indexCount);
-                m_physicsId = Physics::CreateRigidDynamicFromConvexMeshVertices(m_transform, vertices, indices, mass, filterData);
+                m_physicsId = Physics::CreateRigidDynamicFromConvexMeshVertices(m_initialTransform, vertices, indices, mass, filterData);
             }
         }
     }
@@ -68,7 +68,7 @@ void PickUp::Init(PickUpCreateInfo createInfo) {
             if (mesh) {
                 std::span<Vertex> vertices = AssetManager::GetVerticesSpan(mesh->baseVertex, mesh->vertexCount);
                 std::span<uint32_t> indices = AssetManager::GetIndicesSpan(mesh->baseIndex, mesh->indexCount);
-                m_physicsId = Physics::CreateRigidDynamicFromConvexMeshVertices(m_transform, vertices, indices, mass, filterData);
+                m_physicsId = Physics::CreateRigidDynamicFromConvexMeshVertices(m_initialTransform, vertices, indices, mass, filterData);
             }
         }
     }
@@ -130,14 +130,14 @@ void PickUp::SetAllMeshMaterials(const std::string& materialName) {
 
 PickUpCreateInfo PickUp::GetCreateInfo() {
     PickUpCreateInfo createInfo;
-    createInfo.position = m_transform.position;
-    createInfo.rotation = m_transform.rotation;
+    createInfo.position = m_initialTransform.position;
+    createInfo.rotation = m_initialTransform.rotation;
     createInfo.pickUpType = Util::PickUpTypeToString(m_pickUpType);
     return createInfo;
 }
 
 void PickUp::Update(float deltaTime) {
-    m_modelMatrix = m_transform.to_mat4();
+    m_modelMatrix = m_initialTransform.to_mat4();
 
     // If physx object exists, rip the model matrix out
     if (Physics::RigidDynamicExists(m_physicsId)) {
@@ -156,8 +156,12 @@ void PickUp::SetMousePickIndex(int mousePickIndex) {
 }
 
 void PickUp::SetPosition(glm::vec3 position) {
-    m_transform.position = position;
+    m_initialTransform.position = position;
 }
+
+//void PickUp::MarkForRemoval() {
+//    m_markedForRemoval = true;
+//}
 
 void PickUp::UpdateRenderItems() {
     m_renderItems.clear();    

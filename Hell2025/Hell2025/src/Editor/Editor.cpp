@@ -24,12 +24,15 @@ namespace Editor {
     float g_OrthographicSizes[4];
     float g_verticalDividerXPos = 0.2f;
     float g_horizontalDividerYPos = 0.2f;
-    uint16_t g_selectedObjectIndex = 0;
-    uint16_t g_hoveredObjectIndex = 0;
-    ObjectType g_selectedObjectType = ObjectType::NONE;
+
     ObjectType g_hoveredObjectType = ObjectType::NONE;
+    ObjectType g_selectedObjectType = ObjectType::NONE;
+    uint64_t g_hoveredObjectId = 0;
+    uint64_t g_selectedObjectId = 0;
+
     ShadingMode g_shadingModes[4];
     EditorViewportSplitMode g_editorViewportSplitMode = EditorViewportSplitMode::SINGLE;
+    Axis g_axisConstraint = Axis::NONE;
 
     std::string g_currentHeightMapName = "";
     std::string g_currentSectorName = "";
@@ -111,14 +114,17 @@ namespace Editor {
             Callbacks::OpenMapEditor();
         }
 
-        if (!IsEditorOpen()) {
+        if (!IsOpen()) {
             return;
         }
 
         g_editorStateWasIdleLastFrame = (g_editorState == EditorState::IDLE);
 
-        UpdateMouseRays();
-        UpdateCamera();
+        UpdateCamera();    // you swapped these two, maybe it was better before?
+        UpdateMouseRays(); // you swapped these two, maybe it was better before?
+        UpdateObjectHover();
+        UpdateObjectSelection();
+        UpdateObjectGizmoInteraction();
         UpdateDividers();
         UpdateInput();
         UpdateUI();
@@ -148,15 +154,27 @@ namespace Editor {
     }
 
     void OpenEditor() {
+        std::cout << "Entered editor\n";
         Audio::PlayAudio("UI_Select.wav", 1.0f);
         Input::ShowCursor();
         Input::CenterMouseCursor();
+
+        Editor::SetEditorState(EditorState::IDLE);
+        Editor::ResetAxisConstraint();
+        
         g_isOpen = true;
     }
 
     void CloseEditor() {
+        std::cout << "Exited editor\n";
         Audio::PlayAudio("UI_Select.wav", 1.0f);
         Input::DisableCursor();
+        UnselectAnyObject();
+
+
+        SetHoveredObjectType(ObjectType::NONE);
+        SetHoveredObjectId(0);
+
         g_isOpen = false;
     }
 
@@ -199,7 +217,7 @@ namespace Editor {
         return 0;
     }
 
-    bool IsEditorOpen() {
+    bool IsOpen() {
         return g_isOpen;
     }
 
@@ -215,21 +233,14 @@ namespace Editor {
         return g_editorStateWasIdleLastFrame;
     }
 
-    void SetSelectedObjectIndex(int index) {
-        g_selectedObjectIndex = index;
-    }
+    //void SetSelectedObjectIndex(int index) {
+    //    g_selectedObjectIndex = index;
+    //}
+    //
+    //void SetHoveredObjectIndex(int index) {
+    //    g_hoveredObjectIndex = index;
+    //}
 
-    void SetHoveredObjectIndex(int index) {
-        g_hoveredObjectIndex = index;
-    }
-
-    void SetSelectedObjectType(ObjectType editorObjectType) {
-        g_selectedObjectType = editorObjectType;
-    }
-
-    void SetHoveredObjectType(ObjectType editorObjectType) {
-        g_hoveredObjectType = editorObjectType;
-    }
 
     void SetSplitX(float value) {
         g_verticalDividerXPos = value;
@@ -245,12 +256,20 @@ namespace Editor {
     //    g_currentMapName = filename;
     //}
 
-    int GetSelectedObjectIndex() {
-        return g_selectedObjectIndex;
+    void SetHoveredObjectType(ObjectType objectType) {
+        g_hoveredObjectType = objectType;
     }
 
-    int GetHoveredObjectIndex() {
-        return g_hoveredObjectIndex;
+    void SetHoveredObjectId(uint64_t objectId) {
+        g_hoveredObjectId = objectId;
+    }
+
+    void SetSelectedObjectType(ObjectType objectType) {
+        g_selectedObjectType = objectType;
+    }
+
+    void SetSelectedObjectId(uint64_t objectId) {
+        g_selectedObjectId = objectId;
     }
 
     ObjectType GetSelectedObjectType() {
@@ -259,6 +278,14 @@ namespace Editor {
 
     ObjectType GetHoveredObjectType() {
         return g_hoveredObjectType;
+    }
+
+    uint64_t GetSelectedObjectId() {
+        return g_selectedObjectId;
+    }
+
+    uint64_t GetHoveredObjectId() {
+        return g_hoveredObjectId;
     }
 
     bool IsViewportOrthographic(uint32_t viewportIndex) {
@@ -363,6 +390,19 @@ namespace Editor {
             std::cout << "Editor::SetViewportOrthographicStateByIndex(uint32_t index, bool state) failed. " << index << " out of range of editor viewport count 4\n";
         }
     }
+
+    void SetAxisConstraint(Axis axis) {
+        g_axisConstraint = axis;
+    }
+
+    void ResetAxisConstraint() {
+        g_axisConstraint = Axis::NONE;
+    }
+
+    Axis GetAxisConstraint() {
+        return g_axisConstraint;
+    }
+
 
     void CloseAllEditorWindows() {
         CloseAllHeightMapEditorWindows();

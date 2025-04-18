@@ -68,9 +68,6 @@ namespace World {
         for (Wall& wall : walls) {
             // Nothing as of yet. Probably ever.
         }
-
-        UpdateSceneBvh();
-        TestBvh();
     }
 
     void ProcessBullets() {
@@ -116,7 +113,7 @@ namespace World {
 
                     // Plaster decal
                     if (objectType == ObjectType::WALL_SEGMENT ||
-                        objectType == ObjectType::HOUSE_PLANE ||
+                        objectType == ObjectType::PLANE ||
                         objectType == ObjectType::DOOR ||
                         objectType == ObjectType::PIANO) {
                         decalCreateInfo.decalType = DecalType::PLASTER;
@@ -125,7 +122,7 @@ namespace World {
 
                     // Piano note trigger
                     if (objectType == ObjectType::PIANO) {
-                        Piano* piano = World::GetPianoByPianoId(objectId);
+                        Piano* piano = World::GetPianoByObjectId(objectId);
                         if (piano) {
                             piano->TriggerInternalNoteFromExternalBulletHit(rayResult.hitPosition);
                         }
@@ -216,14 +213,14 @@ namespace World {
             glm::vec3 rayDir = bullet.GetDirection();
             float maxRayDistance = 100.0f;
 
-            RayTraversalResult result = ClosestHit(rayOrigin, rayDir, maxRayDistance, i);
+            BvhRayResult result = ClosestHit(rayOrigin, rayDir, maxRayDistance, i);
             if (result.hitFound) {
                 if (result.objectType == ObjectType::PIANO_KEY) {
                     for (Piano& piano : World::GetPianos()) {
                         if (piano.PianoKeyExists(result.objectId)) {
                             PianoKey* pianoKey = piano.GetPianoKey(result.objectId);
                             if (pianoKey) {
-                                pianoKey->ShootKey();
+                                pianoKey->PressKey();
                             }
                         }
                     }

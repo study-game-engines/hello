@@ -34,6 +34,10 @@ namespace Callbacks {
         std::cout << "TODO: OpenHouse() callback: " << filename << "\n";
     }
 
+    void SaveHouse() {
+        World::SaveHouse();
+    }
+
     void OpenMap(const std::string& filename) {
         World::LoadMap(filename);
     }
@@ -85,6 +89,10 @@ namespace Callbacks {
                 Editor::OpenEditor();
             }
         }
+    }
+
+    void BeginAddingWall() {
+        Editor::EnterWallPlacementState();
     }
 
     void QuitProgram() {

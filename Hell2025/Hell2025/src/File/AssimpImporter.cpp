@@ -1,6 +1,5 @@
 #include "AssimpImporter.h"
 #include "File.h"
-#include "Common.h"
 #include <assimp/matrix3x3.h>
 #include <assimp/matrix4x4.h>
 #include <assimp/Importer.hpp>

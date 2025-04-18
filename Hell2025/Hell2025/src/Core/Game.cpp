@@ -90,8 +90,10 @@ namespace Game {
             g_totalTime -= TIME_WRAP; // Keep it continuous
         }
 
+        World::UpdatePlayerBvhs();
+
         // Editor select menu open?
-        if (Editor::IsEditorOpen() || ImGuiBackEnd::OwnsMouse()) {
+        if (Editor::IsOpen() || ImGuiBackEnd::OwnsMouse()) {
             for (Player& player : g_localPlayers) {
                 player.DisableControl();
             }

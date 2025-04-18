@@ -7,7 +7,7 @@
 namespace OpenGLRenderer {
 
     void SkyBoxPass() {
-        if (Editor::IsEditorOpen()) return;
+        if (Editor::IsOpen()) return;
 
         OpenGLShader* shader = GetShader("Skybox");
         OpenGLFrameBuffer* gBuffer = GetFrameBuffer("GBuffer");

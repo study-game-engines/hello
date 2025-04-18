@@ -70,13 +70,15 @@ enum class ObjectType {
     NONE = 0,
     DECAL,
     DOOR,
+    DOOR_FRAME,
     GAME_OBJECT,
     HEIGHT_MAP,
-    HOUSE_PLANE,
+    PLANE,
     LIGHT,
     PICK_UP,
     TREE,
     UNDEFINED,
+    WALL,
     WALL_SEGMENT,
     WINDOW,
     PIANO,
@@ -124,7 +126,8 @@ enum struct EditorState {
     GIZMO_TRANSLATING,
     GIZMO_SCALING,
     GIZMO_ROTATING,
-    DRAGGING_SELECT_RECT
+    DRAGGING_SELECT_RECT,
+    WALL_PLACEMENT
 };
 
 enum WeaponAction {
@@ -244,6 +247,7 @@ enum struct PhysicsType {
     RIGID_DYNAMIC,
     RIGID_STATIC,
     HEIGHT_FIELD,
+    GROUND_PLANE,
     UNDEFINED
 };
 

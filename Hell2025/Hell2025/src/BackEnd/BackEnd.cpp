@@ -9,6 +9,7 @@
 #include "AssetManagement/AssetManager.h"
 #include "Config/Config.h"
 #include "Audio/Audio.h"
+#include "Audio/MidiFileManager.h"
 #include "Audio/Synth.h"
 #include "Core/Debug.h"
 #include "Core/Game.h"
@@ -77,6 +78,7 @@ namespace BackEnd {
         Editor::Init();
         //EditorImGui::Init();
         Synth::Init();
+        MidiFileManager::Init();
         WeaponManager::Init();
         Physics::Init();
         ImGuiBackEnd::Init();
@@ -154,6 +156,7 @@ namespace BackEnd {
         InputMulti::Update();
         Synth::Update(deltaTime);
         Audio::Update(deltaTime);
+        MidiFileManager::Update(deltaTime);
         Input::Update();
 
         UpdateLazyKeypresses();
@@ -303,6 +306,10 @@ namespace BackEnd {
         #endif
     }
 
+    void ToggleBindlessTextures() {
+        g_renderDocFound = !g_renderDocFound;
+    }
+
     bool RenderDocFound() {
         return g_renderDocFound;
     }
@@ -326,13 +333,19 @@ namespace BackEnd {
         if (Input::KeyPressed(HELL_KEY_H)) {
             Renderer::HotloadShaders();
         }
+        if (Input::KeyPressed(HELL_KEY_F9)) {
+            player->SetFootPosition(glm::vec3(14.11f, 0.0f, 18.24f));
+            player->GetCamera().SetEulerRotation(glm::vec3(-0.19f, -1.36f, 0.0f));
+            BackEnd::ToggleBindlessTextures();
+            Renderer::HotloadShaders();
+        }
         if (Input::KeyPressed(HELL_KEY_ESCAPE)) {
             BackEnd::ForceCloseWindow();
         }
         if (Input::KeyPressed(HELL_KEY_G)) {
             BackEnd::ToggleFullscreen();
         }
-        if (Input::KeyPressed(HELL_KEY_Y)) {
+        if (Input::KeyPressed(HELL_KEY_BACKSLASH)) {
             Audio::PlayAudio(AUDIO_SELECT, 1.00f);
             Renderer::NextRendererOverrideState();
         }
@@ -340,7 +353,7 @@ namespace BackEnd {
             Audio::PlayAudio(AUDIO_SELECT, 1.00f);
             Debug::ToggleDebugText();
         }
-        if (!Editor::IsEditorOpen()) {
+        if (!Editor::IsOpen()) {
             if (Input::KeyPressed(HELL_KEY_V)) {
                 Game::NextSplitScreenMode();
             }

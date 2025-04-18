@@ -23,6 +23,7 @@ namespace RenderDataManager {
     std::vector<GPULight> g_gpuLightData;
 
     std::vector<HouseRenderItem> g_houseRenderItems;
+    std::vector<HouseRenderItem> g_houseOutlineRenderItems;
     std::vector<RenderItem> g_decalRenderItems;
     std::vector<RenderItem> g_renderItems;
     std::vector<RenderItem> g_outlineRenderItems;
@@ -52,6 +53,7 @@ namespace RenderDataManager {
         g_renderItems.clear();
         g_outlineRenderItems.clear();
         g_houseRenderItems.clear();
+        g_houseOutlineRenderItems.clear();
     }
 
     void Update() {
@@ -72,7 +74,7 @@ namespace RenderDataManager {
 
 
             glm::mat4 viewMatrix = glm::mat4(1);
-            if (Editor::IsEditorOpen()) {
+            if (Editor::IsOpen()) {
                 viewMatrix = Editor::GetViewportViewMatrix(i);
                 g_viewportData[0].orthoSize = Editor::GetEditorOrthoSize(i);
                 g_viewportData[0].isOrtho = true;
@@ -109,7 +111,7 @@ namespace RenderDataManager {
             g_viewportData[i].frustumPlane5 = viewport->GetFrustum().GetPlane(5);
 
             // Flashlight
-            if (Editor::IsEditorOpen()) {
+            if (Editor::IsOpen()) {
                 g_viewportData[i].flashlightModifer = 0;
                 g_viewportData[i].flashlightProjectionView = glm::mat4(1);
                 g_viewportData[i].flashlightDir = glm::vec4(0.0f);
@@ -416,6 +418,10 @@ namespace RenderDataManager {
         return g_houseRenderItems;
     }
 
+    const std::vector<HouseRenderItem>& GetHouseOutlineRenderItems() {
+        return g_houseOutlineRenderItems;
+    }
+
     const std::vector<ViewportData>& GetViewportData() {
         return g_viewportData;
     }
@@ -449,19 +455,31 @@ namespace RenderDataManager {
         g_renderItems.push_back(renderItem);
     }
 
+    void SubmitRenderItem(const HouseRenderItem& renderItem) {
+        g_houseRenderItems.push_back(renderItem);
+    }
+
     void SubmitRenderItems(const std::vector<RenderItem>& renderItems) {
         g_renderItems.insert(g_renderItems.begin(), renderItems.begin(), renderItems.end());
     }
 
-    void SubmitHouseRenderItem(const HouseRenderItem& renderItem) {
-        g_houseRenderItems.push_back(renderItem);
+    void SubmitRenderItems(const std::vector<HouseRenderItem>& renderItems) {
+        g_houseRenderItems.insert(g_houseRenderItems.begin(), renderItems.begin(), renderItems.end());
     }
 
     void SubmitOutlineRenderItem(const RenderItem& renderItem) {
         g_outlineRenderItems.push_back(renderItem);
     }
 
+    void SubmitOutlineRenderItem(const HouseRenderItem& renderItem) {
+        g_houseOutlineRenderItems.push_back(renderItem);
+    }
+
     void SubmitOutlineRenderItems(const std::vector<RenderItem>& renderItems) {
         g_outlineRenderItems.insert(g_outlineRenderItems.begin(), renderItems.begin(), renderItems.end());
+    }
+
+    void SubmitOutlineRenderItems(const std::vector<HouseRenderItem>& renderItems) {
+        g_houseOutlineRenderItems.insert(g_houseOutlineRenderItems.begin(), renderItems.begin(), renderItems.end());
     }
 }

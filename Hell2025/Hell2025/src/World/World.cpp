@@ -10,6 +10,7 @@
 #include "Input/Input.h"
 #include "Renderer/Renderer.h"
 #include "Renderer/RenderDataManager.h"
+#include "World/HouseManager.h"
 #include "World/MapManager.h"
 #include "World/SectorManager.h"
 
@@ -24,7 +25,7 @@ namespace World {
     std::vector<Decal> g_decals;
     std::vector<GameObject> g_gameObjects;
     std::vector<HeightMapChunk> g_heightMapChunks;
-    std::vector<HousePlane> g_housePlanes;
+    std::vector<Plane> g_planes;
     std::vector<PickUp> g_pickUps;
     std::vector<Piano> g_pianos;
     std::vector<Transform> g_doorAndWindowCubeTransforms;
@@ -45,10 +46,19 @@ namespace World {
     void ProcessBullets();
 
     void Init() {
-        LoadMap("TestMap");
+        //LoadMap("TestMap");
+        //LoadSingleSector()
+
+        std::string sectorName = "TestSector";
+        SectorCreateInfo* sectorCreateInfo = SectorManager::GetSectorCreateInfoByName(sectorName);
+        if (sectorCreateInfo) {
+            // Load it into the world
+            World::LoadSingleSector(sectorCreateInfo);
+        }
     }
 
     void BeginFrame() {
+        //RemoveAnyObjectMarkedForRemoval();
 
         for (GameObject& gameObject : g_gameObjects) {
             gameObject.BeginFrame();
@@ -193,8 +203,8 @@ namespace World {
                     g_heightMapNames[x][z] = sectorCreateInfo->heightMapName;
 
                     SpawnOffset spawnOffset;
-                    spawnOffset.positionX = x * SECTOR_SIZE_WORLD_SPACE;
-                    spawnOffset.positionZ = z * SECTOR_SIZE_WORLD_SPACE;
+                    spawnOffset.translation.x = x * SECTOR_SIZE_WORLD_SPACE;
+                    spawnOffset.translation.z = z * SECTOR_SIZE_WORLD_SPACE;
                     AddSectorAtLocation(*sectorCreateInfo, spawnOffset);
                     //std::cout << " - [" << sectorLocation.x << "][" << sectorLocation.z << "] " << sectorName << "\n";
                 }
@@ -224,7 +234,7 @@ namespace World {
 
         ResetWorld();
 
-        g_mapName = "SingleSector";
+        g_mapName = "SectorEditorMap";
         g_sectorNames[0][0] = sectorCreateInfo->sectorName;
         g_heightMapNames[0][0] = sectorCreateInfo->heightMapName;
         g_mapWidth = 1;
@@ -235,6 +245,40 @@ namespace World {
 
         std::cout << "Loaded Single Sector: '" << g_sectorNames[0][0] << "' with height map '" << g_heightMapNames[0][0] << "'\n";
     }
+
+    void LoadSingleHouse(HouseCreateInfo* houseCreateInfo) {
+        if (!houseCreateInfo) {
+            std::cout << "World::LoadSingleHouse() failed: houseCreateInfo was nullptr\n";
+            return;
+        }
+
+        ResetWorld();
+        RecreateHieghtMapChunks();
+
+        g_mapName = "HouseEditorMap";
+        g_mapWidth = 1;
+        g_mapDepth = 1;
+
+        AddHouse(*houseCreateInfo, SpawnOffset());
+    }
+
+    void SetObjectsToInitalState() {
+        // Nothing as of yet. 
+        // Pickups will need this
+        // Plus anything with phsycis really
+
+        //for (Piano& piano : GetPianos()) {
+        //    piano.SetToInitialState();
+        //}
+    }
+
+    //void DeleteObjectById(uint64_t objectId) {
+    //    for (Piano& piano : GetPianos()) {
+    //        if (piano.GetObjectId() == objectId) {
+    //            RemovePiano()
+    //        }
+    //    }
+    //}
 
     void AddSectorAtLocation(SectorCreateInfo& sectorCreateInfo, SpawnOffset spawnOffset) {
         for (LightCreateInfo& createInfo : sectorCreateInfo.lights) {
@@ -249,14 +293,15 @@ namespace World {
         for (TreeCreateInfo& createInfo : sectorCreateInfo.trees) {
             AddTree(createInfo, spawnOffset);
         }
-    }
 
-    PickUp* GetPickUpByObjectId(uint64_t objectID) {
-        for (int i = 0; i < g_pickUps.size(); i++) {
-            PickUp& pickUp = g_pickUps[i];
-            if (pickUp.GetObjectId() == objectID) {
-                return &g_pickUps[i];
-            }
+        glm::vec3 houseLocation = glm::vec3(14.0f, 0.2f, 25.0f);
+
+        SpawnOffset houseSpawnOffset = spawnOffset;
+        houseSpawnOffset.translation += houseLocation;
+
+        HouseCreateInfo* houseCreateInfo = HouseManager::GetHouseCreateInfoByFilename("TestHouse");
+        if (houseCreateInfo) {
+            AddHouse(*houseCreateInfo, houseSpawnOffset);
         }
     }
 
@@ -267,14 +312,145 @@ namespace World {
                 return &g_doors[i];
             }
         }
+        return nullptr;
     }
 
-    void RemovePickUp(uint64_t objectID) {
+    Door* GetDoorByDoorFrameObjectId(uint64_t objectID) {
+        for (int i = 0; i < g_doors.size(); i++) {
+            Door& door = g_doors[i];
+            if (door.GetFrameObjectId() == objectID) {
+                return &g_doors[i];
+            }
+        }
+        return nullptr;
+    }
+
+    PickUp* GetPickUpByObjectId(uint64_t objectID) {
         for (int i = 0; i < g_pickUps.size(); i++) {
             PickUp& pickUp = g_pickUps[i];
             if (pickUp.GetObjectId() == objectID) {
-                pickUp.CleanUp();
+                return &g_pickUps[i];
+            }
+        }
+        return nullptr;
+    }
+
+    PianoKey* GetPianoKeyByObjectId(uint64_t objectId) {
+        for (Piano& piano : World::GetPianos()) {
+            if (piano.PianoKeyExists(objectId)) {
+                return piano.GetPianoKey(objectId);
+            }
+        }
+        return nullptr;
+    }
+
+    Plane* GetPlaneByObjectId(uint64_t objectID) {
+        for (int i = 0; i < g_planes.size(); i++) {
+            Plane& plane = g_planes[i];
+            if (plane.GetObjectId() == objectID) {
+                return &g_planes[i];
+            }
+        }
+        return nullptr;
+    }
+
+    Wall* GetWallByObjectId(uint64_t objectID) {
+        for (int i = 0; i < g_walls.size(); i++) {
+            Wall& wall = g_walls[i];
+            if (wall.GetObjectId() == objectID) {
+                return &g_walls[i];
+            }
+        }
+        return nullptr;
+    }
+
+    Wall* GetWallByWallSegmentObjectId(uint64_t objectId) {
+        for (Wall& wall : g_walls) {
+            for (WallSegment& wallSegment : wall.GetWallSegments()) {
+                if (wallSegment.GetObjectId() == objectId) {
+                    return &wall;
+                }
+            }
+        }
+        return nullptr;
+    }
+
+    Piano* GetPianoByPianoKeyObjectId(uint64_t objectId) {
+        for (Piano& piano : g_pianos) {
+            if (piano.PianoKeyExists(objectId)) {
+                return &piano;
+            }
+        }
+        return nullptr;
+    }
+
+    void SetObjectPosition(uint64_t objectId, glm::vec3 position) {
+        Door* door = World::GetDoorByObjectId(objectId);
+        if (door) {
+            door->SetPosition(position); 
+            UpdateClippingCubes();
+            UpdateAllWallCSG();
+            UpdateHouseMeshBuffer();
+            Physics::ForceZeroStepUpdate();
+        }
+        Piano* piano = World::GetPianoByObjectId(objectId);
+        if (piano) {
+            piano->SetPosition(position);
+            Physics::ForceZeroStepUpdate();
+        }
+        Plane* plane = World::GetPlaneByObjectId(objectId);
+        if (plane) {
+            plane->UpdateWorldSpaceCenter(position);
+            UpdateHouseMeshBuffer();
+        }
+        Wall* wall = World::GetWallByObjectId(objectId);
+        if (wall) {
+            wall->UpdateWorldSpaceCenter(position);
+            Physics::ForceZeroStepUpdate();
+            UpdateHouseMeshBuffer();
+        }
+    }
+
+    void RemoveObject(uint64_t objectID) {
+        for (int i = 0; i < g_doors.size(); i++) {
+            if (g_doors[i].GetObjectId() == objectID) {
+                g_doors[i].CleanUp();
+                g_doors.erase(g_doors.begin() + i);
+                i--;
+            }
+        }
+        for (int i = 0; i < g_pianos.size(); i++) {
+            if (g_pianos[i].GetObjectId() == objectID) {
+                g_pianos[i].CleanUp();
+                g_pianos.erase(g_pianos.begin() + i);
+                i--;
+            }
+        }
+        for (int i = 0; i < g_planes.size(); i++) {
+            if (g_planes[i].GetObjectId() == objectID) {
+                g_planes[i].CleanUp();
+                g_planes.erase(g_planes.begin() + i);
+                i--;
+            }
+        }
+        for (int i = 0; i < g_pickUps.size(); i++) {
+            if (g_pickUps[i].GetObjectId() == objectID) {
+                g_pickUps[i].CleanUp();
                 g_pickUps.erase(g_pickUps.begin() + i);
+                i--;
+            }
+        }
+        for (int i = 0; i < g_walls.size(); i++) {
+            if (g_walls[i].GetObjectId() == objectID) {
+                g_walls[i].CleanUp();
+                g_walls.erase(g_walls.begin() + i);
+                i--;
+            }
+        }
+        for (int i = 0; i < g_windows.size(); i++) {
+            if (g_windows[i].GetObjectId() == objectID) {
+                g_windows[i].CleanUp();
+                g_windows.erase(g_windows.begin() + i);
                 i--;
             }
         }
@@ -300,7 +476,7 @@ namespace World {
         for (GameObject& gameObject : g_gameObjects) {
             gameObject.CleanUp();
         }
-        for (HousePlane& housePlane : g_housePlanes) {
+        for (Plane& housePlane : g_planes) {
             housePlane.CleanUp();
         }
         for (Piano& piano : g_pianos) {
@@ -327,53 +503,11 @@ namespace World {
         g_pianos.clear();
         g_walls.clear();
         g_doors.clear();
-        g_housePlanes.clear();
+        g_planes.clear();
         g_windows.clear();
+    }
 
-        Door& door = g_doors.emplace_back();
-        DoorCreateInfo doorCreateInfo;
-        doorCreateInfo.position = glm::vec3(0.05f, 0.0f, 0.0f);
-        doorCreateInfo.rotation = glm::vec3(0.0f, 0.0f, 0.0f);
-        door.Init(doorCreateInfo);
-
-        Door& door2 = g_doors.emplace_back();
-        DoorCreateInfo doorCreateInfo2;
-        doorCreateInfo2.position = glm::vec3(2.2f, 0.0f, -2.95f);
-        doorCreateInfo2.rotation = glm::vec3(0.0f, HELL_PI * 0.5f, 0.0f);
-        door2.Init(doorCreateInfo2);
-
-        Window& window = g_windows.emplace_back();
-        WindowCreateInfo windowCreateInfo;
-        windowCreateInfo.position = glm::vec3(0.05f, 0.0f, -1.5f);
-        windowCreateInfo.rotation = glm::vec3(0.0f, 0.0f, 0.0f);
-        window.Init(windowCreateInfo);
-
-        Window& window2 = g_windows.emplace_back();
-        WindowCreateInfo windowCreateInfo2;
-        windowCreateInfo2.position = glm::vec3(0.05f, 0.0f, 1.5f);
-        windowCreateInfo2.rotation = glm::vec3(0.0f, 0.0f, 0.0f);
-        window2.Init(windowCreateInfo2);
-
-        Window& window3 = g_windows.emplace_back();
-        WindowCreateInfo windowCreateInfo3;
-        windowCreateInfo3.position = glm::vec3(2.2f, 0.0f, 2.95f);
-        windowCreateInfo3.rotation = glm::vec3(0.0f, HELL_PI * 0.5f, 0.0f);
-        window3.Init(windowCreateInfo3);
-
-
-        PianoCreateInfo createInfo;
-        createInfo.position = glm::vec3(4.35f, 0.0f, 1.0f);
-        createInfo.rotation.y = HELL_PI * -0.5f;
-        Piano& piano = g_pianos.emplace_back();
-        piano.Init(createInfo);
-
-        PianoCreateInfo createInfo2;
-        createInfo2.position = glm::vec3(3.00f, 0.0f, -2.14f);
-        createInfo2.rotation.y = -0.75f;
-        Piano& piano2 = g_pianos.emplace_back();
-        piano2.Init(createInfo2);
-
-        // Make all clipping cubes
+    void UpdateClippingCubes() {
         g_clippingCubes.clear();
         for (Door& door : g_doors) {
             Transform transform;
@@ -396,113 +530,12 @@ namespace World {
             ClippingCube& cube = g_clippingCubes.emplace_back();
             cube.Update(transform);
         }
+    }
 
-
-        // REDESIGN MEEEEEEEEEE
-        //Transform transform;
-        //
-        //ClippingCube& cube = g_clippingCubes.emplace_back();
-        //transform.position = glm::vec3(0.0f, 1.5f, 0.0f);
-        //transform.rotation = glm::vec3(0.5f, 0.1f, 0.5f);
-        //transform.scale = glm::vec3(1.95f, 1.25f, 1.25);
-        //cube.Update(transform);
-        //
-        //ClippingCube& cube2 = g_clippingCubes.emplace_back();
-        //transform.position = glm::vec3(0.0f, 1.5f, 2.0f);
-        //transform.rotation = glm::vec3(0.0f, 0.0f, 0.0f);
-        //transform.scale = glm::vec3(0.75f, 0.75f, 0.75);
-        //cube2.Update(transform);
-        // REDESIGN MEEEEEEEEEE
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        Wall& wall = g_walls.emplace_back();
-        WallCreateInfo wallCreateInfo;
-        wallCreateInfo.points.push_back(glm::vec3(0.0f, 0.0f, -3.0f));
-        wallCreateInfo.points.push_back(glm::vec3(0.0f, 0.0f, 6.1f));
-        wallCreateInfo.points.push_back(glm::vec3(4.5f, 0.0f, 6.1f));
-        wallCreateInfo.points.push_back(glm::vec3(4.5f, 0.0f, -3.0f));
-        wallCreateInfo.points.push_back(glm::vec3(0.0f, 0.0f, -3.0f));
-        wallCreateInfo.materialName = "Ceiling2";
-        wallCreateInfo.textureOffsetX = 0.0f;
-        wallCreateInfo.textureOffsetY = -1.0f;
-        wallCreateInfo.textureScale = 1.0f;
-        wallCreateInfo.height = 2.4f;
-        wall.Init(wallCreateInfo);
-
-        Wall& wall2 = g_walls.emplace_back();
-        WallCreateInfo wallCreateInfo2;
-        wallCreateInfo2.points.push_back(glm::vec3(0.1f, 0.0f, -2.9f));
-        wallCreateInfo2.points.push_back(glm::vec3(4.4f, 0.0f, -2.9f));
-        wallCreateInfo2.points.push_back(glm::vec3(4.4f, 0.0f, 2.9f));
-        wallCreateInfo2.points.push_back(glm::vec3(0.1f, 0.0f, 2.9f));
-        wallCreateInfo2.points.push_back(glm::vec3(0.1f, 0.0f, -2.9f));
-        wallCreateInfo2.materialName = "WallPaper";
-        wallCreateInfo2.materialName = "Ceiling2";
-        wallCreateInfo2.textureOffsetX = 0.0f;
-        wallCreateInfo2.textureOffsetY = -1.4f;
-        wallCreateInfo2.textureScale = 1 / 2.4f;
-        wallCreateInfo2.height = 2.4f;
-        wallCreateInfo2.ceilingTrimType = TrimType::TIMBER;
-        wallCreateInfo2.floorTrimType = TrimType::TIMBER;
-        wall2.Init(wallCreateInfo2);
-
-        Wall& wall3 = g_walls.emplace_back();
-        WallCreateInfo wallCreateInfo3;
-        wallCreateInfo3.points.push_back(glm::vec3(0.1f, 0.0f, 3.0f));
-        wallCreateInfo3.points.push_back(glm::vec3(4.4f, 0.0f, 3.0f));
-        wallCreateInfo3.points.push_back(glm::vec3(4.4f, 0.0f, 6.0f));
-        wallCreateInfo3.points.push_back(glm::vec3(0.1f, 0.0f, 6.0f));
-        wallCreateInfo3.points.push_back(glm::vec3(0.1f, 0.0f, 3.0f));
-        wallCreateInfo3.materialName = "WallPaper";
-        wallCreateInfo3.materialName = "Ceiling2";
-        wallCreateInfo3.textureOffsetX = 0.0f;
-        wallCreateInfo3.textureOffsetY = -1.4f;
-        wallCreateInfo3.textureScale = 1 / 2.4f;
-        wallCreateInfo3.height = 2.4f;
-        wallCreateInfo3.ceilingTrimType = TrimType::TIMBER;
-        wallCreateInfo3.floorTrimType = TrimType::TIMBER;
-        wall3.Init(wallCreateInfo3);
-
-        HousePlane& floor = g_housePlanes.emplace_back();
-        glm::vec3 p0 = glm::vec3(0.0f, 0.0f, -3.0f);
-        glm::vec3 p1 = glm::vec3(0.0f, 0.0f, 6.1f);
-        glm::vec3 p2 = glm::vec3(4.4f, 0.0f, 6.1f);
-        glm::vec3 p3 = glm::vec3(4.4f, 0.0f, -3.0f);
-        floor.InitFromPoints(p0, p1, p2, p3, 0.4f);
-        floor.SetMaterial("FloorBoards");
-
-        HousePlane& floor2 = g_housePlanes.emplace_back();
-        p0 = glm::vec3(0.0f, 2.4f, -2.9f);
-        p1 = glm::vec3(0.0f, 2.4f, 6.1f);
-        p2 = glm::vec3(4.4f, 2.4f, 6.1f);
-        p3 = glm::vec3(4.4f, 2.4f, -2.9f);
-        floor2.InitFromPoints(p3, p2, p1, p0, 1.0f);
-        floor2.SetMaterial("Ceiling2");
-
-        LightCreateInfo lightCreateInfo;
-        lightCreateInfo.position = glm::vec3(2.2f, 2.175f, 0.0f);
-        lightCreateInfo.color = DEFAULT_LIGHT_COLOR;
-        lightCreateInfo.type = "HANGING_LIGHT";
-        lightCreateInfo.radius = 8.5f;
-        lightCreateInfo.strength = 1.25f;
-
-        g_lights.clear();
-        AddLight(lightCreateInfo);
-
-        UpdateHouseMeshVertexDataAndRenderItems();
+    void UpdateAllWallCSG() {
+        for (Wall& wall : GetWalls()) {
+            wall.UpdateSegmentsAndVertexData();
+        }
     }
 
     void AddDoorBasic(BasicDoorCreateInfo createInfo) {
@@ -513,9 +546,14 @@ namespace World {
         g_bullets.push_back(Bullet(createInfo));
     }
 
+    void AddDoor(DoorCreateInfo createInfo, SpawnOffset spawnOffset ) {
+        Door& door = g_doors.emplace_back();
+        createInfo.position += spawnOffset.translation;
+        door.Init(createInfo);
+    }
+
     void AddBulletCasing(BulletCasingCreateInfo createInfo, SpawnOffset spawnOffset) {
-        createInfo.position.x += spawnOffset.positionX;
-        createInfo.position.z += spawnOffset.positionZ;
+        createInfo.position += spawnOffset.translation;
         g_bulletCasings.push_back(BulletCasing(createInfo));
     }
 
@@ -524,35 +562,66 @@ namespace World {
         decal.Init(createInfo);
     }
 
+    void AddHousePlane(PlaneCreateInfo createInfo, SpawnOffset spawnOffset) {
+        createInfo.p0 += spawnOffset.translation;
+        createInfo.p1 += spawnOffset.translation;
+        createInfo.p2 += spawnOffset.translation;
+        createInfo.p3 += spawnOffset.translation;
+        Plane& housePlane = g_planes.emplace_back();
+        housePlane.Init(createInfo);
+        //return housePlane.GetObjectId();
+    }
+
     void AddGameObject(GameObjectCreateInfo createInfo, SpawnOffset spawnOffset) {
-        createInfo.position.x += spawnOffset.positionX;
-        createInfo.position.z += spawnOffset.positionZ;
+        createInfo.position += spawnOffset.translation;
         g_gameObjects.push_back(GameObject(createInfo));
     }
 
     void AddLight(LightCreateInfo createInfo, SpawnOffset spawnOffset) {
-        createInfo.position.x += spawnOffset.positionX;
-        createInfo.position.z += spawnOffset.positionZ;
+        createInfo.position += spawnOffset.translation;
         g_lights.push_back(Light(createInfo));
     }
 
+    void AddPiano(PianoCreateInfo createInfo, SpawnOffset spawnOffset) {
+        createInfo.position += spawnOffset.translation;
+        Piano& piano = g_pianos.emplace_back();
+        piano.Init(createInfo);
+    }
+
+
     void AddPickUp(PickUpCreateInfo createInfo, SpawnOffset spawnOffset) {
-        createInfo.position.x += spawnOffset.positionX;
-        createInfo.position.z += spawnOffset.positionZ;
+        createInfo.position += spawnOffset.translation;
 
         PickUp& pickUp = g_pickUps.emplace_back();
         pickUp.Init(createInfo);
     }
 
     void AddTree(TreeCreateInfo createInfo, SpawnOffset spawnOffset) {
-        createInfo.position.x += spawnOffset.positionX;
-        createInfo.position.z += spawnOffset.positionZ;
+        createInfo.position += spawnOffset.translation;
         g_trees.push_back(Tree(createInfo));
     }
 
-    //MapCreateInfo* GetCurrentMapCreateInfo() {
-    //    return MapManager::GetMapCreateInfoByName(g_mapName); 
-    //}
+    uint64_t AddWall(WallCreateInfo createInfo, SpawnOffset spawnOffset) {
+        if (createInfo.points.empty()) {
+            std::cout << "World::AddWall() failed: createInfo has zero points!\n";
+            return 0;
+        }
+
+        for (glm::vec3& point : createInfo.points) {
+            point += spawnOffset.translation;
+        }
+
+        Wall& wall = g_walls.emplace_back();
+        wall.Init(createInfo);
+
+        return wall.GetObjectId();
+    }
+
+    void AddWindow(WindowCreateInfo createInfo, SpawnOffset spawnOffset) {
+        Window& window = g_windows.emplace_back();
+        createInfo.position += spawnOffset.translation;
+        window.Init(createInfo);
+    }
 
     std::vector<HeightMapChunk>& GetHeightMapChunks() {
         return g_heightMapChunks;
@@ -636,16 +705,23 @@ namespace World {
         return count;
     }
 
-    Piano* GetPianoByPianoId(uint64_t objectId) {
+    Piano* GetPianoByObjectId(uint64_t objectId) {
         for (Piano& piano : g_pianos) {
-            if (piano.GetPianoObjectId() == objectId) {
+            if (piano.GetObjectId() == objectId) {
                 return &piano;
             }
         }
         return nullptr;
     }
 
-    std::vector<HouseRenderItem> g_renderItems;
+    Window* GetWindowByObjectId(uint64_t objectId) {
+        for (Window& window : g_windows) {
+            if (window.GetObjectId() == objectId) {
+                return &window;
+            }
+        }
+        return nullptr;
+    }
 
     std::vector<AnimatedGameObject>& GetAnimatedGameObjects()   { return g_animatedGameObjects; }
     std::vector<Bullet>& GetBullets()                           { return g_bullets; };
@@ -654,12 +730,11 @@ namespace World {
     std::vector<Decal>& GetDecals()                             { return g_decals; }
     std::vector<Door>& GetDoors()                               { return g_doors; }
     std::vector<GameObject>& GetGameObjects()                   { return g_gameObjects; }
-    std::vector<HousePlane>& GetHousePlanes()                   { return g_housePlanes; }
-    std::vector<HouseRenderItem>& GetHouseRenderItems()         { return g_renderItems; }
+    std::vector<Plane>& GetPlanes()                   { return g_planes; }
     std::vector<Light>& GetLights()                             { return g_lights; };
     std::vector<Piano>& GetPianos()                             { return g_pianos; };
     std::vector<PickUp>& GetPickUps()                           { return g_pickUps; };
-    std::vector<Transform>& GetDoorAndWindowCubeTransforms()    { return g_doorAndWindowCubeTransforms;  }
+    std::vector<Transform>& GetDoorAndWindowCubeTransforms()    { return g_doorAndWindowCubeTransforms; }
     std::vector<Tree>& GetTrees()                               { return g_trees; };
     std::vector<Wall>& GetWalls()                               { return g_walls; }
     std::vector<Window>& GetWindows()                           { return g_windows; }

@@ -1,12 +1,19 @@
 #include "Door.h"
 #include "Audio/Audio.h"
 #include "AssetManagement/AssetManager.h"
+#include "Editor/Editor.h"
 #include "Physics/Physics.h"
 #include "Physics/Physics.h"
+#include "Renderer/RenderDataManager.h"
 #include "UniqueID.h"
 #include "Util.h"
 
 void Door::Init(DoorCreateInfo createInfo) {
+    m_objectId = UniqueID::GetNext();
+    m_frameObjectId = UniqueID::GetNext();
+
+    m_createInfo = createInfo;
+
     m_position = createInfo.position;
     m_rotation = createInfo.rotation;
 
@@ -28,9 +35,6 @@ void Door::Init(DoorCreateInfo createInfo) {
 
     glm::vec3 boxExtents = glm::vec3(DOOR_DEPTH, DOOR_HEIGHT, DOOR_WIDTH);
     m_physicsId = Physics::CreateRigidStaticBoxFromExtents(doorFrameTransform, boxExtents, filterData, shapeOffset);
-
-    // Get next unique ID
-    m_objectId = UniqueID::GetNext();
 
     // Set PhysX user data
     PhysicsUserData userData;
@@ -81,7 +85,16 @@ void Door::Update(float deltaTime) {
         }
     }
 
+    // Calculate interact position
+    glm::mat4 interactOffset = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, DOOR_HEIGHT / 2, -DOOR_WIDTH / 2));
+    m_interactPosition = (m_doorModelMatrix * interactOffset)[3];
+
     UpdateRenderItems();
+}
+
+void Door::SetPosition(glm::vec3 position) {
+    m_createInfo.position = position;
+    m_position = position;
 }
 
 void Door::UpdateRenderItems() {
@@ -104,6 +117,7 @@ void Door::UpdateRenderItems() {
         renderItem.baseColorTextureIndex = m_material->m_basecolor;
         renderItem.rmaTextureIndex = m_material->m_rma;
         renderItem.normalMapTextureIndex = m_material->m_normal;
+        renderItem.objectType = Util::EnumToInt(ObjectType::DOOR);
         Util::UpdateRenderItemAABB(renderItem);
         Util::PackUint64(m_objectId, renderItem.objectIdLowerBit, renderItem.objectIdUpperBit);
     }
@@ -117,8 +131,16 @@ void Door::UpdateRenderItems() {
         renderItem.baseColorTextureIndex = m_material->m_basecolor;
         renderItem.rmaTextureIndex = m_material->m_rma;
         renderItem.normalMapTextureIndex = m_material->m_normal;
+        renderItem.objectType = Util::EnumToInt(ObjectType::DOOR_FRAME);
         Util::UpdateRenderItemAABB(renderItem);
-        Util::PackUint64(m_objectId, renderItem.objectIdLowerBit, renderItem.objectIdUpperBit);
+        Util::PackUint64(m_frameObjectId, renderItem.objectIdLowerBit, renderItem.objectIdUpperBit);
+    }
+}
+
+void Door::SubmitRenderItems() {
+    RenderDataManager::SubmitRenderItems(m_renderItems);
+    if (Editor::GetSelectedObjectId() == m_objectId) {
+        RenderDataManager::SubmitOutlineRenderItems(m_renderItems);
     }
 }
 

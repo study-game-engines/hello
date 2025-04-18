@@ -176,5 +176,5 @@ class ModelExporter:
         print("Export took", end - start, "seconds")
 
 # Example usage:
-exporter = ModelExporter('C:/Repos/VKSandbox/VKSandbox/VKSandbox/res/models/Mermaid.model', rounding=6)
+exporter = ModelExporter('C:/Hell2025/Hell2025/Hell2025/res/models/Boards.model', rounding=6)
 exporter.export()

@@ -72,6 +72,46 @@ namespace OpenGLRenderer {
             glDrawElementsInstancedBaseVertex(GL_TRIANGLES, mesh->indexCount, GL_UNSIGNED_INT, (void*)(sizeof(unsigned int) * mesh->baseIndex), instanceCount, mesh->baseVertex);
         }
 
+        // Repeat for house mesh
+        //MeshBuffer& houseMeshBuffer = World::GetHouseMeshBuffer();
+        //OpenGLMeshBuffer& glHouseMeshBuffer = houseMeshBuffer.GetGLMeshBuffer();
+        //
+        //for (int i = 0; i < 4; i++) {
+        //    Viewport* viewport = ViewportManager::GetViewportByIndex(i);
+        //    if (!viewport->IsVisible()) continue;
+        //
+        //    OpenGLRenderer::SetViewport(gBuffer, viewport);
+        //
+        //    // Render the mask (by drawing all the mesh into it)
+        //    glDrawBuffer(outlineFBO->GetColorAttachmentSlotByName("Mask"));
+        //    glDisable(GL_BLEND);
+        //    maskShader->Use();
+        //    maskShader->SetInt("u_viewportIndex", i);
+        //    maskShader->SetMat4("u_modelMatrix", glm::mat4(1.0f));
+        //
+        //    glBindVertexArray(glHouseMeshBuffer.GetVAO());
+        //    for (const HouseRenderItem& renderItem : RenderDataManager::GetHouseOutlineRenderItems()) {
+        //        Mesh* mesh = houseMeshBuffer.GetMeshByIndex(renderItem.meshIndex);
+        //        if (!mesh) continue;
+        //        glDrawElementsBaseVertex(GL_TRIANGLES, mesh->indexCount, GL_UNSIGNED_INT, (GLvoid*)(mesh->baseIndex * sizeof(GLuint)), mesh->baseVertex);
+        //    }
+        //
+        //    // Render the outline (by drawing an instanced quad offset many times)
+        //    glBindVertexArray(OpenGLBackEnd::GetVertexDataVAO());
+        //    outlineShader->Use();
+        //    outlineShader->SetIVec2Array("u_offsets", offsets);
+        //    outlineShader->SetInt("u_offsetCount", offsets.size());
+        //    outlineShader->SetInt("u_viewportIndex", i);
+        //    int instanceCount = offsets.size();
+        //    Mesh* mesh = AssetManager::GetMeshByModelNameMeshName("Primitives", "Quad");
+        //    glEnable(GL_BLEND);
+        //    glBlendEquation(GL_MAX);
+        //    glBlendFunc(GL_ONE, GL_ONE);
+        //    glDrawBuffer(outlineFBO->GetColorAttachmentSlotByName("Result"));
+        //    glBindImageTexture(0, outlineFBO->GetColorAttachmentHandleByName("Mask"), 0, GL_FALSE, 0, GL_READ_ONLY, GL_R8);
+        //    glDrawElementsInstancedBaseVertex(GL_TRIANGLES, mesh->indexCount, GL_UNSIGNED_INT, (void*)(sizeof(unsigned int) * mesh->baseIndex), instanceCount, mesh->baseVertex);
+        //}
+
         // Composite the outline
         glBindImageTexture(0, gBuffer->GetColorAttachmentHandleByName("FinalLighting"), 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F);
         glBindImageTexture(1, outlineFBO->GetColorAttachmentHandleByName("Mask"), 0, GL_FALSE, 0, GL_READ_ONLY, GL_R8);
@@ -81,5 +121,6 @@ namespace OpenGLRenderer {
 
         // Clean Up
         glBlendEquation(GL_FUNC_ADD);
+        glBindVertexArray(0);
     }
 }

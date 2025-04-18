@@ -1,6 +1,7 @@
 #include "Piano.h"
 #include "AssetManagement/AssetManager.h"
 #include "Audio/Synth.h"
+#include "Editor/Editor.h"
 #include "Input/Input.h"
 #include "Renderer/Renderer.h"
 #include "Renderer/RenderDataManager.h"
@@ -10,6 +11,8 @@
 #include "UniqueID.h"
 
 void Piano::Init(PianoCreateInfo& createInfo) {
+    m_createInfo = createInfo;
+
     m_transform.position = createInfo.position;
     m_transform.rotation = createInfo.rotation;
 
@@ -158,10 +161,7 @@ void Piano::Init(PianoCreateInfo& createInfo) {
             pianoKey.m_meshIndex = meshIndex;
             pianoKey.m_note = MeshNameToNote(mesh->GetName());
             pianoKey.m_isSharp = (mesh->GetName().find("#") != std::string::npos);
-
-            Mesh* mesh = AssetManager::GetMeshByIndex(meshIndex);
-            AABB aabb = AABB(mesh->aabbMin, mesh->aabbMax);
-            pianoKey.m_worldSpaceCenter = m_transform.to_mat4() * glm::vec4(aabb.GetCenter(), 1.0f);
+            pianoKey.UpdateWorldSpaceCenter(m_transform.to_mat4());
         }
 
         // Black body parts
@@ -199,6 +199,20 @@ void Piano::Init(PianoCreateInfo& createInfo) {
     // Create basic doors
     //World::AddDoorBasic(keyboardLidCreateInfo);
     //World::AddDoorBasic(topLidCreateInfo);
+}
+
+void Piano::SetPosition(glm::vec3 position) {
+    m_createInfo.position = position;
+    m_transform.position = position;
+
+    // Recalculate each key center
+    for (auto& pair : m_keys) {
+        PianoKey& pianoKey = pair.second;
+        pianoKey.UpdateWorldSpaceCenter(m_transform.to_mat4());
+    }
+
+    // Update collision mesh position
+    Physics::SetRigidStaticGlobalPose(m_rigidStaticId, m_transform.to_mat4());
 }
 
 void Piano::CleanUp() {
@@ -283,6 +297,9 @@ void Piano::TriggerInternalNoteFromExternalBulletHit(glm::vec3 bulletHitPositon)
 
 void Piano::SubmitRenderItems() {
     RenderDataManager::SubmitRenderItems(m_renderItems);
+    if (Editor::GetSelectedObjectId() == m_pianoObjectId) {
+        RenderDataManager::SubmitOutlineRenderItems(m_renderItems);
+    }
 }
 
 bool Piano::PianoKeyExists(uint64_t pianoKeyId) {
@@ -378,14 +395,18 @@ void Piano::PlayMajor(int rootNote) {
     }
 }
 
-void Piano::PlayKey(int note) {
+void Piano::PlayKey(int note, int velocity, float duration) {
     for (auto& pair : m_keys) {
         const uint64_t& objectId = pair.first;
         PianoKey& key = pair.second;
         if (key.m_note == note) {
-            key.PressKey();
+            key.PressKey(velocity, duration);
         }
     }
+}
+
+void Piano::SetSustain(bool value) {
+    Synth::SetSustain(value);
 }
 
 
@@ -510,11 +531,12 @@ void PianoKey::Update(float deltaTime) {
     }
 
     if (m_state == State::KEY_PRESSED) {
-        m_pressedTimer -= deltaTime;
+        m_timeRemaining -= deltaTime;
 
-        if (m_pressedTimer <= 0) {
-            m_pressedTimer = 0;
+        if (m_timeRemaining <= 0) {
+            m_timeRemaining = 0;
             m_state = State::IDLE;
+            Synth::ReleaseNote(m_note);
         }
 
         if (!m_isSharp) {
@@ -546,24 +568,20 @@ void PianoKey::Update(float deltaTime) {
     m_localOffsetMatrix = originOffset * localRotation * inverseOriginOffset;
 }
 
-void PianoKey::PressKey() {
+void PianoKey::UpdateWorldSpaceCenter(glm::mat4 parentPianoModelMatrix) {
+    Mesh* mesh = AssetManager::GetMeshByIndex(m_meshIndex);
+    if (!mesh) return;
+
+    AABB aabb = AABB(mesh->aabbMin, mesh->aabbMax);
+    m_worldSpaceCenter = parentPianoModelMatrix * glm::vec4(aabb.GetCenter(), 1.0f);
+}
+
+void PianoKey::PressKey(int velocity, float duration) {
     // Play sound if you were not pressed already
     if (m_state == State::IDLE) {
-        Synth::PlayNote(m_note);
+        Synth::PlayNote(m_note, velocity);
     }
 
     m_state = State::KEY_PRESSED;
-    m_pressedTimer = m_pressedCoolDownDuration;
+    m_timeRemaining = duration;
 }
-
-void PianoKey::ShootKey() {
-    PressKey();
-    //m_state = State::KEY_SHOT;
-}
-
-//void PianoKey::ReleaseKey() {
-//    //if (m_state == State::KEY_PRESSED) {
-//        m_state = State::IDLE;
-//        std::cout << "Released key " << m_note << "\n";
-//   // }
-//}

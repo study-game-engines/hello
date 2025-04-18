@@ -65,7 +65,7 @@ namespace BVH {
         return false;
     }
 
-    RayTraversalResult MeshAnyHit(GpuPrimitiveInstance instance, glm::vec3 rayOrigin, glm::vec3 rayDir, float maxDistance) {
+    BvhRayResult MeshAnyHit(GpuPrimitiveInstance instance, glm::vec3 rayOrigin, glm::vec3 rayDir, float maxDistance) {
         uint32_t stack[MAX_BVH_STACK_SIZE];
         size_t currentStackSize = 0;
 
@@ -122,7 +122,7 @@ namespace BVH {
                         glm::vec3 hitPositionWorld = instance.worldTransform * glm::vec4(hitPositionLocal, 1.0f);
                         float distanceToHit = glm::length(hitPositionWorld - rayOrigin);
 
-                        RayTraversalResult rayResult;
+                        BvhRayResult rayResult;
                         rayResult.hitFound = true;
                         rayResult.hitPosition = hitPositionWorld;
                         rayResult.distanceToHit = distanceToHit;
@@ -143,11 +143,11 @@ namespace BVH {
             }
         }
 
-        return RayTraversalResult(); // returns a failed hit
+        return BvhRayResult(); // returns a failed hit
     }
 
-    RayTraversalResult AnyHit(uint64_t sceneBvhId, glm::vec3 rayOrigin, glm::vec3 rayDir, float maxDistance) {
-        RayTraversalResult rayResult;
+    BvhRayResult AnyHit(uint64_t sceneBvhId, glm::vec3 rayOrigin, glm::vec3 rayDir, float maxDistance) {
+        BvhRayResult rayResult;
         rayResult.hitFound = false;
         rayResult.distanceToHit = maxDistance;
 
@@ -180,7 +180,7 @@ namespace BVH {
                 // It is, so now iterate the instances and check for a ray hit on those
                 for (int i = 0; i < node.primitiveCount; i++) {
                     const GpuPrimitiveInstance& instance = instances[node.firstChildOrPrimitive + i];
-                    RayTraversalResult localRayResult = MeshAnyHit(instance, rayOrigin, rayDir, maxDistance);
+                    BvhRayResult localRayResult = MeshAnyHit(instance, rayOrigin, rayDir, maxDistance);
                         
                     if (localRayResult.hitFound) {
                         return localRayResult;
@@ -197,7 +197,7 @@ namespace BVH {
         return rayResult;
     }
 
-    RayTraversalResult MeshClosestHit(GpuPrimitiveInstance instance, glm::vec3 rayOrigin, glm::vec3 rayDir, float maxDistance) {
+    BvhRayResult MeshClosestHit(GpuPrimitiveInstance instance, glm::vec3 rayOrigin, glm::vec3 rayDir, float maxDistance) {
         uint32_t stack[MAX_BVH_STACK_SIZE];
         size_t currentStackSize = 0;
 
@@ -212,7 +212,7 @@ namespace BVH {
         RayData rayData = ComputeRayData(localOrigin, localDir, localMinDistance, localMaxDistance);
 
 
-        RayTraversalResult closestRayResult;
+        BvhRayResult closestRayResult;
         closestRayResult.hitFound = false;
         closestRayResult.distanceToHit = maxDistance;
 
@@ -292,9 +292,9 @@ namespace BVH {
 
         return closestRayResult;
     }
-
-    RayTraversalResult ClosestHit(uint64_t sceneBvhId, glm::vec3 rayOrigin, glm::vec3 rayDir, float maxDistance) {
-        RayTraversalResult rayResult;
+        
+    BvhRayResult ClosestHit(uint64_t sceneBvhId, glm::vec3 rayOrigin, glm::vec3 rayDir, float maxDistance) {
+        BvhRayResult rayResult;
         rayResult.hitFound = false;
         rayResult.distanceToHit = maxDistance; 
 
@@ -335,7 +335,7 @@ namespace BVH {
                 // It is, so now iterate the instances and check for a ray hit on those
                 for (int i = 0; i < node.primitiveCount; i++) {
                     const GpuPrimitiveInstance& instance = instances[node.firstChildOrPrimitive + i];
-                    RayTraversalResult localRayResult = MeshClosestHit(instance, rayOrigin, rayDir, rayResult.distanceToHit);
+                    BvhRayResult localRayResult = MeshClosestHit(instance, rayOrigin, rayDir, rayResult.distanceToHit);
                     
                     if (localRayResult.hitFound && localRayResult.distanceToHit < rayResult.distanceToHit) {
                         rayResult = localRayResult;
@@ -353,7 +353,7 @@ namespace BVH {
         return rayResult;
     }
 
-    void RenderRayResultTriangle(RayTraversalResult& rayResult, glm::vec4 color) {
+    void RenderRayResultTriangle(BvhRayResult& rayResult, glm::vec4 color) {
         if (!rayResult.hitFound) return;
 
         const std::vector<float>& triangleData = GetTriangleData();
@@ -390,7 +390,7 @@ namespace BVH {
         Renderer::DrawLine(p0, p2, color);
     }
 
-    void RenderRayResultNode(RayTraversalResult& rayResult, glm::vec4 color) {
+    void RenderRayResultNode(BvhRayResult& rayResult, glm::vec4 color) {
         if (!rayResult.hitFound) return;
 
         AABB aabb(rayResult.nodeBoundsMin, rayResult.nodeBoundsMax);

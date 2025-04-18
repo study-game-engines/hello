@@ -55,7 +55,7 @@ namespace Physics {
 
         // Defaults
         PhysXRayResult result;
-        result.hitObjectName = "NO_HIT";
+        result.hitObjectName = "NO_USERDATA";
         result.hitPosition = glm::vec3(0, 0, 0);
         result.surfaceNormal = glm::vec3(0, 0, 0);
         result.rayDirection = rayDirection;
@@ -70,12 +70,13 @@ namespace Physics {
             PhysicsUserData* userData = (PhysicsUserData*)hit.block.actor->userData;
             if (userData) {
                 result.userData = *userData;
+                result.hitObjectName = "HAS_USERDATA";
             }
         }
         return result;
     }
 
-    OverlapReport OverlapTest(const PxGeometry& overlapShape, const PxTransform& shapePose, PxU32 collisionGroup) {
+    PhysXOverlapReport OverlapTest(const PxGeometry& overlapShape, const PxTransform& shapePose, PxU32 collisionGroup) {
         PxScene* pxScene = Physics::GetPxScene();
 
         PxQueryFilterData overlapFilterData = PxQueryFilterData();
@@ -105,13 +106,13 @@ namespace Physics {
         }
 
         // Fill out the shit you need
-        OverlapReport overlapReport;
+        PhysXOverlapReport overlapReport;
         for (PxActor* hitActor : hitActors) {
             PhysicsUserData* userData = (PhysicsUserData*)hitActor->userData;
             if (userData) {
                 if (userData->physicsType == PhysicsType::RIGID_DYNAMIC) {
                     PxRigidDynamic* rigid = (PxRigidDynamic*)hitActor;
-                    OverlapResult& overlapResult = overlapReport.hits.emplace_back();
+                    PhysXOverlapResult& overlapResult = overlapReport.hits.emplace_back();
                     overlapResult.userData = *userData;
                     overlapResult.objectPosition.x = rigid->getGlobalPose().p.x;
                     overlapResult.objectPosition.y = rigid->getGlobalPose().p.y;
@@ -120,7 +121,7 @@ namespace Physics {
                 if (userData->physicsType == PhysicsType::RIGID_STATIC ||
                     userData->physicsType == PhysicsType::HEIGHT_FIELD) {
                     PxRigidStatic* rigid = (PxRigidStatic*)hitActor;
-                    OverlapResult& overlapResult = overlapReport.hits.emplace_back();
+                    PhysXOverlapResult& overlapResult = overlapReport.hits.emplace_back();
                     overlapResult.userData = *userData;
                     overlapResult.objectPosition.x = rigid->getGlobalPose().p.x;
                     overlapResult.objectPosition.y = rigid->getGlobalPose().p.y;

@@ -52,6 +52,7 @@ namespace Editor {
         editor.AddChild("Height Map", &Callbacks::OpenHeightMapEditor, "F6");
         editor.AddChild("Map", &Callbacks::OpenMapEditor, "F7");
         editor.AddChild("Weapons", &Callbacks::OpenWeaponsEditor, "F8");
+
     }
 
     void InitMapEditorPropertiesElements() {

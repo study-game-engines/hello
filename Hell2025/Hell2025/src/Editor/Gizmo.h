@@ -1,5 +1,5 @@
 #pragma once
-#include "Types/Renderer/DetachedMesh.hpp"
+#include "Types/Renderer/MeshBuffer.h"
 #include <vector>
 
 enum class GizmoMode {
@@ -42,7 +42,7 @@ namespace Gizmo {
     void UpdateRenderItems();
 
     std::vector<GizmoRenderItem>& GetRenderItemsByViewportIndex(int index);
-    DetachedMesh* GetDetachedMeshByIndex(int index);
+    MeshBuffer* GetMeshBufferByIndex(int index);
     const std::string GizmoFlagToString(const GizmoFlag& flag);
     const glm::vec3 GetPosition();
     const glm::vec3 GetEulerRotation();

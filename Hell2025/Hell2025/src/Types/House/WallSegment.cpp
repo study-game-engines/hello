@@ -4,7 +4,7 @@
 #include "Util.h"
 #include "UniqueID.h"
 
-void WallSegment::Init(glm::vec3 start, glm::vec3 end, float height) {
+void WallSegment::Init(glm::vec3 start, glm::vec3 end, float height, uint64_t parentObjectId) {
     m_start = start;
     m_end = end;
     m_height = height;
@@ -24,6 +24,13 @@ void WallSegment::Init(glm::vec3 start, glm::vec3 end, float height) {
 
     // AABB
     m_aabb = Util::GetAABBFromPoints(m_corners);
+
+    // Store parent id
+    m_parentObjectId = parentObjectId;
+}
+
+void WallSegment::SetMeshIndex(uint32_t index) {
+    m_meshIndex = index;
 }
 
 void WallSegment::CleanUp() {

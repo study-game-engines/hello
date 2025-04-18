@@ -12,6 +12,7 @@
 #include "Util/Util.h"
 #include "World/World.h"
 
+#include "World/HouseManager.h"
 #include "World/HeightMapManager.h"
 #include "World/MapManager.h"
 #include "World/SectorManager.h"
@@ -132,6 +133,7 @@ namespace AssetManager {
 
 
             HeightMapManager::Init();
+            HouseManager::Init();
             MapManager::Init();
             SectorManager::Init();
             World::Init();

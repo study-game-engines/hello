@@ -11,6 +11,11 @@
 #include "HellDefines.h"
 #include "Input/keycodes.h"
 
+inline std::ostream& operator<<(std::ostream& os, const glm::vec3& vec) {
+    os << "(" << vec.x << ", " << vec.y << ", " << vec.z << ")";
+    return os;
+}
+
 struct BlitRegion {
     int32_t originX = 0;
     int32_t originY = 0;
@@ -57,10 +62,12 @@ struct HouseRenderItem {
     int normalMapTextureIndex = 0;
     int rmaTextureIndex = 0;
     int baseVertex = 0;
+
     int baseIndex = 0;
     int vertexCount = 0;
     int indexCount = 0;
-    int padding = 0;
+    int meshIndex = 0;
+
     glm::vec4 aabbMin;
     glm::vec4 aabbMax;
 };
@@ -432,8 +439,8 @@ struct Node {
 };
 
 struct SpawnOffset {
-    float positionX;
-    float positionZ;
+    glm::vec3 translation = glm::vec3(0.0);
+    float yRotation = 0;
 };
 
 struct vecXZ {
@@ -515,11 +522,6 @@ struct PhysicsUserData {
     ObjectType objectType = ObjectType::NONE;
 };
 
-struct OverlapResult {
-    PhysicsUserData userData;
-    glm::vec3 objectPosition;
-};
-
 struct PhysXRayResult {
     PhysicsUserData userData;
     std::string hitObjectName;
@@ -529,8 +531,13 @@ struct PhysXRayResult {
     bool hitFound;
 };
 
-struct OverlapReport {
-    std::vector<OverlapResult> hits;
+struct PhysXOverlapResult {
+    PhysicsUserData userData;
+    glm::vec3 objectPosition;
+};
+
+struct PhysXOverlapReport {
+    std::vector<PhysXOverlapResult> hits;
     bool HitsFound() {
         return hits.size();
     }
@@ -592,7 +599,7 @@ struct MeshBvh {
     std::vector<float> m_triangleData;
 };
 
-struct RayTraversalResult {
+struct BvhRayResult {
     bool hitFound = false;
     size_t primtiviveId = 0;
     uint64_t objectId = 0;

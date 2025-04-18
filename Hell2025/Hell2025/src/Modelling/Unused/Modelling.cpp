@@ -343,7 +343,7 @@ namespace Modelling {
         g_activeViewport = ViewportManager::GetViewportByIndex(viewportIndex);
         SpaceCoords gBufferSpaceCoords = g_activeViewport->GetGBufferSpaceCoords();
 
-        if (Editor::IsEditorOpen()) {
+        if (Editor::IsOpen()) {
             int32_t viewportIndex = Editor::GetHoveredViewportIndex();
             g_viewMatrix = viewportData[viewportIndex].view;
             g_viewPos = viewportData[viewportIndex].inverseView[3];

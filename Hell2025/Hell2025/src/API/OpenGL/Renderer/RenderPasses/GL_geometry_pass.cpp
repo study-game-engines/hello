@@ -87,7 +87,7 @@ namespace OpenGLRenderer {
 
 
         EditableMesh& editableMesh = Modelling::GetEditableMesh();
-        OpenGLDetachedMesh& glMesh = editableMesh.m_glMesh;
+        OpenGLMeshBuffer& glMesh = editableMesh.m_glMesh;
         OpenGLShader* debugShader = GetShader("DebugTextured");
 
         debugShader->Use();
@@ -106,7 +106,7 @@ namespace OpenGLRenderer {
                 OpenGLRenderer::SetViewport(gBuffer, viewport);
                 debugShader->SetInt("u_viewportIndex", i);
                 debugShader->SetMat4("u_model", glm::mat4(1));
-                OpenGLDetachedMesh& mesh = glMesh;
+                OpenGLMeshBuffer& mesh = glMesh;
                 glBindVertexArray(mesh.GetVAO());
                 if (mesh.GetIndexCount() > 0) {
                     glDrawElements(GL_TRIANGLES, mesh.GetIndexCount(), GL_UNSIGNED_INT, 0);
@@ -118,13 +118,15 @@ namespace OpenGLRenderer {
         debugShader->Use();
         debugShader->SetMat4("u_model", glm::mat4(1));
 
-        OpenGLDetachedMesh& houseMesh = World::GetHouseMesh();
-        glBindVertexArray(houseMesh.GetVAO());
+        MeshBuffer& houseMeshBuffer = World::GetHouseMeshBuffer();
+        OpenGLMeshBuffer& glHouseMeshBuffer = houseMeshBuffer.GetGLMeshBuffer();
+
+        glBindVertexArray(glHouseMeshBuffer.GetVAO());
 
         for (int i = 0; i < 4; i++) {
             Viewport* viewport = ViewportManager::GetViewportByIndex(i);
             if (!viewport->IsVisible()) continue;
-            if (houseMesh.GetIndexCount() <= 0) continue;
+            if (glHouseMeshBuffer.GetIndexCount() <= 0) continue;
 
             OpenGLRenderer::SetViewport(gBuffer, viewport);
             debugShader->SetInt("u_viewportIndex", i);

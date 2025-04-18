@@ -19,8 +19,8 @@ namespace BVH {
 
     void RenderMesh(uint64_t bvhId, glm::vec4 color, glm::mat4 worldTransform);
     void RenderMeshBvh(uint64_t bvhId, glm::vec4 color, glm::mat4 worldTransform);
-    void RenderRayResultTriangle(RayTraversalResult& rayResult, glm::vec4 color);
-    void RenderRayResultNode(RayTraversalResult& rayResult, glm::vec4 color);
+    void RenderRayResultTriangle(BvhRayResult& rayResult, glm::vec4 color);
+    void RenderRayResultNode(BvhRayResult& rayResult, glm::vec4 color);
     void RenderSceneBvh(uint64_t bvhId, glm::vec4 color);
 
     bool IntersectNode(const RayData& rayData, const glm::vec3& aabbBoundsMin, const glm::vec3& aabbBoundsMax, float& t);
@@ -29,8 +29,8 @@ namespace BVH {
 
     RayData ComputeRayData(const glm::vec3& rayOrigin, const glm::vec3& rayDir, float minDistance, float maxDistance);
 
-    RayTraversalResult AnyHit(uint64_t sceneBvhId, glm::vec3 rayOrigin, glm::vec3 rayDir, float maxDistance);
-    RayTraversalResult ClosestHit(uint64_t sceneBvhId, glm::vec3 rayOrigin, glm::vec3 rayDir, float maxDistance);
+    BvhRayResult AnyHit(uint64_t sceneBvhId, glm::vec3 rayOrigin, glm::vec3 rayDir, float maxDistance);
+    BvhRayResult ClosestHit(uint64_t sceneBvhId, glm::vec3 rayOrigin, glm::vec3 rayDir, float maxDistance);
 
     SceneBvh* GetSceneBvhById(uint64_t bvhId);
     MeshBvh* GetMeshBvhById(uint64_t bvhId);

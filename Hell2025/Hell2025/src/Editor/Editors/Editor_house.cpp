@@ -9,31 +9,32 @@
 #include "Renderer/Renderer.h"
 #include "Renderer/RenderDataManager.h"
 #include "Viewport/ViewportManager.h"
+#include "World/HouseManager.h"
 #include "World/MapManager.h"
 #include "World/World.h"
-
 #include <imgui/imgui.h>
-
 
 namespace Editor {
 
     struct HouseEditorEditorImguiElements {
         EditorUI::FileMenu fileMenu;
         EditorUI::LeftPanel leftPanel;
-        //EditorUI::CollapsingHeader rendererSettingsHeader;
         EditorUI::CollapsingHeader housePropertiesHeader;
         EditorUI::StringInput houseNameInput;
-        //EditorUI::CheckBox drawGrass;
-        //EditorUI::CheckBox drawWater;
         EditorUI::NewFileWindow newFileWindow;
         EditorUI::OpenFileWindow openFileWindow;
-        //EditorUI::IntegerInput test;
-        //EditorUI::FloatSliderInput test2;
     } g_houseEditorImguiElements;
+
+    std::string g_currentFilename = "";
 
     void InitHouseEditorFileMenu();
     void InitHouseEditorPropertiesElements();
     void ReconfigureHMapEditorImGuiElements();
+
+    // Wall placement
+    void BeginWall();
+    void CancelWallPlacement();
+    void UpdateWallPlacement();
 
     void InitHouseEditor() {
         InitHouseEditorFileMenu();
@@ -46,7 +47,7 @@ namespace Editor {
         EditorUI::FileMenuNode& file = elements.fileMenu.AddMenuNode("File", nullptr);
         file.AddChild("New", []() { ShowNewMapWindow(); }, "F2");
         file.AddChild("Open", []() { ShowOpenMapWindow(); }, "F3");
-        file.AddChild("Save", nullptr, "Ctrl+S");
+        file.AddChild("Save", &Callbacks::SaveHouse, "Ctrl+S");
         file.AddChild("Revert", nullptr);
         file.AddChild("Delete", nullptr);
         file.AddChild("Duplicate", nullptr);
@@ -58,6 +59,9 @@ namespace Editor {
         editor.AddChild("Height Map", &Callbacks::OpenHeightMapEditor, "F6");
         editor.AddChild("Map", &Callbacks::OpenMapEditor, "F7");
         editor.AddChild("Weapons", &Callbacks::OpenWeaponsEditor, "F8");
+
+        EditorUI::FileMenuNode& add = elements.fileMenu.AddMenuNode("Add");
+        add.AddChild("Wall", &Callbacks::BeginAddingWall, "");
     }
 
     void InitHouseEditorPropertiesElements() {
@@ -130,20 +134,29 @@ namespace Editor {
     void OpenHouseEditor() {
         Audio::PlayAudio(AUDIO_SELECT, 1.0f);
 
-        World::ResetWorld();
-        World::LoadEmptyWorld();
+        if (g_currentFilename == "") {
+            g_currentFilename = "TestHouse";
+            HouseCreateInfo* houseCreateInfo = HouseManager::GetHouseCreateInfoByFilename(g_currentFilename);
+            World::LoadSingleHouse(houseCreateInfo);
+            World::SetObjectsToInitalState();
+        }
 
+        
         if (Editor::GetEditorMode() != EditorMode::HOUSE_EDITOR) {
             Editor::SetEditorMode(EditorMode::HOUSE_EDITOR);
             if (Editor::IsEditorClosed()) {
                 Editor::OpenEditor();
             }
         }
-
-
     }
 
     void UpdateHouseEditor() {
+        // Restrict renderer states
+        RendererSettings& rendererSettings = Renderer::GetCurrentRendererSettings();
+        while (rendererSettings.rendererOverrideState != RendererOverrideState::NONE &&
+               rendererSettings.rendererOverrideState != RendererOverrideState::CAMERA_NDOTL) {
+            Renderer::NextRendererOverrideState();
+        }
         // Draw Grid
         float gridWorldSpaceSize = 5.0f;
         float gridSpacing = 0.5f;
@@ -178,6 +191,7 @@ namespace Editor {
         //}
         //Renderer::DrawPoint(testPoint, color);
 
+        // Draw Grid
         const Resolutions& resolutions = Config::GetResolutions();
         float pixelSizeX = 2.0f / resolutions.gBuffer.x;
         float pixelSizeY = 2.0f / resolutions.gBuffer.y;
@@ -191,6 +205,38 @@ namespace Editor {
 
                 Renderer::DrawLine(n, s, WHITE, true);
                 Renderer::DrawLine(e, w, WHITE, true);
+            }
+        }
+
+        if (GetEditorState() == EditorState::IDLE) {
+            CancelWallPlacement();
+        }
+
+
+        // Hotkey to add new wall
+        //if (Input::KeyPressed(HELL_KEY_W) && GetEditorState() == EditorState::IDLE) { // you need to make this only happen when imgui does NOT have control
+        //    EnterWallPlacementState();
+        //    BeginWall();
+        //}
+
+        if (GetEditorState() == EditorState::WALL_PLACEMENT) {
+            UpdateWallPlacement();
+        }
+
+
+        // Render selected wall/plane lines and vertices
+        if (GetSelectedObjectType() == ObjectType::WALL) {
+            Wall* wall = World::GetWallByObjectId(GetSelectedObjectId());
+            if (wall) {
+                wall->DrawSegmentVertices(OUTLINE_COLOR);
+                wall->DrawSegmentLines(OUTLINE_COLOR);
+            }
+        }
+        if (GetSelectedObjectType() == ObjectType::PLANE) {
+            Plane* plane = World::GetPlaneByObjectId(GetSelectedObjectId());
+            if (plane) {
+                plane->DrawEdges(OUTLINE_COLOR);
+                plane->DrawVertices(OUTLINE_COLOR);
             }
         }
     }

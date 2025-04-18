@@ -10,7 +10,7 @@
 #include "World/World.h"
 
 void Player::UpdateUI() {
-    if (Editor::IsEditorOpen()) return;
+    if (Editor::IsOpen()) return;
 
     const Viewport* viewport = ViewportManager::GetViewportByIndex(m_viewportIndex);
     if (!viewport->IsVisible()) return;
@@ -43,18 +43,20 @@ void Player::UpdateUI() {
     if (!Debug::IsDebugTextVisible()) {
         std::string text = "";
         text += "Cam Pos: " + Util::Vec3ToString(GetCameraPosition()) + "\n";
-        //text += "Cam Euler: " + Util::Vec3ToString(GetCameraRotation()) + "\n";
+        text += "Cam Euler: " + Util::Vec3ToString(GetCameraRotation()) + "\n";
         text += "Weapon Action: " + Util::WeaponActionToString(GetCurrentWeaponAction()) + "\n";
-        text += "Mouse ray: " + Util::ObjectTypeToString(m_interactObjectType) + " " + std::to_string(m_interactObjectId) + " " + Util::PhysicsTypeToString(m_interactPhysicsType) + " " + std::to_string(m_interactPhysicsId) + "\n";
-        
+        text += "Interact object: " + Util::ObjectTypeToString(m_interactObjectType) + " " + std::to_string(m_interactObjectId) + "\n";
+        text += "BVH ray: " + Util::ObjectTypeToString(m_bvhRayResult.objectType) + " " + std::to_string(m_bvhRayResult.objectId) + "\n";
+        text += "PhysX ray: " + Util::ObjectTypeToString(m_physXRayResult.userData.objectType) + " " + std::to_string(m_physXRayResult.userData.objectId) + " " + Util::PhysicsTypeToString(m_physXRayResult.userData.physicsType) + " " + std::to_string(m_physXRayResult.userData.physicsId) + "\n";
 
 
+        text += "Ray hit found: " + Util::BoolToString(m_rayHitFound) + " " + Util::ObjectTypeToString(m_rayHitObjectType) + " " + std::to_string(m_rayhitObjectId) + "\n";
 
         glm::vec3 rayOrigin = GetCameraPosition();
         glm::vec3 rayDir = GetCameraForward();
         float maxRayDistance = 100.0f;
 
-        RayTraversalResult result = World::ClosestHit(rayOrigin, rayDir, maxRayDistance, m_viewportIndex);
+        BvhRayResult result = World::ClosestHit(rayOrigin, rayDir, maxRayDistance, m_viewportIndex);
         if (result.hitFound) {
             if (result.objectType == ObjectType::PIANO_KEY) {
                 for (Piano& piano : World::GetPianos()) {

@@ -25,6 +25,9 @@ namespace Editor {
         else if (GetEditorState() == EditorState::RESIZING_VERTICAL) {
             BackEnd::SetCursor(HELL_CURSOR_VRESIZE);
         }
+        else if (GetEditorState() == EditorState::WALL_PLACEMENT) {
+            BackEnd::SetCursor(HELL_CURSOR_CROSSHAIR);
+        }
         // Nothing? Then the arrow
         else {
             BackEnd::SetCursor(HELL_CURSOR_ARROW);

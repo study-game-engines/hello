@@ -100,7 +100,7 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;TRACY_ENABLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>vendor\earcut\include;vendor\clipper\include;src;vendor\compressonator\include\;vendor\gli\include;src\Util;src\Common;vendor\glad\include;vendor\GLFW\include;vendor\glm;vendor\stb_image;vendor\assimp\include;vendor;vendor\fmod\include;vendor\tinyexr;vendor\VkBootstrap;vendor\Vulkan\include;vendor\VulkanMemoryAllocator\include;vendor\physx\include;vendor\nlohmann_json\include;vendor\imgui\include;vendor\lodepng\include;vendor\bvh\include;vendor\fluidsynth\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>vendor\earcut\include;vendor\clipper\include;src;vendor\compressonator\include\;vendor\gli\include;src\Util;src\Common;vendor\glad\include;vendor\GLFW\include;vendor\glm;vendor\stb_image;vendor\assimp\include;vendor;vendor\fmod\include;vendor\tinyexr;vendor\VkBootstrap;vendor\Vulkan\include;vendor\VulkanMemoryAllocator\include;vendor\physx\include;vendor\nlohmann_json\include;vendor\imgui\include;vendor\lodepng\include;vendor\bvh\include;vendor\fluidsynth\include;vendor\midifile\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
@@ -164,6 +164,7 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <ClCompile Include="src\API\OpenGL\Types\GL_cubemapView.cpp" />
     <ClCompile Include="src\API\OpenGL\Types\GL_framebuffer.cpp" />
     <ClCompile Include="src\API\OpenGL\Types\GL_heightmap_mesh.cpp" />
+    <ClCompile Include="src\API\OpenGL\Types\GL_mesh_buffer.cpp" />
     <ClCompile Include="src\API\OpenGL\Types\GL_shader.cpp" />
     <ClCompile Include="src\API\OpenGL\Types\GL_shadow_map_array.cpp" />
     <ClCompile Include="src\API\OpenGL\Types\GL_shadow_map.cpp" />
@@ -193,6 +194,11 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <ClCompile Include="src\AssetManagement\AssetManager_spriteSheetTexture.cpp" />
     <ClCompile Include="src\AssetManagement\AssetManager_texture.cpp" />
     <ClCompile Include="src\AssetManagement\AssetManager_vertex_data.cpp" />
+    <ClCompile Include="src\Audio\MidiFile.cpp" />
+    <ClCompile Include="src\Audio\MidiFileManager.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="src\Audio\Synth.cpp" />
     <ClCompile Include="src\BackEnd\BackEnd.cpp" />
     <ClCompile Include="src\BackEnd\GLFWIntegration.cpp" />
@@ -206,6 +212,8 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <ClCompile Include="src\Editor\Editors\Editor_house.cpp" />
     <ClCompile Include="src\Editor\Editors\Editor_map.cpp" />
     <ClCompile Include="src\Editor\Editors\Editor_sector.cpp" />
+    <ClCompile Include="src\Editor\Editors\House\Editor_wall_placement.cpp" />
+    <ClCompile Include="src\Editor\Editor_objects.cpp" />
     <ClCompile Include="src\File\File_debug.cpp" />
     <ClCompile Include="src\File\File_bvh.cpp" />
     <ClCompile Include="src\Bvh\Bvh.cpp" />
@@ -222,10 +230,11 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <ClCompile Include="src\Imgui\Types\Types.cpp" />
     <ClCompile Include="src\File\File_height_map.cpp" />
     <ClCompile Include="src\Math\AABB.cpp" />
-    <ClCompile Include="src\Player\Player_Piano.cpp" />
+    <ClCompile Include="src\Player\Player_piano.cpp" />
     <ClCompile Include="src\Types\Game\BasicDoor.cpp" />
     <ClCompile Include="src\Types\Misc\Piano.cpp" />
     <ClCompile Include="src\Types\Renderer\Mesh.cpp" />
+    <ClCompile Include="src\Types\Renderer\MeshBuffer.cpp" />
     <ClCompile Include="src\Types\Renderer\Model.cpp" />
     <ClCompile Include="src\Types\House\Trim.cpp" />
     <ClCompile Include="src\Types\House\WallSegment.cpp" />
@@ -241,7 +250,7 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <ClCompile Include="src\Types\Renderer\TextureArray.cpp" />
     <ClCompile Include="src\Types\Game\Decal.cpp" />
     <ClCompile Include="src\Types\House\Door.cpp" />
-    <ClCompile Include="src\Types\House\HousePlane.cpp" />
+    <ClCompile Include="src\Types\House\Plane.cpp" />
     <ClCompile Include="src\Types\Game\PickUp.cpp" />
     <ClCompile Include="src\Types\Exterior\Tree.cpp" />
     <ClCompile Include="src\Types\House\Wall.cpp" />
@@ -325,6 +334,7 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <ClCompile Include="src\World\World_house.cpp" />
     <ClCompile Include="src\World\World_render_submit.cpp" />
     <ClCompile Include="src\World\World_update.cpp" />
+    <ClCompile Include="src\World\World_util.cpp" />
     <ClCompile Include="vendor\clipper\src\clipper.engine.cpp" />
     <ClCompile Include="vendor\clipper\src\clipper.offset.cpp" />
     <ClCompile Include="vendor\clipper\src\clipper.rectclip.cpp" />
@@ -337,6 +347,12 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <ClCompile Include="vendor\imgui\include\imgui\imgui_tables.cpp" />
     <ClCompile Include="vendor\imgui\include\imgui\imgui_widgets.cpp" />
     <ClCompile Include="vendor\lodepng\include\lodepng\lodepng.cpp" />
+    <ClCompile Include="vendor\midifile\src\Binasc.cpp" />
+    <ClCompile Include="vendor\midifile\src\MidiEvent.cpp" />
+    <ClCompile Include="vendor\midifile\src\MidiEventList.cpp" />
+    <ClCompile Include="vendor\midifile\src\SmfMidiFile.cpp" />
+    <ClCompile Include="vendor\midifile\src\MidiMessage.cpp" />
+    <ClCompile Include="vendor\midifile\src\Options.cpp" />
     <ClCompile Include="vendor\stb_image\stb_image.cpp" />
     <ClCompile Include="vendor\tinyexr\tinyexr.cpp" />
     <ClCompile Include="vendor\VkBootstrap\VkBootstrap.cpp" />
@@ -406,7 +422,7 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <ClInclude Include="src\API\OpenGL\GL_util.h" />
     <ClInclude Include="src\API\OpenGL\Types\GL_cubemapView.h" />
     <ClInclude Include="src\API\OpenGL\Types\GL_debug_mesh.hpp" />
-    <ClInclude Include="src\API\OpenGL\Types\GL_detachedMesh.hpp" />
+    <ClInclude Include="src\API\OpenGL\Types\GL_mesh_buffer.h" />
     <ClInclude Include="src\API\OpenGL\Types\GL_heightmap_mesh.h" />
     <ClInclude Include="src\API\OpenGL\Types\GL_indirectBuffer.hpp" />
     <ClInclude Include="src\API\OpenGL\Types\GL_mesh2D.hpp" />
@@ -433,6 +449,8 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <ClInclude Include="src\API\Vulkan\vk_backend.h" />
     <ClInclude Include="src\API\Vulkan\Renderer\vk_renderer.h" />
     <ClInclude Include="src\API\Vulkan\vk_util.h" />
+    <ClInclude Include="src\Audio\MidiFile.h" />
+    <ClInclude Include="src\Audio\MidiFileManager.h" />
     <ClInclude Include="src\Audio\Synth.h" />
     <ClInclude Include="src\BackEnd\BackEnd.h" />
     <ClInclude Include="src\BackEnd\GLFWIntegration.h" />
@@ -469,7 +487,7 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <ClInclude Include="src\Types\Game\Bullet.h" />
     <ClInclude Include="src\Types\Game\Decal.h" />
     <ClInclude Include="src\Types\House\Door.h" />
-    <ClInclude Include="src\Types\House\HousePlane.h" />
+    <ClInclude Include="src\Types\House\Plane.h" />
     <ClInclude Include="src\Types\Game\PickUp.h" />
     <ClInclude Include="src\Types\Exterior\Tree.h" />
     <ClInclude Include="src\Types\House\Wall.h" />
@@ -507,7 +525,6 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <ClInclude Include="src\Types\Game\GameObject.h" />
     <ClInclude Include="src\Hardcoded.hpp" />
     <ClInclude Include="src\AssetManagement\AssetManager.h" />
-    <ClInclude Include="src\Common\Common.h" />
     <ClInclude Include="src\Common\HellEnums.h" />
     <ClInclude Include="src\Common\Primtives.hpp" />
     <ClInclude Include="src\Input\Input.h" />
@@ -527,7 +544,7 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <ClInclude Include="src\UI\Mesh2D.h" />
     <ClInclude Include="src\UI\TextBlitter.h" />
     <ClInclude Include="src\Tools\DDS.h" />
-    <ClInclude Include="src\Types\Renderer\DetachedMesh.hpp" />
+    <ClInclude Include="src\Types\Renderer\MeshBuffer.h" />
     <ClInclude Include="src\Tools\ImageTools.h" />
     <ClInclude Include="src\UI\UIBackEnd.h" />
     <ClInclude Include="src\Types\Renderer\Texture.h" />

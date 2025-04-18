@@ -23,12 +23,10 @@ namespace Editor {
     void OpenEditor();
     void CloseEditor();
     void ToggleEditorOpenState();
-    void ShowEditorSelectMenu();
     void SetEditorMode(EditorMode editorMode);
-    void CloseEditorSelectMenu();
     void SetActiveViewportIndex(int index);
-    void SetSelectedObjectIndex(int index);
-    void SetHoveredObjectIndex(int index);
+    //void SetSelectedObjectIndex(int index);
+    //void SetHoveredObjectIndex(int index);
     void SetSelectedObjectType(ObjectType editorObjectType);
     void SetHoveredObjectType(ObjectType editorObjectType);
     void SetSplitX(float value);
@@ -39,7 +37,33 @@ namespace Editor {
     //void SetCameraView(uint32_t cameraViewIndex, CameraView cameraView);
     void SetViewportOrthoSize(uint32_t viewportIndex, float size);
     void SetEditorViewportSplitMode(EditorViewportSplitMode mode);
+    //void UpdateObjectSelection();
+
+
+    void UpdateGizmoInteract();
+
+    // Object hover
+    void UpdateObjectHover();
+    void SetHoveredObjectType(ObjectType objectType);
+    void SetHoveredObjectId(uint64_t objectId);
+    ObjectType GetHoveredObjectType();
+    uint64_t GetHoveredObjectId();
+
+    // Object selection
+    void UnselectAnyObject();
     void UpdateObjectSelection();
+    void SetSelectedObjectType(ObjectType objectType);
+    void SetSelectedObjectId(uint64_t objectId);
+    ObjectType GetSelectedObjectType();
+    uint64_t GetSelectedObjectId();
+
+    // Gizmo shit
+    void UpdateObjectGizmoInteraction();
+
+    // Axis constraint
+    void ResetAxisConstraint();
+    void SetAxisConstraint(Axis axis);
+    Axis GetAxisConstraint();
 
     // Height Map Editor
     void InitHeightMapEditor();
@@ -59,6 +83,7 @@ namespace Editor {
     void ShowOpenHouseWindow();
     void CloseAllHouseEditorWindows();
     void CreateHouseEditorImGuiElements();
+    void EnterWallPlacementState();
 
     // Map Editor
     void InitMapEditor();
@@ -94,9 +119,9 @@ namespace Editor {
 
     int GetActiveViewportIndex();
     int GetHoveredViewportIndex();
-    int GetSelectedObjectIndex();
-    int GetHoveredObjectIndex();
-    bool IsEditorOpen();
+    //int GetSelectedObjectIndex();
+    //int GetHoveredObjectIndex();
+    bool IsOpen();
     bool IsEditorClosed();
     bool IsViewportOrthographic(uint32_t viewportIndex);
     bool EditorIsIdle();
@@ -110,12 +135,13 @@ namespace Editor {
     Viewport* GetActiveViewport();
     ShadingMode GetViewportModeByIndex(uint32_t index);
     CameraView GetCameraViewByIndex(uint32_t index);
-    ObjectType GetSelectedObjectType();
-    ObjectType GetHoveredObjectType();
+    //ObjectType GetSelectedObjectType();
+    //ObjectType GetHoveredObjectType();
     EditorState GetEditorState();
     EditorViewportSplitMode GetEditorViewportSplitMode();
     SelectionRectangleState& GetSelectionRectangleState();
     EditorMode& GetEditorMode();
+    Axis GetAxisConstraint();
 
     EditorMesh& GetEditorMesh(); // BROKEN / 5% IMPLEMENTED
 
