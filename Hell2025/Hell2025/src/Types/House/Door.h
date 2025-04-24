@@ -8,7 +8,6 @@ struct Door {
     void SetPosition(glm::vec3 position);
     void Update(float deltaTime);
     void CleanUp();
-    void SetMousePickIndex(int mousePickIndex);
     void UpdateRenderItems(); 
     void SubmitRenderItems();
     void Interact();
@@ -40,7 +39,6 @@ private:
     glm::vec3 m_rotation;
     glm::vec3 m_interactPosition;
     float m_currentOpenRotation = 0;
-    int m_mousePickIndex = 0;
     float m_maxOpenRotation = 1.8f;
     glm::mat4 m_doorModelMatrix = glm::mat4(1.0f);
     glm::mat4 m_frameModelMatrix = glm::mat4(1.0f);

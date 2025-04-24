@@ -21,15 +21,8 @@ namespace OpenGLBackEnd {
     const size_t MAX_CHANNEL_COUNT = 4;
     const size_t MAX_DATA_SIZE = MAX_TEXTURE_WIDTH * MAX_TEXTURE_HEIGHT * MAX_CHANNEL_COUNT;
     std::vector<PBO> g_textureBakingPBOs;
-    PBO g_mousePickPBO;
     PBO g_heightMapVerticesReadBackPBO;
     PBO g_heightMapIndicesReadBackPBO;
-    GLuint g_frameBufferHandle = 0;
-    GLuint g_mousePickAttachmentSlot = 0;
-    uint16_t g_mousePickR = 0;
-    uint16_t g_mousePickG = 0;
-    uint16_t g_mousePickB = 0;
-    uint16_t g_mousePickA = 0;
     GLuint g_vertexDataVAO = 0;
     GLuint g_vertexDataVBO = 0;
     GLuint g_vertexDataEBO = 0;
@@ -87,8 +80,6 @@ namespace OpenGLBackEnd {
             PBO& pbo = g_textureBakingPBOs.emplace_back();
             pbo.Init(MAX_DATA_SIZE);
         }
-
-        g_mousePickPBO.Init(2 * sizeof(uint16_t));
 
         // Height map init shit (ABSTRACT ME BETTER!!!!!)
         int vertexBufferSize = HEIGHT_MAP_SIZE * HEIGHT_MAP_SIZE * sizeof(Vertex);
@@ -197,93 +188,6 @@ namespace OpenGLBackEnd {
             glBindBuffer(GL_ARRAY_BUFFER, 0);
             g_allocatedSkinnedVertexBufferSize = vertexCount * sizeof(Vertex);
         }
-    }
-
-   // void AllocateHeightMapVertexBufferSpace(int heightmapCount) {
-   //
-   //     g_heightMapMesh.
-   //
-   // }
-
-    void SetMousePickHandles(GLuint frameBufferHandle, GLuint attachmentSlot) {
-        g_frameBufferHandle = frameBufferHandle;
-        g_mousePickAttachmentSlot = attachmentSlot;
-    }
-
-    void UpdateMousePicking(GLint x, GLint y) {
-        g_mousePickPBO.UpdateState();        
-        if (!g_mousePickPBO.IsSyncComplete()) {
-            //std::cout << "Waiting for PBO sync: " << g_mousePickPBO.GetSyncStatusAsString() << "\n";
-            return;
-        }
-        // Access the data in the PBO
-        const uint16_t* mappedBuffer = reinterpret_cast<const uint16_t*>(g_mousePickPBO.GetPersistentBuffer());
-        if (mappedBuffer) {
-            g_mousePickR = mappedBuffer[0];
-            g_mousePickG = mappedBuffer[1];
-        }
-        if (!g_mousePickPBO.IsSyncInProgress()) {
-            glBindBuffer(GL_PIXEL_PACK_BUFFER, g_mousePickPBO.GetHandle());
-            glBindFramebuffer(GL_FRAMEBUFFER, g_frameBufferHandle);
-            glReadBuffer(g_mousePickAttachmentSlot);
-            glReadPixels(x, y, 1, 1, GL_RG_INTEGER, GL_UNSIGNED_SHORT, nullptr);  // RG UINT
-            //glReadPixels(x, y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);       // RGBA
-            glBindTexture(GL_TEXTURE_2D, 0);
-            g_mousePickPBO.SyncStart();
-        }
-    }
-
-    // UNTESTED!!!!!!!!!!!!
-    // UNTESTED!!!!!!!!!!!!
-    // UNTESTED!!!!!!!!!!!!
-    // UNTESTED!!!!!!!!!!!!
-    void ReadBackEntireTexture(int textureWidth, int textureHeight) {
-        g_mousePickPBO.UpdateState();
-
-        if (!g_mousePickPBO.IsSyncComplete()) {
-            return; // Wait for sync
-        }
-
-        // Prepare a 2D vector to store the pixels
-        std::vector<std::vector<uint16_t>> pixels(textureWidth, std::vector<uint16_t>(textureHeight));
-
-        // Bind PBO for readback
-        glBindBuffer(GL_PIXEL_PACK_BUFFER, g_mousePickPBO.GetHandle());
-        glBindFramebuffer(GL_FRAMEBUFFER, g_frameBufferHandle);
-        glReadBuffer(g_mousePickAttachmentSlot);
-
-        // Read the entire texture into the PBO
-        glReadPixels(0, 0, textureWidth, textureHeight, GL_RG_INTEGER, GL_UNSIGNED_SHORT, nullptr);
-
-        g_mousePickPBO.SyncStart();
-
-        // Map the buffer and copy data into pixels
-        const uint16_t* mappedBuffer = reinterpret_cast<const uint16_t*>(g_mousePickPBO.GetPersistentBuffer());
-        if (mappedBuffer) {
-            for (int y = 0; y < textureHeight; ++y) {
-                for (int x = 0; x < textureWidth; ++x) {
-                    int index = (y * textureWidth + x) * 2; // GL_RG_INTEGER means 2 channels per pixel
-                    pixels[x][y] = mappedBuffer[index];     // Assumes you need only one channel
-                }
-            }
-        }
-
-        // Unbind
-        glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    }
-
-    uint16_t GetMousePickR() {
-        return g_mousePickR;
-    }
-    uint16_t GetMousePickG() {
-        return g_mousePickG;
-    }
-    uint16_t GetMousePickB() {
-        return g_mousePickB;
-    }
-    uint16_t GetMousePickA() {
-        return g_mousePickA;
     }
 
     void AllocateTextureMemory(Texture& texture) {

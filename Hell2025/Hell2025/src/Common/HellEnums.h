@@ -268,3 +268,20 @@ enum struct TrimType {
     TIMBER,
     PLASTER
 };
+
+enum struct TreeType {
+    TREE_LARGE_0 = 0,
+    TREE_LARGE_1,
+    TREE_LARGE_2,
+    UNDEFINED
+};
+
+enum class RendererOverrideState {
+    NONE = 0,
+    BASE_COLOR,
+    NORMALS,
+    RMA,
+    CAMERA_NDOTL,
+    TILE_HEATMAP,
+    STATE_COUNT,
+};

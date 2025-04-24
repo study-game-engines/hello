@@ -3,3 +3,4 @@
 
 #define HEIGHTMAP_SCALE_Y 25.0
 #define HEIGHTMAP_SCALE_XZ 0.25
+#define TILE_SIZE 24

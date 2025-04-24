@@ -55,20 +55,20 @@ struct RenderItem {
     int normalMapTextureIndex;
     int rmaTextureIndex;
 
-    int mousePickType;
-    int mousePickIndex;
+    int objectType;
+    int padding0;
     int baseSkinnedVertex;
     int ignoredViewportIndex;
 
     int exclusiveViewportIndex;
-    int skinned;    // True or false
+    int skinned; // True or false
     uint objectIdLowerBit;
     uint objectIdUpperBit;
 
     float emissiveR;
     float emissiveG;
     float emissiveB;
-    int padding;
+    int castShadows; // True or false
 };
 
 struct Light {
@@ -81,4 +81,14 @@ struct Light {
     float colorB;
     float strength;
     float radius;
+
+    int lightIndex;
+    int shadowMapDirty; // true or false
+    int padding0;
+    int padding1;
+};
+
+struct TileLightData {
+    uint lightCount;
+    uint lightIndices[127];
 };

@@ -144,10 +144,6 @@ void Door::SubmitRenderItems() {
     }
 }
 
-void Door::SetMousePickIndex(int mousePickIndex) {
-    m_mousePickIndex = mousePickIndex;
-}
-
 void Door::Interact() {
     if (m_openingState == OpeningState::CLOSED) {
         m_openingState = OpeningState::OPENING;

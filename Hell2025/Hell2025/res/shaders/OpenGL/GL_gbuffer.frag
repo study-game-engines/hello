@@ -25,9 +25,8 @@
 layout (location = 0) out vec4 BaseColorOut;
 layout (location = 1) out vec4 NormalOut;
 layout (location = 2) out vec4 RMAOut;
-layout (location = 3) out uvec2 MousePickOut;
-layout (location = 4) out vec4 WorldPositionOut;
-layout (location = 5) out vec4 EmissiveOut;
+layout (location = 3) out vec4 WorldPositionOut;
+layout (location = 4) out vec4 EmissiveOut;
 
 in vec2 TexCoord;
 in vec3 Normal;
@@ -36,9 +35,6 @@ in vec3 BiTangent;
 in vec4 WorldPos;
 in vec3 ViewPos;
 in vec3 EmissiveColor;
-
-in flat int MousePickType;
-in flat int MousePickIndex;
 
 void main() {
 #if ENABLE_BINDLESS == 1
@@ -59,7 +55,6 @@ void main() {
     BaseColorOut = vec4(baseColor);
     NormalOut = vec4(normal, 1.0);   
     RMAOut = vec4(rma, 1.0);
-    MousePickOut.rg = uvec2(MousePickType, MousePickIndex);
     WorldPositionOut = vec4(WorldPos.rgb, 1.0);
 
     EmissiveOut = vec4(EmissiveColor, 0);

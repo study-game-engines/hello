@@ -9,31 +9,23 @@ namespace Audio {
     FMOD::System* g_system;
 
     void Init() {
-        // Create the main system object.
+        // Create the main system object
         FMOD_RESULT result = FMOD::System_Create(&g_system);
         if (result != FMOD_OK) {
             std::cerr << "FMOD: Failed to create system object: " << FMOD_ErrorString(result) << "\n";
-            g_system = nullptr; // Ensure g_system is null if creation failed
-            return; // Exit initialization if system creation fails
+            g_system = nullptr;
+            return;
         }
 
-        // --- Set DSP Buffer Size (BEFORE init) ---
-        // This is the primary setting to adjust audio latency.
-        // Smaller buffer length = lower latency, but higher risk of audio glitches (clicks/pops).
-        // Experiment with these values!
-        unsigned int dspBufferLength = 512; // Try values like 1024, 512, 256, 128
-        int          dspNumBuffers = 4;   // Try values like 4, 3, 2
+        unsigned int dspBufferLength = 512;
+        int dspNumBuffers = 4;
 
-        std::cout << "FMOD: Setting DSP buffer size to " << dspBufferLength << " samples * " << dspNumBuffers << " buffers\n";
+        //std::cout << "FMOD: Setting DSP buffer size to " << dspBufferLength << " samples * " << dspNumBuffers << " buffers\n";
         result = g_system->setDSPBufferSize(dspBufferLength, dspNumBuffers);
         if (result != FMOD_OK) {
-             // Log the error but potentially continue, init might still work with defaults
             std::cerr << "FMOD: Warning - Failed to set custom DSP buffer size: " << FMOD_ErrorString(result) << "\n";
         }
-        // --- End of DSP Buffer Setting ---
-
-        // Initialize FMOD.
-        // Uses the buffer settings configured above (or FMOD's default if setDSPBufferSize failed).
+  
         result = g_system->init(AUDIO_CHANNEL_COUNT, FMOD_INIT_NORMAL, nullptr);
         if (result != FMOD_OK) {
             std::cerr << "FMOD: Failed to initialize system object: " << FMOD_ErrorString(result) << "\n";
@@ -42,10 +34,10 @@ namespace Audio {
                 g_system->release();
                 g_system = nullptr;
             }
-            return; // Exit initialization if init fails
+            return;
         }
 
-        std::cout << "FMOD: System initialized successfully.\n";
+        //std::cout << "FMOD: System initialized successfully.\n";
 
         // Create the channel group.
         FMOD::ChannelGroup* channelGroup = nullptr; // Should this be stored globally or returned?
@@ -53,10 +45,6 @@ namespace Audio {
         if (result != FMOD_OK) {
             // Log the error, but initialization itself was successful.
             std::cerr << "FMOD: Warning - Failed to create in-game sound effects channel group: " << FMOD_ErrorString(result) << "\n";
-        }
-        else {
-            std::cout << "FMOD: 'inGameSoundEffects' channel group created.\n";
-            // You might want to store 'channelGroup' somewhere if you need to control it later.
         }
     }
 

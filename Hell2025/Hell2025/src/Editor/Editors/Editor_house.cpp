@@ -134,15 +134,13 @@ namespace Editor {
     void OpenHouseEditor() {
         Audio::PlayAudio(AUDIO_SELECT, 1.0f);
 
-        if (g_currentFilename == "") {
+        if (Editor::GetEditorMode() != EditorMode::HOUSE_EDITOR) {
+
             g_currentFilename = "TestHouse";
             HouseCreateInfo* houseCreateInfo = HouseManager::GetHouseCreateInfoByFilename(g_currentFilename);
             World::LoadSingleHouse(houseCreateInfo);
             World::SetObjectsToInitalState();
-        }
 
-        
-        if (Editor::GetEditorMode() != EditorMode::HOUSE_EDITOR) {
             Editor::SetEditorMode(EditorMode::HOUSE_EDITOR);
             if (Editor::IsEditorClosed()) {
                 Editor::OpenEditor();

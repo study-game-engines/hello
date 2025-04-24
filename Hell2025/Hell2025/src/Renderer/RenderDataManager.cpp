@@ -12,15 +12,18 @@
 #include <span>
 #include <unordered_map>
 
+#include "Timer.hpp"
+
 // Get me out of here
 #include "World/World.h"
 // Get me out of here
 
 namespace RenderDataManager {
     DrawCommandsSet g_drawCommandsSet;
+    FlashLightShadowMapDrawInfo g_flashLightShadowMapDrawInfo;
     RendererData g_rendererData;
     std::vector<AnimatedGameObject*> g_animatedGameObjectsToSkin;
-    std::vector<GPULight> g_gpuLightData;
+    std::vector<GPULight> g_gpuLightsHighRes;
 
     std::vector<HouseRenderItem> g_houseRenderItems;
     std::vector<HouseRenderItem> g_houseOutlineRenderItems;
@@ -36,13 +39,13 @@ namespace RenderDataManager {
     void UpdateViewportFrustums();
     void UpdateViewportData();
     void UpdateRendererData();
-    void UpdateGPULightData();
     void UpdateDrawCommandsSet();
-    void CreateDrawCommands(DrawCommands& drawCommands, std::vector<RenderItem>& renderItems);
+    //void CreateDrawCommands(DrawCommands& drawCommands, std::vector<RenderItem>& renderItems);
+    void CreateDrawCommands(std::vector<DrawIndexedIndirectCommand>& drawCommands, std::vector<RenderItem>& renderItems, Frustum& frustum, int viewportIndex);
     void CreateDrawCommandsSkinned(DrawCommands& drawCommands, std::vector<RenderItem>& renderItems);
     void CreateMultiDrawIndirectCommands(std::vector<DrawIndexedIndirectCommand>& commands, std::span<RenderItem> renderItems, int playerIndex, int instanceOffset);
     void CreateMultiDrawIndirectCommandsSkinned(std::vector<DrawIndexedIndirectCommand>& commands, std::span<RenderItem> renderItems, int playerIndex, int instanceOffset);
-    void CreateShadowMapMultiDrawIndirectCommands();
+    void CreateShadowCubeMapMultiDrawIndirectCommands(std::vector<DrawIndexedIndirectCommand>& commands, uint32_t faceIndex, GPULight& gpuLight);
 
     int EncodeBaseInstance(int playerIndex, int instanceOffset);
     void DecodeBaseInstance(int baseInstance, int& playerIndex, int& instanceOffset);
@@ -50,19 +53,19 @@ namespace RenderDataManager {
     void BeginFrame() {
         g_animatedGameObjectsToSkin.clear();
         g_decalRenderItems.clear();
+        g_houseOutlineRenderItems.clear();
+        g_houseRenderItems.clear();
         g_renderItems.clear();
         g_outlineRenderItems.clear();
-        g_houseRenderItems.clear();
-        g_houseOutlineRenderItems.clear();
+
+        g_gpuLightsHighRes.clear();
     }
 
     void Update() {
         UpdateViewportData();
         UpdateViewportFrustums();
-        UpdateGPULightData();
         UpdateRendererData();
         UpdateDrawCommandsSet();   
-        CreateShadowMapMultiDrawIndirectCommands();
     }
 
     void UpdateViewportData() {
@@ -136,39 +139,39 @@ namespace RenderDataManager {
         }
     }
 
-    void UpdateGPULightData() {
-        int maxLights = 10;
-
-        g_gpuLightData.clear();
-        g_gpuLightData.resize(maxLights);
-
-        // Wipe any old light data
-        for (int i = 0; i < g_gpuLightData.size(); i++) {
-            GPULight& gpuLight = g_gpuLightData[i];
-            gpuLight.posX = 0.0f;
-            gpuLight.posY = 0.0f;
-            gpuLight.posZ = 0.0f;
-            gpuLight.colorR = 0.0f;
-            gpuLight.colorG = 0.0f;
-            gpuLight.colorB = 0.0f;
-            gpuLight.radius = 0.0f;
-            gpuLight.strength = 0.0f;
-        }
-
-        // Populate with new light data
-        for (int i = 0; i < World::GetLights().size() && i < maxLights; i++) {
-            Light& light = World::GetLights()[i];
-            GPULight& gpuLight = g_gpuLightData[i];
-            gpuLight.posX = light.GetPosition().x;
-            gpuLight.posY = light.GetPosition().y;
-            gpuLight.posZ = light.GetPosition().z;
-            gpuLight.colorR = light.GetColor().r;
-            gpuLight.colorG = light.GetColor().g;
-            gpuLight.colorB = light.GetColor().b;
-            gpuLight.radius = light.GetRadius();
-            gpuLight.strength = light.GetStrength();
-        }
-    }
+    //void UpdateGPULightData() {
+    //    int maxLights = 10;
+    //
+    //    g_gpuLightData.clear();
+    //    g_gpuLightData.resize(maxLights);
+    //
+    //    // Wipe any old light data
+    //    for (int i = 0; i < g_gpuLightData.size(); i++) {
+    //        GPULight& gpuLight = g_gpuLightData[i];
+    //        gpuLight.posX = 0.0f;
+    //        gpuLight.posY = 0.0f;
+    //        gpuLight.posZ = 0.0f;
+    //        gpuLight.colorR = 0.0f;
+    //        gpuLight.colorG = 0.0f;
+    //        gpuLight.colorB = 0.0f;
+    //        gpuLight.radius = 0.0f;
+    //        gpuLight.strength = 0.0f;
+    //    }
+    //
+    //    // Populate with new light data
+    //    for (int i = 0; i < World::GetLights().size() && i < maxLights; i++) {
+    //        Light& light = World::GetLights()[i];
+    //        GPULight& gpuLight = g_gpuLightData[i];
+    //        gpuLight.posX = light.GetPosition().x;
+    //        gpuLight.posY = light.GetPosition().y;
+    //        gpuLight.posZ = light.GetPosition().z;
+    //        gpuLight.colorR = light.GetColor().r;
+    //        gpuLight.colorG = light.GetColor().g;
+    //        gpuLight.colorB = light.GetColor().b;
+    //        gpuLight.radius = light.GetRadius();
+    //        gpuLight.strength = light.GetStrength();
+    //    }
+    //}
 
     void UpdateRendererData() {
         const RendererSettings& rendererSettings = Renderer::GetCurrentRendererSettings();
@@ -193,6 +196,38 @@ namespace RenderDataManager {
     }
 
     void UpdateDrawCommandsSet() {
+
+        /*
+        if (Input::KeyDown(HELL_KEY_T)) {
+
+            int iterations = 100;
+
+            {
+                Timer("UpdateRenderItemAABB yours)");
+                for (int i = 0; i < iterations; i++) {
+                    for (RenderItem& renderItem : g_renderItems) {
+                        Util::UpdateRenderItemAABBFastB(renderItem);
+                    }
+                }
+            }
+            {
+                Timer("UpdateRenderItemAABB mine vec4()");
+                for (int i = 0; i < iterations; i++) {
+                    for (RenderItem& renderItem : g_renderItems) {
+                        Util::UpdateRenderItemAABBFastA(renderItem);
+                    }
+                }
+            }
+            {
+                Timer("UpdateRenderItemAABB mine vec3()");
+                for (int i = 0; i < iterations; i++) {
+                    for (RenderItem& renderItem : g_renderItems) {
+                        Util::UpdateRenderItemAABB(renderItem);
+                    }
+                }
+            }
+        }*/
+
         g_instanceData.clear();
         auto& set = g_drawCommandsSet;
 
@@ -200,57 +235,101 @@ namespace RenderDataManager {
         renderItems.insert(renderItems.end(), g_renderItems.begin(), g_renderItems.end());
         renderItems.insert(renderItems.end(), World::GetRenderItems().begin(), World::GetRenderItems().end());
 
-        CreateDrawCommands(set.geometry, renderItems);
-        CreateDrawCommands(set.geometryBlended, World::GetRenderItemsBlended());
-        CreateDrawCommands(set.geometryAlphaDiscarded, World::GetRenderItemsAlphaDiscarded());
-        CreateDrawCommands(set.hairTopLayer, World::GetRenderItemsHairTopLayer());
-        CreateDrawCommands(set.hairBottomLayer, World::GetRenderItemsHairBottomLayer());
-        CreateDrawCommandsSkinned(set.skinnedGeometry, World::GetSkinnedRenderItems());
-    }
-
-    void CreateDrawCommands(DrawCommands& drawCommands, std::vector<RenderItem>& renderItems) {
-        SortRenderItems(renderItems);
-
-        // Update all RenderItem aabbs (REPLACE THIS ONCE YOU HAVE PHYSX AGAIN)
-        // Update all RenderItem aabbs (REPLACE THIS ONCE YOU HAVE PHYSX AGAIN)
-        // Update all RenderItem aabbs (REPLACE THIS ONCE YOU HAVE PHYSX AGAIN)
-        // Update all RenderItem aabbs (REPLACE THIS ONCE YOU HAVE PHYSX AGAIN)
-        for (RenderItem& renderItem : renderItems) {
-            Util::UpdateRenderItemAABB(renderItem);
-        }
-
         // Clear any commands from last frame
         for (int i = 0; i < 4; i++) {
-            drawCommands.perViewport[i].clear();
+            set.geometry[i].clear();
+            set.geometryBlended[i].clear();
+            set.geometryAlphaDiscarded[i].clear();
+            set.hairTopLayer[i].clear();
+            set.hairBottomLayer[i].clear();
+            g_flashLightShadowMapDrawInfo.flashlightShadowMapGeometry[i].clear();
+            g_flashLightShadowMapDrawInfo.heightMapChunkIndices[i].clear();
+            g_flashLightShadowMapDrawInfo.houseMeshRenderItems[i].clear();
         }
 
-        // Iterate the viewports and build the draw commands
+        std::vector<RenderItem>& renderItemsBlended = World::GetRenderItemsBlended();
+        std::vector<RenderItem>& geometryAlphaDiscarded = World::GetRenderItemsAlphaDiscarded();
+        std::vector<RenderItem>& hairTopLayer = World::GetRenderItemsHairTopLayer();
+        std::vector<RenderItem>& hairBottomLayer = World::GetRenderItemsHairBottomLayer();
+
+        SortRenderItems(renderItems);
+        SortRenderItems(renderItemsBlended);
+        SortRenderItems(geometryAlphaDiscarded);
+        SortRenderItems(hairTopLayer);
+        SortRenderItems(hairBottomLayer);
+
         for (int i = 0; i < 4; i++) {
             Viewport* viewport = ViewportManager::GetViewportByIndex(i);
             if (!viewport->IsVisible()) continue;
 
-            // Store the instance offset for this player
-            int instanceStart = g_instanceData.size();
+            Frustum& frustum = viewport->GetFrustum();
+            CreateDrawCommands(set.geometry[i], renderItems, frustum, i);
+            CreateDrawCommands(set.geometryBlended[i], renderItemsBlended, frustum, i);
+            CreateDrawCommands(set.geometryAlphaDiscarded[i], geometryAlphaDiscarded, frustum, i);
+            CreateDrawCommands(set.hairTopLayer[i], hairTopLayer, frustum, i);
+            CreateDrawCommands(set.hairBottomLayer[i], hairBottomLayer, frustum, i);
+        }
 
-            // Preallocate an estimate
-            g_instanceData.reserve(g_instanceData.size() + renderItems.size());
+        CreateDrawCommandsSkinned(set.skinnedGeometry, World::GetSkinnedRenderItems());
 
-            // Append new render items to the global instance data
-            for (const RenderItem& renderItem : renderItems) {
-                if (renderItem.ignoredViewportIndex != -1 && renderItem.ignoredViewportIndex == i) continue;
-                if (renderItem.exclusiveViewportIndex != -1 && renderItem.exclusiveViewportIndex != i) continue;
+        for (int i = 0; i < g_gpuLightsHighRes.size(); i++) {
+            GPULight& gpuLight = g_gpuLightsHighRes[i];
+            for (uint32_t j = 0; j < 6; j++) {
+                CreateShadowCubeMapMultiDrawIndirectCommands(set.shadowMapHiRes[i][j], j, gpuLight);
+            }
+        }
 
-                // Frustum cull it
-                AABB aabb(renderItem.aabbMin, renderItem.aabbMax);
-                if (viewport->GetFrustum().IntersectsAABB(aabb)) {
-                    g_instanceData.push_back(renderItem);
+        // Flashlight stuff
+        for (int i = 0; i < Game::GetLocalPlayerCount(); i++) {
+            Player* player = Game::GetLocalPlayerByIndex(i);
+            if (!player) continue;
+
+            Frustum flashLightFrustum = player->GetFlashlightFrustum();
+
+            // Build multidraw commands for regular geometry
+            CreateDrawCommands(g_flashLightShadowMapDrawInfo.flashlightShadowMapGeometry[i], renderItems, flashLightFrustum, i);
+
+            // Frustum cull the heightmap chunks
+            std::vector<HeightMapChunk>& chunks = World::GetHeightMapChunks();
+            for (int i = 0; i < chunks.size(); i++) {
+                HeightMapChunk& chunk = chunks[i];
+                if (flashLightFrustum.IntersectsAABBFast(AABB(chunk.aabbMin, chunk.aabbMax))) {
+                    g_flashLightShadowMapDrawInfo.heightMapChunkIndices->push_back(i);
                 }
             }
 
-            // Create indirect draw commands using the stored offset
-            std::span<RenderItem> instanceView(g_instanceData.begin() + instanceStart, g_instanceData.end());
-            CreateMultiDrawIndirectCommands(drawCommands.perViewport[i], instanceView, i, instanceStart);
+            // Frustum cull the house mesh
+            g_flashLightShadowMapDrawInfo.houseMeshRenderItems->reserve(g_houseRenderItems.size());
+            for (int i = 0; i < g_houseRenderItems.size(); i++) {
+                HouseRenderItem& renderItem = g_houseRenderItems[i];
+                if (flashLightFrustum.IntersectsAABBFast(renderItem)) {
+                    g_flashLightShadowMapDrawInfo.houseMeshRenderItems->push_back(renderItem);
+                }
+            }
         }
+    }
+
+    void CreateDrawCommands(std::vector<DrawIndexedIndirectCommand>& drawCommands, std::vector<RenderItem>& renderItems, Frustum& frustum, int viewportIndex) {
+        // Store the instance offset for this list of commands
+        int instanceStart = g_instanceData.size();
+
+        // Preallocate an estimate
+        g_instanceData.reserve(g_instanceData.size() + renderItems.size());
+
+        // Append new render items to the global instance data
+        for (const RenderItem& renderItem : renderItems) {
+            if (renderItem.ignoredViewportIndex != -1 && renderItem.ignoredViewportIndex == viewportIndex) continue;
+            if (renderItem.exclusiveViewportIndex != -1 && renderItem.exclusiveViewportIndex != viewportIndex) continue;
+
+            // Frustum cull it
+            if (frustum.IntersectsAABBFast(renderItem)) {
+                g_instanceData.push_back(renderItem);
+            }
+        }
+
+        // Create indirect draw commands using the stored offset
+        std::span<RenderItem> instanceView(g_instanceData.begin() + instanceStart, g_instanceData.end());
+        CreateMultiDrawIndirectCommands(drawCommands, instanceView, viewportIndex, instanceStart);
     }
 
     void CreateDrawCommandsSkinned(DrawCommands& drawCommands, std::vector<RenderItem>& renderItems) {
@@ -286,42 +365,36 @@ namespace RenderDataManager {
         }
     }
 
-    void CreateShadowMapMultiDrawIndirectCommands() {
+    void CreateShadowCubeMapMultiDrawIndirectCommands(std::vector<DrawIndexedIndirectCommand>& drawCommands, uint32_t faceIndex, GPULight& gpuLight) {
+        drawCommands.clear();
 
-            //    std::vector<Light>& lights = World::GetLights();
-            //
-            //    // ATTENTION: This is for hi res shadow maps only!
-            //    // ATTENTION: This is for hi res shadow maps only!
-            //    // ATTENTION: This is for hi res shadow maps only!
-            //
-            //    // Shadow map render draw commandsX
-            //    for (int i = 0; i < lights.size() && i < SHADOWMAP_HI_RES_COUNT; i++) {
-            //        Light& light = lights[i];
-            //           
-            //        for (int face = 0; face < 6; face++) {
-            //            Frustum* frustum = light.GetFrustumByFaceIndex(face);
-            //
-            //
-            //
-            //            for (auto& renderItem : g_renderItems) {
-            //
-            //            }
-            //
-            //            //CreateMultiDrawIndirectCommands(drawCommands.perViewport[i], instanceView, i, instanceStart);
-            //
-            //            // Geometry
-            //            //g_shadowMapGeometryDrawInfo[i][face].baseInstance = g_shadowMapGeometryRenderItems.size();
-            //            //g_shadowMapGeometryDrawInfo[i][face].instanceCount = 0;
-            //            //for (auto& renderItem : g_sceneGeometryRenderItems) {
-            //            //    if (renderItem.castShadow && frustum.IntersectsAABBFast(renderItem)) {
-            //            //        g_shadowMapGeometryRenderItems.push_back(renderItem);
-            //            //        g_shadowMapGeometryDrawInfo[i][face].instanceCount++;
-            //            //    }
-            //            //}
-            //            //g_shadowMapGeometryDrawInfo[i][face].commands = CreateMultiDrawIndirectCommands(g_shadowMapGeometryRenderItems, g_shadowMapGeometryDrawInfo[i][face].baseInstance, g_shadowMapGeometryDrawInfo[i][face].instanceCount);
-            //        }
-            //}
+        //std::string name = "light " + std::to_string(gpuLight.lightIndex);
+        //Timer timer(name);
+        
+        Light* light = World::GetLightByIndex(gpuLight.lightIndex);
+        if (!light) return;
 
+        Frustum* frustum = light->GetFrustumByFaceIndex(faceIndex);
+        if (!frustum) return;
+
+        // Store the instance offset for this player
+        int instanceStart = g_instanceData.size();
+
+        // Preallocate an estimate
+        g_instanceData.reserve(g_instanceData.size() + g_renderItems.size());
+
+        // Append new render items to the global instance data if it's within light frustum
+        // g_renderItems is already sorted by this point
+        // but if anything breaks, check here! (maybe you re-ordered things)
+        for (const RenderItem& renderItem : g_renderItems) {
+            if (frustum->IntersectsAABBFast(renderItem)) {
+                g_instanceData.push_back(renderItem);
+            }
+        }
+
+        // Create indirect draw commands using the stored offset
+        std::span<RenderItem> instanceView(g_instanceData.begin() + instanceStart, g_instanceData.end());
+        CreateMultiDrawIndirectCommands(drawCommands, instanceView, -1, instanceStart);
     }
 
     void CreateMultiDrawIndirectCommands(std::vector<DrawIndexedIndirectCommand>& commands, std::span<RenderItem> renderItems, int playerIndex, int instanceOffset) {
@@ -382,6 +455,10 @@ namespace RenderDataManager {
         }
     }
 
+    void SubmitGPULightHighRes(Light& light) {
+        
+    }
+
     int EncodeBaseInstance(int playerIndex, int instanceOffset) {
         return (playerIndex << VIEWPORT_INDEX_SHIFT) | instanceOffset;
     }
@@ -426,6 +503,10 @@ namespace RenderDataManager {
         return g_viewportData;
     }
 
+    const std::vector<RenderItem>& GetRenderItems() {
+        return g_renderItems;
+    }
+
     const std::vector<RenderItem>& GetDecalRenderItems() {
         return g_decalRenderItems;
     }
@@ -442,11 +523,34 @@ namespace RenderDataManager {
         return g_drawCommandsSet;
     }
 
-    const std::vector<GPULight>& GetGPULightData() {
-        return g_gpuLightData;
+    const FlashLightShadowMapDrawInfo& GetFlashLightShadowMapDrawInfo() {
+        return g_flashLightShadowMapDrawInfo;
+    }
+
+    const std::vector<GPULight>& GetGPULightsHighRes() {
+        return g_gpuLightsHighRes;
     }
 
     // Submissions
+    void SubmitGPULightHighRes(uint32_t lightIndex) {
+        if (g_gpuLightsHighRes.size() >= SHADOWMAP_HI_RES_COUNT) return;
+
+        Light* light = World::GetLightByIndex(lightIndex);
+        if (!light) return;
+
+        GPULight& gpuLight = g_gpuLightsHighRes.emplace_back();
+        gpuLight.colorR = light->GetColor().r;
+        gpuLight.colorG = light->GetColor().g;
+        gpuLight.colorB = light->GetColor().b;
+        gpuLight.posX = light->GetPosition().x;
+        gpuLight.posY = light->GetPosition().y;
+        gpuLight.posZ = light->GetPosition().z;
+        gpuLight.radius = light->GetRadius();
+        gpuLight.strength = light->GetStrength();
+        gpuLight.shadowMapDirty = true;
+        gpuLight.lightIndex = lightIndex;
+    }
+
     void SubmitDecalRenderItem(const RenderItem& renderItem) {
         g_decalRenderItems.push_back(renderItem);
     }

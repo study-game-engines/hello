@@ -16,14 +16,13 @@ namespace OpenGLRenderer {
         RendererSettings& renderSettings = Renderer::GetCurrentRendererSettings();
         int peelCount = renderSettings.depthPeelCount;
         if (Input::KeyPressed(HELL_KEY_8) && peelCount < 7) {
-            Audio::PlayAudio("UI_Select.wav", 1.0f);
-            Config::SetDepthPeelCount(peelCount + 1);
-            std::cout << "Depth peel layer count: " << peelCount << "\n";
+            renderSettings.depthPeelCount++;
+            std::cout << "Depth peel layer count: " << renderSettings.depthPeelCount << "\n";
         }
         if (Input::KeyPressed(HELL_KEY_9) && peelCount > 0) {
             Audio::PlayAudio("UI_Select.wav", 1.0f);
-            Config::SetDepthPeelCount(peelCount - 1);
-            std::cout << "Depth peel layer count: " << peelCount << "\n";
+            renderSettings.depthPeelCount--;
+            std::cout << "Depth peel layer count: " << renderSettings.depthPeelCount << "\n";
         }
     }
 
@@ -49,8 +48,8 @@ namespace OpenGLRenderer {
         RendererSettings& renderSettings = Renderer::GetCurrentRendererSettings();
 
         // Render all top then all Bottom layers
-        RenderHairLayer(drawInfoSet.hairTopLayer, renderSettings.depthPeelCount);
-        RenderHairLayer(drawInfoSet.hairBottomLayer, renderSettings.depthPeelCount);
+        RenderHairLayer(&drawInfoSet.hairTopLayer, renderSettings.depthPeelCount);
+        RenderHairLayer(&drawInfoSet.hairBottomLayer, renderSettings.depthPeelCount);
 
         shader->Use();
         glActiveTexture(GL_TEXTURE0);
@@ -62,7 +61,7 @@ namespace OpenGLRenderer {
         glDispatchCompute((gBuffer->GetWidth() + 7) / 8, (gBuffer->GetHeight() + 7) / 8, 1);
     }
 
-    void RenderHairLayer(const DrawCommands& drawCommands, int peelCount) {
+    void RenderHairLayer(const std::vector<DrawIndexedIndirectCommand>(*drawCommands)[4], int peelCount) {
         const Resolutions& resolutions = Config::GetResolutions();
         OpenGLFrameBuffer* gBuffer = GetFrameBuffer("GBuffer");
         OpenGLFrameBuffer* hairFrameBuffer = GetFrameBuffer("Hair");
@@ -79,55 +78,50 @@ namespace OpenGLRenderer {
         hairFrameBuffer->Bind();
         hairFrameBuffer->ClearAttachment("ViewspaceDepthPrevious", 1.0f);
 
+        static bool test = false;
+        test = (Input::KeyDown(HELL_KEY_T));
+
         for (int j = 0; j < peelCount; j++) {
 
             // Viewspace depth pass
+            depthPeelShader->Use();
+            glBindTextureUnit(3, hairFrameBuffer->GetColorAttachmentHandleByName("ViewspaceDepthPrevious"));
+            SetRasterizerState("HairViewspaceDepth");
+            OpenGLRenderer::BlitFrameBufferDepth(gBuffer, hairFrameBuffer);
+
             for (int i = 0; i < 4; i++) {
                 Viewport* viewport = ViewportManager::GetViewportByIndex(i);
                 if (viewport->IsVisible()) {
                     OpenGLRenderer::SetViewport(hairFrameBuffer, viewport);
-                    OpenGLRenderer::BlitFrameBufferDepth(gBuffer, hairFrameBuffer, viewport);
-                    OpenGLRenderer::ClearFrameBufferByViewport(hairFrameBuffer, "ViewspaceDepth", viewport, 0.0f);
-
-                    hairFrameBuffer->Bind();
                     hairFrameBuffer->DrawBuffer("ViewspaceDepth");
 
-                    depthPeelShader->Use();
-
-                    glBindTextureUnit(3, hairFrameBuffer->GetColorAttachmentHandleByName("ViewspaceDepthPrevious"));
-
-                    SetRasterizerState("HairViewspaceDepth");
-
                     if (BackEnd::RenderDocFound()) {
-                        SplitMultiDrawIndirect(depthPeelShader, drawCommands.perViewport[i]);
+                        SplitMultiDrawIndirect(depthPeelShader, (*drawCommands)[i]);
                     }
                     else {
-                        MultiDrawIndirect(drawCommands.perViewport[i]);
+                        MultiDrawIndirect((*drawCommands)[i]);
                     }
                 }
             }
             // Color pass
+            hairFrameBuffer->ClearAttachment("Lighting", 0.0f, 0.0f, 0.0f, 0.0f);
+            hairFrameBuffer->DrawBuffers({ "Lighting", "ViewspaceDepthPrevious" });
+
+            hairLightingShader->Use();
+            glBindTextureUnit(3, hairFrameBuffer->GetColorAttachmentHandleByName("ViewspaceDepth"));
+            glBindTextureUnit(4, AssetManager::GetTextureByName("Flashlight2")->GetGLTexture().GetHandle());
+            SetRasterizerState("HairLighting");
+
             for (int i = 0; i < 4; i++) {
                 Viewport* viewport = ViewportManager::GetViewportByIndex(i);
                 if (viewport->IsVisible()) {
                     OpenGLRenderer::SetViewport(hairFrameBuffer, viewport);
-                    OpenGLRenderer::ClearFrameBufferByViewport(hairFrameBuffer, "Lighting", viewport, 0.0f, 0.0f, 0.0f, 0.0f);
-
-                    hairFrameBuffer->Bind();
-                    hairFrameBuffer->DrawBuffers({ "Lighting", "ViewspaceDepthPrevious" });
-
-                    hairLightingShader->Use();
-
-                    glBindTextureUnit(3, hairFrameBuffer->GetColorAttachmentHandleByName("ViewspaceDepth"));
-                    glBindTextureUnit(4, AssetManager::GetTextureByName("Flashlight2")->GetGLTexture().GetHandle());
-
-                    SetRasterizerState("HairLighting");
 
                     if (BackEnd::RenderDocFound()) {
-                        SplitMultiDrawIndirect(hairLightingShader, drawCommands.perViewport[i]);
+                        SplitMultiDrawIndirect(hairLightingShader, (*drawCommands)[i]);
                     }
                     else {
-                        MultiDrawIndirect(drawCommands.perViewport[i]);
+                        MultiDrawIndirect((*drawCommands)[i]);
                     }
                 }
             }

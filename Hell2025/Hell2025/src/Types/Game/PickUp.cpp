@@ -151,10 +151,6 @@ void PickUp::CleanUp() {
     Physics::MarkRigidDynamicForRemoval(m_physicsId);
 }
 
-void PickUp::SetMousePickIndex(int mousePickIndex) {
-    m_mousePickIndex = mousePickIndex;
-}
-
 void PickUp::SetPosition(glm::vec3 position) {
     m_initialTransform.position = position;
 }
@@ -172,7 +168,6 @@ void PickUp::UpdateRenderItems() {
             Material* material = AssetManager::GetMaterialByIndex(m_materialIndices[i]);
             RenderItem& renderItem = m_renderItems.emplace_back();
             renderItem.objectType = (int)ObjectType::PICK_UP;
-            renderItem.mousePickIndex = m_mousePickIndex;
             renderItem.modelMatrix = GetModelMatrix();
             renderItem.inverseModelMatrix = glm::inverse(renderItem.modelMatrix);
             renderItem.meshIndex = m_model->GetMeshIndices()[i];       

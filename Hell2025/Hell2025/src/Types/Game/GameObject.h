@@ -25,7 +25,6 @@ struct GameObject {
     void SetMeshMaterialByMeshName(const std::string& meshName, const std::string& materialName);
     void SetMeshBlendingMode(const std::string& meshName, BlendingMode blendingMode);
     void SetMeshBlendingModes(BlendingMode blendingMode);
-    void SetMousePickIndex(int index);
     void PrintMeshNames();
     void UpdateRenderItems();
     void SetConvexHullsFromModel(const std::string modelName);
@@ -51,7 +50,6 @@ struct GameObject {
 private:
     uint64_t m_physicsId = 0;
     uint64_t m_objectId = 0;
-    int m_mousePickIndex = 0;
     bool m_selected = false;
     bool m_hasPhysics = false;
     std::vector<RenderItem> m_renderItems;

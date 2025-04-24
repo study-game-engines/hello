@@ -336,6 +336,11 @@ namespace Gizmo {
                 SetEuler(glm::vec3(0.0f, 0.0f, 0.0f));
             }
         }
+
+        // Snap to grid
+        if (Input::KeyDown(HELL_KEY_LEFT_SHIFT_GLFW)) {
+            g_gizmoPosition = glm::round(g_gizmoPosition * 10.0f) / 10.0f;
+        }
     }
 
     

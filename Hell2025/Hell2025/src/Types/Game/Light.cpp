@@ -54,10 +54,10 @@ void Light::UpdateRenderItems() {
         for (uint32_t meshIndex : m_model0->GetMeshIndices()) {
             RenderItem& renderItem = m_renderItems.emplace_back();
             renderItem.objectType = (int)ObjectType::LIGHT;
-            renderItem.mousePickIndex = m_mousePickIndex;
             renderItem.modelMatrix = m_transform0.to_mat4();
             renderItem.inverseModelMatrix = glm::inverse(renderItem.modelMatrix);
             renderItem.meshIndex = meshIndex;
+            renderItem.castShadows = false;
             if (m_material) {
                 renderItem.baseColorTextureIndex = m_material->m_basecolor;
                 renderItem.normalMapTextureIndex = m_material->m_normal;
@@ -76,10 +76,10 @@ void Light::UpdateRenderItems() {
         for (uint32_t meshIndex : m_model1->GetMeshIndices()) {
             RenderItem& renderItem = m_renderItems.emplace_back();
             renderItem.objectType = (int)ObjectType::LIGHT;
-            renderItem.mousePickIndex = m_mousePickIndex;
             renderItem.modelMatrix = m_transform1.to_mat4();
             renderItem.inverseModelMatrix = glm::inverse(renderItem.modelMatrix);
             renderItem.meshIndex = meshIndex;
+            renderItem.castShadows = false;
             if (m_material) {
                 renderItem.baseColorTextureIndex = m_material->m_basecolor;
                 renderItem.normalMapTextureIndex = m_material->m_normal;
@@ -97,7 +97,6 @@ void Light::UpdateRenderItems() {
         for (uint32_t meshIndex : m_model2->GetMeshIndices()) {
             RenderItem& renderItem = m_renderItems.emplace_back();
             renderItem.objectType = (int)ObjectType::LIGHT;
-            renderItem.mousePickIndex = m_mousePickIndex;
             renderItem.modelMatrix = m_transform2.to_mat4();
             renderItem.inverseModelMatrix = glm::inverse(renderItem.modelMatrix);
             renderItem.meshIndex = meshIndex;
@@ -119,10 +118,6 @@ void Light::UpdateRenderItems() {
         Util::UpdateRenderItemAABB(renderItem);
         Util::PackUint64(m_objectId, renderItem.objectIdLowerBit, renderItem.objectIdUpperBit);
     }
-}
-
-void Light::SetMousePickIndex(int index) {
-    m_mousePickIndex = index;
 }
 
 void Light::SetPosition(glm::vec3 position) {

@@ -218,7 +218,7 @@ namespace OpenGLRenderer {
                     //    continue;
                     //}
                 
-                    if (frustum.IntersectsAABB(chunkAABB)) {
+                    if (frustum.IntersectsAABBFast(chunkAABB)) {
                         float xOffset = x * CHUNK_SIZE_WORLDSPACE;
                         float zOffset = z * CHUNK_SIZE_WORLDSPACE;
                         chunkOffsets.emplace_back(vecXZ(xOffset, zOffset));
@@ -277,7 +277,7 @@ namespace OpenGLRenderer {
         OpenGLRenderer::SetViewport(gBuffer, viewport);
 
         gBuffer->Bind();
-        gBuffer->DrawBuffers({ "BaseColor", "Normal", "RMA", "MousePick", "WorldSpacePosition", "Emissive" });
+        gBuffer->DrawBuffers({ "BaseColor", "Normal", "RMA", "WorldSpacePosition", "Emissive" });
            
         glm::mat4 projectionView = viewportData[viewportIndex].projectionView;
 

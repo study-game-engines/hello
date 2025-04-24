@@ -83,7 +83,7 @@ namespace BackEnd {
         Physics::Init();
         ImGuiBackEnd::Init();
 
-        Modelling::Init();
+        //Modelling::Init();
 
         glfwShowWindow(static_cast<GLFWwindow*>(BackEnd::GetWindowPointer()));
         return true;
@@ -123,15 +123,6 @@ namespace BackEnd {
         Physics::UpdateHeightFields();
 
         Modelling::Update();
-
-        // Mouse picking
-        float textureWidth = resolutions.gBuffer.x;
-        float textureHeight = resolutions.gBuffer.y;
-        float aspectX = textureWidth / (float)BackEnd::GetCurrentWindowWidth();
-        float aspectY = textureHeight / (float)BackEnd::GetCurrentWindowHeight();
-        int x = Input::GetMouseX() * aspectX;
-        int y = textureHeight - (Input::GetMouseY() * aspectY);
-        BackEnd::UpdateMousePicking(x, y);
 
         World::SubmitRenderItems();
 
@@ -252,31 +243,6 @@ namespace BackEnd {
         return g_presentTargetHeight;
     }
 
-    void UpdateMousePicking(int x, int y) {
-        if (g_api == API::OPENGL) {
-            OpenGLBackEnd::UpdateMousePicking(x, y);
-        }
-        if (g_api == API::VULKAN) {
-            // TODO: VulkanBackEnd::UpdateMousePicking(x, y);
-        }
-    }
-
-    uint16_t GetMousePickR() {
-        switch (g_api) {
-        case API::OPENGL: return OpenGLBackEnd::GetMousePickR();
-        case API::VULKAN: return 0; // TODO
-        default: return 0;
-        }
-    }
-
-    uint16_t GetMousePickG() {
-        switch (g_api) {
-        case API::OPENGL: return OpenGLBackEnd::GetMousePickG();
-        case API::VULKAN: return 0; // TODO
-        default: return 0;
-        }
-    }
-
     void CheckForRenderDoc() {
         #ifdef _WIN32
         HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, GetCurrentProcessId());
@@ -321,10 +287,10 @@ namespace BackEnd {
         }
 
         // Bail early if player 1 is playing piano
-        Player* player = Game::GetLocalPlayerByIndex(0);
-        if (player && player->IsPlayingPiano()) {
-              return;
-        }
+        //Player* player = Game::GetLocalPlayerByIndex(0);
+        //if (player && player->IsPlayingPiano()) {
+        //      return;
+        //}
 
         if (Input::KeyPressed(HELL_KEY_K)) {
             Game::RespawnPlayers();
@@ -333,12 +299,12 @@ namespace BackEnd {
         if (Input::KeyPressed(HELL_KEY_H)) {
             Renderer::HotloadShaders();
         }
-        if (Input::KeyPressed(HELL_KEY_F9)) {
-            player->SetFootPosition(glm::vec3(14.11f, 0.0f, 18.24f));
-            player->GetCamera().SetEulerRotation(glm::vec3(-0.19f, -1.36f, 0.0f));
-            BackEnd::ToggleBindlessTextures();
-            Renderer::HotloadShaders();
-        }
+        //if (Input::KeyPressed(HELL_KEY_F9)) {
+        //    player->SetFootPosition(glm::vec3(14.11f, 0.0f, 18.24f));
+        //    player->GetCamera().SetEulerRotation(glm::vec3(-0.19f, -1.36f, 0.0f));
+        //    BackEnd::ToggleBindlessTextures();
+        //    Renderer::HotloadShaders();
+        //}
         if (Input::KeyPressed(HELL_KEY_ESCAPE)) {
             BackEnd::ForceCloseWindow();
         }

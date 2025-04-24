@@ -21,6 +21,7 @@ namespace RenderDataManager {
     void DecodeBaseInstance(int baseInstance, int& playerIndex, int& instanceOffset);
 
     // Submissions
+    void SubmitGPULightHighRes(uint32_t lightIndex);
     void SubmitDecalRenderItem(const RenderItem& renderItem);
     void SubmitRenderItem(const RenderItem& renderItem);
     void SubmitRenderItems(const std::vector<RenderItem>& renderItems);
@@ -34,13 +35,15 @@ namespace RenderDataManager {
     void SubmitOutlineRenderItems(const std::vector<HouseRenderItem>& renderItems);
 
     const RendererData& GetRendererData();
-    const std::vector<GPULight>& GetGPULightData();
+    const std::vector<GPULight>& GetGPULightsHighRes();
     const std::vector<HouseRenderItem>& GetHouseRenderItems();
     const std::vector<HouseRenderItem>& GetHouseOutlineRenderItems();
+    const std::vector<RenderItem>& GetRenderItems();
     const std::vector<RenderItem>& GetDecalRenderItems();
     const std::vector<RenderItem>& GetInstanceData();
     const std::vector<RenderItem>& GetOutlineRenderItems();
     const std::vector<ViewportData>& GetViewportData();
     const DrawCommandsSet& GetDrawInfoSet();
+    const FlashLightShadowMapDrawInfo& GetFlashLightShadowMapDrawInfo();
 
 }

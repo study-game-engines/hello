@@ -45,9 +45,7 @@ namespace World {
         g_renderItemsHairTopLayer.clear();
         g_renderItemsHairBottomLayer.clear();
 
-        int mousePickIndex = 0;
         for (PickUp& pickUp : pickUps) {
-            pickUp.SetMousePickIndex(mousePickIndex++);
             g_renderItems.insert(g_renderItems.end(), pickUp.GetRenderItems().begin(), pickUp.GetRenderItems().end());
         }
 

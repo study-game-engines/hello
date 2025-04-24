@@ -100,6 +100,8 @@ namespace Util {
 
     // Rendering
     void UpdateRenderItemAABB(RenderItem& renderItem);
+    void UpdateRenderItemAABBFastA(RenderItem& renderItem);
+    void UpdateRenderItemAABBFastB(RenderItem& renderItem);
     AABB ComputeWorldAABB(glm::vec3& localAabbMin, glm::vec3& localAabbMax, glm::mat4& modelMatrix);
 
     // Animation

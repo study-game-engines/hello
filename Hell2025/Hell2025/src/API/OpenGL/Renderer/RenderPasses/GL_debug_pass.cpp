@@ -2,8 +2,8 @@
 #include "Viewport/ViewportManager.h"
 #include "Renderer/RenderDataManager.h"
 #include "Renderer/Renderer.h"
-
 #include "Physics/Physics.h"
+#include "World/World.h"
 
 #include "API/OpenGL/Types/GL_debug_mesh.hpp"
 
@@ -64,6 +64,31 @@ namespace OpenGLRenderer {
                 glDrawArrays(GL_POINTS, 0, g_debugMeshPoints.GetVertexCount());
             }
         }
+    }
+
+    void DebugTileViewPass() {
+        RendererSettings& rendererSettings = Renderer::GetCurrentRendererSettings();
+        if (rendererSettings.rendererOverrideState != RendererOverrideState::TILE_HEATMAP) return;
+
+        OpenGLFrameBuffer* finalImageFBO = GetFrameBuffer("FinalImage");
+        OpenGLFrameBuffer* gBuffer = GetFrameBuffer("GBuffer");
+        OpenGLShader* shader = GetShader("DebugTileView");
+
+        if (!finalImageFBO) return;
+        if (!gBuffer) return;
+        if (!shader) return;
+
+        shader->Use();
+        shader->SetFloat("u_viewportWidth", gBuffer->GetWidth());
+        shader->SetFloat("u_viewportHeight", gBuffer->GetHeight());
+        shader->SetInt("u_tileXCount", gBuffer->GetWidth() / TILE_SIZE);
+        shader->SetInt("u_tileYCount", gBuffer->GetHeight() / TILE_SIZE);
+
+        glBindImageTexture(0, gBuffer->GetColorAttachmentHandleByName("FinalLighting"), 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F);
+        glBindTextureUnit(1, gBuffer->GetDepthAttachmentHandle());
+        glBindTextureUnit(2, finalImageFBO->GetColorAttachmentHandleByName("ViewportIndex"));
+
+        glDispatchCompute(gBuffer->GetWidth() / TILE_SIZE, gBuffer->GetHeight() / TILE_SIZE, 1);
     }
 
     void DrawPoint(glm::vec3 position, glm::vec3 color, bool obeyDepth, int exclusiveViewportIndex) {

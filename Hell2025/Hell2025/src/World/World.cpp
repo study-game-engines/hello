@@ -33,6 +33,10 @@ namespace World {
     std::vector<Wall> g_walls;
     std::vector<Window> g_windows;
 
+    std::vector<GPULight> g_gpuLightsLowRes;
+    std::vector<GPULight> g_gpuLightsMidRes;
+    std::vector<GPULight> g_gpuLightsHighRes;
+
     std::map<ivecXZ, int> g_validChunks;
 
     std::string g_mapName = "";
@@ -108,6 +112,7 @@ namespace World {
             return &g_lights[index];
         }
         else {
+            std::cout << "World::GetLightByIndex() failed: index " << index << " out of range of size " << g_lights.size() << "\n";
             return nullptr;
         }
     }
@@ -409,6 +414,14 @@ namespace World {
             Physics::ForceZeroStepUpdate();
             UpdateHouseMeshBuffer();
         }
+        Window* window = World::GetWindowByObjectId(objectId);
+        if (window) {
+            window->SetPosition(position);
+            UpdateClippingCubes();
+            UpdateAllWallCSG();
+            UpdateHouseMeshBuffer();
+            Physics::ForceZeroStepUpdate();
+        }
     }
 
     void RemoveObject(uint64_t objectID) {
@@ -494,17 +507,19 @@ namespace World {
 
         // Clear all containers
         g_bulletCasings.clear();
-        g_gameObjects.clear();
         g_decals.clear();
-        g_lights.clear();
-        g_trees.clear();
-        g_heightMapChunks.clear();
-        g_pickUps.clear();
-        g_pianos.clear();
-        g_walls.clear();
         g_doors.clear();
+        g_gameObjects.clear();
+        g_heightMapChunks.clear();
+        g_lights.clear();
+        g_pianos.clear();
+        g_pickUps.clear();
         g_planes.clear();
+        g_trees.clear();
+        g_walls.clear();
         g_windows.clear();
+
+        std::cout << "Reset world\n";
     }
 
     void UpdateClippingCubes() {
@@ -723,6 +738,8 @@ namespace World {
         return nullptr;
     }
 
+    size_t GetLightCount()                                      { return g_lights.size(); }
+
     std::vector<AnimatedGameObject>& GetAnimatedGameObjects()   { return g_animatedGameObjects; }
     std::vector<Bullet>& GetBullets()                           { return g_bullets; };
     std::vector<BulletCasing>& GetBulletCasings()               { return g_bulletCasings; };
@@ -730,7 +747,7 @@ namespace World {
     std::vector<Decal>& GetDecals()                             { return g_decals; }
     std::vector<Door>& GetDoors()                               { return g_doors; }
     std::vector<GameObject>& GetGameObjects()                   { return g_gameObjects; }
-    std::vector<Plane>& GetPlanes()                   { return g_planes; }
+    std::vector<Plane>& GetPlanes()                             { return g_planes; }
     std::vector<Light>& GetLights()                             { return g_lights; };
     std::vector<Piano>& GetPianos()                             { return g_pianos; };
     std::vector<PickUp>& GetPickUps()                           { return g_pickUps; };
@@ -738,6 +755,10 @@ namespace World {
     std::vector<Tree>& GetTrees()                               { return g_trees; };
     std::vector<Wall>& GetWalls()                               { return g_walls; }
     std::vector<Window>& GetWindows()                           { return g_windows; }
+
+    std::vector<GPULight>& GetGPULightsLowRes()                 { return g_gpuLightsLowRes; }
+    std::vector<GPULight>& GetGPULightsMidRes()                 { return g_gpuLightsMidRes; }
+    std::vector<GPULight>& GetGPULightsHighRes()                { return g_gpuLightsHighRes; }
 
     void PrintMapCreateInfoDebugInfo() {
         std::cout << "Map: '" << g_mapName << "'\n";

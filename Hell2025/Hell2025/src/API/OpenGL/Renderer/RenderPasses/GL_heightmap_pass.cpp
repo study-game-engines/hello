@@ -322,7 +322,7 @@ namespace OpenGLRenderer {
         glm::mat4 inverseModelMatrix = glm::inverse(modelMatrix);
 
         gBuffer->Bind();
-        gBuffer->DrawBuffers({ "BaseColor", "Normal", "RMA", "MousePick", "WorldSpacePosition" });
+        gBuffer->DrawBuffers({ "BaseColor", "Normal", "RMA", "WorldSpacePosition" });
 
         shader->Use();
         shader->SetMat4("modelMatrix", modelMatrix);
@@ -364,7 +364,7 @@ namespace OpenGLRenderer {
                 for (HeightMapChunk& chunk : chunks) {
 
                     if (Editor::IsEditorClosed()) {
-                        if (!frustum.IntersectsAABB(AABB(chunk.aabbMin, chunk.aabbMax))) {
+                        if (!frustum.IntersectsAABBFast(AABB(chunk.aabbMin, chunk.aabbMax))) {
                             culled++;
                             continue;
                         }

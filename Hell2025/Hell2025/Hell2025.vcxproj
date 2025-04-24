@@ -369,6 +369,7 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <None Include="res\shaders\OpenGL\GL_blur_vertical.vert" />
     <None Include="res\shaders\OpenGL\GL_debug_textured.frag" />
     <None Include="res\shaders\OpenGL\GL_debug_textured.vert" />
+    <None Include="res\shaders\OpenGL\GL_debug_tile_view.comp" />
     <None Include="res\shaders\OpenGL\gl_debug_vertex.frag" />
     <None Include="res\shaders\OpenGL\gl_debug_vertex.vert" />
     <None Include="res\shaders\OpenGL\GL_decals.frag" />
@@ -394,8 +395,11 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <None Include="res\shaders\OpenGL\gl_height-map_image_generation.comp" />
     <None Include="res\shaders\OpenGL\GL_heightmap_physx_texture_generation.comp" />
     <None Include="res\shaders\OpenGL\GL_lighting.comp" />
+    <None Include="res\shaders\OpenGL\GL_light_culling.comp" />
     <None Include="res\shaders\OpenGL\GL_outline.frag" />
     <None Include="res\shaders\OpenGL\GL_outline.vert" />
+    <None Include="res\shaders\OpenGL\GL_shadow_cube_map.frag" />
+    <None Include="res\shaders\OpenGL\GL_shadow_cube_map.vert" />
     <None Include="res\shaders\OpenGL\GL_shadow_map_flashlight.frag" />
     <None Include="res\shaders\OpenGL\GL_skybox.frag" />
     <None Include="res\shaders\OpenGL\GL_skybox.vert" />

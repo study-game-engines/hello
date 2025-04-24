@@ -33,6 +33,7 @@ namespace VulkanRenderer {
     }
 
     void RenderLoadingScreen() {
+        /*
         std::cout << "\n\\\\\\\\\\\\\\\\\\\nLoading screen\n\\\\\\\\\\\\\\\\\\\n\n";
 
         Texture* texture = AssetManager::GetTextureByName("StandardFont");
@@ -122,6 +123,7 @@ namespace VulkanRenderer {
 
 
         std::cout << "AT END OF FRAME: StandardFont.png layout: " << VulkanUtil::VkImageLayoutToString(vkTexture.m_mipLayouts[0]) << "\n";
+ */
     }
 
 

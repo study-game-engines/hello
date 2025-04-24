@@ -39,12 +39,17 @@ namespace BakeQueue {
     }
 
     void ImmediateBakeAllTextures() {
+        if (BackEnd::GetAPI() == API::VULKAN) {
+            // REMOVE ME!
+            return;
+        }
+
         while (g_queuedTextureBakes.size()) {
             if (BackEnd::GetAPI() == API::OPENGL) {
                 OpenGLBackEnd::ImmediateBake(g_queuedTextureBakes[0]);
             }
             else if (BackEnd::GetAPI() == API::VULKAN) {
-                VulkanBackEnd::ImmediateBake(g_queuedTextureBakes[0]);
+                // TODO: VulkanBackEnd::ImmediateBake(g_queuedTextureBakes[0]);
             }
         }
     }

@@ -119,10 +119,6 @@ void GameObject::SetMeshBlendingMode(const std::string& meshName, BlendingMode b
     }
 }
 
-void GameObject::SetMousePickIndex(int index) {
-    m_mousePickIndex = index;
-}
-
 void GameObject::SetName(const std::string& name) {
     m_name = name;
 }
@@ -165,7 +161,6 @@ void GameObject::UpdateRenderItems() {
 
         RenderItem renderItem;
         renderItem.objectType = (int)ObjectType::GAME_OBJECT;
-        renderItem.mousePickIndex = m_mousePickIndex;
         renderItem.modelMatrix = GetModelMatrix();
         renderItem.inverseModelMatrix = glm::inverse(renderItem.modelMatrix);
         renderItem.meshIndex = meshRenderingInfo.meshIndex;

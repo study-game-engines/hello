@@ -13,14 +13,6 @@ namespace OpenGLBackEnd {
     void Init();
     void BeginFrame();
 
-    // Mouse picking
-    void SetMousePickHandles(GLuint frameBufferHandle, GLuint textureHandle);
-    void UpdateMousePicking(GLint x, GLint y);
-    uint16_t GetMousePickR();
-    uint16_t GetMousePickG();
-    uint16_t GetMousePickB();
-    uint16_t GetMousePickA();
-
     // Textures
     void UpdateTextureBaking();
     void AllocateTextureMemory(Texture& texture);

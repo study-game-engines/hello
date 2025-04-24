@@ -49,9 +49,6 @@ in vec4 FlashlightPosition;
 in float FlashlightModifer;
 in vec3 CameraForward;
 
-in flat int MousePickType;
-in flat int MousePickIndex;
-
 void main() {
 #if ENABLE_BINDLESS
     vec4 baseColor = texture(sampler2D(textureSamplers[BaseColorTextureIndex]), TexCoord);

@@ -114,68 +114,6 @@ namespace Editor {
         }
     }
 
-    /*void UpdateObjectSelection() {
-        uint16_t mousePickType = BackEnd::GetMousePickR();
-        uint16_t mousePickIndex = BackEnd::GetMousePickG();
-
-        SetHoveredObjectType(static_cast<ObjectType>(mousePickType));
-        SetHoveredObjectIndex(mousePickIndex);
-
-        if (Input::LeftMousePressed()) {
-
-            // This prevents selecting objects under gizmo
-            if (!Gizmo::HasHover()) {
-                SetSelectedObjectType(GetHoveredObjectType());
-                SetSelectedObjectIndex(GetHoveredObjectIndex());
-            }
-
-            if (GetSelectedObjectType() == ObjectType::GAME_OBJECT) {
-                GameObject& gameObject = World::GetGameObjects()[GetSelectedObjectIndex()];
-                if (!Gizmo::HasHover()) { // Prevents selection objects behind the gizmo
-                    glm::vec3 newGizmoPosition = gameObject.GetModelMatrix()[3];
-                    Gizmo::SetPosition(newGizmoPosition);
-                }
-                Gizmo::SetEuler(glm::vec3(0.0f, 0.0f, 0.0f));
-                m_selectedObjectGizmoRotateOffset = gameObject.GetEulerRotation();
-            }
-
-            if (GetSelectedObjectType() == ObjectType::LIGHT) {
-                Light& light = World::GetLights()[GetSelectedObjectIndex()];
-                if (!Gizmo::HasHover()) { // Prevents selection objects behind the gizmo
-                    Gizmo::SetPosition(light.GetPosition());
-                }
-                Gizmo::SetEuler(glm::vec3(0.0f, 0.0f, 0.0f));
-            }
-
-            if (GetSelectedObjectType() == ObjectType::PICK_UP) {
-                PickUp& pickUp = World::GetPickUps()[GetSelectedObjectIndex()];
-                if (!Gizmo::HasHover()) { // Prevents selection objects behind the gizmo
-                    Gizmo::SetPosition(pickUp.GetPosition());
-                }
-                Gizmo::SetEuler(glm::vec3(0.0f, 0.0f, 0.0f));
-            }
-
-            if (GetSelectedObjectType() == ObjectType::TREE) {
-                Tree& tree = World::GetTrees()[GetSelectedObjectIndex()];
-                if (!Gizmo::HasHover()) { // Prevents selection objects behind the gizmo
-                    Gizmo::SetPosition(tree.GetPosition());
-                }
-                Gizmo::SetEuler(glm::vec3(0.0f, 0.0f, 0.0f));
-            }
-        }
-
-
-        // Mark selected objects as selected, for outline rendering
-        if (GetSelectedObjectType() == ObjectType::GAME_OBJECT) {
-            GameObject& gameObject = World::GetGameObjects()[GetSelectedObjectIndex()];
-            gameObject.MarkAsSelected();
-        }
-        if (GetSelectedObjectType() == ObjectType::TREE) {
-            Tree& tree = World::GetTrees()[GetSelectedObjectIndex()];
-            tree.MarkAsSelected();
-        }
-    }*/
-
     void UpdateGizmoInteract() {
         // Start translate/rotate/scale
         if (GetEditorState() == EditorState::IDLE && Gizmo::HasHover() && Input::LeftMousePressed()) {

@@ -29,9 +29,6 @@ out vec3 BiTangent;
 out vec3 ViewPos;
 out vec3 EmissiveColor;
 
-out flat int MousePickType;
-out flat int MousePickIndex;
-
 #if ENABLE_BINDLESS
 out flat int BaseColorTextureIndex;
 out flat int NormalTextureIndex;
@@ -71,9 +68,6 @@ void main() {
     WorldPos = modelMatrix * vec4(vPosition, 1.0);
     ViewPos = viewportData[viewportIndex].inverseView[3].xyz;
 
-	MousePickType =  renderItems[globalInstanceIndex].mousePickType;
-	MousePickIndex =  renderItems[globalInstanceIndex].mousePickIndex;
-        
     EmissiveColor.r = renderItems[globalInstanceIndex].emissiveR;
     EmissiveColor.g = renderItems[globalInstanceIndex].emissiveG;
     EmissiveColor.b = renderItems[globalInstanceIndex].emissiveB;

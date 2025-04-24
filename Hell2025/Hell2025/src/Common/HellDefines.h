@@ -81,3 +81,6 @@
 // Misc (delete me somehow)
 #define SECTOR_SIZE_WORLD_SPACE (float(HEIGHT_MAP_SIZE) * float(HEIGHTMAP_SCALE_XZ))
 
+// Tile Deferred
+#define TILE_SIZE 24
+

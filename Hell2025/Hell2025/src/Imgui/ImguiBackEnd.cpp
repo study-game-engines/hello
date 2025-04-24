@@ -48,7 +48,12 @@ namespace ImGuiBackEnd {
         ImGui::GetMainViewport()->Size = io.DisplaySize;
         ImGui::GetMainViewport()->Pos = ImVec2(0, 0);
 
-        ImGui_ImplOpenGL3_Init();
+        if (BackEnd::GetAPI() == API::OPENGL) {
+            ImGui_ImplOpenGL3_Init();
+        }
+        else if (BackEnd::GetAPI() == API::VULKAN) {
+            // TO DO: Vulkan
+        }
     }
 
     void Update() {

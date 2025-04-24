@@ -13,41 +13,62 @@ namespace VulkanBackEnd {
 
     UploadContext g_uploadContext;
 
+    GLFWwindow* g_window;
+    int WIDTH = 1280;
+    int HEIGHT = 720;
+
     bool Init() {
-        if (!VulkanDeviceManager::Init() ||
-            !VulkanSwapchainManager::Init() ||
-            !VulkanSynchronizationManager::Init() ||
-            !VulkanFrameManager::Init()) {
-            return false;
-        }
-        else {
-            std::cout << "Made it to the end!\n";
 
-            // put this shit somewhere better
-            //VkFenceCreateInfo uploadFenceCreateInfo = {};
-            //uploadFenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-            //uploadFenceCreateInfo.flags = 0;
-            //uploadFenceCreateInfo.pNext = nullptr;
-            //
-            //VkDevice device = VulkanDeviceManager::GetDevice();
-            //vkCreateFence(device, &uploadFenceCreateInfo, nullptr, &g_uploadContext.uploadFence);
-            //
-            //VkCommandPoolCreateInfo uploadCommandPoolInfo = {};
-            //uploadCommandPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-            //uploadCommandPoolInfo.flags = 0;
-            //uploadCommandPoolInfo.pNext = nullptr;
-            //
-            //vkCreateCommandPool(device, &uploadCommandPoolInfo, nullptr, &g_uploadContext.commandPool);
-            //VkCommandBufferAllocateInfo commandBufferAllocateInfo = {};
-            //commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-            //commandBufferAllocateInfo.commandPool = g_uploadContext.commandPool;
-            //commandBufferAllocateInfo.commandBufferCount = 1;
-            //commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-            //commandBufferAllocateInfo.pNext = nullptr;
-            //vkAllocateCommandBuffers(device, &commandBufferAllocateInfo, &g_uploadContext.commandBuffer);
+        glfwInit();
 
-            return true;
+        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+        glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+
+        g_window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan", nullptr, nullptr);
+
+        while (!glfwWindowShouldClose(g_window)) {
+            glfwPollEvents();
         }
+
+        glfwDestroyWindow(g_window);
+
+        glfwTerminate();
+
+        //if (!VulkanDeviceManager::Init() ||
+        //    !VulkanSwapchainManager::Init() ||
+        //    !VulkanSynchronizationManager::Init() ||
+        //    !VulkanFrameManager::Init()) {
+        //    return false;
+        //}
+        //else {
+        //    std::cout << "Made it to the end!\n";
+        //
+        //    // put this shit somewhere better
+        //    //VkFenceCreateInfo uploadFenceCreateInfo = {};
+        //    //uploadFenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+        //    //uploadFenceCreateInfo.flags = 0;
+        //    //uploadFenceCreateInfo.pNext = nullptr;
+        //    //
+        //    //VkDevice device = VulkanDeviceManager::GetDevice();
+        //    //vkCreateFence(device, &uploadFenceCreateInfo, nullptr, &g_uploadContext.uploadFence);
+        //    //
+        //    //VkCommandPoolCreateInfo uploadCommandPoolInfo = {};
+        //    //uploadCommandPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+        //    //uploadCommandPoolInfo.flags = 0;
+        //    //uploadCommandPoolInfo.pNext = nullptr;
+        //    //
+        //    //vkCreateCommandPool(device, &uploadCommandPoolInfo, nullptr, &g_uploadContext.commandPool);
+        //    //VkCommandBufferAllocateInfo commandBufferAllocateInfo = {};
+        //    //commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        //    //commandBufferAllocateInfo.commandPool = g_uploadContext.commandPool;
+        //    //commandBufferAllocateInfo.commandBufferCount = 1;
+        //    //commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        //    //commandBufferAllocateInfo.pNext = nullptr;
+        //    //vkAllocateCommandBuffers(device, &commandBufferAllocateInfo, &g_uploadContext.commandBuffer);
+        //
+        //    return true;
+        //}
+        return true;
     }
 
     void Destroy() {

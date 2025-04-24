@@ -32,6 +32,7 @@ namespace OpenGLRenderer {
 
     // Render passes
     void DebugPass();
+    void DebugTileViewPass();
     void DecalPass();
     void EditorPass();
     void EmissivePass();
@@ -41,6 +42,7 @@ namespace OpenGLRenderer {
     void HairPass();
     void HeightMapPass();
     void ImGuiPass();
+    void LightCullingPass();
     void LightingPass();
     void OutlinePass();
     void WinstonPass();
@@ -56,7 +58,9 @@ namespace OpenGLRenderer {
     // Render tasks
     void RenderShadowMaps();
 
-    void RenderHairLayer(const DrawCommands& drawCommands, int peelCount);
+    //void RenderHairLayer(const DrawCommands& drawCommands, int peelCount);
+    void RenderHairLayer(const std::vector<DrawIndexedIndirectCommand>(*drawCommands)[4], int peelCount);
+    
 
     // Debug
     void UpdateDebugMesh();
@@ -79,6 +83,7 @@ namespace OpenGLRenderer {
     OpenGLFrameBuffer* GetFrameBuffer(const std::string& name);
     OpenGLShader* GetShader(const std::string& name);
     OpenGLShadowMap* GetShadowMap(const std::string& name);
+    OpenGLShadowCubeMapArray* GetShadowMapArray(const std::string& name);
 
     // SSBOs
     void CreateSSBO(const std::string& name, float size, GLbitfield flags);

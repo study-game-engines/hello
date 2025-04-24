@@ -11,7 +11,6 @@ struct PickUp {
     void Update(float deltaTime);
     void CleanUp();
     void UpdateRenderItems();
-    void SetMousePickIndex(int mousePickIndex);
     //void MarkForRemoval();
     PickUpCreateInfo GetCreateInfo();
 
@@ -31,7 +30,6 @@ private:
     Transform m_initialTransform;
     glm::mat4 m_modelMatrix = glm::mat4(1.0f);
     std::vector<RenderItem> m_renderItems;
-    int m_mousePickIndex = 0;
     //bool m_markedForRemoval = false;
 
     void SetModel(const std::string& modelName);

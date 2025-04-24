@@ -9,12 +9,12 @@ struct Light {
     Light(LightCreateInfo createInfo);
 
     void Update(float deltaTime);
-    void SetMousePickIndex(int index);  
     void SetPosition(glm::vec3 position);
     void UpdateMatricesAndFrustum();
 
     Frustum* GetFrustumByFaceIndex(uint32_t faceIndex);
 
+    const glm::mat4 GetProjectionView(int index) const      { return m_projectionTransforms[index]; }
     const float GetRadius() const                           { return m_radius; }
     const float GetStrength() const                         { return m_strength; }
     const glm::vec3& GetPosition() const                    { return m_position; }
@@ -29,7 +29,6 @@ private:
     uint64_t m_objectId = 0;
     glm::vec3 m_position = glm::vec3(0.0f, 0.0f, 0.0f);
     glm::vec3 m_color = glm::vec3(1, 0.7799999713897705, 0.5289999842643738);
-    int m_mousePickIndex = 0;
     float m_radius = 6.0f;
     float m_strength = 1.0f;
     LightType m_type = LightType::LAMP_POST;

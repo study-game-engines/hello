@@ -1,6 +1,6 @@
 #pragma once
 
-struct OpenGLShadowMapArray {
+struct OpenGLShadowCubeMapArray {
     void Init(unsigned int numberOfCubemaps, int size);
     void CleanUp();
     void ClearDepth();

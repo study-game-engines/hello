@@ -42,7 +42,7 @@ struct RenderItem {
     int32_t rmaTextureIndex = 0;
 
     int32_t objectType = 0;
-    int32_t mousePickIndex = 0;
+    int32_t padding0 = 0;
     int32_t baseSkinnedVertex = 0;
     int32_t ignoredViewportIndex = -1;
 
@@ -54,7 +54,7 @@ struct RenderItem {
     float emissiveR = 0.0f;
     float emissiveG = 0.0f;
     float emissiveB = 0.0f;
-    int32_t padding = 0;
+    int32_t castShadows = 1; // True or false
 };
 
 struct HouseRenderItem {
@@ -320,13 +320,21 @@ struct DrawCommands {
 };
 
 struct DrawCommandsSet {
-    DrawCommands geometry;
-    DrawCommands geometryBlended;
-    DrawCommands geometryAlphaDiscarded;
-    DrawCommands hairTopLayer;
-    DrawCommands hairBottomLayer;
+    //std::vector<DrawIndexedIndirectCommand> flashlightShadowMapGeometry[4];
+    std::vector<DrawIndexedIndirectCommand> geometry[4];
+    std::vector<DrawIndexedIndirectCommand> geometryBlended[4];
+    std::vector<DrawIndexedIndirectCommand> geometryAlphaDiscarded[4];
+    std::vector<DrawIndexedIndirectCommand> hairTopLayer[4];
+    std::vector<DrawIndexedIndirectCommand> hairBottomLayer[4];
+    //std::vector<DrawIndexedIndirectCommand> skinnedGeometry[4];
     DrawCommands skinnedGeometry;
-    DrawCommands shadowMapHiRes[SHADOWMAP_HI_RES_COUNT][6];
+    std::vector<DrawIndexedIndirectCommand> shadowMapHiRes[SHADOWMAP_HI_RES_COUNT][6];
+};
+
+struct FlashLightShadowMapDrawInfo {
+    std::vector<DrawIndexedIndirectCommand> flashlightShadowMapGeometry[4];
+    std::vector<uint32_t> heightMapChunkIndices[4];
+    std::vector<HouseRenderItem> houseMeshRenderItems[4];
 };
 
 struct WaterState {
@@ -395,6 +403,16 @@ struct GPULight {
     float colorB;
     float strength;
     float radius;
+
+    int lightIndex;
+    int shadowMapDirty = 1; // true or fale
+    int padding0;
+    int padding1;
+};
+
+struct TileLightData {
+    int lightCount;
+    int lightIndices[127];
 };
 
 struct SelectionRectangleState {
@@ -410,21 +428,6 @@ struct MeshRenderingInfo {
     BlendingMode blendingMode;
 };
 
-enum struct TreeType {
-    TREE_LARGE_0 = 0,
-    TREE_LARGE_1,
-    TREE_LARGE_2,
-    UNDEFINED
-};
-
-enum class RendererOverrideState {
-    NONE = 0,
-    BASE_COLOR,
-    NORMALS,
-    RMA,
-    CAMERA_NDOTL,
-    STATE_COUNT,
-};  
 
 struct RendererSettings {
     int depthPeelCount = 4;

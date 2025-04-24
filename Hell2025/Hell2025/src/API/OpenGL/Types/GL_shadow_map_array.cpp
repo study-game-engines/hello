@@ -2,7 +2,7 @@
 #include <glad/glad.h>
 #include <iostream>
 
-void OpenGLShadowMapArray::Init(unsigned int numberOfCubemaps, int size) {
+void OpenGLShadowCubeMapArray::Init(unsigned int numberOfCubemaps, int size) {
     m_numberOfCubemaps = numberOfCubemaps;
     m_size = size;
     glGenFramebuffers(1, &m_handle);
@@ -43,13 +43,13 @@ void OpenGLShadowMapArray::Init(unsigned int numberOfCubemaps, int size) {
     );
 }
 
-void OpenGLShadowMapArray::CleanUp() {
+void OpenGLShadowCubeMapArray::CleanUp() {
     glDeleteTextures(1, &m_depthTexture);
     glDeleteTextures(1, &m_textureView);
     glDeleteFramebuffers(1, &m_handle);
 }
 
-void OpenGLShadowMapArray::ClearDepth() {
+void OpenGLShadowCubeMapArray::ClearDepth() {
     glViewport(0, 0, m_size, m_size);
     glBindFramebuffer(GL_FRAMEBUFFER, m_handle);
     glEnable(GL_DEPTH_TEST);

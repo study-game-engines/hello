@@ -14,7 +14,7 @@ namespace World {
     ViewportBvhData g_viewportBvhData[4];
 
     void CreateObjectInstanceDataFromRenderItem(const RenderItem& renderItem, Frustum& frustum, std::vector<PrimitiveInstance>& container) {
-        if (frustum.IntersectsAABB(renderItem)) {
+        if (frustum.IntersectsAABBFast(renderItem)) {
             PrimitiveInstance& instance = container.emplace_back();
             instance.objectType = Util::IntToEnum(renderItem.objectType);
             instance.worldTransform = renderItem.modelMatrix;

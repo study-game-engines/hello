@@ -39,7 +39,7 @@ namespace AssetManager {
                 OpenGLBackEnd::AllocateTextureMemory(texture);
             }
             else if (BackEnd::GetAPI() == API::VULKAN) {
-                VulkanBackEnd::AllocateTextureMemory(texture);
+                // TODO : VulkanBackEnd::AllocateTextureMemory(texture);
             }
         }
     }

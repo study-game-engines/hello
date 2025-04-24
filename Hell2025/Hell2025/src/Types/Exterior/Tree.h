@@ -12,7 +12,6 @@ struct Tree {
     void MarkAsSelected();
     void Update(float deltaTime);
     void UpdateRenderItems();
-    void SetMousePickIndex(int mousePickIndex);
 
     bool IsSelected();
 
@@ -31,6 +30,5 @@ private:
     Transform m_transform;
     glm::mat4 m_modelMatrix = glm::mat4(1.0f);
     std::vector<RenderItem> m_renderItems;
-    int m_mousePickIndex = 0;
     bool m_isSelected = false;
 };

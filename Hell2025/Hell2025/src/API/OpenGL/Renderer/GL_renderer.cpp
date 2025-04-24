@@ -38,9 +38,7 @@ namespace OpenGLRenderer {
     std::unordered_map<std::string, OpenGLCubemapView> g_cubemapViews;
     std::unordered_map<std::string, OpenGLSSBO> g_ssbos;
     std::unordered_map<std::string, OpenGLRasterizerState> g_rasterizerStates;
-    OpenGLShadowMapArray g_shadowMapArrayHiRes;
-    OpenGLShadowMapArray g_shadowMapArrayMidRes;
-    OpenGLShadowMapArray g_shadowMapArrayLowRes;
+    std::unordered_map<std::string, OpenGLShadowCubeMapArray> g_shadowMapArrays;
 
     OpenGLFrameBuffer g_blurBuffers[4][4] = {};
 
@@ -67,7 +65,6 @@ namespace OpenGLRenderer {
         g_frameBuffers["GBuffer"].CreateAttachment("BaseColor", GL_RGBA8);
         g_frameBuffers["GBuffer"].CreateAttachment("Normal", GL_RGBA16F);
         g_frameBuffers["GBuffer"].CreateAttachment("RMA", GL_RGBA8);
-        g_frameBuffers["GBuffer"].CreateAttachment("MousePick", GL_RG16UI, GL_NEAREST, GL_NEAREST);
         g_frameBuffers["GBuffer"].CreateAttachment("FinalLighting", GL_RGBA16F);
         g_frameBuffers["GBuffer"].CreateAttachment("WorldSpacePosition", GL_RGBA32F);
         g_frameBuffers["GBuffer"].CreateAttachment("Emissive", GL_RGBA8);
@@ -106,11 +103,7 @@ namespace OpenGLRenderer {
         g_frameBuffers["FlashlightShadowMap"] = OpenGLFrameBuffer("Flashlight", FLASHLIGHT_SHADOWMAP_SIZE, FLASHLIGHT_SHADOWMAP_SIZE);
         g_frameBuffers["FlashlightShadowMap"].CreateDepthAttachment(GL_DEPTH32F_STENCIL8, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_BORDER, glm::vec4(1.0f));
 
-        g_shadowMaps["FlashlightShadowMaps"] = OpenGLShadowMap("FlashlightShadowMaps", 2048, 2048, 4);
-
-        int framebufferHandle = g_frameBuffers["GBuffer"].GetHandle();
-        int attachmentSlot = g_frameBuffers["GBuffer"].GetColorAttachmentSlotByName("MousePick");
-        OpenGLBackEnd::SetMousePickHandles(framebufferHandle, attachmentSlot);
+        g_shadowMaps["FlashlightShadowMaps"] = OpenGLShadowMap("FlashlightShadowMaps", 1024, 1024, 4);
 
         // Create ssbos
         g_ssbos["Samplers"] = OpenGLSSBO(sizeof(glm::uvec2), GL_DYNAMIC_STORAGE_BIT);
@@ -121,13 +114,19 @@ namespace OpenGLRenderer {
         g_ssbos["LightSpaceMatrices"] = OpenGLSSBO(sizeof(glm::mat4) * MAX_VIEWPORT_COUNT * SHADOW_CASCADE_COUNT, GL_DYNAMIC_STORAGE_BIT);
         g_ssbos["Lights"] = OpenGLSSBO(sizeof(GPULight) * MAX_GPU_LIGHTS, GL_DYNAMIC_STORAGE_BIT);
 
+        int tileXCount = g_frameBuffers["GBuffer"].GetWidth() / TILE_SIZE;
+        int tileYCount = g_frameBuffers["GBuffer"].GetHeight() / TILE_SIZE;
+        int tileCount = tileXCount * tileYCount;
+        g_ssbos["TileLightData"] = OpenGLSSBO(tileCount * sizeof(TileLightData), GL_DYNAMIC_STORAGE_BIT);
+
         // Preallocate the indirect command buffer
         g_indirectBuffer.PreAllocate(sizeof(DrawIndexedIndirectCommand) * MAX_INDIRECT_DRAW_COMMAND_COUNT);
 
         LoadShaders();
 
         // Allocate shadow map array memory
-        g_shadowMapArrayHiRes.Init(SHADOWMAP_HI_RES_COUNT, SHADOW_MAP_HI_RES_SIZE);
+        g_shadowMapArrays["HiRes"] = OpenGLShadowCubeMapArray();
+        g_shadowMapArrays["HiRes"].Init(SHADOWMAP_HI_RES_COUNT, SHADOW_MAP_HI_RES_SIZE);
     }
 
     void InitMain() {
@@ -152,36 +151,6 @@ namespace OpenGLRenderer {
         }
 
         CreateBlurBuffers();
-
-        // glGenFramebuffers(1, &g_lightFBO);
-        //
-        // glGenTextures(1, &g_lightDepthMaps);
-        // glBindTexture(GL_TEXTURE_2D_ARRAY, g_lightDepthMaps);
-        // glTexImage3D(
-        //     GL_TEXTURE_2D_ARRAY, 0, GL_DEPTH_COMPONENT32F, g_depthMapResolution, g_depthMapResolution, int(g_shadowCascadeLevels.size()) + 1,
-        //     0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
-        //
-        // glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        // glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        // glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-        // glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-        //
-        // constexpr float bordercolor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-        // glTexParameterfv(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BORDER_COLOR, bordercolor);
-        //
-        // glBindFramebuffer(GL_FRAMEBUFFER, g_lightFBO);
-        // glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, g_lightDepthMaps, 0);
-        // glDrawBuffer(GL_NONE);
-        // glReadBuffer(GL_NONE);
-        //
-        // int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-        // if (status != GL_FRAMEBUFFER_COMPLETE)
-        // {
-        //     std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!";
-        //     throw 0;
-        // }
-        //
-        // glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
     void LoadShaders() {
@@ -189,6 +158,7 @@ namespace OpenGLRenderer {
         g_shaders["BlurVertical"] = OpenGLShader({ "GL_blur_vertical.vert", "GL_blur.frag" });
         g_shaders["ComputeSkinning"] = OpenGLShader({ "GL_compute_skinning.comp" });
         g_shaders["DebugTextured"] = OpenGLShader({ "GL_debug_textured.vert", "GL_debug_textured.frag" });
+        g_shaders["DebugTileView"] = OpenGLShader({ "GL_debug_tile_view.comp" });
         g_shaders["DebugVertex"] = OpenGLShader({ "gl_debug_vertex.vert", "gl_debug_vertex.frag" });
         g_shaders["Decals"] = OpenGLShader({ "GL_decals.vert", "GL_decals.frag" });
         g_shaders["EditorMesh"] = OpenGLShader({ "GL_editor_mesh.vert", "GL_editor_mesh.frag" });
@@ -209,11 +179,13 @@ namespace OpenGLRenderer {
         g_shaders["HeightMapPhysxTextureGeneration"] = OpenGLShader({ "GL_heightmap_physx_texture_generation.comp" });
         g_shaders["HeightMapVertexGeneration"] = OpenGLShader({ "GL_heightmap_vertex_generation.comp" });
         g_shaders["HeightMapPaint"] = OpenGLShader({ "GL_heightmap_paint.comp" });
+        g_shaders["LightCulling"] = OpenGLShader({ "GL_light_culling.comp" });
         g_shaders["Lighting"] = OpenGLShader({ "GL_lighting.comp" });
         g_shaders["Outline"] = OpenGLShader({ "GL_outline.vert", "GL_outline.frag" });
         g_shaders["OutlineComposite"] = OpenGLShader({ "GL_outline_composite.comp" });
         g_shaders["OutlineMask"] = OpenGLShader({ "GL_outline_mask.vert", "GL_outline_mask.frag" });
         g_shaders["ShadowMap"] = OpenGLShader({ "GL_shadow_map.vert", "GL_shadow_map.frag" });
+        g_shaders["ShadowCubeMap"] = OpenGLShader({ "GL_shadow_cube_map.vert", "GL_shadow_cube_map.frag" });
         g_shaders["SolidColor"] = OpenGLShader({ "GL_solid_color.vert", "GL_solid_color.frag" });
         g_shaders["Skybox"] = OpenGLShader({ "GL_skybox.vert", "GL_skybox.frag" });
         g_shaders["SpriteSheet"] = OpenGLShader({ "GL_sprite_sheet.vert", "GL_sprite_sheet.frag" });
@@ -240,9 +212,11 @@ namespace OpenGLRenderer {
         g_ssbos["InstanceData"].Update(instanceData.size() * sizeof(RenderItem), (void*)&instanceData[0]);
         g_ssbos["InstanceData"].Bind(3);
 
-        const std::vector<GPULight>& gpuLightData = RenderDataManager::GetGPULightData();
-        g_ssbos["Lights"].Update(gpuLightData.size() * sizeof(GPULight), (void*)&gpuLightData[0]);
+        const std::vector<GPULight>& gpuLightsHighRes = RenderDataManager::GetGPULightsHighRes();
+        g_ssbos["Lights"].Update(gpuLightsHighRes.size() * sizeof(GPULight), (void*)&gpuLightsHighRes[0]);
         g_ssbos["Lights"].Bind(4);
+
+        g_ssbos["TileLightData"].Bind(5);
     }
 
     void RenderGame() {
@@ -252,17 +226,19 @@ namespace OpenGLRenderer {
         ComputeSkinningPass();
         ClearRenderTargets();
         UpdateSSBOS();
+        RenderShadowMaps();
         SkyBoxPass();
         HeightMapPass();
-        RenderShadowMaps();
         GrassPass();
         GeometryPass();
-        TextureReadBackPass();
+        //TextureReadBackPass();
+        LightCullingPass();
         LightingPass();
         GlassPass();
         DecalPass();
         EmissivePass();
         HairPass();
+        DebugTileViewPass();
         WinstonPass();
         SpriteSheetPass();
         DebugPass();
@@ -315,10 +291,10 @@ namespace OpenGLRenderer {
 
         // GBuffer
         glDepthMask(GL_TRUE);
+        gBuffer->Bind();
         gBuffer->ClearAttachment("BaseColor", 0, 0, 0, 0);
         gBuffer->ClearAttachment("Normal", 0, 0, 0, 0);
         gBuffer->ClearAttachment("RMA", 0, 0, 0, 0);
-        gBuffer->ClearAttachmentUI("MousePick", 0, 0);
         gBuffer->ClearAttachment("WorldSpacePosition", 0, 0);
         gBuffer->ClearAttachment("Emissive", 0, 0, 0, 0);
         gBuffer->ClearAttachment("Glass", 0, 1, 0, 0);
@@ -429,6 +405,11 @@ namespace OpenGLRenderer {
     OpenGLShadowMap* GetShadowMap(const std::string& name) {
         auto it = g_shadowMaps.find(name);
         return (it != g_shadowMaps.end()) ? &it->second : nullptr;
+    }
+
+    OpenGLShadowCubeMapArray* GetShadowMapArray(const std::string& name) {
+        auto it = g_shadowMapArrays.find(name);
+        return (it != g_shadowMapArrays.end()) ? &it->second : nullptr;
     }
 
     OpenGLFrameBuffer* GetBlurBuffer(int viewportIndex, int bufferIndex) {

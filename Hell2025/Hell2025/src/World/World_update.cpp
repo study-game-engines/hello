@@ -7,10 +7,11 @@
 
 namespace World {
 
+    void EvaluatePianoKeyBulletHit(Bullet& bullet);
     void LazyDebugSpawns();
     void ProcessBullets();
     void UpdateDoorAndWindowCubeTransforms();
-    void EvaluatePianoKeyBulletHit(Bullet& bullet);
+    void CalculateGPULights();
 
     void Update(float deltaTime) {
         ProcessBullets();
@@ -68,6 +69,8 @@ namespace World {
         for (Wall& wall : walls) {
             // Nothing as of yet. Probably ever.
         }
+
+        CalculateGPULights();
     }
 
     void ProcessBullets() {
@@ -227,6 +230,12 @@ namespace World {
 
                 }
             }
+        }
+    }
+
+    void CalculateGPULights() {
+        for (int i = 0; i < GetLights().size(); i++) {
+            RenderDataManager::SubmitGPULightHighRes(i);
         }
     }
 }

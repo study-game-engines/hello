@@ -31,6 +31,7 @@ namespace World {
     void Init();
     void BeginFrame();
     void Update(float deltaTime);
+
     void SubmitRenderItems();
 
     void LoadMap(const std::string& mapName);
@@ -127,6 +128,8 @@ namespace World {
     PickUp* GetPickUpByIndex(int32_t index);
     //Piano* GetPianos(int32_t index);
     Tree* GetTreeByIndex(int32_t index);
+
+    size_t GetLightCount();
 
     std::vector<AnimatedGameObject>& GetAnimatedGameObjects();
     std::vector<Bullet>& GetBullets();

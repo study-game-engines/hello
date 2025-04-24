@@ -7,12 +7,12 @@ struct Window {
     void Init(WindowCreateInfo createInfo);
     void Update(float deltaTime);
     void CleanUp();
-    void SetMousePickIndex(int mousePickIndex);
+    void SetPosition(glm::vec3 position);
     void UpdateRenderItems();
     void SubmitRenderItems();
 
-    const glm::vec3& GetPosition() const { return m_position; }
-    const glm::vec3& GetRotation() const { return m_rotation; }
+    const glm::vec3& GetPosition() const { return m_createInfo.position; }
+    const glm::vec3& GetRotation() const { return m_createInfo.rotation; }
     const uint64_t GetObjectId() const { return m_objectId; }
     const std::vector<RenderItem>& GetRenderItems() const { return m_renderItems; }
     const std::vector<RenderItem>& GetGlassRenderItems() const { return m_glassRenderItems; }
@@ -28,8 +28,5 @@ private:
     Model* m_glassModel = nullptr;
     std::vector<RenderItem> m_renderItems;
     std::vector<RenderItem> m_glassRenderItems;
-    glm::vec3 m_position = glm::vec3(0.0f);
-    glm::vec3 m_rotation = glm::vec3(0.0f);
-    int m_mousePickIndex = 0;
     glm::mat4 m_modelMatrix = glm::mat4(1.0f);
 };

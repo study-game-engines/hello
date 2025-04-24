@@ -142,6 +142,8 @@ namespace Util {
     }
     std::string EditorModeToString(const EditorMode& editorMode) {
         switch (editorMode) {
+            case EditorMode::HOUSE_EDITOR:      return "HOUSE_EDITOR";
+            case EditorMode::MAP_EDITOR:        return "MAP_EDITOR";
             case EditorMode::SECTOR_EDITOR:     return "SECTOR_EDITOR";
             case EditorMode::HEIGHTMAP_EDITOR:  return "HEIGHTMAP_EDITOR";
             case EditorMode::WEAPON_EDITOR:     return "WEAPON_EDITOR";

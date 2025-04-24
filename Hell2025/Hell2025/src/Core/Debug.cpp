@@ -101,7 +101,6 @@ namespace Debug {
 
 
 
-        //AddText("MousePick: " + std::to_string(BackEnd::GetMousePickR()) + ", " + std::to_string(BackEnd::GetMousePickG()));
         //AddText("Selected Object: " + Editor::EditorObjectTypeToString(Editor::GetSelectedObjectType()));
         //AddText("");
 

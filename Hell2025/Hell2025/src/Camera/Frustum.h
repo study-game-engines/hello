@@ -14,10 +14,11 @@ struct Frustum {
 
 public:
     void Update(const glm::mat4& projectionView);
-    bool IntersectsAABB(const AABB& aabb);
-    bool IntersectsAABB(const RenderItem& renderItem);
+    //bool IntersectsAABB(const AABB& aabb);
+    //bool IntersectsAABB(const RenderItem& renderItem);
     bool IntersectsAABBFast(const AABB& aabb);
     bool IntersectsAABBFast(const RenderItem& renderItem);
+    bool IntersectsAABBFast(const HouseRenderItem& renderItem);
     bool IntersectsPoint(const glm::vec3 point);
 
     glm::vec3 GetBoundsMin() { return m_boundsMin; }

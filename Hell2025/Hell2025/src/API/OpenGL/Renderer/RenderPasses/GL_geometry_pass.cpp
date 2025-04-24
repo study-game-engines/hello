@@ -23,14 +23,14 @@ namespace OpenGLRenderer {
         if (!editorMeshShader) return;
 
         gBuffer->Bind();
-        gBuffer->DrawBuffers({ "BaseColor", "Normal", "RMA", "MousePick", "WorldSpacePosition" });
+        gBuffer->DrawBuffers({ "BaseColor", "Normal", "RMA", "WorldSpacePosition" });
 
         const std::vector<ViewportData>& viewportData = RenderDataManager::GetViewportData();
 
         glBindVertexArray(OpenGLBackEnd::GetVertexDataVAO());
 
         shader->Use();
-        gBuffer->DrawBuffers({ "BaseColor", "Normal", "RMA", "MousePick", "WorldSpacePosition", "Emissive" });
+        gBuffer->DrawBuffers({ "BaseColor", "Normal", "RMA", "WorldSpacePosition", "Emissive" });
         SetRasterizerState("GeometryPass_NonBlended");
 
         for (int i = 0; i < 4; i++) {
@@ -38,10 +38,10 @@ namespace OpenGLRenderer {
             if (viewport->IsVisible()) {
                 OpenGLRenderer::SetViewport(gBuffer, viewport);
                 if (BackEnd::RenderDocFound()) {
-                    SplitMultiDrawIndirect(shader, drawInfoSet.geometry.perViewport[i]);
+                    SplitMultiDrawIndirect(shader, drawInfoSet.geometry[i]);
                 }
                 else {
-                    MultiDrawIndirect(drawInfoSet.geometry.perViewport[i]);
+                    MultiDrawIndirect(drawInfoSet.geometry[i]);
                 }
             }
         }
@@ -54,16 +54,16 @@ namespace OpenGLRenderer {
             if (viewport->IsVisible()) {
                 OpenGLRenderer::SetViewport(gBuffer, viewport);
                 if (BackEnd::RenderDocFound()) {
-                    SplitMultiDrawIndirect(shader, drawInfoSet.geometryBlended.perViewport[i]);
+                    SplitMultiDrawIndirect(shader, drawInfoSet.geometryBlended[i]);
                 }
                 else {
-                    MultiDrawIndirect(drawInfoSet.geometryBlended.perViewport[i]);
+                    MultiDrawIndirect(drawInfoSet.geometryBlended[i]);
                 }
             }
         }
 
         shader->Use();
-        gBuffer->DrawBuffers({ "BaseColor", "Normal", "RMA", "MousePick", "WorldSpacePosition", "Emissive" });
+        gBuffer->DrawBuffers({ "BaseColor", "Normal", "RMA", "WorldSpacePosition", "Emissive" });
         SetRasterizerState("GeometryPass_NonBlended");
 
         glBindVertexArray(OpenGLBackEnd::GetSkinnedVertexDataVAO());

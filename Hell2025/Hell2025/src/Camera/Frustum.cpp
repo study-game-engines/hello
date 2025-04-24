@@ -1,5 +1,6 @@
 #include "Frustum.h"
 #include "Util.h"
+#include <array>
 
 void Frustum::Update(const glm::mat4& projectionView) {
     // Left clipping plane
@@ -63,7 +64,7 @@ void Frustum::Update(const glm::mat4& projectionView) {
     }
 }
 
-bool Frustum::IntersectsAABB(const AABB& aabb) {
+/*bool Frustum::IntersectsAABB(const AABB& aabb) {
     glm::vec3 aabbCorners[8] = {
         glm::vec3(aabb.GetBoundsMin().x, aabb.GetBoundsMin().y, aabb.GetBoundsMin().z), // Near-bottom-left
         glm::vec3(aabb.GetBoundsMax().x, aabb.GetBoundsMin().y, aabb.GetBoundsMin().z), // Near-bottom-right
@@ -86,9 +87,9 @@ bool Frustum::IntersectsAABB(const AABB& aabb) {
         }
     }
     return true;
-}
+}*/
 
-
+/*
 bool Frustum::IntersectsAABB(const RenderItem& renderItem) {
     glm::vec3 aabbCorners[8] = {
         glm::vec3(renderItem.aabbMin.x, renderItem.aabbMin.y, renderItem.aabbMax.z), // Near-bottom-left
@@ -112,7 +113,7 @@ bool Frustum::IntersectsAABB(const RenderItem& renderItem) {
         }
     }
     return true;
-}
+}*/
 
 bool Frustum::IntersectsAABBFast(const AABB& aabb) {
     for (int i = 0; i < 6; ++i) {
@@ -129,6 +130,20 @@ bool Frustum::IntersectsAABBFast(const AABB& aabb) {
 }
 
 bool Frustum::IntersectsAABBFast(const RenderItem& renderItem) {
+    for (int i = 0; i < 6; ++i) {
+        glm::vec3 min_corner = glm::vec3(
+            m_planes[i].normal.x > 0 ? renderItem.aabbMax.x : renderItem.aabbMin.x,
+            m_planes[i].normal.y > 0 ? renderItem.aabbMax.y : renderItem.aabbMin.y,
+            m_planes[i].normal.z > 0 ? renderItem.aabbMax.z : renderItem.aabbMin.z
+        );
+        if (SignedDistance(min_corner, m_planes[i]) <= 0.0f) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool Frustum::IntersectsAABBFast(const HouseRenderItem& renderItem) {
     for (int i = 0; i < 6; ++i) {
         glm::vec3 min_corner = glm::vec3(
             m_planes[i].normal.x > 0 ? renderItem.aabbMax.x : renderItem.aabbMin.x,

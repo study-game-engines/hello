@@ -11,12 +11,9 @@
 void Window::Init(WindowCreateInfo createInfo) {
     m_createInfo = createInfo;
 
-    m_position = createInfo.position;
-    m_rotation = createInfo.rotation;
-
     Transform transform;
-    transform.position = m_position;
-    transform.rotation = m_rotation;  
+    transform.position = m_createInfo.position;
+    transform.rotation = m_createInfo.rotation;  
     m_modelMatrix = transform.to_mat4();   
         
     m_interiorMaterial = AssetManager::GetMaterialByName("Window");
@@ -48,6 +45,17 @@ void Window::Init(WindowCreateInfo createInfo) {
 
 void Window::CleanUp() {
     Physics::MarkRigidStaticForRemoval(m_physicsId);
+}
+
+void Window::SetPosition(glm::vec3 position) {
+    m_createInfo.position = position;
+    
+    // TODO: abstract away duplciated code here and in init()
+    Transform transform;
+    transform.position = m_createInfo.position;
+    transform.rotation = m_createInfo.rotation;
+    m_modelMatrix = transform.to_mat4();
+    Physics::SetRigidStaticGlobalPose(m_physicsId, m_modelMatrix);
 }
 
 void Window::Update(float deltaTime) {
@@ -121,8 +129,4 @@ void Window::SubmitRenderItems() {
     if (Editor::GetSelectedObjectId() == m_objectId) {
         RenderDataManager::SubmitOutlineRenderItems(m_renderItems);
     }
-}
-
-void Window::SetMousePickIndex(int mousePickIndex) {
-    m_mousePickIndex = mousePickIndex;
 }

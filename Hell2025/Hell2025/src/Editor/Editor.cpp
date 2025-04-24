@@ -171,7 +171,6 @@ namespace Editor {
         Input::DisableCursor();
         UnselectAnyObject();
 
-
         SetHoveredObjectType(ObjectType::NONE);
         SetHoveredObjectId(0);
 

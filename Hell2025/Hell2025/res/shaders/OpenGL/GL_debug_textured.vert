@@ -20,9 +20,6 @@ out vec3 Tangent;
 out vec3 BiTangent;
 out vec3 EmissiveColor;
 
-out flat int MousePickType;
-out flat int MousePickIndex;
-
 uniform int u_viewportIndex;
 uniform mat4 u_model;
 
@@ -37,9 +34,6 @@ void main() {
     Tangent = normalize(normalMatrix * vec4(vTangent, 0)).xyz;
     BiTangent = normalize(cross(Normal, Tangent));
     EmissiveColor = vec3(0,0,0);
-    
-    MousePickType = 666;
-    MousePickIndex = 666;
     
 	TexCoord = vUV;
     WorldPos = modelMatrix * vec4(vPosition, 1.0);
