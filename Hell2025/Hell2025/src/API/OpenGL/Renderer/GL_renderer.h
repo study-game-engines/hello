@@ -56,6 +56,7 @@ namespace OpenGLRenderer {
     void SpriteSheetPass();
     void TextureReadBackPass();
     void UIPass();
+    void WeatherBoardsPass();
 
     // Utility passes
     void RecalculateAllHeightMapData();

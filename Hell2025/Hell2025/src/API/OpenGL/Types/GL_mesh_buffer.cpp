@@ -43,6 +43,25 @@ void OpenGLMeshBuffer::UpdateBuffers(std::vector<Vertex>& vertices, std::vector<
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
     // If the buffer does exist
+
+
+    // The code below is fucked!
+    // The code below is fucked!
+    // The code below is fucked!
+    // The code below is fucked!
+    // The code below is fucked!
+    // The code below is fucked!
+    // The code below is fucked!
+    // The code below is fucked!
+    // The code below is fucked!
+    // The code below is fucked!
+    // The code below is fucked!
+    // The code below is fucked!
+    // The code below is fucked!
+    // The code below is fucked!
+    // The code below is fucked!
+
+
     else {
 
         // Vertices

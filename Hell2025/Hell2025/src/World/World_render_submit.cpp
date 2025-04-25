@@ -3,6 +3,11 @@
 #include "Core/Game.h"
 #include "Renderer/RenderDataManager.h"
 
+
+
+#include "Renderer/Renderer.h"
+#include "Input/Input.h"
+
 namespace World {
 
     std::vector<RenderItem> g_renderItems;
@@ -24,6 +29,56 @@ namespace World {
         std::vector<Tree>& trees = GetTrees();
         std::vector<Wall>& walls = GetWalls();
         std::vector<Window>& windows = GetWindows();
+
+
+      //  Model* model = AssetManager::GetModelByName("WeatherBoard");
+      //  for (uint32_t meshIndex : model->GetMeshIndices()) {
+      //
+      //      Material* material = AssetManager::GetMaterialByName("WeatherBoards1");
+      //
+      //      Transform transform;
+      //      transform.position = glm::vec3(-1.0, 0.0, 0.0f);
+      //
+      //      glm::mat4 modelMatrix = transform.to_mat4();
+      //
+      //      RenderItem renderItem;
+      //      renderItem.objectType = (int)ObjectType::GAME_OBJECT;
+      //      renderItem.modelMatrix = modelMatrix;
+      //      renderItem.inverseModelMatrix = glm::inverse(renderItem.modelMatrix);
+      //      renderItem.meshIndex = meshIndex;
+      //      renderItem.baseColorTextureIndex = material->m_basecolor;
+      //      renderItem.normalMapTextureIndex = material->m_normal;
+      //      renderItem.rmaTextureIndex = material->m_rma;
+      //      Util::PackUint64(0, renderItem.objectIdLowerBit, renderItem.objectIdUpperBit);
+      //      Util::UpdateRenderItemAABB(renderItem);
+      //
+      //      RenderDataManager::SubmitRenderItem(renderItem);
+      //
+      //
+      //      Mesh* mesh = AssetManager::GetMeshByIndex(meshIndex);
+      //
+      //      std::span<Vertex> vertices = AssetManager::GetMeshVerticesSpan(mesh);
+      //      std::span<uint32_t> indices = AssetManager::GetMeshIndicesSpan(mesh);
+      //
+      //
+      //      int i = 0;
+      //      for (Vertex& vertex : vertices) {
+      //         // Renderer::DrawPoint(vertex.position, GREEN);
+      //
+      //         // if (Input::KeyPressed(HELL_KEY_J)) {
+      //         //
+      //         //     std::cout << "Vertex vertex" << std::to_string(i) << ";\n";
+      //         //     std::cout << "vertex" << std::to_string(i) << ".position = glm::vec3(" << vertex.position << ");\n";
+      //         //     std::cout << "vertex" << std::to_string(i) << ".normal = glm::vec3(" << vertex.normal << ");\n";
+      //         //     std::cout << "vertex" << std::to_string(i) << ".tangent = glm::vec3(" << vertex.tangent << ");\n";
+      //         //     std::cout << "vertex" << std::to_string(i) << ".uv = glm::vec2(" << vertex.uv.x << ", " << vertex.uv.y << ");\n";
+      //         //     std::cout << "\n";
+      //         //     i++;
+      //         // }
+      //      }
+      //
+      //  }
+
 
         for (GameObject& gameObject : gameObjects) {
             gameObject.UpdateRenderItems();

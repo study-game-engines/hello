@@ -182,6 +182,31 @@ ModelData File::ImportModel(const std::string& filepath) {
         meshData.aabbMax = meshHeader.aabbMax;
         file.read(reinterpret_cast<char*>(meshData.vertices.data()), meshHeader.vertexCount * sizeof(Vertex));
         file.read(reinterpret_cast<char*>(meshData.indices.data()), meshHeader.indexCount * sizeof(uint32_t));
+
+        if (modelName == "WeatherBoard") {
+
+            std::cout << "\nvertices\n";
+            int i = 0;
+            for (Vertex& vertex : meshData.vertices) {
+                std::cout << "Vertex vertex" << std::to_string(i) << ";\n";
+                std::cout << "vertex" << std::to_string(i) << ".position = glm::vec3(" << vertex.position << ");\n";
+                std::cout << "vertex" << std::to_string(i) << ".normal = glm::vec3(" << vertex.normal << ");\n";
+                std::cout << "vertex" << std::to_string(i) << ".tangent = glm::vec3(" << vertex.tangent << ");\n";
+                std::cout << "vertex" << std::to_string(i) << ".uv = glm::vec2(" << vertex.uv.x << ", " << vertex.uv.y << ");\n";
+                std::cout << "\n";
+                i++;
+            }
+
+            std::cout << "\indices\n";
+
+            for (uint32_t index : meshData.indices) {
+                std::cout << index << ", ";
+            }
+            std::cout << "\n";
+        }
+
+
+
 #if PRINT_MESH_HEADERS_ON_READ
         PrintMeshHeader(meshHeader, "Read mesh: " + meshData.name);
 #endif

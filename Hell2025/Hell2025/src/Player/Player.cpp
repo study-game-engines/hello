@@ -52,7 +52,8 @@ void Player::Update(float deltaTime) {
 
     // Determine water state
     m_underWater = GetCameraPosition().y < Ocean::GetWaterHeight() + 0.1f;
-        
+    m_underWater = false;
+
     UpdateMovement(deltaTime);
     UpdateCharacterController();
     UpdateHeadBob(deltaTime);

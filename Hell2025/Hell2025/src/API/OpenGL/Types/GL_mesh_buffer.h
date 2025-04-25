@@ -5,6 +5,7 @@
 #include <glad/glad.h>
 
 struct OpenGLMeshBuffer {
+    void ReleaseBuffers();
     void UpdateBuffers(std::vector<Vertex>& vertices, std::vector<uint32_t>& indices);
     void AllocateBuffers(size_t vertexCount, size_t indexCount);
 
@@ -17,7 +18,6 @@ struct OpenGLMeshBuffer {
     const GLsizei GetAllocatedIndexCount() const    { return m_allocatedIndexCount; }
 
 private:
-    void ReleaseBuffers();
 
     GLuint m_VAO = 0;
     GLuint m_VBO = 0;

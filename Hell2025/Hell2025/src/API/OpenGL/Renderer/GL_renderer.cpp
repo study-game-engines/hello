@@ -275,6 +275,7 @@ namespace OpenGLRenderer {
         HeightMapPass();
         GrassPass();
         GeometryPass();
+        WeatherBoardsPass();
         TextureReadBackPass();
         LightCullingPass();
         LightingPass();

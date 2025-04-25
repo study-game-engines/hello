@@ -35,6 +35,8 @@ int main() {
         return -1;
     }
 
+    File::ImportModel("res/models/WeatherBoard.model");
+
     // Program loop
     while (BackEnd::WindowIsOpen()) {
 
