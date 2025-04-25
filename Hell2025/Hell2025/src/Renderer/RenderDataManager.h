@@ -35,6 +35,7 @@ namespace RenderDataManager {
     void SubmitOutlineRenderItems(const std::vector<HouseRenderItem>& renderItems);
 
     const RendererData& GetRendererData();
+    const std::vector<glm::mat4> GetOceanPatchTransforms();
     const std::vector<GPULight>& GetGPULightsHighRes();
     const std::vector<HouseRenderItem>& GetHouseRenderItems();
     const std::vector<HouseRenderItem>& GetHouseOutlineRenderItems();

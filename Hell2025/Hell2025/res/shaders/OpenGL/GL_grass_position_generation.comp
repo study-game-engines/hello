@@ -13,6 +13,7 @@ uniform vec3 offset;
 uniform float u_heightMapWorldSpaceSize;
 uniform float spacing2;
 uniform int u_viewportIndex;
+uniform float u_waterHeight;
 
 struct Vertex {
     float position[3];
@@ -132,6 +133,10 @@ void main() {
     //height = 0.05;
 
     float posY = height * HEIGHTMAP_SCALE_Y;
+
+    if (posY < u_waterHeight) {
+        return;
+    }
     
     float rr = Rand(vec2(gid.y, gid.x));
     float amt = 0.05;

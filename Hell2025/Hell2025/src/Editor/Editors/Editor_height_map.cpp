@@ -36,8 +36,19 @@ namespace Editor {
         EditorUI::NewFileWindow newFileWindow;
         EditorUI::OpenFileWindow openFileWindow;
         EditorUI::IntegerInput test;
-        EditorUI::FloatSliderInput test2;
+
+        EditorUI::CheckBox mode;
+        EditorUI::FloatSliderInput brushSize;
+        EditorUI::FloatSliderInput brushStrength;
+        EditorUI::FloatSliderInput noiseStrength;
+
+
     } g_heightMapEditorImguiElements;
+
+    int g_heightMapPaintMode = 0;
+    float g_brushSize = 16;
+    float brushStrength = 1;
+    float noiseStrength = 1;
 
     void InitHeightMapEditorFileMenu();
     void InitHeightMapEditorPropertiesElements();
@@ -86,9 +97,23 @@ namespace Editor {
         elements.test.SetText("Integer Test");
         elements.test.SetRange(-1, 10);
         elements.test.SetValue(8);
-        elements.test2.SetText("Slider Test");
-        elements.test2.SetRange(-1.0f, 10.0f);
-        elements.test2.SetValue(8.0f);
+
+        elements.mode.SetText("Mystery Mode Toggle");
+        elements.mode.SetState(g_heightMapPaintMode);
+
+        ;
+
+        elements.brushSize.SetText("Brush Size");
+        elements.brushSize.SetRange(0.0f, 32.0f);
+        elements.brushSize.SetValue(g_brushSize);
+
+        elements.brushStrength.SetText("Brush Strength");
+        elements.brushStrength.SetRange(0.0f, 1.0f);
+        elements.brushStrength.SetValue(brushStrength);
+
+        elements.noiseStrength.SetText("Noise Strength");
+        elements.noiseStrength.SetRange(0.0f, 1.0f);
+        elements.noiseStrength.SetValue(noiseStrength);
 
         elements.newFileWindow.SetTitle("New Height Map");
         elements.newFileWindow.SetCallback(Callbacks::NewHeightMap);
@@ -98,8 +123,6 @@ namespace Editor {
     }
 
     void ReconfigureHeightMapEditorImGuiElements() {
-        //std::cout << "ReconfigureHeightMapEditorImGuiElements()\n";
-
         HeightMapEditorEditorImguiElements& elements = g_heightMapEditorImguiElements;
 
         // Update name input with height map name
@@ -111,59 +134,17 @@ namespace Editor {
 
         // First zero set all heightmaps to none
         elements.heightMapDropwDownN.SetOptions(heightMaps);
-        //elements.heightMapDropwDownN.SetCurrentOption("None");
         elements.heightMapDropwDownS.SetOptions(heightMaps);
-        //elements.heightMapDropwDownS.SetCurrentOption("None");
         elements.heightMapDropwDownE.SetOptions(heightMaps);
-        //elements.heightMapDropwDownE.SetCurrentOption("None");
         elements.heightMapDropwDownW.SetOptions(heightMaps);
-        //elements.heightMapDropwDownW.SetCurrentOption("None");
         elements.heightMapDropwDownNE.SetOptions(heightMaps);
-        //elements.heightMapDropwDownNE.SetCurrentOption("None");
         elements.heightMapDropwDownNW.SetOptions(heightMaps);
-        //elements.heightMapDropwDownNW.SetCurrentOption("None");
         elements.heightMapDropwDownSE.SetOptions(heightMaps);
-        //elements.heightMapDropwDownSE.SetCurrentOption("None");
         elements.heightMapDropwDownSW.SetOptions(heightMaps);
-        //elements.heightMapDropwDownSW.SetCurrentOption("None");
 
         MapCreateInfo* mapCreateInfo = MapManager::GetHeightMapEditorMapCreateInfo();
         if (mapCreateInfo) {
 
-
-            // Now iterate the sector locations, and add the actual heightmaps
-            //int mapWidth = World::GetMapWidth();
-            //int mapDepth = World::GetMapDepth();
-            //for (auto it = mapCreateInfo->sectorLocations.begin(); it != mapCreateInfo->sectorLocations.end(); ) {
-            //    const std::string& sectorName = it->second;
-            //    const std::string& heightMapName = SectorManager::GetSectorHeightMapName(sectorName);
-            //
-            //    if (sectorName == "HeightMapEditor_N") {
-            //        elements.heightMapDropwDownN.SetCurrentOption(heightMapName);
-            //    }
-            //    if (sectorName == "HeightMapEditor_NE") {
-            //        elements.heightMapDropwDownNE.SetCurrentOption(heightMapName);
-            //    }
-            //    if (sectorName == "HeightMapEditor_NW") {
-            //        elements.heightMapDropwDownNW.SetCurrentOption(heightMapName);
-            //    }
-            //    if (sectorName == "HeightMapEditor_S") {
-            //        elements.heightMapDropwDownS.SetCurrentOption(heightMapName);
-            //    }
-            //    if (sectorName == "HeightMapEditor_SE") {
-            //        elements.heightMapDropwDownSE.SetCurrentOption(heightMapName);
-            //    }
-            //    if (sectorName == "HeightMapEditor_SW") {
-            //        elements.heightMapDropwDownSW.SetCurrentOption(heightMapName);
-            //    }
-            //    if (sectorName == "HeightMapEditor_E") {
-            //        elements.heightMapDropwDownE.SetCurrentOption(heightMapName);
-            //    }
-            //    if (sectorName == "HeightMapEditor_W") {
-            //        elements.heightMapDropwDownW.SetCurrentOption(heightMapName);
-            //    }
-            //    it++;
-            //}
         }
 
 
@@ -191,8 +172,26 @@ namespace Editor {
         // Height map properties
         if (elements.heightMapPropertiesHeader.CreateImGuiElement()) {
             elements.heightMapNameInput.CreateImGuiElement();
-            //elements.test.CreateImGuiElements();
-            //elements.test2.CreateImGuiElements();
+
+            if (elements.mode.CreateImGuiElements()) {
+                std::cout << "toggled mode \n";
+                g_heightMapPaintMode = elements.mode.GetState();
+            }
+
+            if (elements.brushSize.CreateImGuiElements()) {
+                g_brushSize = elements.brushSize.GetValue();
+                std::cout << "brush size slider: " << elements.brushSize.GetValue() << "\n";
+            }
+
+            if (elements.brushStrength.CreateImGuiElements()) {
+                g_brushSize = elements.brushStrength.GetValue();
+                std::cout << "brush strength slider: " << elements.brushStrength.GetValue() << "\n";
+            }
+
+            if (elements.noiseStrength.CreateImGuiElements()) {
+                g_brushSize = elements.noiseStrength.GetValue();
+                std::cout << "noise slider: " << elements.noiseStrength.GetValue() << "\n";
+            }
 
             bool reloadRequired = false;
 
@@ -376,5 +375,21 @@ namespace Editor {
         HeightMapEditorEditorImguiElements& elements = g_heightMapEditorImguiElements;
         elements.newFileWindow.Close();
         elements.openFileWindow.Close();
+    }
+
+    int GetHeightMapPaintMode() {
+        return g_heightMapPaintMode;
+    }
+
+    float GetHeightMapBrushSize() {
+        return g_brushSize;
+    }
+
+    float GetHeightMapBrushStrength() {
+        return brushStrength;
+    }
+
+    float GetHeightMapNoiseStrength() {
+        return noiseStrength;
     }
 }

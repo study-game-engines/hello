@@ -74,6 +74,11 @@ namespace Editor {
     void ShowOpenHeightMapWindow();
     void CloseAllHeightMapEditorWindows();
     void CreateHeigthMapEditorImGuiElements();
+
+    int GetHeightMapPaintMode();
+    float GetHeightMapBrushSize();
+    float GetHeightMapBrushStrength();
+    float GetHeightMapNoiseStrength();
      
     // House Editor
     void InitHouseEditor();

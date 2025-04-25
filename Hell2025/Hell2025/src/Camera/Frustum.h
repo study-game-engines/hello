@@ -14,7 +14,7 @@ struct Frustum {
 
 public:
     void Update(const glm::mat4& projectionView);
-    //bool IntersectsAABB(const AABB& aabb);
+    bool IntersectsAABB(const AABB& aabb);
     //bool IntersectsAABB(const RenderItem& renderItem);
     bool IntersectsAABBFast(const AABB& aabb);
     bool IntersectsAABBFast(const RenderItem& renderItem);

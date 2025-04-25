@@ -142,6 +142,7 @@ namespace OpenGLRenderer {
         g_ssbos["fftDispZOutSSBO"] = OpenGLSSBO(oceanSize.x * oceanSize.y * sizeof(std::complex<float>), dynamicFlags);
         g_ssbos["fftGradXOutSSBO"] = OpenGLSSBO(oceanSize.x * oceanSize.y * sizeof(std::complex<float>), dynamicFlags);
         g_ssbos["fftGradZOutSSBO"] = OpenGLSSBO(oceanSize.x * oceanSize.y * sizeof(std::complex<float>), dynamicFlags);
+        g_ssbos["OceanPatchTransforms"] = OpenGLSSBO(sizeof(glm::mat4(1.0f)), GL_DYNAMIC_STORAGE_BIT);
 
         // Precompute HO
         std::vector<std::complex<float>> h0 = Ocean::ComputeH0();
@@ -257,6 +258,9 @@ namespace OpenGLRenderer {
         g_ssbos["Lights"].Bind(4);
 
         g_ssbos["TileLightData"].Bind(5);
+
+        const std::vector<glm::mat4>& oceanPatchTransforms = RenderDataManager::GetOceanPatchTransforms();
+        g_ssbos["OceanPatchTransforms"].Update(oceanPatchTransforms.size() * sizeof(glm::mat4), (void*)&oceanPatchTransforms[0]);
     }
 
     void RenderGame() {

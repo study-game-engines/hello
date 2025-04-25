@@ -64,7 +64,7 @@ void Frustum::Update(const glm::mat4& projectionView) {
     }
 }
 
-/*bool Frustum::IntersectsAABB(const AABB& aabb) {
+bool Frustum::IntersectsAABB(const AABB& aabb) {
     glm::vec3 aabbCorners[8] = {
         glm::vec3(aabb.GetBoundsMin().x, aabb.GetBoundsMin().y, aabb.GetBoundsMin().z), // Near-bottom-left
         glm::vec3(aabb.GetBoundsMax().x, aabb.GetBoundsMin().y, aabb.GetBoundsMin().z), // Near-bottom-right
@@ -87,7 +87,7 @@ void Frustum::Update(const glm::mat4& projectionView) {
         }
     }
     return true;
-}*/
+}
 
 /*
 bool Frustum::IntersectsAABB(const RenderItem& renderItem) {

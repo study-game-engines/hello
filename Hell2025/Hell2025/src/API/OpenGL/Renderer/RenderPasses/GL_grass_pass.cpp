@@ -11,6 +11,7 @@
 #include "Input/Input.h"
 #include "Core/Game.h"
 #include "Util/Util.h"
+#include "Ocean/Ocean.h"
 
 #include "World/HeightMapManager.h"
 #include "World/World.h"
@@ -250,6 +251,7 @@ namespace OpenGLRenderer {
         generationShader->SetFloat("spacing", BLADE_SPACING);
         generationShader->SetVec3("offset", glm::vec3(xOffset, 0.0f, zOffset));
         generationShader->SetFloat("u_heightMapWorldSpaceSize", HEIGHT_MAP_SIZE * HEIGHTMAP_SCALE_XZ);
+        generationShader->SetFloat("u_waterHeight", Ocean::GetWaterHeight());
         
         // Dispatch compute shader
         const int workGroupSize = 16;

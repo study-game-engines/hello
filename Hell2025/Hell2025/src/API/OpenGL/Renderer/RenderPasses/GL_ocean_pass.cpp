@@ -1,6 +1,7 @@
 #include "API/OpenGL//Renderer/GL_renderer.h"
 #include "AssetManagement/AssetManager.h"
 #include "Editor/Editor.h"
+#include "Core/Game.h"
 #include "Ocean/Ocean.h"
 #include "World/World.h"
 
@@ -13,8 +14,6 @@ namespace OpenGLRenderer {
 
         const ViewportData& viewportData = RenderDataManager::GetViewportData()[0];
 
-        glm::mat4 projectionMatrix = viewportData.projection;
-        glm::mat4 viewMatrix = viewportData.view;
         glm::vec3 viewPos = viewportData.viewPos;
 
         OpenGLCubemapView* skyboxCubemapView = GetCubemapView("SkyboxNightSky");
@@ -23,6 +22,7 @@ namespace OpenGLRenderer {
         OpenGLMeshPatch* oceanMeshPatch = GetOceanMeshPatch();
         OpenGLShader* shader = GetShader("OceanColor");
         OpenGLShader* compositeShader = GetShader("OceanComposite");
+        OpenGLSSBO* oceanPatchTransformsSSBO = GetSSBO("OceanPatchTransforms");
 
         if (!oceanMeshPatch) return;
         if (!skyboxCubemapView) return;
@@ -30,15 +30,7 @@ namespace OpenGLRenderer {
         if (!waterFrameBuffer) return;
         if (!shader) return;
         if (!compositeShader) return;
-
-        const float waterHeight = Ocean::GetWaterHeight();
-        int patchCount = 16;
-        //float scale = Ocean::GetOceanSize().x / 32.0f;
-        float scale = 0.03125f;
-        float patchOffset = Ocean::GetOceanSize().y * scale;
-
-        Transform patchTransform;
-        patchTransform.scale = glm::vec3(scale);
+        if (!oceanPatchTransformsSSBO) return;
 
         OpenGLRenderer::BlitFrameBufferDepth(gBuffer, waterFrameBuffer);
 
@@ -49,8 +41,8 @@ namespace OpenGLRenderer {
         shader->Bind();
         shader->SetInt("environmentMap", 0);
         shader->SetVec3("eyePos", viewPos);
-        shader->SetMat4("view", viewMatrix);
-        //shader->SetMat4("projection", projectionMatrix);
+
+        oceanPatchTransformsSSBO->Bind(6);
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxCubemapView->GetHandle());
@@ -59,40 +51,29 @@ namespace OpenGLRenderer {
 
         glMemoryBarrier(GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
 
-        //shader->SetMat4("model", glm::mat4(1.0f));
-        //glDrawElements(GL_TRIANGLE_STRIP, oceanMeshPatch->GetIndexCount(), GL_UNSIGNED_INT, nullptr);
-        //glDrawElements(GL_POINTS, oceanMeshPatch->GetIndexCount(), GL_UNSIGNED_INT, nullptr);
+        Viewport* viewport = ViewportManager::GetViewportByIndex(0);
+        Frustum& frustum = viewport->GetFrustum();
 
-        glm::vec3 originOffset = glm::vec3(0.0f);
-
-        // Offset water origin when in heightmap editor
-        if (Editor::IsOpen() && Editor::GetEditorMode() == EditorMode::HEIGHTMAP_EDITOR) {
-            originOffset = glm::vec3(64.0f, 0.0f, 64.0f);
-        }
-
+        // Render ocean geometry and thus diffuse and specular color
         for (int i = 0; i < 1; i++) {
             Viewport* viewport = ViewportManager::GetViewportByIndex(i);
             if (viewport->IsVisible()) {
                 OpenGLRenderer::SetViewport(waterFrameBuffer, viewport);
+                int instanceCount = RenderDataManager::GetOceanPatchTransforms().size();
 
-                for (int x = 0; x < patchCount; x++) {
-                    for (int z = 0; z < patchCount; z++) {
-                        patchTransform.position = glm::vec3(patchOffset * x, waterHeight, patchOffset * z);
-                        patchTransform.position += originOffset;
-                        shader->SetMat4("u_model", patchTransform.to_mat4());
-                        glDrawElements(GL_TRIANGLE_STRIP, oceanMeshPatch->GetIndexCount(), GL_UNSIGNED_INT, nullptr);
-                    }
-                }
+                shader->SetFloat("u_normalModifier", 1.0f);
+                glCullFace(GL_BACK);
+                glDrawElementsInstanced(GL_TRIANGLE_STRIP, oceanMeshPatch->GetIndexCount(), GL_UNSIGNED_INT, nullptr, instanceCount);
 
+                shader->SetFloat("u_normalModifier", -1.0f);
+                glCullFace(GL_FRONT);
+                glDrawElementsInstanced(GL_TRIANGLE_STRIP, oceanMeshPatch->GetIndexCount(), GL_UNSIGNED_INT, nullptr, instanceCount);
             }
         }
 
-        glm::vec3 bot = glm::vec3(0, 0, 0);
-        glm::vec3 top = glm::vec3(0, waterHeight, 0);
+        // Cleanup
+        glCullFace(GL_BACK);
 
-        DrawPoint(bot, RED);
-        DrawPoint(top, RED);
-        DrawLine(bot, top, RED);
 
         // Composite the water result atop the lighting texture
         compositeShader->Bind();

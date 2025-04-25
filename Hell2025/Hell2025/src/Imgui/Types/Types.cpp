@@ -613,7 +613,7 @@ namespace EditorUI {
                         // On click, record the new selection
                         m_selectedItem = item;
                         m_selectedType = type;
-                        std::cout << "Selected: " << item << "\n";
+                      //  std::cout << "Selected: " << item << "\n";
                     }
                 }
 

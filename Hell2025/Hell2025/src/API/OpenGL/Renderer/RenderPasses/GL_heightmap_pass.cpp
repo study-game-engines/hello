@@ -164,27 +164,25 @@ namespace OpenGLRenderer {
 
         int paintX = static_cast<int>(GetMouseRayWorldPostion().x / (float)worldFramebuffer->GetWidth());
         int paintY = static_cast<int>(GetMouseRayWorldPostion().z / (float)worldFramebuffer->GetHeight());
-
+                   
         int brushSize = 16;
-        int maxBrushSize = 32;
-        int mode = 1;
-        float strength = 1.0f;
-        float noiseStrength = 0.5;
+        int maxBrushSize = Editor::GetHeightMapBrushSize();
+        int mode = Editor::GetHeightMapPaintMode();
+        float brushStrength = Editor::GetHeightMapBrushStrength();
+        float noiseStrength = Editor::GetHeightMapNoiseStrength();
 
         if (Input::RightMouseDown()) {
-            strength *= -1;
+            brushStrength *= -1;
         }
 
         if (Input::LeftMouseDown() || Input::RightMouseDown()) {
             
-            std::cout << "painting heightmap\n";
-
             shader->Bind();
             shader->SetInt("u_paintX", paintX);
             shader->SetInt("u_paintY", paintY);
             shader->SetInt("u_mode", mode);
             shader->SetFloat("u_brushSize", brushSize);
-            shader->SetFloat("u_strength", strength);
+            shader->SetFloat("u_brushStrength", brushStrength);
             shader->SetFloat("u_noiseStrength", noiseStrength);
 
             glMemoryBarrier(GL_ALL_BARRIER_BITS);

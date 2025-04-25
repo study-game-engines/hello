@@ -11,8 +11,8 @@ readonly restrict layout(std430, binding = 1) buffer rendererDataBuffer {
 };
 
 
-uniform float u_brushSize;
-uniform float u_strength;
+//uniform float u_brushSize;
+uniform float u_brushStrength;
 uniform int u_mode;
 uniform float u_noiseStrength;
 uniform int u_layerIndex;
@@ -78,6 +78,9 @@ void main() {
     // Compute distance from brush center
     float dist = length(vec2(pixelCoords) - vec2(paintX, paintY));
     
+    float u_brushSize = 50;
+    //float u_brushStrength = 1;
+
     // Compute falloff correctly
     float falloff = smoothstep(0.0, u_brushSize, dist);
     
@@ -95,11 +98,11 @@ void main() {
     
     // First paint normally
     float strengthModifier = 0.01;
-    float strength = u_strength * strengthModifier;
+    float strength = u_brushStrength * strengthModifier;
     newHeight += strength * (1.0 - falloff);
     
     // Then apply FBM noise if brush is set to Perlin mode
-    if (u_mode == 1) {
+    if (u_mode == 0) {
     
         float uvMultipler = 0.25;
     
@@ -112,11 +115,11 @@ void main() {
         float noise = (rawNoise + 1.0) * 0.5; // Convert from [-1,1] to [0,1]
 
         // Ensure noise always follows u_strength's sign
-        noise *= abs(u_strength); 
+        noise *= abs(u_brushStrength); 
 
         // Apply noise with a small strength reducer to control intensity
         float noiseStrengthReducer = 0.025;
-        newHeight += sign(u_strength * 0.5) * noise * u_noiseStrength * (1.0 - falloff) * noiseStrengthReducer;
+        newHeight += sign(u_brushStrength * 0.5) * noise * u_noiseStrength * (1.0 - falloff) * noiseStrengthReducer;
     }
     
     // Don't allow negative values, PhysX doesn't support them
