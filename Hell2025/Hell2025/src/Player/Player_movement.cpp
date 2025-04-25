@@ -1,10 +1,21 @@
 #include "Player.h"
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include "../Editor/Editor.h"
-#include "../Input/Input.h"
+#include "Editor/Editor.h"
+#include "Input/Input.h"
+#include "Ocean/Ocean.h"
 
 void Player::UpdateMovement(float deltaTime) {
+    if (IsUnderWater()) {
+        UpdateSwimmingMovement(deltaTime);
+    }
+    else {
+        UpdateWalkingMovement(deltaTime);
+    }
+}
+
+void Player::UpdateWalkingMovement(float deltaTime) {
+
     m_moving = false;
     m_crouching = PressingCrouch();
     m_groundedLastFrame = m_grounded;
@@ -100,6 +111,68 @@ void Player::UpdateMovement(float deltaTime) {
             m_moving = false;
         }
     }
+}
+
+void Player::UpdateSwimmingMovement(float deltaTime) {
+    m_moving = false;
+
+    // WSAD movement
+    glm::vec3 displacement = glm::vec3(0);
+    if (PressingWalkForward()) {
+        displacement += m_camera.GetForward();
+        m_moving = true;
+    }
+    if (PressingWalkBackward()) {
+        displacement -= m_camera.GetForward();
+        m_moving = true;
+    }
+    if (PressingWalkLeft()) {
+        displacement -= m_camera.GetRight();
+        m_moving = true;
+    }
+    if (PressingWalkRight()) {
+        displacement += m_camera.GetRight();;
+        m_moving = true;
+    }
+    // Calculate speed
+    float targetSpeed = m_swimmingSpeed;
+    float interpolationSpeed = 18.0f;
+    if (!IsMoving()) {
+        targetSpeed = 0.0f;
+        interpolationSpeed = 22.0f;
+    }
+    m_currentSpeed = Util::FInterpTo(m_currentSpeed, targetSpeed, deltaTime, interpolationSpeed);
+
+    // Normalize displacement vector and include player speed
+    float len = length(displacement);
+    if (len != 0.0) {
+        displacement = (displacement / len) * m_currentSpeed * deltaTime;
+    }
+    float yDisplacement = m_yVelocity * deltaTime;
+    displacement.y += yDisplacement;
+    float yVelocityCancelationInterpolationSpeed = 15;
+    m_yVelocity = Util::FInterpTo(m_yVelocity, 0, deltaTime, yVelocityCancelationInterpolationSpeed);
+
+    float m_swimVerticalInterpolationSpeed = 15.0f;
+    float m_swimMaxVerticalAcceleration = 0.05f;
+
+    // Vertical movement
+    if (PressingCrouch()) {
+        m_swimVerticalAcceleration = Util::FInterpTo(m_swimVerticalAcceleration, -m_swimMaxVerticalAcceleration, deltaTime, m_swimVerticalInterpolationSpeed);
+    }
+    else if (PresingJump()) {
+        m_swimVerticalAcceleration = Util::FInterpTo(m_swimVerticalAcceleration, m_swimMaxVerticalAcceleration, deltaTime, m_swimVerticalInterpolationSpeed);
+    }
+    else {
+        m_swimVerticalAcceleration = Util::FInterpTo(m_swimVerticalAcceleration, 0.0f, deltaTime, 20.0f);
+    }
+    displacement.y += m_swimVerticalAcceleration;
+
+    MoveCharacterController(glm::vec3(displacement.x, displacement.y, displacement.z));
+}
+
+bool Player::IsUnderWater() {
+    return m_underWater;
 }
 
 bool Player::IsPlayingPiano() {

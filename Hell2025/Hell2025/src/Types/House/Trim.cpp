@@ -21,6 +21,7 @@ void Trim::Init(Transform transform, const std::string& modelName, const std::st
     m_renderItem.baseColorTextureIndex = material->m_basecolor;
     m_renderItem.rmaTextureIndex = material->m_rma;
     m_renderItem.normalMapTextureIndex = material->m_normal;
+    Util::UpdateRenderItemAABB(m_renderItem);
     Util::PackUint64(m_objectId, m_renderItem.objectIdLowerBit, m_renderItem.objectIdUpperBit);
 }
 

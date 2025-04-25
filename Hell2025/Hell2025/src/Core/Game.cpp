@@ -51,7 +51,7 @@ namespace Game {
         //SectorCreateInfo sectorCreateInfo = JSON::LoadSector("res/sectors/TestSector.json");
         //World::LoadSingleSector(sectorCreateInfo);
 
-        World::LoadMap("TestMap");
+        //
 
         // Create players
         AddLocalPlayer(glm::vec3(12.82, 0.5f, 18.27f), glm::vec3(-0.13f, -1.46f, 0.0f));

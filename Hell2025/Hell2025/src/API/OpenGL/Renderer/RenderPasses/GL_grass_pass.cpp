@@ -120,7 +120,7 @@ namespace OpenGLRenderer {
         }
 
         OpenGLShader* geometryShader = GetShader("GrassGeometryGeneration");
-        geometryShader->Use();
+        geometryShader->Bind();
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, g_grassGeometryMesh.GetVBO());
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, g_grassGeometryMesh.GetEBO());
         glDispatchCompute(bladeCount, 1, 1);
@@ -134,11 +134,6 @@ namespace OpenGLRenderer {
         //    CreateGrassGeometry();
         //}
 
-        static bool runOnce = true;
-        if (runOnce) {
-            GrassInit();
-            runOnce = false;
-        }
         OpenGLFrameBuffer* worldFramebuffer = GetFrameBuffer("World");
         OpenGLFrameBuffer* gBuffer = GetFrameBuffer("GBuffer");
         OpenGLFrameBuffer* wipBuffer = GetFrameBuffer("WIP");
@@ -249,7 +244,7 @@ namespace OpenGLRenderer {
 
         // Uniforms
         OpenGLShader* generationShader = GetShader("GrassPositionGeneration");
-        generationShader->Use();
+        generationShader->Bind();
         generationShader->SetInt("gridSize", BLADES_PER_TILE_AXIS);
         generationShader->SetInt("u_viewportIndex", viewportIndex);
         generationShader->SetFloat("spacing", BLADE_SPACING);
@@ -281,7 +276,7 @@ namespace OpenGLRenderer {
            
         glm::mat4 projectionView = viewportData[viewportIndex].projectionView;
 
-        geometryShader->Use();
+        geometryShader->Bind();
         geometryShader->SetMat4("projectionView", projectionView);
 
 

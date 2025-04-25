@@ -11,6 +11,7 @@
 #include "Core/Game.h"
 #include "Config/Config.h"
 #include "Input/Input.h"
+#include "Ocean/Ocean.h"
 #include "Player/Player.h"
 #include "Renderer/RenderDataManager.h"
 #include "Util/Util.h"
@@ -39,6 +40,8 @@ namespace OpenGLRenderer {
     std::unordered_map<std::string, OpenGLSSBO> g_ssbos;
     std::unordered_map<std::string, OpenGLRasterizerState> g_rasterizerStates;
     std::unordered_map<std::string, OpenGLShadowCubeMapArray> g_shadowMapArrays;
+
+    OpenGLMeshPatch g_oceanMeshPatch;
 
     OpenGLFrameBuffer g_blurBuffers[4][4] = {};
 
@@ -70,6 +73,11 @@ namespace OpenGLRenderer {
         g_frameBuffers["GBuffer"].CreateAttachment("Emissive", GL_RGBA8);
         g_frameBuffers["GBuffer"].CreateAttachment("Glass", GL_RGBA8);
         g_frameBuffers["GBuffer"].CreateDepthAttachment(GL_DEPTH_COMPONENT32F);
+      
+        g_frameBuffers["Water"] = OpenGLFrameBuffer("Water", resolutions.gBuffer);
+        g_frameBuffers["Water"].CreateAttachment("Diffuse", GL_RGBA8);
+        g_frameBuffers["Water"].CreateAttachment("Specular", GL_RGBA8);
+        g_frameBuffers["Water"].CreateDepthAttachment(GL_DEPTH_COMPONENT32F);
 
         g_frameBuffers["WIP"] = OpenGLFrameBuffer("WIP", resolutions.gBuffer);
         g_frameBuffers["WIP"].CreateAttachment("WorldSpacePosition", GL_RGBA32F);
@@ -103,7 +111,17 @@ namespace OpenGLRenderer {
         g_frameBuffers["FlashlightShadowMap"] = OpenGLFrameBuffer("Flashlight", FLASHLIGHT_SHADOWMAP_SIZE, FLASHLIGHT_SHADOWMAP_SIZE);
         g_frameBuffers["FlashlightShadowMap"].CreateDepthAttachment(GL_DEPTH32F_STENCIL8, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_BORDER, glm::vec4(1.0f));
 
+        g_frameBuffers["FFT"].Create("FFT", Ocean::GetOceanSize().x, Ocean::GetOceanSize().y);
+        g_frameBuffers["FFT"].CreateAttachment("Height", GL_R32F);
+               
         g_shadowMaps["FlashlightShadowMaps"] = OpenGLShadowMap("FlashlightShadowMaps", 1024, 1024, 4);
+
+        // Ocean init shit
+        const glm::uvec2 oceanSize = Ocean::GetOceanSize();
+        g_oceanMeshPatch.Resize(Ocean::GetMeshSize().x, Ocean::GetMeshSize().y);
+
+        GLbitfield staticFlags = GL_MAP_READ_BIT | GL_MAP_WRITE_BIT;
+        GLbitfield dynamicFlags = GL_DYNAMIC_STORAGE_BIT | GL_MAP_READ_BIT | GL_MAP_WRITE_BIT;
 
         // Create ssbos
         g_ssbos["Samplers"] = OpenGLSSBO(sizeof(glm::uvec2), GL_DYNAMIC_STORAGE_BIT);
@@ -113,6 +131,21 @@ namespace OpenGLRenderer {
         g_ssbos["SkinningTransforms"] = OpenGLSSBO(sizeof(glm::mat4) * MAX_ANIMATED_TRANSFORMS, GL_DYNAMIC_STORAGE_BIT);
         g_ssbos["LightSpaceMatrices"] = OpenGLSSBO(sizeof(glm::mat4) * MAX_VIEWPORT_COUNT * SHADOW_CASCADE_COUNT, GL_DYNAMIC_STORAGE_BIT);
         g_ssbos["Lights"] = OpenGLSSBO(sizeof(GPULight) * MAX_GPU_LIGHTS, GL_DYNAMIC_STORAGE_BIT);
+        g_ssbos["ffth0"] = OpenGLSSBO(oceanSize.x * oceanSize.y * sizeof(std::complex<float>), staticFlags);
+        g_ssbos["fftSpectrumInSSBO"] = OpenGLSSBO(oceanSize.x * oceanSize.y * sizeof(std::complex<float>), dynamicFlags);
+        g_ssbos["fftSpectrumOutSSBO"] = OpenGLSSBO(oceanSize.x * oceanSize.y * sizeof(std::complex<float>), dynamicFlags);
+        g_ssbos["fftDispInXSSBO"] = OpenGLSSBO(oceanSize.x * oceanSize.y * sizeof(std::complex<float>), dynamicFlags);
+        g_ssbos["fftDispZInSSBO"] = OpenGLSSBO(oceanSize.x * oceanSize.y * sizeof(std::complex<float>), dynamicFlags);
+        g_ssbos["fftGradXInSSBO"] = OpenGLSSBO(oceanSize.x * oceanSize.y * sizeof(std::complex<float>), dynamicFlags);
+        g_ssbos["fftGradZInSSBO"] = OpenGLSSBO(oceanSize.x * oceanSize.y * sizeof(std::complex<float>), dynamicFlags);
+        g_ssbos["fftDispXOutSSBO"] = OpenGLSSBO(oceanSize.x * oceanSize.y * sizeof(std::complex<float>), dynamicFlags);
+        g_ssbos["fftDispZOutSSBO"] = OpenGLSSBO(oceanSize.x * oceanSize.y * sizeof(std::complex<float>), dynamicFlags);
+        g_ssbos["fftGradXOutSSBO"] = OpenGLSSBO(oceanSize.x * oceanSize.y * sizeof(std::complex<float>), dynamicFlags);
+        g_ssbos["fftGradZOutSSBO"] = OpenGLSSBO(oceanSize.x * oceanSize.y * sizeof(std::complex<float>), dynamicFlags);
+
+        // Precompute HO
+        std::vector<std::complex<float>> h0 = Ocean::ComputeH0();
+        g_ssbos["ffth0"].CopyFrom(h0.data(), sizeof(std::complex<float>) * h0.size());
 
         int tileXCount = g_frameBuffers["GBuffer"].GetWidth() / TILE_SIZE;
         int tileYCount = g_frameBuffers["GBuffer"].GetHeight() / TILE_SIZE;
@@ -127,6 +160,8 @@ namespace OpenGLRenderer {
         // Allocate shadow map array memory
         g_shadowMapArrays["HiRes"] = OpenGLShadowCubeMapArray();
         g_shadowMapArrays["HiRes"].Init(SHADOWMAP_HI_RES_COUNT, SHADOW_MAP_HI_RES_SIZE);
+
+        GrassInit();
     }
 
     void InitMain() {
@@ -181,6 +216,11 @@ namespace OpenGLRenderer {
         g_shaders["HeightMapPaint"] = OpenGLShader({ "GL_heightmap_paint.comp" });
         g_shaders["LightCulling"] = OpenGLShader({ "GL_light_culling.comp" });
         g_shaders["Lighting"] = OpenGLShader({ "GL_lighting.comp" });
+        g_shaders["OceanCalculateSpectrum"] = OpenGLShader({ "GL_ocean_calculate_spectrum.comp" });
+        g_shaders["OceanColor"] = OpenGLShader({ "GL_ocean_color.vert", "GL_ocean_color.frag" });
+        g_shaders["OceanComposite"] = OpenGLShader({ "GL_ocean_composite.comp" });
+        g_shaders["OceanUpdateMesh"] = OpenGLShader({ "GL_ocean_update_mesh.comp" });
+        g_shaders["OceanUpdateNormals"] = OpenGLShader({ "GL_ocean_update_normals.comp" });
         g_shaders["Outline"] = OpenGLShader({ "GL_outline.vert", "GL_outline.frag" });
         g_shaders["OutlineComposite"] = OpenGLShader({ "GL_outline_composite.comp" });
         g_shaders["OutlineMask"] = OpenGLShader({ "GL_outline_mask.vert", "GL_outline_mask.frag" });
@@ -220,9 +260,9 @@ namespace OpenGLRenderer {
     }
 
     void RenderGame() {
-
         glDisable(GL_DITHER);
 
+        ComputeOceanFFTPass();
         ComputeSkinningPass();
         ClearRenderTargets();
         UpdateSSBOS();
@@ -231,9 +271,10 @@ namespace OpenGLRenderer {
         HeightMapPass();
         GrassPass();
         GeometryPass();
-        //TextureReadBackPass();
+        TextureReadBackPass();
         LightCullingPass();
         LightingPass();
+        OceanPass();
         GlassPass();
         DecalPass();
         EmissivePass();
@@ -271,7 +312,18 @@ namespace OpenGLRenderer {
         //dstRect.y1 = worldFramebuffer.GetHeight() * 0.5f;
         //OpenGLRenderer::BlitToDefaultFrameBuffer(&worldFramebuffer, "HeightMap", srcRect, dstRect, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 
-        
+        //OpenGLFrameBuffer& fftFramebuffer = g_frameBuffers["FFT"];
+        //BlitRect srcRect;
+        //srcRect.x0 = 0;
+        //srcRect.y0 = 0;
+        //srcRect.x1 = fftFramebuffer.GetWidth();
+        //srcRect.y1 = fftFramebuffer.GetHeight();
+        //
+        //BlitRect dstRect = srcRect;
+        //dstRect.x1 = BackEnd::GetCurrentWindowHeight();
+        //dstRect.y1 = BackEnd::GetCurrentWindowHeight();
+        //OpenGLRenderer::BlitToDefaultFrameBuffer(&fftFramebuffer, "Height", srcRect, dstRect, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+
 
         //BlitRect srcRect;
         //srcRect.x0 = 0;
@@ -287,7 +339,13 @@ namespace OpenGLRenderer {
 
     void ClearRenderTargets() {
         OpenGLFrameBuffer* gBuffer = GetFrameBuffer("GBuffer");
+        OpenGLFrameBuffer* waterFrameBuffer = GetFrameBuffer("Water");
         OpenGLFrameBuffer* finalImageFBO = GetFrameBuffer("FinalImage");
+
+        // Water
+        waterFrameBuffer->Bind();
+        waterFrameBuffer->ClearAttachment("Diffuse", 0, 0, 0, 0);
+        waterFrameBuffer->ClearAttachment("Specular", 0, 0, 0, 0);
 
         // GBuffer
         glDepthMask(GL_TRUE);
@@ -390,6 +448,10 @@ namespace OpenGLRenderer {
     
     void CreateSSBO(const std::string& name, float size, GLbitfield flags) {
         g_ssbos[name] = OpenGLSSBO(size, flags);
+    }
+
+    OpenGLMeshPatch* GetOceanMeshPatch() {
+        return &g_oceanMeshPatch;
     }
 
     OpenGLShader* GetShader(const std::string& name) {
@@ -616,26 +678,6 @@ namespace OpenGLRenderer {
         }
         return ret;
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }
 
 

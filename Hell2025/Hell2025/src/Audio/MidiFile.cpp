@@ -6,7 +6,6 @@
 #include "MidiFile.h"
 #include "Synth.h"
 
-
 #include <iostream>
 #include <iomanip>
 #include <string>
@@ -15,6 +14,11 @@
 #include <algorithm>
 
 #include "World/World.h"
+
+// get me out of here
+#include "MidiFileManager.h"
+#include "Util/Util.h"
+// get me out of here
 
 void MidiFile::Update(float deltaTime) {
     if (!m_play) return;
@@ -32,6 +36,12 @@ void MidiFile::Update(float deltaTime) {
         switch (currentEvent.type) {
             case MidiEventType::NOTE_ON: {
                 if (printDebug) {
+
+                    MidiFileManager::AddDebugTextTimes("Time: " + Util::FloatToString(m_playbackTime) + "s");
+                    MidiFileManager::AddDebugTextEvent("Note On: " + std::to_string(currentEvent.note));
+                    MidiFileManager::AddDebugTextDurations("Dur: " + Util::FloatToString(currentEvent.duration) + "s");
+                    MidiFileManager::AddDebugTextVelocity("Vel: " + Util::FloatToString(currentEvent.velocity));
+
                     std::cout << "Time: " << std::fixed << std::setprecision(3) << m_playbackTime << "s | Trigger Note On: " << currentEvent.note << " | Vel: " << currentEvent.velocity << " | Dur: " << currentEvent.duration << "s" << " | @ MIDI Time: " << currentEvent.timestamp << "s\n";
                 }
                 piano.PlayKey(currentEvent.note, currentEvent.velocity, currentEvent.duration);
@@ -40,6 +50,12 @@ void MidiFile::Update(float deltaTime) {
 
             case MidiEventType::SUSTAIN: {
                 if (printDebug) {
+
+                    MidiFileManager::AddDebugTextTimes("Time: " + Util::FloatToString(m_playbackTime) + "s");
+                    MidiFileManager::AddDebugTextEvent(currentEvent.sustainValue ? "Sustain pedal on" : "Sustain pedal off");
+                    MidiFileManager::AddDebugTextDurations("  ");
+                    MidiFileManager::AddDebugTextVelocity(" ");
+
                     std::cout << "Time: " << std::fixed << std::setprecision(3) << m_playbackTime << "s | Trigger Sustain: " << (currentEvent.sustainValue ? "ON" : "OFF") << " | @ MIDI Time: " << currentEvent.timestamp << "s\n";
                 }
                 piano.SetSustain(currentEvent.sustainValue);

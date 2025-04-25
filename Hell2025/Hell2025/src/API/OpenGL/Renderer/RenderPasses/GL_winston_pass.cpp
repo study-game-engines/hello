@@ -14,7 +14,7 @@ namespace OpenGLRenderer {
         OpenGLShader* shader = GetShader("Winston");
         OpenGLFrameBuffer* gBuffer = GetFrameBuffer("GBuffer");
 
-        shader->Use();
+        shader->Bind();
         shader->SetVec3("color", { 0, 0.9f, 1 });
         shader->SetFloat("alpha", 0.01f);
         shader->SetVec2("screensize", gBuffer->GetWidth(), gBuffer->GetHeight());

@@ -3,6 +3,7 @@
 #include "Audio/Audio.h"
 #include "BackEnd/BackEnd.h"
 #include "Config/Config.h"
+#include "Core/Game.h"
 #include "ImGui/EditorImgui.h"
 #include "ImGui/Types/Types.h"
 #include "Input/Input.h"
@@ -140,6 +141,13 @@ namespace Editor {
             HouseCreateInfo* houseCreateInfo = HouseManager::GetHouseCreateInfoByFilename(g_currentFilename);
             World::LoadSingleHouse(houseCreateInfo);
             World::SetObjectsToInitalState();
+
+            // Move player somewhere reasonable
+            Player* player = Game::GetLocalPlayerByIndex(0);
+            if (player) {
+                player->SetFootPosition(glm::vec3(2.25f, 0.0, 1.68f));
+                player->GetCamera().SetEulerRotation(glm::vec3(-0.2f, 0.0, 0.0f));
+            }
 
             Editor::SetEditorMode(EditorMode::HOUSE_EDITOR);
             if (Editor::IsEditorClosed()) {

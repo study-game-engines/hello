@@ -103,6 +103,8 @@ namespace RenderDataManager {
             g_viewportData[i].posY = viewport->GetPosition().y;
             g_viewportData[i].sizeX = viewport->GetSize().x;
             g_viewportData[i].sizeY = viewport->GetSize().y;
+            g_viewportData[i].viewPos = g_viewportData[i].inverseView[3];
+            g_viewportData[i].cameraForward = g_viewportData[i].inverseView[2];
 
             viewport->GetFrustum().Update(g_viewportData[i].projectionView);
 
@@ -187,6 +189,8 @@ namespace RenderDataManager {
         g_rendererData.rendererOverrideState = (int)rendererSettings.rendererOverrideState;
         g_rendererData.normalizedMouseX = Util::MapRange(Input::GetMouseX(), 0, BackEnd::GetCurrentWindowWidth(), 0.0f, 1.0f);
         g_rendererData.normalizedMouseY = Util::MapRange(Input::GetMouseY(), 0, BackEnd::GetCurrentWindowHeight(), 0.0f, 1.0f);
+        g_rendererData.tileCountX = resolutions.gBuffer.x / TILE_SIZE;
+        g_rendererData.tileCountY = resolutions.gBuffer.y / TILE_SIZE;
     }
 
     void SortRenderItems(std::vector<RenderItem>& renderItems) {

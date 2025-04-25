@@ -135,6 +135,8 @@ void Wall::CleanUp() {
 
 void Wall::CreateTrims() {
     m_trims.clear();
+
+    World::UpdateDoorAndWindowCubeTransforms();
     
     // Ceiling
     if (m_ceilingTrimType != TrimType::NONE) {

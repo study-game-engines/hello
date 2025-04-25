@@ -108,6 +108,11 @@ struct MeshData2D {
     std::vector<uint32_t> indices;
 };
 
+struct VertexPN {
+    glm::vec3 position;
+    glm::vec3 normal;
+};
+
 struct Vertex {
     Vertex() = default;
     Vertex(glm::vec3 pos) {
@@ -255,26 +260,34 @@ struct ViewportData {
     glm::mat4 inverseProjectionView;
     glm::mat4 skyboxProjectionView;
     glm::mat4 flashlightProjectionView;
+
     int xOffset;
     int yOffset;
     int width;
     int height;
+
     float posX;  // 0 t0 1 range
     float posY;  // 0 t0 1 range
     float sizeX; // 0 t0 1 range
     float sizeY; // 0 t0 1 range
+
     glm::vec4 frustumPlane0;
     glm::vec4 frustumPlane1;
     glm::vec4 frustumPlane2;
     glm::vec4 frustumPlane3;
+
     glm::vec4 frustumPlane4;
     glm::vec4 frustumPlane5;
     glm::vec4 flashlightDir;
     glm::vec4 flashlightPosition;
+
     float flashlightModifer;
     bool isOrtho;
     float orthoSize;
     float padding2;
+
+    glm::vec4 viewPos;
+    glm::vec4 cameraForward;
 };
 
 struct RendererData {
@@ -282,15 +295,15 @@ struct RendererData {
     float farPlane;
     float gBufferWidth;
     float gBufferHeight;
-
     float hairBufferWidth;
     float hairBufferHeight;
     float time;
     int splitscreenMode;
-
     int rendererOverrideState;
     float normalizedMouseX;
     float normalizedMouseY;
+    int tileCountX;
+    int tileCountY;
 };
 
 struct Resolutions {

@@ -17,7 +17,7 @@ namespace OpenGLRenderer {
         OpenGLShader* compositeShader = GetShader("GlassComposite");
         OpenGLFrameBuffer* gBuffer = GetFrameBuffer("GBuffer");
 
-        shader->Use();
+        shader->Bind();
 
         gBuffer->Bind();
         gBuffer->DrawBuffer("Glass");
@@ -61,7 +61,7 @@ namespace OpenGLRenderer {
         
         // Composite that render back into the lighting texture
         gBuffer->SetViewport();
-        compositeShader->Use();
+        compositeShader->Bind();
         glBindImageTexture(0, gBuffer->GetColorAttachmentHandleByName("FinalLighting"), 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F);
         glBindImageTexture(1, gBuffer->GetColorAttachmentHandleByName("Glass"), 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA8);
         glDispatchCompute(gBuffer->GetWidth() / 16, gBuffer->GetHeight() / 4, 1);

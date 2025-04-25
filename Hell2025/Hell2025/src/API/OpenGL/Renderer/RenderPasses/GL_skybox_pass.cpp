@@ -16,7 +16,7 @@ namespace OpenGLRenderer {
 
         gBuffer->Bind();
         gBuffer->DrawBuffer("BaseColor");       
-        shader->Use();
+        shader->Bind();
 
         SetRasterizerState("SkyBox");
         

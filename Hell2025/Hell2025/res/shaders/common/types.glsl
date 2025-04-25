@@ -28,6 +28,8 @@ struct ViewportData {
     bool isOrtho;
     float orthoSize;
     float padding2;
+    vec4 viewPos;
+    vec4 cameraForward;
 };
 
 struct RendererData {
@@ -42,6 +44,8 @@ struct RendererData {
     int rendererOverrideState;
     float normalizedMouseX;
     float normalizedMouseY;
+    int tileCountX;
+    int tileCountY;
 };
 
 struct RenderItem {

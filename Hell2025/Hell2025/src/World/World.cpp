@@ -59,6 +59,8 @@ namespace World {
             // Load it into the world
             World::LoadSingleSector(sectorCreateInfo);
         }
+
+        //World::LoadMap("TestMap");
     }
 
     void BeginFrame() {
@@ -217,6 +219,11 @@ namespace World {
         }
 
         RecreateHieghtMapChunks();
+
+        std::cout << "Loaded map: " << g_mapName << "\n";
+
+        //GameObject* sup = GetGameObjectByIndex(9999999);
+        //std::cout << sup->GetPosition() << "\n";
     }
 
     void LoadMap(const std::string& mapName) {
@@ -298,8 +305,8 @@ namespace World {
         for (TreeCreateInfo& createInfo : sectorCreateInfo.trees) {
             AddTree(createInfo, spawnOffset);
         }
-
-        glm::vec3 houseLocation = glm::vec3(14.0f, 0.2f, 25.0f);
+       
+        glm::vec3 houseLocation = glm::vec3(34.0f, 10.25f, 25.0f);
 
         SpawnOffset houseSpawnOffset = spawnOffset;
         houseSpawnOffset.translation += houseLocation;

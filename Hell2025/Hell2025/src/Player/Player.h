@@ -101,10 +101,11 @@ struct Player {
     bool IsGrounded();
     bool IsCrouching();
     bool IsDead();
-    bool IsAlive();
-    bool IsOverlappingLadder();
-    bool IsAtShop();
+    //bool IsAlive();
+    //bool IsOverlappingLadder();
+    //bool IsAtShop();
     bool IsPlayingPiano();
+    bool IsUnderWater();
 
     // Input
     int32_t GetKeyboardIndex();
@@ -331,6 +332,10 @@ private:
         float m_weaponSwayX = 0;
         float m_weaponSwayY = 0;
 
+        // Swimming
+        float m_swimVerticalAcceleration = 0.0f;
+        bool m_underWater = false;
+
     private:
 
         AnimatedGameObject m_viewWeaponAnimatedGameObject;
@@ -340,6 +345,9 @@ private:
 
         std::vector<SpriteSheetRenderItem> m_spriteSheetRenderItems;
         AABB m_characterControllerAABB;
+
+        void UpdateWalkingMovement(float deltaTime);
+        void UpdateSwimmingMovement(float deltaTime);
 
     public:
         const std::vector<SpriteSheetRenderItem>& GetSpriteSheetRenderItems() { return m_spriteSheetRenderItems; }

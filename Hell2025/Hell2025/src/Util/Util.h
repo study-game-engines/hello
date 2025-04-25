@@ -135,6 +135,7 @@ namespace Util {
     TrimType StringToTrimType(const std::string& str);
     ObjectType IntToEnum(int value);
     int32_t EnumToInt(ObjectType type);
+    std::string FloatToString(float value, int prevision = 3);
 
     // Time
     double GetCurrentTime();

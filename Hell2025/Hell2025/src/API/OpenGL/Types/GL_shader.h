@@ -23,7 +23,7 @@ struct OpenGLShader {
 public:
     OpenGLShader() = default;
     OpenGLShader(std::vector<std::string> shaderPaths);
-    void Use();
+    void Bind();
     bool Load(std::vector<std::string> shaderPaths);
     bool Hotload();
     void SetInt(const std::string& name, int value);
@@ -32,6 +32,7 @@ public:
     void SetMat2(const std::string& name, const glm::mat2& mat);
     void SetMat3(const std::string& name, const glm::mat3& mat);
     void SetMat4(const std::string& name, glm::mat4 value);
+    void SetUvec2(const std::string& name, const glm::uvec2& value);
     void SetVec2(const std::string& name, const glm::vec2& value);
     void SetVec4(const std::string& name, const glm::vec4& value);
     void SetVec3(const std::string& name, const glm::vec3& value);

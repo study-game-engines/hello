@@ -39,7 +39,7 @@ void main() {
 
    // Direct light
    vec3 directLighting = vec3(0); 
-   for (int i = 0; i < 3; i++) {    
+   for (int i = 0; i < 4; i++) {    
        Light light = lights[i];
        vec3 lightPosition = vec3(light.posX, light.posY, light.posZ);
        vec3 lightColor =  vec3(light.colorR, light.colorG, light.colorB);

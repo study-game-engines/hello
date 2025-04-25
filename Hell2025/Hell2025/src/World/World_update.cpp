@@ -10,13 +10,11 @@ namespace World {
     void EvaluatePianoKeyBulletHit(Bullet& bullet);
     void LazyDebugSpawns();
     void ProcessBullets();
-    void UpdateDoorAndWindowCubeTransforms();
     void CalculateGPULights();
 
     void Update(float deltaTime) {
         ProcessBullets();
         LazyDebugSpawns();
-        UpdateDoorAndWindowCubeTransforms();
 
         std::vector<AnimatedGameObject>& animatedGameObjects = GetAnimatedGameObjects();
         std::vector<BulletCasing>& bulletCasings = GetBulletCasings();

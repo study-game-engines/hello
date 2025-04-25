@@ -3,6 +3,7 @@
 #include <string>
 #include "API/OpenGL/Types/GL_cubemapView.h"
 #include "API/OpenGL/Types/GL_mesh_buffer.h"
+#include "API/OpenGL/Types/GL_mesh_patch.h"
 #include "API/OpenGL/Types/GL_frameBuffer.h"
 #include "API/OpenGL/Types/GL_shader.h"
 #include "API/OpenGL/Types/GL_shadow_map.h"
@@ -29,6 +30,10 @@ namespace OpenGLRenderer {
 
     // Compute passes
     void ComputeSkinningPass();
+    void ComputeOceanFFTPass();
+
+    // Init passes
+    void GrassInit();
 
     // Render passes
     void DebugPass();
@@ -44,6 +49,7 @@ namespace OpenGLRenderer {
     void ImGuiPass();
     void LightCullingPass();
     void LightingPass();
+    void OceanPass();
     void OutlinePass();
     void WinstonPass();
     void SkyBoxPass();
@@ -84,6 +90,7 @@ namespace OpenGLRenderer {
     OpenGLShader* GetShader(const std::string& name);
     OpenGLShadowMap* GetShadowMap(const std::string& name);
     OpenGLShadowCubeMapArray* GetShadowMapArray(const std::string& name);
+    OpenGLMeshPatch* GetOceanMeshPatch();
 
     // SSBOs
     void CreateSSBO(const std::string& name, float size, GLbitfield flags);

@@ -50,6 +50,25 @@ public:
         }
     }
 
+    void CopyFrom(const void* hostPtr, size_t sizeInBytes) {
+        if (!hostPtr || sizeInBytes == 0 || m_handle == 0) {
+            return;
+        }
+
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_handle);
+        void* devPtrRaw = glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, sizeInBytes, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
+
+        if (!devPtrRaw) {
+            glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+            throw std::runtime_error("glMapBufferRange failed in copyFrom.");
+            return;
+        }
+
+        std::memcpy(devPtrRaw, hostPtr, sizeInBytes);
+        glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+    }
+
 private:
     GLbitfield m_flags = 0;
     uint32_t m_handle = 0;

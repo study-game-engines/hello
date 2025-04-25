@@ -49,7 +49,7 @@ namespace OpenGLRenderer {
             // Render the mask (by drawing all the mesh into it)
             glDrawBuffer(outlineFBO->GetColorAttachmentSlotByName("Mask"));
             glDisable(GL_BLEND);
-            maskShader->Use();
+            maskShader->Bind();
             maskShader->SetInt("u_viewportIndex", i);
             for (const RenderItem& renderItem : RenderDataManager::GetOutlineRenderItems()) {
                 maskShader->SetMat4("u_modelMatrix", renderItem.modelMatrix);
@@ -58,7 +58,7 @@ namespace OpenGLRenderer {
             }
 
             // Render the outline (by drawing an instanced quad offset many times)
-            outlineShader->Use();
+            outlineShader->Bind();
             outlineShader->SetIVec2Array("u_offsets", offsets);
             outlineShader->SetInt("u_offsetCount", offsets.size());
             outlineShader->SetInt("u_viewportIndex", i);
@@ -116,7 +116,7 @@ namespace OpenGLRenderer {
         glBindImageTexture(0, gBuffer->GetColorAttachmentHandleByName("FinalLighting"), 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F);
         glBindImageTexture(1, outlineFBO->GetColorAttachmentHandleByName("Mask"), 0, GL_FALSE, 0, GL_READ_ONLY, GL_R8);
         glBindImageTexture(2, outlineFBO->GetColorAttachmentHandleByName("Result"), 0, GL_FALSE, 0, GL_READ_ONLY, GL_R8);
-        compositeShader->Use();
+        compositeShader->Bind();
         glDispatchCompute(gBuffer->GetWidth() / 16, gBuffer->GetHeight() / 16, 1);
 
         // Clean Up

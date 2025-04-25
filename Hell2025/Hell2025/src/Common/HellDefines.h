@@ -25,6 +25,10 @@
 #define DEFAULT_LIGHT_COLOR glm::vec4(1.00f, 0.7799999713897705f, 0.5289999842643738f, 1.0f)
 
 #define HELL_PI 3.14159265358979323846
+#define HELL_EPSILON 1e-12f
+#define HELL_SQRT_OF_TWO static_cast<float>(sqrt(2.0))
+#define HELL_SQRT_OF_HALF 1.0f / HELL_SQRT_OF_TWO
+
 #define VIEWPORT_INDEX_SHIFT 20 // Only 2 bits needed for 4 players
 
 // Render limits

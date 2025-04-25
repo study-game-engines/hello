@@ -8,6 +8,7 @@
 #include "Editor/Editor.h"
 #include "Input/Input.h"
 #include "Viewport/ViewportManager.h"
+#include "Ocean/Ocean.h"
 
 // Get me out of here
 #include "World/World.h"
@@ -48,6 +49,9 @@ void Player::Update(float deltaTime) {
     }
 
     if (IsAwaitingSpawn()) Respawn();
+
+    // Determine water state
+    m_underWater = GetCameraPosition().y < Ocean::GetWaterHeight() + 0.1f;
         
     UpdateMovement(deltaTime);
     UpdateCharacterController();
@@ -84,6 +88,11 @@ void Player::Respawn() {
     //viewWeapon->PlayAndLoopAnimation("SPAS_Reload2Shells");
     //viewWeapon->SetSkinnedModel("Knife");
     //viewWeapon->PlayAndLoopAnimation("Knife_Idle");
+
+
+    if (m_viewportIndex == 0) {
+        SetFootPosition(glm::vec3(36.0f, 10.25f, 25.0f));
+    }
 
     m_weaponStates.clear();
     for (int i = 0; i < WeaponManager::GetWeaponCount(); i++) {

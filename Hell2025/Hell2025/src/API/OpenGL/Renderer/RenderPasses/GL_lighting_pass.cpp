@@ -13,7 +13,7 @@ namespace OpenGLRenderer {
 
         size_t lightCount = World::GetLights().size();
 
-        shader->Use();
+        shader->Bind();
         shader->SetFloat("u_viewportWidth", gBuffer->GetWidth());
         shader->SetFloat("u_viewportHeight", gBuffer->GetHeight());
         shader->SetInt("u_lightCount", lightCount);
@@ -37,7 +37,7 @@ namespace OpenGLRenderer {
         if (!finalImageFBO) return;
         if (!lightingShader) return;
 
-        lightingShader->Use();
+        lightingShader->Bind();
 
         lightingShader->SetFloat("u_viewportWidth", gBuffer->GetWidth());
         lightingShader->SetFloat("u_viewportHeight", gBuffer->GetHeight());

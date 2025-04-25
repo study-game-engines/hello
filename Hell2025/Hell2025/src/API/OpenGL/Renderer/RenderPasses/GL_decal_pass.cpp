@@ -17,7 +17,7 @@ namespace OpenGLRenderer {
         OpenGLShader* shader = GetShader("Decals");
         OpenGLFrameBuffer* gBuffer = GetFrameBuffer("GBuffer");
 
-        shader->Use();
+        shader->Bind();
 
         gBuffer->Bind();
         gBuffer->DrawBuffer("FinalLighting");

@@ -1,0 +1,42 @@
+#version 460
+
+#include "../common/lighting.glsl"
+#include "../common/post_processing.glsl"
+#include "../common/types.glsl"
+#include "../common/util.glsl"
+
+layout(local_size_x = TILE_SIZE, local_size_y = TILE_SIZE, local_size_z = 1) in;
+
+layout(rgba16f, binding = 0) uniform image2D OutputImage; // GBuffer Lighting texture
+
+layout (binding = 0) uniform sampler2D OceanDiffuseTexture;
+layout (binding = 1) uniform sampler2D OceanSpecularTexture;
+
+uniform float u_viewportWidth;
+uniform float u_viewportHeight;
+uniform int u_tileXCount;
+uniform int u_tileYCount;
+uniform int u_editorLighting;
+uniform int u_ambientLightingBoost;
+
+void main() {
+	ivec2 pixelCoords = ivec2(gl_GlobalInvocationID.xy);   
+    ivec2 outputImageSize = imageSize(OutputImage);
+
+     vec2 uv_screenspace = (vec2(pixelCoords) + 0.5) / vec2(outputImageSize);
+    // Don't process out of bounds pixels
+    if (pixelCoords.x >= outputImageSize.x || pixelCoords.y >= outputImageSize.y) {
+        return;
+    }    
+    
+    // Inputs
+    vec3 oceanDiffuse = texture(OceanDiffuseTexture, uv_screenspace).rgb;
+    vec3 oceanSpecular = texture(OceanSpecularTexture, uv_screenspace).rgb;
+        
+    vec3 lighting = imageLoad(OutputImage, pixelCoords).rgb;
+
+    vec3 finalColor = lighting + oceanSpecular;// * vec3(1,0,0);
+
+    // Output
+    imageStore(OutputImage, pixelCoords, vec4(finalColor,0));
+}

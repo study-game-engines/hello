@@ -38,7 +38,7 @@ namespace OpenGLRenderer {
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, blurBuffer->GetColorAttachmentHandleByName("ColorA"));
             glDrawBuffer(GL_COLOR_ATTACHMENT1);
-            verticalShader->Use();
+            verticalShader->Bind();
             verticalShader->SetFloat("targetHeight", blurBuffer->GetHeight());
             DrawQuad();
 
@@ -54,7 +54,7 @@ namespace OpenGLRenderer {
                 glActiveTexture(GL_TEXTURE0);
                 glBindTexture(GL_TEXTURE_2D, horizontalSourceHandle);
                 glDrawBuffer(GL_COLOR_ATTACHMENT0);
-                horizontalShader->Use();
+                horizontalShader->Bind();
                 horizontalShader->SetFloat("targetWidth", GetBlurBuffer(i, j)->GetWidth());
                 DrawQuad();
 
@@ -62,7 +62,7 @@ namespace OpenGLRenderer {
                 glActiveTexture(GL_TEXTURE0);
                 glBindTexture(GL_TEXTURE_2D, verticalSourceHandle);
                 glDrawBuffer(GL_COLOR_ATTACHMENT1);
-                verticalShader->Use();
+                verticalShader->Bind();
                 verticalShader->SetFloat("targetHeight", GetBlurBuffer(i, j)->GetHeight());
                 DrawQuad();
             }
@@ -73,7 +73,7 @@ namespace OpenGLRenderer {
             float viewportOffsetX = gBuffer->GetWidth() * viewport->GetPosition().x;
             float viewportOffsetY = gBuffer->GetHeight() * viewport->GetPosition().y;
 
-            compositeShader->Use();
+            compositeShader->Bind();
             compositeShader->SetInt("u_viewportIndex", i);
 
             glBindImageTexture(0, gBuffer->GetColorAttachmentHandleByName("FinalLighting"), 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F);

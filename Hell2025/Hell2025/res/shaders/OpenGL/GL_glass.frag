@@ -13,9 +13,10 @@ layout (binding = 2) uniform sampler2D rmaTexture;
 layout (binding = 7) uniform sampler2D FlashlightCookieTexture;
 layout (binding = 8) uniform sampler2DArray FlashlighShadowMapTextureArray;
 
-readonly restrict layout(std430, binding = 2) buffer viewportDataBuffer {
-	ViewportData viewportData[];
-};
+readonly restrict layout(std430, binding = 1) buffer rendererDataBuffer { RendererData  rendererData;   };
+readonly restrict layout(std430, binding = 2) buffer viewportDataBuffer { ViewportData  viewportData[]; };
+readonly restrict layout(std430, binding = 4) buffer lightsBuffer       { Light         lights[];       };
+readonly restrict layout(std430, binding = 5) buffer tileDataBuffer     { TileLightData tileData[];     };
 
 in vec2 TexCoord;
 in vec3 Normal;
@@ -24,11 +25,7 @@ in vec3 BiTangent;
 in vec4 WorldPos;
 in vec3 ViewPos;
 uniform int u_viewportIndex;
-
-readonly restrict layout(std430, binding = 4) buffer lightsBuffer {
-	Light lights[];
-};
-
+    
 void main() {
 
     vec4 baseColor = texture2D(baseColorTexture, TexCoord);
@@ -44,17 +41,25 @@ void main() {
     float roughness = rma.r;
     float metallic = rma.g;
 
-    // Direct light
+    //ivec2 tile = ivec2(gl_FragCoord.xy) / TILE_SIZE;
+    //uint tileIndex = tile.y * rendererData.tileCountX + tile.x;
+    //uint lightCount = tileData[tileIndex].lightCount;
+
     vec3 directLighting = vec3(0); 
-    for (int i = 0; i < 3; i++) {    
+
+    //for (uint i = 0; i < lightCount; ++i) {
+    //    uint lightIndex = tileData[tileIndex].lightIndices[i];
+    //    Light light = lights[lightIndex];
+
+    for (uint i = 0; i < 4; ++i) {
         Light light = lights[i];
+
         vec3 lightPosition = vec3(light.posX, light.posY, light.posZ);
         vec3 lightColor =  vec3(light.colorR, light.colorG, light.colorB);
         float lightStrength = light.strength;
         float lightRadius = light.radius;
              
         directLighting += GetDirectLighting(lightPosition, lightColor, lightRadius, lightStrength, normal.xyz, WorldPos.xyz, gammaBaseColor.rgb, roughness, metallic, ViewPos);
-     
     }
 
     

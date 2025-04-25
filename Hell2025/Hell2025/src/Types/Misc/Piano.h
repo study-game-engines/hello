@@ -50,7 +50,7 @@ struct Piano {
     void PlayMajor7th(int rootNote);
     void PlayMinor(int rootNote);
     void PlayMajor(int rootNote);
-    void PlayKey(int note, int velocity = 70, float duration = 0.05f);
+    void PlayKey(int note, int velocity = 127, float duration = 0.05f);
 
     bool PianoKeyExists(uint64_t pianoKeyId);
     bool PianoBodyPartKeyExists(uint64_t pianoBodyPartId);

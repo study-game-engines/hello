@@ -18,7 +18,7 @@ namespace OpenGLRenderer {
 
         gBuffer->Bind();
         gBuffer->DrawBuffer("FinalLighting");
-        shader->Use();
+        shader->Bind();
         SetRasterizerState("SpriteSheetPass");
 
         glBindVertexArray(OpenGLBackEnd::GetVertexDataVAO());

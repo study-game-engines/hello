@@ -15,7 +15,7 @@
 
 namespace Editor {
 
-    EditorMode g_editorMode = EditorMode::MAP_EDITOR;
+    EditorMode g_editorMode = EditorMode::SECTOR_EDITOR;
     EditorMesh g_editorMesh;
     int g_activeViewportIndex = 3;
     bool g_isOpen = false;

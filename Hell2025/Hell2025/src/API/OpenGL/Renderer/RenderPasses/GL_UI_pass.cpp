@@ -34,7 +34,7 @@ namespace OpenGLRenderer {
         uiFrameBuffer->SetViewport();
         uiFrameBuffer->ClearAttachment("Color", 0.0f, 0.0f, 0.0f, 1.0f);
         uiFrameBuffer->DrawBuffer("Color");
-        shader->Use();
+        shader->Bind();
 
         glDisable(GL_DEPTH_TEST);
         glEnable(GL_BLEND);

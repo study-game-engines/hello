@@ -144,7 +144,7 @@ namespace OpenGLRenderer {
         OpenGLTextureArray& heightmapTextureArray = HeightMapManager::GetGLTextureArray();
         OpenGLShader* shader = GetShader("HeightMapImageGeneration");
 
-        shader->Use();
+        shader->Bind();
 
         glBindImageTexture(0, heightmapTextureArray.GetHandle(), 0, GL_TRUE, 0, GL_READ_WRITE, GL_R16F);
         glDispatchCompute(HEIGHT_MAP_SIZE / 16, HEIGHT_MAP_SIZE / 16, 1);
@@ -177,7 +177,9 @@ namespace OpenGLRenderer {
 
         if (Input::LeftMouseDown() || Input::RightMouseDown()) {
             
-            shader->Use();
+            std::cout << "painting heightmap\n";
+
+            shader->Bind();
             shader->SetInt("u_paintX", paintX);
             shader->SetInt("u_paintY", paintY);
             shader->SetInt("u_mode", mode);
@@ -215,7 +217,7 @@ namespace OpenGLRenderer {
 
         heightMapMesh.AllocateMemory(heightMapCount);
         
-        shader->Use();
+        shader->Bind();
         shader->SetInt("u_heightMapWidth", heightMapWidth);
         shader->SetInt("u_heightMapDepth", heightMapDepth);
 
@@ -324,7 +326,7 @@ namespace OpenGLRenderer {
         gBuffer->Bind();
         gBuffer->DrawBuffers({ "BaseColor", "Normal", "RMA", "WorldSpacePosition" });
 
-        shader->Use();
+        shader->Bind();
         shader->SetMat4("modelMatrix", modelMatrix);
         shader->SetMat4("inverseModelMatrix", inverseModelMatrix);
 

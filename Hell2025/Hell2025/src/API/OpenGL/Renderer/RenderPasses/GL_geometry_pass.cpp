@@ -29,7 +29,7 @@ namespace OpenGLRenderer {
 
         glBindVertexArray(OpenGLBackEnd::GetVertexDataVAO());
 
-        shader->Use();
+        shader->Bind();
         gBuffer->DrawBuffers({ "BaseColor", "Normal", "RMA", "WorldSpacePosition", "Emissive" });
         SetRasterizerState("GeometryPass_NonBlended");
 
@@ -62,7 +62,7 @@ namespace OpenGLRenderer {
             }
         }
 
-        shader->Use();
+        shader->Bind();
         gBuffer->DrawBuffers({ "BaseColor", "Normal", "RMA", "WorldSpacePosition", "Emissive" });
         SetRasterizerState("GeometryPass_NonBlended");
 
@@ -90,7 +90,7 @@ namespace OpenGLRenderer {
         OpenGLMeshBuffer& glMesh = editableMesh.m_glMesh;
         OpenGLShader* debugShader = GetShader("DebugTextured");
 
-        debugShader->Use();
+        debugShader->Bind();
 
         Material* material = AssetManager::GetDefaultMaterial();
         glActiveTexture(GL_TEXTURE0);
@@ -115,7 +115,7 @@ namespace OpenGLRenderer {
         }
 
         // Render house
-        debugShader->Use();
+        debugShader->Bind();
         debugShader->SetMat4("u_model", glm::mat4(1));
 
         MeshBuffer& houseMeshBuffer = World::GetHouseMeshBuffer();

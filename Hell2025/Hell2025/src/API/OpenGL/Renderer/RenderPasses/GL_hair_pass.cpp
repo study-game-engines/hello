@@ -51,7 +51,7 @@ namespace OpenGLRenderer {
         RenderHairLayer(&drawInfoSet.hairTopLayer, renderSettings.depthPeelCount);
         RenderHairLayer(&drawInfoSet.hairBottomLayer, renderSettings.depthPeelCount);
 
-        shader->Use();
+        shader->Bind();
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, hairFrameBuffer->GetColorAttachmentHandleByName("Composite"));
         glActiveTexture(GL_TEXTURE1);
@@ -84,7 +84,7 @@ namespace OpenGLRenderer {
         for (int j = 0; j < peelCount; j++) {
 
             // Viewspace depth pass
-            depthPeelShader->Use();
+            depthPeelShader->Bind();
             glBindTextureUnit(3, hairFrameBuffer->GetColorAttachmentHandleByName("ViewspaceDepthPrevious"));
             SetRasterizerState("HairViewspaceDepth");
             OpenGLRenderer::BlitFrameBufferDepth(gBuffer, hairFrameBuffer);
@@ -107,7 +107,7 @@ namespace OpenGLRenderer {
             hairFrameBuffer->ClearAttachment("Lighting", 0.0f, 0.0f, 0.0f, 0.0f);
             hairFrameBuffer->DrawBuffers({ "Lighting", "ViewspaceDepthPrevious" });
 
-            hairLightingShader->Use();
+            hairLightingShader->Bind();
             glBindTextureUnit(3, hairFrameBuffer->GetColorAttachmentHandleByName("ViewspaceDepth"));
             glBindTextureUnit(4, AssetManager::GetTextureByName("Flashlight2")->GetGLTexture().GetHandle());
             SetRasterizerState("HairLighting");
@@ -126,7 +126,7 @@ namespace OpenGLRenderer {
                 }
             }
             // Composite
-            hairLayerCompositeShader->Use();
+            hairLayerCompositeShader->Bind();
             glBindImageTexture(0, hairFrameBuffer->GetColorAttachmentHandleByName("Lighting"), 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F);
             glBindImageTexture(1, hairFrameBuffer->GetColorAttachmentHandleByName("Composite"), 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F);
             int workGroupsX = (hairFrameBuffer->GetWidth() + 7) / 8;

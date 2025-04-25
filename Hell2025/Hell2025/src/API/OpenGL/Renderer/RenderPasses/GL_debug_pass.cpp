@@ -32,7 +32,7 @@ namespace OpenGLRenderer {
         glDisable(GL_BLEND);
         glPointSize(8.0f); 
       
-        shader->Use();
+        shader->Bind();
 
         UpdateDebugMesh();
 
@@ -78,7 +78,7 @@ namespace OpenGLRenderer {
         if (!gBuffer) return;
         if (!shader) return;
 
-        shader->Use();
+        shader->Bind();
         shader->SetFloat("u_viewportWidth", gBuffer->GetWidth());
         shader->SetFloat("u_viewportHeight", gBuffer->GetHeight());
         shader->SetInt("u_tileXCount", gBuffer->GetWidth() / TILE_SIZE);

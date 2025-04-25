@@ -132,6 +132,7 @@ namespace World {
                 renderItem.baseColorTextureIndex = material->m_basecolor;
                 renderItem.normalMapTextureIndex = material->m_normal;
                 renderItem.rmaTextureIndex = material->m_rma;
+                Util::UpdateRenderItemAABB(renderItem);
                 RenderDataManager::SubmitRenderItem(renderItem);
             }
         }

@@ -34,7 +34,7 @@ namespace OpenGLRenderer {
         shadowMapsFBO->Bind();
         shadowMapsFBO->SetViewport();
 
-        shader->Use();
+        shader->Bind();
 
         for (int i = 0; i < Game::GetLocalPlayerCount(); i++) {
             shadowMapsFBO->BindLayer(i);
@@ -100,7 +100,7 @@ namespace OpenGLRenderer {
         if (!shader) return;
         if (!hiResShadowMaps) return;
 
-        shader->Use();
+        shader->Bind();
         shader->SetBool("u_useInstanceData", true);
 
         GLuint shadowMapTextureID = hiResShadowMaps->GetDepthTexture();

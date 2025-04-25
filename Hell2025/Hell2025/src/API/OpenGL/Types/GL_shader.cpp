@@ -17,7 +17,7 @@ OpenGLShader::OpenGLShader(std::vector<std::string> shaderPaths) {
     Load(m_shaderPaths);
 }
 
-void OpenGLShader::Use() {
+void OpenGLShader::Bind() {
     glUseProgram(m_handle);
 }
 
@@ -130,6 +130,13 @@ void OpenGLShader::SetMat4(const std::string& name, glm::mat4 value) {
         m_uniformLocations[name] = glGetUniformLocation(m_handle, name.c_str());
     }
     glUniformMatrix4fv(m_uniformLocations[name], 1, GL_FALSE, &value[0][0]);
+}
+
+void OpenGLShader::SetUvec2(const std::string& name, const glm::uvec2& value) {
+    if (m_uniformLocations.find(name) == m_uniformLocations.end()) {
+        m_uniformLocations[name] = glGetUniformLocation(m_handle, name.c_str());
+    }
+    glUniform2uiv(m_uniformLocations[name], 1, &value[0]);
 }
 
 void OpenGLShader::SetVec2(const std::string& name, const glm::vec2& value) {

@@ -96,6 +96,8 @@ namespace World {
     bool IsMapCellInRange(int x, int z);
     void PrintMapCreateInfoDebugInfo();
 
+    void UpdateDoorAndWindowCubeTransforms();
+
     // Util
     bool ObjectTypeIsInteractable(ObjectType objectType, uint64_t objectId, glm::vec3 playerCameraPosition);
 

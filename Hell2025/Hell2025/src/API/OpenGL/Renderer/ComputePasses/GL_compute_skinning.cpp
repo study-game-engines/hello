@@ -43,7 +43,7 @@ namespace OpenGLRenderer {
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, OpenGLBackEnd::GetSkinnedVertexDataVBO());
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, OpenGLBackEnd::GetWeightedVertexDataVBO());
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, skinningTransforms->GetHandle());
-        shader->Use();
+        shader->Bind();
         int j = 0;
         uint32_t baseOutputVertex = 0;
         uint32_t baseTransformIndex = 0;

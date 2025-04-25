@@ -13,6 +13,8 @@
 #include "UI/UIBackEnd.h"
 #include "World/World.h"
 
+#include "Audio/MidiFileManager.h"
+
 namespace Debug {
     std::string g_text = "";
     bool g_showDebugText = false;
@@ -28,7 +30,14 @@ namespace Debug {
     void UpdateDebugText() {
         if (!g_showDebugText) return;
 
-        AddText("Editor State: " + Util::EditorStateToString(Editor::GetEditorState()));
+        //AddText("Editor State: " + Util::EditorStateToString(Editor::GetEditorState()));
+
+        std::string text = "SHIT\n";
+        std::string text2 = "SHIT\n";
+        UIBackEnd::BlitText(MidiFileManager::GetDebugTextTime(), "StandardFont", 0, 0, Alignment::TOP_LEFT, 2.0f);
+        UIBackEnd::BlitText(MidiFileManager::GetDebugTextEvents(), "StandardFont", 250, 0, Alignment::TOP_LEFT, 2.0f);
+        UIBackEnd::BlitText(MidiFileManager::GetDebugTextVelocity(), "StandardFont", 500, 0, Alignment::TOP_LEFT, 2.0f);
+        UIBackEnd::BlitText(MidiFileManager::GetDebugTextTimeDurations(), "StandardFont", 750, 0, Alignment::TOP_LEFT, 2.0f);
 
         const DebugRenderMode& debugRenderMode = Debug::GetDebugRenderMode();
         if (debugRenderMode != DebugRenderMode::NONE) {

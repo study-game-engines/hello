@@ -220,4 +220,10 @@ namespace Util {
     int32_t EnumToInt(ObjectType type) {
         return static_cast<int32_t>(type);
     }
+
+    std::string FloatToString(float value, int prevision) {
+        char buffer[64];
+        snprintf(buffer, sizeof(buffer), ("%." + std::to_string(prevision) + "f").c_str(), value);
+        return std::string(buffer);
+    }
 }

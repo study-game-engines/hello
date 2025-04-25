@@ -33,7 +33,7 @@ namespace OpenGLRenderer {
 
                 OpenGLRenderer::SetViewport(gBuffer, viewport);
 
-                shader->Use();
+                shader->Bind();
                 shader->SetMat4("projection", viewportData[i].projection);
                 shader->SetMat4("view", viewportData[i].view);
                 shader->SetBool("useUniformColor", true);

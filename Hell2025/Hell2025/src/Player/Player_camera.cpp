@@ -7,22 +7,32 @@
 #include <glm/gtc/noise.hpp> 
 
 void Player::UpdateHeadBob(float deltaTime) {
-    if (IsMoving()) {
-        m_headBobTime += deltaTime;
-    }
 
-    float walkSpeed = 3.2f;
-    if (IsCrouching()) {
-        walkSpeed *= 0.75f;
+    // If underwater, lerp head bob back to 0
+    if (IsUnderWater()) {
+        m_headBob.x = Util::FInterpTo(m_headBob.x, 0.0f, deltaTime, 10);
+        m_headBob.y = Util::FInterpTo(m_headBob.y, 0.0f, deltaTime, 10);
+        m_headBob.z = Util::FInterpTo(m_headBob.z, 0.0f, deltaTime, 10);
     }
-    float bobIntensity = 0.05f;
-    float noiseIntensity = 0.02f;
-    float frequency = 4.5f * walkSpeed;
-    m_bobOffsetY = glm::sin(m_headBobTime * frequency) * bobIntensity;
-    m_bobOffsetX = glm::sin(m_headBobTime * frequency * 0.5f) * (bobIntensity * 0.5f);
-    float noiseOffsetY = glm::perlin(glm::vec2(m_headBobTime * 0.1f, 0.0f)) * noiseIntensity;
-    float noiseOffsetX = glm::perlin(glm::vec2(0.0f, m_headBobTime * 0.1f)) * noiseIntensity;
-    m_headBob = glm::vec3(m_bobOffsetX + noiseOffsetX, m_bobOffsetY + noiseOffsetY, 0.0f);
+    else {
+
+        if (IsMoving()) {
+            m_headBobTime += deltaTime;
+        }
+
+        float walkSpeed = 3.2f;
+        if (IsCrouching()) {
+            walkSpeed *= 0.75f;
+        }
+        float bobIntensity = 0.05f;
+        float noiseIntensity = 0.02f;
+        float frequency = 4.5f * walkSpeed;
+        m_bobOffsetY = glm::sin(m_headBobTime * frequency) * bobIntensity;
+        m_bobOffsetX = glm::sin(m_headBobTime * frequency * 0.5f) * (bobIntensity * 0.5f);
+        float noiseOffsetY = glm::perlin(glm::vec2(m_headBobTime * 0.1f, 0.0f)) * noiseIntensity;
+        float noiseOffsetX = glm::perlin(glm::vec2(0.0f, m_headBobTime * 0.1f)) * noiseIntensity;
+        m_headBob = glm::vec3(m_bobOffsetX + noiseOffsetX, m_bobOffsetY + noiseOffsetY, 0.0f);
+    }
 }
 
 void Player::UpdateBreatheBob(float deltaTime) {
