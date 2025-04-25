@@ -35,8 +35,13 @@ void main() {
         
     vec3 lighting = imageLoad(OutputImage, pixelCoords).rgb;
 
-    vec3 finalColor = lighting + oceanSpecular;// * vec3(1,0,0);
+    vec3 finalColor = lighting;
 
+    if (oceanDiffuse != vec3(0,0,0)) {
+        finalColor = mix (lighting, oceanDiffuse, 0.65);
+    }
+    finalColor += oceanSpecular * vec3(0.1);
+    
     // Output
     imageStore(OutputImage, pixelCoords, vec4(finalColor,0));
 }

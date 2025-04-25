@@ -12,6 +12,9 @@
 #include "Input/Input.h"
 #include "Renderer/Renderer.h"
 #include "Viewport/ViewportManager.h"
+#include "World/World.h"
+#include "World/SectorManager.h"
+#include "World/HeightMapManager.h"
 
 namespace Editor {
 
@@ -98,7 +101,14 @@ namespace Editor {
         if (Input::KeyPressed(HELL_KEY_TAB)) {
             Audio::PlayAudio(AUDIO_SELECT, 1.0f);
             Editor::ToggleEditorOpenState();
-            //EditorImGui::CloseAnyOpenConte-nt();
+
+            // you need to figure this out bro
+            // you need to figure this out bro
+            // you need to figure this out bro
+            HeightMapManager::LoadHeightMapsFromDisk();
+            // you need to figure this out bro
+            // you need to figure this out bro
+            // you need to figure this out bro
         }
 
         if (Input::KeyPressed(HELL_KEY_F4)) {
@@ -175,6 +185,15 @@ namespace Editor {
         SetHoveredObjectId(0);
 
         g_isOpen = false;
+
+        // HACK FIX ME
+        if (GetEditorMode() == EditorMode::HEIGHTMAP_EDITOR) {
+            std::string sectorName = "TestSector";
+            SectorCreateInfo* sectorCreateInfo = SectorManager::GetSectorCreateInfoByName(sectorName);
+            if (sectorCreateInfo) {
+                World::LoadSingleSector(sectorCreateInfo);
+            }
+        }
     }
 
     void ToggleEditorOpenState() {

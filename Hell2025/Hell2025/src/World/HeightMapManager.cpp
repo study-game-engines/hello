@@ -12,7 +12,6 @@ namespace HeightMapManager {
     std::vector<std::string> g_heightMapNames;
 
     void AllocateMemory(int heightmapCount);
-    void LoadHeightMapsFromDisk();
 
 
     // Warning, you probably can't create new heightmaps at runtime with the code below, allocate on load heightmaps from disk is solution

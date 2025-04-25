@@ -28,7 +28,7 @@ namespace SectorManager {
         CreateHeightMapEditorSector("HeightMapEditor_SW");
 
         SectorCreateInfo* test = GetSectorCreateInfoByName("HeightMapEditor_Center");
-        test->heightMapName = "TestHeightMap";
+        test->heightMapName = "Center";
 
         // Load sectors from disk
         std::vector<FileInfo> files = Util::IterateDirectory("res/sectors");
