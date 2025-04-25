@@ -130,8 +130,6 @@ namespace OpenGLRenderer {
 
     void InitTestBoardMesh() {
 
-        World::UpdateDoorAndWindowCubeTransforms();
-
         glm::vec3 origin = glm::vec3(-0.025f, 0.0f, -3.0f);
 
 
@@ -148,14 +146,12 @@ namespace OpenGLRenderer {
             }
 
             glm::vec3 start = origin;
+            start.y += individialBoardHeight * i;
+
             glm::vec3 end = origin + glm::vec3(0, 0, 9.1);
 
-            start.y += individialBoardHeight * i;
-            end.y += individialBoardHeight * i;
-
-
-           //DrawPoint(start, RED);
-           //DrawPoint(end, GREEN);
+            DrawPoint(start, RED);
+            DrawPoint(end, GREEN);
 
             glm::vec3 rayOrigin = start;
             glm::vec3 rayDir = glm::normalize(end - start);
@@ -167,7 +163,7 @@ namespace OpenGLRenderer {
                 if (rayResult.hitFound) {
 
                     glm::vec3 hitPos = rayOrigin + (rayDir * rayResult.distanceToHit);
-                   // DrawPoint(hitPos, YELLOW);
+                    DrawPoint(hitPos, YELLOW);
 
                     Transform transform;
                     transform.position = rayOrigin;
@@ -249,7 +245,7 @@ namespace OpenGLRenderer {
             InitTestBoardMesh();
         }
 
-      //  InitTestBoardMesh();
+        InitTestBoardMesh();
 
       // static WeatherBoards weatherboards;
       //

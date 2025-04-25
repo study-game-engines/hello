@@ -211,8 +211,8 @@ namespace World {
             transform.position.y += windowMidPointFromGround;
             transform.rotation.y = window.GetRotation().y;
             transform.scale.x = 0.2f;
-            transform.scale.y = 1.32f;
-            transform.scale.z = 0.946f;
+            transform.scale.y = 1.0f;
+            transform.scale.z = 0.6f;
         }
     }
 

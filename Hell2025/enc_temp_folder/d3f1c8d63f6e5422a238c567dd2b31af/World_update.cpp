@@ -202,18 +202,6 @@ namespace World {
             transform.scale.y = DOOR_HEIGHT * 1.1f;
             transform.scale.z = 1.02f;
         }
-
-        for (Window& window : windows) {
-            float windowMidPointFromGround = 1.5f;
-
-            Transform& transform = transforms.emplace_back();
-            transform.position = window.GetPosition();
-            transform.position.y += windowMidPointFromGround;
-            transform.rotation.y = window.GetRotation().y;
-            transform.scale.x = 0.2f;
-            transform.scale.y = 1.32f;
-            transform.scale.z = 0.946f;
-        }
     }
 
     void EvaluatePianoKeyBulletHit(Bullet& bullet) {

@@ -130,8 +130,6 @@ namespace OpenGLRenderer {
 
     void InitTestBoardMesh() {
 
-        World::UpdateDoorAndWindowCubeTransforms();
-
         glm::vec3 origin = glm::vec3(-0.025f, 0.0f, -3.0f);
 
 
@@ -140,22 +138,13 @@ namespace OpenGLRenderer {
 
         for (int i = 0; i < 20; i++) {
 
-            int yUVOffsetIndex = i;
-            float xUVOffset = 0.0f;
-
-            if (i > 15) {
-                yUVOffsetIndex += 12;
-            }
-
             glm::vec3 start = origin;
+            start.y += individialBoardHeight * i;
+
             glm::vec3 end = origin + glm::vec3(0, 0, 9.1);
 
-            start.y += individialBoardHeight * i;
-            end.y += individialBoardHeight * i;
 
 
-           //DrawPoint(start, RED);
-           //DrawPoint(end, GREEN);
 
             glm::vec3 rayOrigin = start;
             glm::vec3 rayDir = glm::normalize(end - start);
@@ -165,9 +154,6 @@ namespace OpenGLRenderer {
             do {
                 rayResult = Util::CastCubeRay(rayOrigin, rayDir, World::GetDoorAndWindowCubeTransforms(), desiredBoardLength);
                 if (rayResult.hitFound) {
-
-                    glm::vec3 hitPos = rayOrigin + (rayDir * rayResult.distanceToHit);
-                   // DrawPoint(hitPos, YELLOW);
 
                     Transform transform;
                     transform.position = rayOrigin;
@@ -179,6 +165,12 @@ namespace OpenGLRenderer {
 
 
 
+                        int yUVOffsetIndex = i;
+                        float xUVOffset = 0.0f;
+
+                        if (i > 15) {
+                            yUVOffsetIndex += 12;
+                        }
 
                         glm::vec3 localStart = rayOrigin;
                         glm::vec3 localEnd = rayOrigin + (rayDir * rayResult.distanceToHit);
@@ -199,9 +191,6 @@ namespace OpenGLRenderer {
                 }
 
             } while (rayResult.hitFound);
-
-            BoardVertexData boardVertexData = CreateBoardVertexData(rayOrigin, end, yUVOffsetIndex, xUVOffset);
-            boardVertexDataSet.emplace_back(boardVertexData);
 
 
 
@@ -248,8 +237,6 @@ namespace OpenGLRenderer {
         if (Input::KeyPressed(HELL_KEY_J)) {
             InitTestBoardMesh();
         }
-
-      //  InitTestBoardMesh();
 
       // static WeatherBoards weatherboards;
       //
