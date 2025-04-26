@@ -172,7 +172,7 @@ void main() {
             // Player flashlight
             int layerIndex = i;			
 		    vec3 spotLightPos = flashlightPosition.xyz;
-            spotLightPos += playerForward * vec3(0.25);
+          //  spotLightPos -= playerForward * vec3(0.25);
 
 		    vec3 spotLightDir = flashlightDir.xyz;
             vec3 spotLightColor = vec3(0.9, 0.95, 1.1);
@@ -190,7 +190,8 @@ void main() {
             //FlashlighShadowMapArrayTexture
         
             spotLighting *= vec3(1 - shadow);
-            spotLighting *= cookie * cookie * 5 * spotLightColor;
+          //  spotLighting *= cookie * cookie * 5 * spotLightColor;
+          //  spotLighting *= cookie * spotLightColor;
             directLighting += vec3(spotLighting) * flashlightModifer;
         }
     }

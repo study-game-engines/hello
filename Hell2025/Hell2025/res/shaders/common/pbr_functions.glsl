@@ -50,5 +50,8 @@ vec3 microfacetBRDF(in vec3 L, in vec3 V, vec3 N, in vec3 baseColor, in float me
     vec3 kD = vec3(1.0) - kS;
     kD *= 1.0 - metallic;	  
     float NdotL = max(dot(N, L), 0.0);        
+    
+  //  return specular;
+
     return (kD * baseColor / PI + specular);
 }

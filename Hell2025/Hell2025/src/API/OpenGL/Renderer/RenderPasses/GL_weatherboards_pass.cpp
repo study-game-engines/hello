@@ -132,7 +132,7 @@ namespace OpenGLRenderer {
 
         World::UpdateDoorAndWindowCubeTransforms();
 
-        glm::vec3 origin = glm::vec3(-0.025f, 0.0f, -3.0f);
+        glm::vec3 origin = glm::vec3(-0.0225f, 0.0f, -3.0f);
 
 
         std::vector<BoardVertexData> boardVertexDataSet;

@@ -21,6 +21,9 @@ in vec3 EmissiveColor;
 void main() {
     vec4 baseColor = texture2D(baseColorTexture, TexCoord);
     vec3 normalMap = texture2D(normalTexture, TexCoord).rgb;
+   // vec3 normalMap = textureLod(normalTexture, TexCoord, 2).rgb;
+
+   
     vec3 rma = texture2D(rmaTexture, TexCoord).rgb;
 
     mat3 tbn = mat3(normalize(Tangent), normalize(BiTangent), normalize(Normal));
@@ -28,6 +31,9 @@ void main() {
     normalMap = normalize(normalMap);
     vec3 normal = normalize(tbn * (normalMap));
     
+  //   normal = texture2D(normalTexture, TexCoord).rgb;
+   //  normal.y = 1 - normal.y;
+
     BaseColorOut = vec4(baseColor);
     NormalOut = vec4(normal, 1.0);   
     RMAOut = vec4(rma, 1.0);
