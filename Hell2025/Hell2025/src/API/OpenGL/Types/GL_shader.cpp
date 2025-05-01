@@ -11,6 +11,7 @@ int GetErrorLineNumber(const std::string& error);
 std::string GetErrorMessage(const std::string& line);
 std::string GetLinkingErrors(unsigned int shader);
 std::string GetShaderCompileErrors(unsigned int shader, const std::string& filename, const std::vector<std::string>& lineToFile);
+std::string StripBOM(const std::string& source);
 
 OpenGLShader::OpenGLShader(std::vector<std::string> shaderPaths) {
     m_shaderPaths = shaderPaths;
@@ -207,6 +208,9 @@ OpenGLShaderModule::OpenGLShaderModule(const std::string& filename) {
     std::string prasedShaderSource = "";
     ParseFile("res/shaders/OpenGL/" + filename, prasedShaderSource, lineMap, includedPaths);
 
+    // Strip any BOM characters. Apprently older drivers do't handle BOM bytes properly when compiling GLSL shaders
+    prasedShaderSource = StripBOM(prasedShaderSource);
+
     // Get type based on extension
     std::string extension = std::filesystem::path(filename).extension().string(); 
     static const std::unordered_map<std::string, int> shaderTypeMap = {
@@ -350,4 +354,11 @@ std::string GetErrorMessage(const std::string& line) {
         }
     }
     return ""; // Return empty string if parsing fails
+}
+
+std::string StripBOM(const std::string& source) {
+    const std::string bom = "\xEF\xBB\xBF";
+    if (source.compare(0, bom.size(), bom) == 0)
+        return source.substr(bom.size());
+    return source;
 }
