@@ -1,6 +1,6 @@
 #pragma once
 #include "GL_heightmap_mesh.h"
-#include <glm/glm.hpp>
+#include "HellGlm.h"
 #include <glad/glad.h>
 
 void OpenGLHeightMapMesh::Create() {

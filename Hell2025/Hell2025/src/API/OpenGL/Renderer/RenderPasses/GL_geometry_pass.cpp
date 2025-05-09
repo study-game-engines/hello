@@ -85,12 +85,8 @@ namespace OpenGLRenderer {
 
         glBindVertexArray(0);
 
-
-        EditableMesh& editableMesh = Modelling::GetEditableMesh();
-        OpenGLMeshBuffer& glMesh = editableMesh.m_glMesh;
-        OpenGLShader* debugShader = GetShader("DebugTextured");
-
-        debugShader->Bind();
+        /*OpenGLMeshBuffer& glMesh = editableMesh.m_glMesh;
+       
 
         Material* material = AssetManager::GetDefaultMaterial();
         glActiveTexture(GL_TEXTURE0);
@@ -112,9 +108,10 @@ namespace OpenGLRenderer {
                     glDrawElements(GL_TRIANGLES, mesh.GetIndexCount(), GL_UNSIGNED_INT, 0);
                 }
             }
-        }
+        }*/
 
-        // Render house
+        // Render house 
+        OpenGLShader* debugShader = GetShader("DebugTextured");
         debugShader->Bind();
         debugShader->SetMat4("u_model", glm::mat4(1));
 

@@ -4,7 +4,12 @@
 #include "Input/Input.h"
 #include "Renderer/Renderer.h"
 #include "Renderer/RenderDataManager.h"
+#include "UniqueID.h"
 #include "Util.h"
+
+void AnimatedGameObject::Init() {
+    m_objectId = UniqueID::GetNext();
+}
 
 const size_t AnimatedGameObject::GetAnimatedTransformCount() {
     return m_animatedTransforms.local.size();

@@ -3,6 +3,7 @@
 #include "Core/JSON.h"
 #include "Editor/Editor.h"
 #include "World/SectorManager.h"
+#include "Util.h"
 
 namespace MapManager {
 

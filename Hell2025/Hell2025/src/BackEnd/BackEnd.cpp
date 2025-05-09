@@ -122,8 +122,6 @@ namespace BackEnd {
         Physics::UpdateActiveRigidDynamicAABBList();
         Physics::UpdateHeightFields();
 
-        Modelling::Update();
-
         World::SubmitRenderItems();
 
         Debug::Update();

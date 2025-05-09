@@ -41,10 +41,10 @@ namespace AssetManager {
 
     void LoadModel(Model* model) {
         const FileInfo& fileInfo = model->GetFileInfo();
-        std::string modelPath = "res/models/" + fileInfo.name + "." + fileInfo.ext;
+        std::string modelPath = "res/models/v2/" + fileInfo.name + "." + fileInfo.ext;
         std::string bvhPath = "res/models/bvh/" + fileInfo.name + ".bvh";
-        model->m_modelData = File::ImportModel(modelPath);
-        model->m_modelBvhData = File::ImportModelBvh(bvhPath);
+        model->m_modelData = File::ImportModelv2(modelPath);
+        //model->m_modelBvhData = File::ImportModelBvh(bvhPath);
         model->SetLoadingState(LoadingState::LOADING_COMPLETE);
     }
 

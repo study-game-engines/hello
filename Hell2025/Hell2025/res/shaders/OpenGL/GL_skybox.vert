@@ -15,5 +15,9 @@ void main() {
     int viewportIndex = gl_BaseInstance;
 	mat4 projectionView = viewportData[viewportIndex].skyboxProjectionView;	
     vec3 viewPos = viewportData[viewportIndex].inverseView[3].xyz;
+
+
+
+
     gl_Position = projectionView * vec4((vPos * 8) + viewPos, 1.0);
 }

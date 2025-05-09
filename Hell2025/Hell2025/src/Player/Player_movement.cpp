@@ -4,6 +4,7 @@
 #include "Editor/Editor.h"
 #include "Input/Input.h"
 #include "Ocean/Ocean.h"
+#include "Util.h"
 
 void Player::UpdateMovement(float deltaTime) {
     if (IsUnderWater()) {

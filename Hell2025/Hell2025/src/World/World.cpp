@@ -49,7 +49,26 @@ namespace World {
     void AddSectorAtLocation(SectorCreateInfo& sectorCreateInfo, SpawnOffset spawnOffset);
     void ProcessBullets();
 
+    uint64_t g_sharkAnimatedGameObject = 0;
+
     void Init() {
+
+        // Create test shark
+        if (g_sharkAnimatedGameObject == 0 && false) {
+            g_sharkAnimatedGameObject = CreateAnimatedGameObject();
+            AnimatedGameObject* shark = GetAnimatedGameObjectByObjectId(g_sharkAnimatedGameObject);
+            shark->SetSkinnedModel("Shark");
+            shark->SetPosition(glm::vec3(36.0f, 12.0f, 25.0f));
+            shark->SetPosition(glm::vec3(38.0f, 11.25f, 24.0f));
+            shark->SetAnimationModeToBindPose();
+            shark->SetName("222");
+            shark->SetAnimationModeToBindPose();
+            shark->SetAllMeshMaterials("Shark");
+            shark->SetScale(0.01);
+            shark->PlayAndLoopAnimation("Shark_Swim");
+        }
+
+
         //LoadMap("TestMap");
         //LoadSingleSector()
 
@@ -72,14 +91,23 @@ namespace World {
         for (Tree& tree : g_trees) {
             tree.BeginFrame();
         }
+
+        // REMOVE ME!
+        AnimatedGameObject* shark = GetAnimatedGameObjectByObjectId(g_sharkAnimatedGameObject);
+        if (shark) {
+            shark->Update(Game::GetDeltaTime());
+            shark->UpdateRenderItems();
+        }
     }
 
     void CreateGameObject() {
         g_gameObjects.emplace_back();
     }
 
-    void CreateAnimatedGameObject() {
-        g_animatedGameObjects.emplace_back();
+    uint64_t CreateAnimatedGameObject() {
+        AnimatedGameObject& animatedGameObject = g_animatedGameObjects.emplace_back();
+        animatedGameObject.Init();
+        return animatedGameObject.GetObjectId();
     }
 
     AnimatedGameObject* GetAnimatedGameObjectByIndex(int32_t index) {
@@ -315,6 +343,15 @@ namespace World {
         if (houseCreateInfo) {
             AddHouse(*houseCreateInfo, houseSpawnOffset);
         }
+    }
+
+    AnimatedGameObject* GetAnimatedGameObjectByObjectId(uint64_t objectID) {
+        for (AnimatedGameObject& animatedGameObject : g_animatedGameObjects) {
+            if (animatedGameObject.GetObjectId() == objectID) {
+                return &animatedGameObject;
+            }
+        }
+        return nullptr;
     }
 
     Door* GetDoorByObjectId(uint64_t objectID) {

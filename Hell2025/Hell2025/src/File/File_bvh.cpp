@@ -95,7 +95,7 @@ namespace File {
 
         FileInfo fileInfo = Util::GetFileInfoFromPath(filepath);
 
-        // Resize MeshBvh vector read for import
+        // Resize MeshBvh vector ready for import
         modelBvhData.bvhs.resize(modelBvhHeader.meshCount);
 
         // Load each MeshBvh
@@ -141,7 +141,7 @@ namespace File {
         // Read file data
         file.read(reinterpret_cast<char*>(&header), sizeof(ModelBvhHeader));
 
-        // Eror check stream state after read attempt
+        // Error check stream state after read attempt
         if (!file) {
             std::cerr << "ReadModelBvhHeader() failed to read file " << filepath << "\n";
             header = {};
@@ -150,23 +150,4 @@ namespace File {
 
         return header;
     }
-
-    /*MeshBvhHeader ReadMeshBvhHeader(const std::string& filepath) {
-        MeshBvhHeader header = {};
-        std::ifstream file(filepath, std::ios::binary);
-
-        if (!file.is_open()) {
-            std::cerr << "ReadMeshBvhHeader() failed to open file " << filepath << "\n";
-            return header;
-        }
-
-        // Attempt to read the header directly
-        file.read(reinterpret_cast<char*>(&header), sizeof(MeshBvhHeader));
-        if (!file) {
-            std::cerr << "ReadMeshBvhHeader() failed to read file " << filepath << "\n";
-            header = {};
-        }
-
-        return header;
-    }*/
 }

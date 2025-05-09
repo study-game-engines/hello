@@ -26,6 +26,11 @@ private:
     std::vector<RenderItem> m_renderItems;
 
 public:
+    void Init();
+
+
+
+
     std::unordered_map<std::string, unsigned int> m_boneMapping;
 
     glm::mat4 GetAnimatedTransformByBoneName(const char* name);
@@ -112,19 +117,15 @@ public:
         return baseTransformIndex;
     }
 
+    const uint64_t& GetObjectId() const { return m_objectId; };
+
 private:
 
-	//void UpdateAnimation(float deltaTime);
-	//void CalculateBoneTransforms();
+    uint64_t m_objectId = 0;
 
     float GetBlendFactor();
 
-	//Animation* _currentAnimation = nullptr;
-	//bool _loopAnimation = false;
-	//bool _animationPaused = false;
-	//float _animationSpeed = 1.0f;
 	std::string m_name;
-	//bool _animationIsComplete = true;
     int baseTransformIndex = -1;
     bool m_isGold = true;
 

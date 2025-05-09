@@ -11,6 +11,7 @@ namespace File {
     // Models
     void ExportModel(const ModelData& modelData);
     ModelData ImportModel(const std::string& filepath);
+    ModelData ImportModelv2(const std::string& filepath);
     ModelHeader ReadModelHeader(const std::string& filepath);
 
     // Skinned Models
@@ -33,6 +34,7 @@ namespace File {
     uint64_t GetLastModifiedTime(const std::string& filePath);
 
     // Signatures
+    void MemCopyName(char* nameBuffer, const std::string& name);
     void MemCopyFileSignature(char* signatureBuffer, const std::string& signatureName);
     bool CompareFileSignature(char* signatureBuffer, const std::string& signatureName);
 
@@ -42,7 +44,9 @@ namespace File {
     void PrintSkinnedModelHeader(SkinnedModelHeader header, const std::string& identifier);
     void PrintSkinnedMeshHeader(SkinnedMeshHeader header, const std::string& identifier);
     void PrintModelHeader(ModelHeader header, const std::string& identifier);
+    void PrintModelHeader(ModelHeaderV2 header, const std::string& identifier);
     void PrintMeshHeader(MeshHeader header, const std::string& identifier);
+    void PrintMeshHeader(MeshHeaderV2 header, const std::string& identifier);
     void PrintModelBvhHeader(ModelBvhHeader header, const std::string& identifier);
     void PrintMeshBvhHeader(MeshBvhHeader header, const std::string& identifier);
 }

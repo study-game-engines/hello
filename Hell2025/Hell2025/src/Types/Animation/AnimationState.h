@@ -2,6 +2,7 @@
 #include "HellTypes.h"
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 enum class BlendAction {
     CONSTANT,
@@ -40,7 +41,7 @@ public:
     void PlayAndLoopAnimation(const std::string& animationName, const AnimationPlaybackParams& playbackParams);
     void StartAnimation();
     void PauseAnimation();
-    void Update(int skinnedModelIndex, float deltaTime);
+    void Update(int skinnedModelIndex, float deltaTime, std::unordered_map<std::string, glm::mat4> additiveBoneTransforms);
     void SetToBindPose();
     void ForceStop();
     void ForceEaseOut();

@@ -208,7 +208,7 @@ OpenGLShaderModule::OpenGLShaderModule(const std::string& filename) {
     std::string prasedShaderSource = "";
     ParseFile("res/shaders/OpenGL/" + filename, prasedShaderSource, lineMap, includedPaths);
 
-    // Strip any BOM characters. Apprently older drivers do't handle BOM bytes properly when compiling GLSL shaders
+    // Strip any BOM characters. Apparently older drivers don't handle BOM bytes properly when compiling GLSL shaders
     prasedShaderSource = StripBOM(prasedShaderSource);
 
     // Get type based on extension

@@ -72,7 +72,7 @@ namespace World {
 
     // Creation
     void CreateGameObject();
-    void CreateAnimatedGameObject();
+    uint64_t CreateAnimatedGameObject();
 
 
     // Getters
@@ -113,6 +113,7 @@ namespace World {
     MeshBuffer& GetHouseMeshBuffer();
     Mesh* GetHouseMeshByIndex(uint32_t meshIndex);
 
+    AnimatedGameObject* GetAnimatedGameObjectByObjectId(uint64_t objectID);
     Door* GetDoorByObjectId(uint64_t objectID);
     Door* GetDoorByDoorFrameObjectId(uint64_t objectID);
     Piano* GetPianoByObjectId(uint64_t objectId);

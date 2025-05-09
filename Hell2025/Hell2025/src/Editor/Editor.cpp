@@ -19,7 +19,6 @@
 namespace Editor {
 
     EditorMode g_editorMode = EditorMode::SECTOR_EDITOR;
-    EditorMesh g_editorMesh;
     int g_activeViewportIndex = 3;
     bool g_isOpen = false;
     bool g_isOrthographic[4];
@@ -45,10 +44,6 @@ namespace Editor {
     SelectionRectangleState g_viewportSelectionRectangleState;
 
     void Init() {
-        if (BackEnd::GetAPI() == API::OPENGL) {
-            g_editorMesh.Init(glm::vec3(0.5f, 1.45f, 2.53));
-            g_editorMesh.RecalculateMesh();
-        }
         ResetViewports();
         ResetCameras();
 
@@ -390,10 +385,6 @@ namespace Editor {
 
     EditorViewportSplitMode GetEditorViewportSplitMode() {
         return g_editorViewportSplitMode;
-    }
-
-    EditorMesh& GetEditorMesh() {
-        return g_editorMesh;
     }
 
     void SetEditorState(EditorState editorState) {

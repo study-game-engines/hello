@@ -12,6 +12,15 @@ namespace File {
         std::cout << " AABB max: " << Util::Vec3ToString(header.aabbMax) << "\n\n";
     }
 
+    void File::PrintModelHeader(ModelHeaderV2 header, const std::string& identifier) {
+        std::cout << identifier << "\n";
+        std::cout << " Version: " << header.version << "\n";
+        std::cout << " Mesh Count: " << header.meshCount << "\n";
+        std::cout << " Timestamp: " << header.timestamp << "\n\n";
+        std::cout << " AABB min: " << Util::Vec3ToString(header.aabbMin) << "\n";
+        std::cout << " AABB max: " << Util::Vec3ToString(header.aabbMax) << "\n\n";
+    }
+
     void File::PrintMeshHeader(MeshHeader header, const std::string& identifier) {
         std::cout << identifier << "\n";
         std::cout << " Name Length: " << header.nameLength << "\n";
@@ -19,6 +28,17 @@ namespace File {
         std::cout << " Index Count: " << header.indexCount << "\n";
         std::cout << " AABB min: " << Util::Vec3ToString(header.aabbMin) << "\n";
         std::cout << " AABB max: " << Util::Vec3ToString(header.aabbMax) << "\n\n";
+    }
+
+    void File::PrintMeshHeader(MeshHeaderV2 header, const std::string& identifier) {
+        std::cout << identifier << "\n";
+        std::cout << " Signature:    " << header.signature << "\n";
+        std::cout << " Name:         " << header.name << "\n";
+        std::cout << " Parent index: " << header.parentIndex << "\n";
+        std::cout << " Vertex Count: " << header.vertexCount << "\n";
+        std::cout << " Index Count:  " << header.indexCount << "\n";
+        std::cout << " AABB min:     " << Util::Vec3ToString(header.aabbMin) << "\n";
+        std::cout << " AABB max:     " << Util::Vec3ToString(header.aabbMax) << "\n\n";
     }
 
     void File::PrintSkinnedModelHeader(SkinnedModelHeader header, const std::string& identifier) {

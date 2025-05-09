@@ -4,8 +4,11 @@
 #include <map>
 
 inline const char HEIGHT_MAP_SIGNATURE[] = "HELL_HEIGHT_MAP";
+#define HELL_NAME_BUFFER_SIZE 256
 #define HELL_SIGNATURE_BUFFER_SIZE 32
 #define HELL_MODEL_BVH_SIGNATURE "HELL_MODEL_BVH"
+#define HELL_MODEL_SIGNATURE "HELL_MODEL"
+#define HELL_MESH_SIGNATURE "HELL_MESH"
 #define HELL_MESH_BVH_SIGNATURE  "HELL_MESH_BVH"
 
 #pragma pack(push, 1)
@@ -19,6 +22,32 @@ struct ModelHeader {
     glm::vec3 aabbMax;
 };
 
+struct ModelHeaderV2 {
+    char signature[32];
+    uint32_t version;
+    uint32_t meshCount;
+    uint64_t timestamp;
+    glm::vec3 aabbMin;
+    glm::vec3 aabbMax;
+};
+
+struct MeshHeaderV2 {
+    char signature[32];
+    char name[256];
+    uint32_t vertexCount;
+    uint32_t indexCount;
+    int32_t parentIndex;
+    glm::vec3 aabbMin;
+    glm::vec3 aabbMax;
+};
+
+struct MeshHeader {
+    uint32_t nameLength;
+    uint32_t vertexCount;
+    uint32_t indexCount;
+    glm::vec3 aabbMin;
+    glm::vec3 aabbMax;
+};
 struct SkinnedModelHeader {
     char signature[18];     // "HELL_SKINNED_MODEL" 18 bytes
     uint32_t version;
@@ -31,13 +60,6 @@ struct SkinnedModelHeader {
     uint64_t timestamp;
 };
 
-struct MeshHeader {
-    uint32_t nameLength;
-    uint32_t vertexCount;
-    uint32_t indexCount;
-    glm::vec3 aabbMin;
-    glm::vec3 aabbMax;
-};
 
 struct SkinnedMeshHeader {
     uint32_t nameLength;
@@ -54,18 +76,13 @@ struct HeightMapHeader {
     uint32_t width;
     uint32_t height;
 };
-#pragma pack(pop)
-
-#pragma pack(push, 1)
 struct ModelBvhHeader {
     char signature[32]; // "HELL_MODEL_BVH"
     uint64_t version;
     uint64_t meshCount;
     uint64_t timestamp;
 };
-#pragma pack(pop)
 
-#pragma pack(push, 1)
 struct MeshBvhHeader {
     char signature[32]; // "HELL_MESH_BVH"
     uint64_t floatCount;
@@ -81,6 +98,7 @@ struct MeshData {
     glm::vec3 aabbMax = glm::vec3(-std::numeric_limits<float>::max());
     uint32_t vertexCount;
     uint32_t indexCount;
+    uint32_t parentIndex = -1;
 };
 
 struct SkinnedMeshData {

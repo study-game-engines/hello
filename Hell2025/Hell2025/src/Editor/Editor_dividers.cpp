@@ -3,6 +3,7 @@
 #include "Config/Config.h"
 #include "Input/Input.h"
 #include "Renderer/Renderer.h"
+#include "Util.h"
 
 namespace Editor {
     bool g_horizontalDividerHovered = false;

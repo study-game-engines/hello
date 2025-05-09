@@ -1,4 +1,4 @@
-#pragma once
+/*#pragma once
 #include "EditableMesh.h"
 
 namespace Modelling {
@@ -8,3 +8,4 @@ namespace Modelling {
 
     EditableMesh& GetEditableMesh();
 }
+*/

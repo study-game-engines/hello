@@ -1,7 +1,6 @@
-﻿#pragma once
+﻿/*#pragma once
 #include <array>
 #include <vector>
-#include <glm/glm.hpp>
 #include "HellTypes.h"
 #include "API/OpenGL/Types/GL_mesh_buffer.h"
 
@@ -46,3 +45,4 @@ private:
     void CleanUpEmptyData();
     void BuildOpenGLMesh(bool createBackFaces);
 };
+*/

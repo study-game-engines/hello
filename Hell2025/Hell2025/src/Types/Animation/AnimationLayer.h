@@ -11,12 +11,11 @@ struct AnimationLayer {
     std::vector<glm::mat4> m_globalBlendedNodeTransforms;
 
     void SetSkinnedModel(const std::string& skinnedModelName);
-    void Update(float deltaTime);
+    void Update(float deltaTime, std::unordered_map<std::string, glm::mat4> additiveBoneTransforms = std::unordered_map<std::string, glm::mat4>());
     void PlayAnimation(const std::string& animationName, const AnimationPlaybackParams& playbackParams = AnimationPlaybackParams());
     void PlayAndLoopAnimation(const std::string& animationName, const AnimationPlaybackParams& playbackParams = AnimationPlaybackParams());
     void ClearAllAnimationStates();
     void SkinToBindPose();
-    //bool AnimationIsPlaying(const std::string& animationName);
     bool AllAnimationIsComplete();
     void ForceStopAnimationStateByName(const std::string& animationName);
     void ForceEaseOutAnimationStateByName(const std::string& animationName);

@@ -4,7 +4,6 @@
 #include "CreateInfo.h"
 #include "Camera/Camera.h"
 #include "Viewport/Viewport.h"
-#include "Types/EditorMesh.h"
 #include <string>
 
 namespace Editor {
@@ -147,8 +146,6 @@ namespace Editor {
     SelectionRectangleState& GetSelectionRectangleState();
     EditorMode& GetEditorMode();
     Axis GetAxisConstraint();
-
-    EditorMesh& GetEditorMesh(); // BROKEN / 5% IMPLEMENTED
 
     std::string GetCurrentHeightMapName();
 

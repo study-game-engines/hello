@@ -86,7 +86,7 @@ void AnimationState::SetToBindPose() {
 
 
 
-void AnimationState::Update(int skinnedModelIndex, float deltaTime) {
+void AnimationState::Update(int skinnedModelIndex, float deltaTime, std::unordered_map<std::string, glm::mat4> additiveBoneTransforms) {
     Animation* animation = AssetManager::GetAnimationByIndex(m_index, false);
     SkinnedModel* skinnedModel = AssetManager::GetSkinnedModelByIndex(skinnedModelIndex);
     if (!skinnedModel) {
@@ -136,6 +136,12 @@ void AnimationState::Update(int skinnedModelIndex, float deltaTime) {
         }
         else {
             nodeTransformation = skinnedModel->m_nodes[i].inverseBindTransform;
+        }
+
+        // Apply additive matrix
+        auto it = additiveBoneTransforms.find(nodeName);
+        if (it != additiveBoneTransforms.end()) {
+            nodeTransformation = nodeTransformation * it->second;
         }
 
         // Calculate the world transform for this joint

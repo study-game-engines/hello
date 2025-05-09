@@ -1,4 +1,4 @@
-#include "Modelling.h"
+/*#include "Modelling.h"
 #include "BackEnd/BackEnd.h"
 #include "Core/Game.h"
 #include "Editor/Editor.h"
@@ -9,7 +9,6 @@
 
 namespace Modelling {
 
-    EditableMesh g_editableMesh;
     EdgeRef g_hoveredEdge;
     EdgeRef g_selectedEdge;
     glm::vec3 g_rayOrigin = glm::vec3(0.0f);
@@ -366,3 +365,4 @@ namespace Modelling {
         return g_editableMesh;
     }
 }
+*/

@@ -1,4 +1,4 @@
-﻿#include "EditableMesh.h"
+﻿/*#include "EditableMesh.h"
 #include "Renderer/Renderer.h"
 #include "Util/Util.h"
 #include <algorithm>
@@ -702,3 +702,4 @@ void EditableMesh::CleanUp() {
     m_vertices.clear();
     m_faces.clear();
 }
+*/

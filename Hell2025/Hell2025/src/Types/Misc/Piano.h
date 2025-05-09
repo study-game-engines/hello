@@ -58,7 +58,7 @@ struct Piano {
     PianoBodyPart* GetPianoBodyPart(uint64_t pianoBodyPartId);
 
     const std::vector<RenderItem>& GetRenderItems() const   { return m_renderItems; }
-    const uint64_t& GetObjectId() const                { return m_pianoObjectId; };
+    const uint64_t& GetObjectId() const                     { return m_pianoObjectId; };
     const glm::vec3 GetPosition() const                     { return m_createInfo.position; }
     const glm::vec3& GetSeatPosition() const                { return m_seatPosition; }
     const PianoCreateInfo GetCreateInfo() const             { return m_createInfo; }

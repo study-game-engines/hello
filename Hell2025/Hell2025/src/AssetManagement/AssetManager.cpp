@@ -56,8 +56,8 @@ namespace AssetManager {
 
     void Init() {
         CompressMissingDDSTexutres();
-        ExportMissingModels();
-        ExportMissingModelBvhs();
+        //ExportMissingModels();
+        //ExportMissingModelBvhs();
         ExportMissingSkinnedModels();
         LoadMinimumTextures();
         FindAssetPaths();
@@ -166,7 +166,7 @@ namespace AssetManager {
             animation.SetFileInfo(fileInfo);
         }
         // Find .model files
-        for (FileInfo& fileInfo : Util::IterateDirectory("res/models")) {
+        for (FileInfo& fileInfo : Util::IterateDirectory("res/models/v2")) {
             Model& model = g_models.emplace_back();
             model.SetFileInfo(fileInfo);
         }

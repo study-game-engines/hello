@@ -11,7 +11,12 @@ void AnimationLayer::SetSkinnedModel(const std::string& skinnedModelName) {
     }
 }
 
-void AnimationLayer::Update(float deltaTime) {
+void AnimationLayer::Update(float deltaTime, std::unordered_map<std::string, glm::mat4> additiveBoneTransforms) {
+    // REMOVE ME!!!!!
+    Transform transform;
+    transform.rotation.y = HELL_PI * 0.5f;
+    additiveBoneTransforms["BN_Spine_01"] = transform.to_mat4();
+
     // Remove any animations awaiting removal
     for (int i = 0; i < m_animationStates.size(); i++) {
         if (m_animationStates[i].AwaitingRemoval()) {
@@ -21,7 +26,7 @@ void AnimationLayer::Update(float deltaTime) {
     }
     // Update each animation state
     for (AnimationState& animationState : m_animationStates) {
-        animationState.Update(m_skinnedModelIndex, deltaTime);
+        animationState.Update(m_skinnedModelIndex, deltaTime, additiveBoneTransforms);
         for (int i = 0; i < animationState.m_globalNodeTransforms.size(); i++) {
             m_globalBlendedNodeTransforms.push_back(animationState.m_globalNodeTransforms[i].to_mat4());
         }
