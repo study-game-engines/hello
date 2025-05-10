@@ -41,7 +41,7 @@ public:
     void PlayAndLoopAnimation(const std::string& animationName, const AnimationPlaybackParams& playbackParams);
     void StartAnimation();
     void PauseAnimation();
-    void Update(int skinnedModelIndex, float deltaTime, std::unordered_map<std::string, glm::mat4> additiveBoneTransforms);
+    void Update(int skinnedModelIndex, float deltaTime, std::unordered_map<std::string, glm::mat4>& additiveBoneTransforms);
     void SetToBindPose();
     void ForceStop();
     void ForceEaseOut();

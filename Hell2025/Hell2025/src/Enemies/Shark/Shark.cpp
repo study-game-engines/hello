@@ -1,4 +1,235 @@
 #include "Shark.h"
+#include "Renderer/Renderer.h"
+#include "Input/Input.h"
+#include "World/World.h"
+
+void Shark::Init() {
+    glm::vec3 initialPosition = glm::vec3(38.0f, 11.48f, 24.0f);
+
+    g_animatedGameObjectObjectId = World:: CreateAnimatedGameObject();
+
+    AnimatedGameObject* animatedGameObject = GetAnimatedGameObject();
+    animatedGameObject->SetSkinnedModel("Shark");
+    animatedGameObject->SetName("GreatestGreatWhiteShark");
+    animatedGameObject->SetAllMeshMaterials("Shark");
+    animatedGameObject->PlayAndLoopAnimation("Shark_Swim", 1.0f);
+    animatedGameObject->SetScale(0.01);
+
+    SkinnedModel* skinnedModel = animatedGameObject->m_skinnedModel;
+    std::vector<Node>& nodes = skinnedModel->m_nodes;
+    std::map<std::string, unsigned int>& boneMapping = skinnedModel->m_boneMapping;
+
+
+    // Extract spine positions
+    int nodeCount = nodes.size();
+    std::vector<glm::mat4> skinnedTransformations(nodeCount);
+
+    for (int i = 0; i < skinnedModel->m_nodes.size(); i++) {
+        glm::mat4 nodeTransformation = glm::mat4(1);
+        std::string& nodeName = skinnedModel->m_nodes[i].name;
+        nodeTransformation = skinnedModel->m_nodes[i].inverseBindTransform;
+        unsigned int parentIndex = skinnedModel->m_nodes[i].parentIndex;
+        glm::mat4 ParentTransformation = (parentIndex == -1) ? glm::mat4(1) : skinnedTransformations[parentIndex];
+        glm::mat4 GlobalTransformation = ParentTransformation * nodeTransformation;
+        skinnedTransformations[i] = AnimatedTransform(GlobalTransformation).to_mat4();
+
+        float scale = 0.01f;
+        glm::vec3 position = skinnedTransformations[i][3] * scale;
+
+        if (nodeName == "BN_Head_00") {
+            m_spinePositions[0] = position;
+            m_spineBoneNames[0] = nodeName;
+        }
+        else if (nodeName == "BN_Neck_01") {
+            m_spinePositions[1] = position;
+            m_spineBoneNames[1] = nodeName;
+        }
+        else if (nodeName == "BN_Neck_00") {
+            m_spinePositions[2] = position;
+            m_spineBoneNames[2] = nodeName;
+        }
+        else if (nodeName == "Spine_00") {
+            m_spinePositions[3] = position;
+            m_spineBoneNames[3] = nodeName;
+        }
+        else if (nodeName == "BN_Spine_01") {
+            m_spinePositions[4] = position;
+            m_spineBoneNames[4] = nodeName;
+        }
+        else if (nodeName == "BN_Spine_02") {
+            m_spinePositions[5] = position;
+            m_spineBoneNames[5] = nodeName;
+        }
+        else if (nodeName == "BN_Spine_03") {
+            m_spinePositions[6] = position;
+            m_spineBoneNames[6] = nodeName;
+        }
+        else if (nodeName == "BN_Spine_04") {
+            m_spinePositions[7] = position;
+            m_spineBoneNames[7] = nodeName;
+        }
+        else if (nodeName == "BN_Spine_05") {
+            m_spinePositions[8] = position;
+            m_spineBoneNames[8] = nodeName;
+        }
+        else if (nodeName == "BN_Spine_06") {
+            m_spinePositions[9] = position;
+            m_spineBoneNames[9] = nodeName;
+        }
+        else if (nodeName == "BN_Spine_07") {
+            m_spinePositions[10] = position;
+            m_spineBoneNames[10] = nodeName;
+        }
+    }
+
+    // Compute distances between spine segments
+    m_spinePositions[0].y = 0.0f;
+
+    // Reset height
+    for (int i = 1; i < SHARK_SPINE_SEGMENT_COUNT; i++) {
+        m_spinePositions[i].y = m_spinePositions[0].y;
+    }
+    // Print names
+    for (int i = 0; i < SHARK_SPINE_SEGMENT_COUNT; i++) {
+        std::cout << i << ": " << m_spineBoneNames[i] << "\n";
+    }
+    // Calculate distances
+    for (int i = 0; i < SHARK_SPINE_SEGMENT_COUNT - 1; i++) {
+        m_spineSegmentLengths[i] = glm::distance(m_spinePositions[i], m_spinePositions[i + 1]);
+    }
+
+    m_forward = glm::normalize(m_spinePositions[0] - m_spinePositions[1]);
+
+    SetPosition(initialPosition);
+
+}
+
+void Shark::Update(float deltaTime) {
+
+    // Put these somewhere better!
+    m_right = glm::cross(m_forward, glm::vec3(0, 1, 0));
+    m_left = -m_right;
+
+
+
+    // Move this somewhere
+    //animatedGameObject->SetPosition(initialPosition);
+
+    glm::mat4 rootTranslationMatrix = glm::translate(glm::mat4(1), m_spinePositions[3]);
+    //glm::mat4 rootRotationMatrix = Util::GetRotationMat4FromForwardVector(m_forward);
+
+
+      // Root to the end of the spine
+    float rot0 = Util::YRotationBetweenTwoPoints(m_spinePositions[3], m_spinePositions[2]) + HELL_PI * 0.5f;
+    float rot1 = Util::YRotationBetweenTwoPoints(m_spinePositions[4], m_spinePositions[3]) + HELL_PI * 0.5f;
+    float rot2 = Util::YRotationBetweenTwoPoints(m_spinePositions[5], m_spinePositions[4]) + HELL_PI * 0.5f;
+    float rot3 = Util::YRotationBetweenTwoPoints(m_spinePositions[6], m_spinePositions[5]) + HELL_PI * 0.5f;
+    float rot4 = Util::YRotationBetweenTwoPoints(m_spinePositions[7], m_spinePositions[6]) + HELL_PI * 0.5f;
+    float rot5 = Util::YRotationBetweenTwoPoints(m_spinePositions[8], m_spinePositions[7]) + HELL_PI * 0.5f;
+    float rot6 = Util::YRotationBetweenTwoPoints(m_spinePositions[9], m_spinePositions[8]) + HELL_PI * 0.5f;
+    float rot7 = Util::YRotationBetweenTwoPoints(m_spinePositions[10], m_spinePositions[9]) + HELL_PI * 0.5f;
+
+    // From the neck to the head
+    float rot8 = Util::YRotationBetweenTwoPoints(m_spinePositions[3], m_spinePositions[2]) + HELL_PI * 0.5f;
+    float rot9 = Util::YRotationBetweenTwoPoints(m_spinePositions[2], m_spinePositions[1]) + HELL_PI * 0.5f;
+    float rot10 = Util::YRotationBetweenTwoPoints(m_spinePositions[1], m_spinePositions[0]) + HELL_PI * 0.5f;
+
+    // Calculate root bone matrix
+    Transform rotationTransform;
+    rotationTransform.rotation.y = rot0;
+    glm::mat4 rootRotationMatrix = rotationTransform.to_mat4();
+    glm::mat4 rootBoneMatrix = rootTranslationMatrix * rootRotationMatrix;
+
+    std::unordered_map<std::string, glm::mat4> additiveBoneTransforms;
+    additiveBoneTransforms["Spine_00"] = rootBoneMatrix;
+    additiveBoneTransforms["BN_Spine_01"] = glm::rotate(glm::mat4(1.0f), rot1 - rot0, glm::vec3(0, 1, 0));
+    additiveBoneTransforms["BN_Spine_02"] = glm::rotate(glm::mat4(1.0f), rot2 - rot1, glm::vec3(0, 1, 0));
+    additiveBoneTransforms["BN_Spine_03"] = glm::rotate(glm::mat4(1.0f), rot3 - rot2, glm::vec3(0, 1, 0));
+    additiveBoneTransforms["BN_Spine_04"] = glm::rotate(glm::mat4(1.0f), rot4 - rot3, glm::vec3(0, 1, 0));
+    additiveBoneTransforms["BN_Spine_05"] = glm::rotate(glm::mat4(1.0f), rot5 - rot4, glm::vec3(0, 1, 0));
+    additiveBoneTransforms["BN_Spine_06"] = glm::rotate(glm::mat4(1.0f), rot6 - rot5, glm::vec3(0, 1, 0));
+    additiveBoneTransforms["BN_Spine_07"] = glm::rotate(glm::mat4(1.0f), rot7 - rot6, glm::vec3(0, 1, 0));
+
+    additiveBoneTransforms["BN_Neck_00"] = glm::rotate(glm::mat4(1.0f), rot8 - rot1, glm::vec3(0, 1, 0));
+    additiveBoneTransforms["BN_Neck_01"] = glm::rotate(glm::mat4(1.0f), rot9 - rot8, glm::vec3(0, 1, 0));
+    additiveBoneTransforms["BN_Head_00"] = glm::rotate(glm::mat4(1.0f), rot10 - rot9, glm::vec3(0, 1, 0));
+
+
+    // Update animation
+    AnimatedGameObject* animatedGameObject = GetAnimatedGameObject();
+    if (animatedGameObject) {
+        animatedGameObject->Update(deltaTime, additiveBoneTransforms);
+        animatedGameObject->UpdateRenderItems();
+    }
+
+    if (Input::KeyDown(HELL_KEY_UP)) {
+        CalculateForwardVectorFromArrowKeys(deltaTime);
+        std::cout << "Shark forward: " << m_forward << "\n";
+
+        for (int i = 0; i < m_logicSubStepCount; i++) {
+            MoveShark(deltaTime);
+        }
+    }
+
+    for (int i = 1; i < SHARK_SPINE_SEGMENT_COUNT; ++i) {
+        Renderer::DrawPoint(m_spinePositions[i], RED);
+    }
+    for (int i = 0; i < 1; ++i) {
+        Renderer::DrawPoint(m_spinePositions[i], WHITE);
+    }
+}
+
+void Shark::CleanUp() {
+    World::RemoveObject(g_animatedGameObjectObjectId);
+}
+
+void Shark::SetPosition(glm::vec3 position) {
+    m_spinePositions[0] = position;
+    for (int i = 1; i < SHARK_SPINE_SEGMENT_COUNT; i++) {
+        m_spinePositions[i].x = m_spinePositions[0].x;
+        m_spinePositions[i].y = m_spinePositions[0].y;
+        m_spinePositions[i].z = m_spinePositions[i - 1].z - m_spineSegmentLengths[i - 1];
+        //m_rotation = 0;           TRIPLE CHECK YOU DON'T NEED THIS !!!!!!!!!!!!!!!!!!!!!!!!!!
+    }
+    m_forward = glm::vec3(0, 0, 1);
+}
+
+
+void Shark::MoveShark(float deltaTime) {
+
+    //m_mouthPositionLastFrame = GetMouthPosition2D();
+    //m_headPositionLastFrame = GetHeadPosition2D();
+    //m_evadePointPositionLastFrame = GetEvadePoint2D();
+    // Move head
+    m_spinePositions[0] += m_forward * m_swimSpeed * deltaTime / (float)m_logicSubStepCount;
+    // Move spine segments
+    for (int i = 1; i < SHARK_SPINE_SEGMENT_COUNT; ++i) {
+        glm::vec3 direction = glm::normalize(m_spinePositions[i - 1] - m_spinePositions[i]);
+        m_spinePositions[i] = m_spinePositions[i - 1] - direction * m_spineSegmentLengths[i - 1];
+    }
+}
+
+void Shark::CalculateForwardVectorFromArrowKeys(float deltaTime) {
+    float maxRotation = 5.0f;
+    if (Input::KeyDown(HELL_KEY_LEFT)) {
+        float blendFactor = glm::clamp(glm::abs(-maxRotation) / 90.0f, 0.0f, 1.0f);
+        m_forward = glm::normalize(glm::mix(m_forward, m_left, blendFactor));
+        std::cout << "PRESSED LEFT\n";
+    }
+    if (Input::KeyDown(HELL_KEY_RIGHT)) {
+        float blendFactor = glm::clamp(glm::abs(maxRotation) / 90.0f, 0.0f, 1.0f);
+        m_forward = glm::normalize(glm::mix(m_forward, m_right, blendFactor));
+        std::cout << "PRESSED RIGHT\n";
+    }
+}
+
+AnimatedGameObject* Shark::GetAnimatedGameObject() {
+   return World::GetAnimatedGameObjectByObjectId(g_animatedGameObjectObjectId);
+}
+
+/*
+
+#include "Shark.h"
 #include "SharkPathManager.h"
 #include "../Game/Game.h"
 #include "../Game/Scene.h"
@@ -37,63 +268,63 @@ void Shark::Init() {
     std::vector<BoneInfo> boneInfo = skinnedModel->m_BoneInfo;
 
     for (int i = 0; i < joints.size(); i++) {
-        const char* NodeName = joints[i].m_name;
+        const char* nodeName = joints[i].m_name;
         glm::mat4 NodeTransformation = joints[i].m_inverseBindTransform;
         unsigned int parentIndex = joints[i].m_parentIndex;
         glm::mat4 ParentTransformation = (parentIndex == -1) ? glm::mat4(1) : joints[parentIndex].m_currentFinalTransform;
         glm::mat4 GlobalTransformation = ParentTransformation * NodeTransformation;
         joints[i].m_currentFinalTransform = GlobalTransformation;
-        if (boneMapping.find(NodeName) != boneMapping.end()) {
-            unsigned int BoneIndex = boneMapping[NodeName];
+        if (boneMapping.find(nodeName) != boneMapping.end()) {
+            unsigned int BoneIndex = boneMapping[nodeName];
             boneInfo[BoneIndex].FinalTransformation = GlobalTransformation * boneInfo[BoneIndex].BoneOffset;
             boneInfo[BoneIndex].ModelSpace_AnimatedTransform = GlobalTransformation;
 
             // No idea why this scale is required
             float scale = 0.01f;
             glm::vec3 position = Util::GetTranslationFromMatrix(GlobalTransformation) * scale;
-            if (Util::StrCmp(NodeName, "BN_Head_00")) {
+            if (Util::StrCmp(nodeName, "BN_Head_00")) {
                 m_spinePositions[0] = position;
-                m_spineBoneNames[0] = NodeName;
+                m_spineBoneNames[0] = nodeName;
             }
-            else if (Util::StrCmp(NodeName, "BN_Neck_01")) {
+            else if (Util::StrCmp(nodeName, "BN_Neck_01")) {
                 m_spinePositions[1] = position;
-                m_spineBoneNames[1] = NodeName;
+                m_spineBoneNames[1] = nodeName;
             }
-            else if (Util::StrCmp(NodeName, "BN_Neck_00")) {
+            else if (Util::StrCmp(nodeName, "BN_Neck_00")) {
                 m_spinePositions[2] = position;
-                m_spineBoneNames[2] = NodeName;
+                m_spineBoneNames[2] = nodeName;
             }
-            else if (Util::StrCmp(NodeName, "Spine_00")) {
+            else if (Util::StrCmp(nodeName, "Spine_00")) {
                 m_spinePositions[3] = position;
-                m_spineBoneNames[3] = NodeName;
+                m_spineBoneNames[3] = nodeName;
             }
-            else if (Util::StrCmp(NodeName, "BN_Spine_01")) {
+            else if (Util::StrCmp(nodeName, "BN_Spine_01")) {
                 m_spinePositions[4] = position;
-                m_spineBoneNames[4] = NodeName;
+                m_spineBoneNames[4] = nodeName;
             }
-            else if (Util::StrCmp(NodeName, "BN_Spine_02")) {
+            else if (Util::StrCmp(nodeName, "BN_Spine_02")) {
                 m_spinePositions[5] = position;
-                m_spineBoneNames[5] = NodeName;
+                m_spineBoneNames[5] = nodeName;
             }
-            else if (Util::StrCmp(NodeName, "BN_Spine_03")) {
+            else if (Util::StrCmp(nodeName, "BN_Spine_03")) {
                 m_spinePositions[6] = position;
-                m_spineBoneNames[6] = NodeName;
+                m_spineBoneNames[6] = nodeName;
             }
-            else if (Util::StrCmp(NodeName, "BN_Spine_04")) {
+            else if (Util::StrCmp(nodeName, "BN_Spine_04")) {
                 m_spinePositions[7] = position;
-                m_spineBoneNames[7] = NodeName;
+                m_spineBoneNames[7] = nodeName;
             }
-            else if (Util::StrCmp(NodeName, "BN_Spine_05")) {
+            else if (Util::StrCmp(nodeName, "BN_Spine_05")) {
                 m_spinePositions[8] = position;
-                m_spineBoneNames[8] = NodeName;
+                m_spineBoneNames[8] = nodeName;
             }
-            else if (Util::StrCmp(NodeName, "BN_Spine_06")) {
+            else if (Util::StrCmp(nodeName, "BN_Spine_06")) {
                 m_spinePositions[9] = position;
-                m_spineBoneNames[9] = NodeName;
+                m_spineBoneNames[9] = nodeName;
             }
-            else if (Util::StrCmp(NodeName, "BN_Spine_07")) {
+            else if (Util::StrCmp(nodeName, "BN_Spine_07")) {
                 m_spinePositions[10] = position;
-                m_spineBoneNames[10] = NodeName;
+                m_spineBoneNames[10] = nodeName;
             }
         }
     }
@@ -262,3 +493,4 @@ void Shark::Reset() {
     m_nextPathPointIndex = 1;
     PlayAndLoopAnimation("Shark_Swim", 1.0f);
 }
+*/

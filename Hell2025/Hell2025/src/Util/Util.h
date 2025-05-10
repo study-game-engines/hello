@@ -15,6 +15,7 @@ namespace Util {
     void UnpackUint64(uint32_t xValue, uint32_t yValue, uint64_t& out);
 
     // Math
+    float YRotationBetweenTwoPoints(glm::vec3 a, glm::vec3 b);
     glm::mat4 GetRotationMat4FromForwardVector(glm::vec3 forward);
     glm::vec3 GetMidPoint(const glm::vec3& a, const glm::vec3 b);
     float EulerYRotationBetweenTwoPoints(glm::vec3 a, glm::vec3 b);

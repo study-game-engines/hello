@@ -7,6 +7,7 @@
 
 #include "Audio/Audio.h"
 #include "Core/Game.h"
+#include "Enemies/Shark/Shark.h"
 #include "Input/Input.h"
 #include "Renderer/Renderer.h"
 #include "Renderer/RenderDataManager.h"
@@ -34,6 +35,7 @@ namespace World {
     std::vector<Tree> g_trees;
     std::vector<Wall> g_walls;
     std::vector<Window> g_windows;
+    std::vector<Shark> g_sharks;
 
     std::vector<GPULight> g_gpuLightsLowRes;
     std::vector<GPULight> g_gpuLightsMidRes;
@@ -55,24 +57,25 @@ namespace World {
     void AddSectorAtLocation(SectorCreateInfo& sectorCreateInfo, SpawnOffset spawnOffset);
     void ProcessBullets();
 
-    uint64_t g_sharkAnimatedGameObject = 0;
+   // uint64_t g_sharkAnimatedGameObject = 0;
 
     void Init() {
 
+
         // Create test shark
-        if (g_sharkAnimatedGameObject == 0) {
-            g_sharkAnimatedGameObject = CreateAnimatedGameObject();
-            AnimatedGameObject* shark = GetAnimatedGameObjectByObjectId(g_sharkAnimatedGameObject);
-            shark->SetSkinnedModel("Shark");
-            shark->SetPosition(glm::vec3(36.0f, 12.0f, 25.0f));
-            shark->SetPosition(glm::vec3(38.0f, 11.48f, 24.0f));
-            shark->SetAnimationModeToBindPose();
-            shark->SetName("222");
-            shark->SetAnimationModeToBindPose();
-            shark->SetAllMeshMaterials("Shark");
-            shark->SetScale(0.01);
-            shark->PlayAndLoopAnimation("Shark_Swim");
-        }
+        //if (g_sharkAnimatedGameObject == 0) {
+        //    g_sharkAnimatedGameObject = CreateAnimatedGameObject();
+        //    AnimatedGameObject* shark = GetAnimatedGameObjectByObjectId(g_sharkAnimatedGameObject);
+        //    shark->SetSkinnedModel("Shark");
+        //    shark->SetPosition(glm::vec3(36.0f, 12.0f, 25.0f));
+        //    shark->SetPosition(glm::vec3(38.0f, 11.48f, 24.0f));
+        //    shark->SetAnimationModeToBindPose();
+        //    shark->SetName("222");
+        //    shark->SetAnimationModeToBindPose();
+        //    shark->SetAllMeshMaterials("Shark");
+        //    shark->SetScale(0.01);
+        //    shark->PlayAndLoopAnimation("Shark_Swim");
+        //}
 
 
         //LoadMap("TestMap");
@@ -96,13 +99,6 @@ namespace World {
         }
         for (Tree& tree : g_trees) {
             tree.BeginFrame();
-        }
-
-        // REMOVE ME!
-        AnimatedGameObject* shark = GetAnimatedGameObjectByObjectId(g_sharkAnimatedGameObject);
-        if (shark) {
-            shark->Update(Game::GetDeltaTime());
-            shark->UpdateRenderItems();
         }
     }
 
@@ -533,6 +529,13 @@ namespace World {
                 i--;
             }
         }
+
+        for (int i = 0; i < g_animatedGameObjects.size(); i++) {
+            if (g_animatedGameObjects[i].GetObjectId() == objectID) {
+                g_animatedGameObjects.erase(g_animatedGameObjects.begin() + i);
+                i--;
+            }
+        }
     }
 
     void ResetWorld() {
@@ -564,6 +567,9 @@ namespace World {
         for (PickUp& pickUp : g_pickUps) {
             pickUp.CleanUp();
         }
+        for (Shark& shark : g_sharks) {
+            shark.CleanUp();
+        }
         for (Wall& wall : g_walls) {
             wall.CleanUp();
         }
@@ -582,6 +588,7 @@ namespace World {
         g_pickUps.clear();
         g_planes.clear();
         g_pictureFrames.clear();
+        g_sharks.clear();
         g_trees.clear();
         g_walls.clear();
         g_windows.clear();
@@ -593,6 +600,10 @@ namespace World {
         createInfo.rotation.y = HELL_PI * -0.5f;
         createInfo.type = PictureFrameType::BIG_LANDSCAPE;
         AddPictureFrame(createInfo);
+
+
+        Shark& shark = g_sharks.emplace_back();
+        shark.Init();
 
 
     }
@@ -847,6 +858,7 @@ namespace World {
     std::vector<PickUp>& GetPickUps()                           { return g_pickUps; };
     std::vector<PictureFrame>& GetPictureFrames()               { return g_pictureFrames; };
     std::vector<Transform>& GetDoorAndWindowCubeTransforms()    { return g_doorAndWindowCubeTransforms; }
+    std::vector<Shark>& GetSharks()                             { return g_sharks; }
     std::vector<Tree>& GetTrees()                               { return g_trees; };
     std::vector<Wall>& GetWalls()                               { return g_walls; }
     std::vector<Window>& GetWindows()                           { return g_windows; }

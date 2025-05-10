@@ -11,11 +11,7 @@ void AnimationLayer::SetSkinnedModel(const std::string& skinnedModelName) {
     }
 }
 
-void AnimationLayer::Update(float deltaTime, std::unordered_map<std::string, glm::mat4> additiveBoneTransforms) {
-    // REMOVE ME!!!!!
-    Transform transform;
-    transform.rotation.y = HELL_PI * 0.5f;
-    additiveBoneTransforms["BN_Spine_01"] = transform.to_mat4();
+void AnimationLayer::Update(float deltaTime, std::unordered_map<std::string, glm::mat4>& additiveBoneTransforms) {
 
     // Remove any animations awaiting removal
     for (int i = 0; i < m_animationStates.size(); i++) {

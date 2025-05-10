@@ -1,6 +1,7 @@
 #pragma once
 #include "HellTypes.h"
 #include "Core/Debug.h"
+#include "Enemies/Shark/Shark.h"
 #include "Types/Game/AnimatedGameObject.h"
 #include "Types/Game/Bullet.h"
 #include "Types/Game/BulletCasing.h"
@@ -156,6 +157,7 @@ namespace World {
     std::vector<PickUp>& GetPickUps();
     std::vector<PictureFrame>& GetPictureFrames();
     std::vector<Transform>& GetDoorAndWindowCubeTransforms();
+    std::vector<Shark>& GetSharks();
     std::vector<Tree>& GetTrees();
     std::vector<Wall>& GetWalls();
     std::vector<Window>& GetWindows();

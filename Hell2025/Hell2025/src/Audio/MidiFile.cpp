@@ -31,9 +31,7 @@ void MidiFile::Update(float deltaTime) {
     while (m_nextEventIndex < m_scheduledEvents.size() && m_scheduledEvents[m_nextEventIndex].timestamp <= m_playbackTime) {
         const ScheduledEvent& currentEvent = m_scheduledEvents[m_nextEventIndex];
 
-        Piano& piano = World::GetPianos()[0];
-
-        glClear(GL_COLOR_BUFFER_BIT);
+        Piano& piano = World::GetPianos()[1];
 
         switch (currentEvent.type) {
             case MidiEventType::NOTE_ON: {

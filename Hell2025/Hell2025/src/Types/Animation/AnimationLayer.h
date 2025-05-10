@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include "AnimationState.h"
+#include <unordered_map>
 
 struct AnimationLayer {
 
@@ -11,7 +12,7 @@ struct AnimationLayer {
     std::vector<glm::mat4> m_globalBlendedNodeTransforms;
 
     void SetSkinnedModel(const std::string& skinnedModelName);
-    void Update(float deltaTime, std::unordered_map<std::string, glm::mat4> additiveBoneTransforms = std::unordered_map<std::string, glm::mat4>());
+    void Update(float deltaTime, std::unordered_map<std::string, glm::mat4>& additiveBoneTransforms);
     void PlayAnimation(const std::string& animationName, const AnimationPlaybackParams& playbackParams = AnimationPlaybackParams());
     void PlayAndLoopAnimation(const std::string& animationName, const AnimationPlaybackParams& playbackParams = AnimationPlaybackParams());
     void ClearAllAnimationStates();

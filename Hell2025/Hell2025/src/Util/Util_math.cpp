@@ -6,6 +6,13 @@
 
 namespace Util {
 
+    float YRotationBetweenTwoPoints(glm::vec3 a, glm::vec3 b) {
+        float delta_x = b.x - a.x;
+        float delta_y = b.z - a.z;
+        float theta_radians = atan2(delta_y, delta_x);
+        return -theta_radians;
+    }
+
     glm::mat4 GetRotationMat4FromForwardVector(glm::vec3 forward) {
         glm::vec3 worldUp = glm::vec3(0.0f, 1.0f, 0.0f);
 

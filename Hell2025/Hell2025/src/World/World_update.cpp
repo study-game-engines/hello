@@ -60,6 +60,10 @@ namespace World {
             tree.Update(deltaTime);
         }
 
+        for (Shark& shark : GetSharks()) {
+            shark.Update(deltaTime);
+        }
+
         for (Window& window : windows) {
             window.Update(deltaTime);
         }

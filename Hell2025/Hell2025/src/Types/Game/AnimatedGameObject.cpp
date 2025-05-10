@@ -56,14 +56,14 @@ float AnimatedGameObject::GetBlendFactor() {
     return m_blendFactor;
 }
 
-void AnimatedGameObject::Update(float deltaTime) {
+void AnimatedGameObject::Update(float deltaTime, std::unordered_map<std::string, glm::mat4> additiveBoneTransforms) {
     if (!m_skinnedModel) return;
 
     if (m_animationMode == AnimationMode::BINDPOSE && m_skinnedModel) {
         m_animationLayer.ClearAllAnimationStates();
     }
 
-    m_animationLayer.Update(deltaTime);
+    m_animationLayer.Update(deltaTime, additiveBoneTransforms);
 
     // Blending
     m_accumulatedBlendingTime += deltaTime;
