@@ -1,5 +1,6 @@
 #include "Piano.h"
 #include "AssetManagement/AssetManager.h"
+#include "Audio/Audio.h"
 #include "Audio/Synth.h"
 #include "Editor/Editor.h"
 #include "Input/Input.h"
@@ -19,49 +20,22 @@ void Piano::Init(PianoCreateInfo& createInfo) {
     m_pianoObjectId = UniqueID::GetNext();
 
     m_model = AssetManager::GetModelByName("Piano");
-    Material* material0 = AssetManager::GetMaterialByName("Piano0");
-    Material* material1 = AssetManager::GetMaterialByName("Piano1");
+    m_meshNodes.InitFromModel(m_model);
 
-    if (!m_model || !material0 || !material1) {
-        std::cout << "Piano::Init() failed cause !m_model || !material0 || !material1\n";
-        return;
-    }
-
- // Transform seatTransform;
- // seatTransform.position.x = 0.75f;
+    uint32_t materialIndex0 = AssetManager::GetMaterialIndexByName("Piano0");
+    uint32_t materialIndex1 = AssetManager::GetMaterialIndexByName("Piano1");
 
     m_seatPosition = m_transform.to_mat4() * glm::vec4(0.75f, 0.0f, 0.75f, 1.0f);
 
-  //  m_seatPosition = 
+    for (int i = 0; i < m_meshNodes.GetNodeCount(); i++) {
+        uint32_t meshIndex = m_meshNodes.GetGlobalMeshIndex(i);
 
-    //BasicDoorCreateInfo keyboardLidCreateInfo;
-    //keyboardLidCreateInfo.parentMatrix = m_transform.to_mat4();
-    //keyboardLidCreateInfo.rotationAxis = Axis::X;
-    //
-    //BasicDoorCreateInfo topLidCreateInfo;
-    //topLidCreateInfo.parentMatrix = m_transform.to_mat4();
-    //topLidCreateInfo.rotationAxis = Axis::X;
-
-    for (const uint32_t& meshIndex : m_model->GetMeshIndices()) {
         Mesh* mesh = AssetManager::GetMeshByIndex(meshIndex);
+        if (!mesh) continue;
 
         uint64_t localObjectId = UniqueID::GetNext();
 
-        // Keyboard lid
-        /*if (mesh->GetName() == "Yamaha_Keyboard.Cover") {
-            MeshRenderingInfo& meshRenderingInfo = keyboardLidCreateInfo.m_meshRenderingInfoList.emplace_back();
-            meshRenderingInfo.meshIndex = meshIndex;
-            meshRenderingInfo.materialIndex = AssetManager::GetMaterialIndexByName("CheckerBoard");
-        }
-        // Top lid
-        else if (mesh->GetName() == "Yamaha_Case.Top.Cover") {
-            MeshRenderingInfo& meshRenderingInfo = keyboardLidCreateInfo.m_meshRenderingInfoList.emplace_back();
-            meshRenderingInfo.meshIndex = meshIndex;
-            meshRenderingInfo.materialIndex = AssetManager::GetMaterialIndexByName("CheckerBoard");
-        }
-        // Keys
-        else */if (
-            mesh->GetName() == "Yamaha_Key_A0" ||
+        if (mesh->GetName() == "Yamaha_Key_A0" ||
             mesh->GetName() == "Yamaha_Key_A0#" ||
             mesh->GetName() == "Yamaha_Key_B0" ||
             mesh->GetName() == "Yamaha_Key_C1" ||
@@ -156,29 +130,50 @@ void Piano::Init(PianoCreateInfo& createInfo) {
             mesh->GetName() == "Yamaha_Key_A7#" ||
             mesh->GetName() == "Yamaha_Key_B7" ||
             mesh->GetName() == "Yamaha_Key_C8") {
+
+            m_meshNodes.m_materialIndices[i] = materialIndex1;
+            m_meshNodes.m_objectIds[i] = localObjectId;
+            m_meshNodes.m_objectTypes[i] = ObjectType::PIANO_KEY;
+
             PianoKey& pianoKey = m_keys[localObjectId];
-            pianoKey.m_material = material1;
-            pianoKey.m_meshIndex = meshIndex;
+            pianoKey.m_meshName = mesh->GetName();
             pianoKey.m_note = MeshNameToNote(mesh->GetName());
             pianoKey.m_isSharp = (mesh->GetName().find("#") != std::string::npos);
-            pianoKey.UpdateWorldSpaceCenter(m_transform.to_mat4());
+        }
+
+        // Top cover 
+        else if (mesh->GetName() == "Yamaha_Case.Top.Cover") {
+            m_meshNodes.m_materialIndices[i] = materialIndex0;
+            m_meshNodes.m_objectIds[i] = localObjectId;
+            m_meshNodes.m_objectTypes[i] = ObjectType::PIANO_TOP_COVER;
+        }
+
+        // Keyboard cover
+        else if (mesh->GetName() == "Yamaha_Keyboard.Cover.Lock" || mesh->GetName() == "Yamaha_Keyboard.Cover") {
+            m_meshNodes.m_materialIndices[i] = materialIndex0;
+            m_meshNodes.m_objectIds[i] = localObjectId;
+            m_meshNodes.m_objectTypes[i] = ObjectType::PIANO_KEYBOARD_COVER;
+        }
+
+        // Music rest
+        else if (mesh->GetName() == "Yamaha_Lyrics.Stand") {
+            m_meshNodes.m_materialIndices[i] = materialIndex0;
+            m_meshNodes.m_objectIds[i] = localObjectId;
+            m_meshNodes.m_objectTypes[i] = ObjectType::PIANO_SHEET_MUSIC_REST;
         }
 
         // Black body parts
-        else if (mesh->GetName() == "Yamaha_Main" ||
-            mesh->GetName() == "Yamaha_Case.Top.Cover" ||
-            mesh->GetName() == "Yamaha_Keyboard.Cover.Lock" ||
-            mesh->GetName() == "Yamaha_Lyrics.Stand" ||
-            mesh->GetName() == "Yamaha_Keyboard.Cover") {
-            PianoBodyPart& pianoBodyPart = m_bodyParts[localObjectId];
-            pianoBodyPart.m_material = material0;
-            pianoBodyPart.m_meshIndex = meshIndex;
+        else if (mesh->GetName() == "Yamaha_Main") {
+            m_meshNodes.m_materialIndices[i] = materialIndex0;
+            m_meshNodes.m_objectIds[i] = m_pianoObjectId;
+            m_meshNodes.m_objectTypes[i] = ObjectType::PIANO;
         }
+
         // White body parts
         else {
-            PianoBodyPart& pianoBodyPart = m_bodyParts[localObjectId];
-            pianoBodyPart.m_material = material1;
-            pianoBodyPart.m_meshIndex = meshIndex;
+            m_meshNodes.m_materialIndices[i] = materialIndex1;
+            m_meshNodes.m_objectIds[i] = m_pianoObjectId;
+            m_meshNodes.m_objectTypes[i] = ObjectType::PIANO;
         }        
     }
 
@@ -196,23 +191,74 @@ void Piano::Init(PianoCreateInfo& createInfo) {
     userData.objectType = ObjectType::PIANO;
     Physics::SetRigidStaticUserData(m_rigidStaticId, userData);
 
-    // Create basic doors
-    //World::AddDoorBasic(keyboardLidCreateInfo);
-    //World::AddDoorBasic(topLidCreateInfo);
+    CalculatePianoKeyWorldspaceCenters();
+
+    // Init handlers
+    m_keyboardCoverOpenHandler.openState = OpenState::OPEN;
+    m_keyboardCoverOpenHandler.minOpenValue = 0.0f;
+    m_keyboardCoverOpenHandler.maxOpenValue = 2.1f;
+    m_keyboardCoverOpenHandler.openSpeed = 6.825f;
+    m_keyboardCoverOpenHandler.closeSpeed = 6.825f;
+    m_keyboardCoverOpenHandler.openedAudio = "Piano_LidClose.wav";
+    m_keyboardCoverOpenHandler.closedAudio = "Piano_LidClose.wav";
+    m_keyboardCoverOpenHandler.Update();
+
+    m_topCoverOpenHandler.openState = OpenState::CLOSED;
+    m_topCoverOpenHandler.minOpenValue = 0.0f;
+    m_topCoverOpenHandler.maxOpenValue = HELL_PI;
+    m_topCoverOpenHandler.openSpeed = 7.25f;
+    m_topCoverOpenHandler.closeSpeed = 7.25f;
+    m_topCoverOpenHandler.openedAudio = "Piano_LidClose.wav";
+    m_topCoverOpenHandler.closedAudio = "Piano_LidClose.wav";
+
+    m_sheetMusicRestOpenHandler.openState = OpenState::CLOSED;
+    m_sheetMusicRestOpenHandler.minOpenValue = 0.0f;
+    m_sheetMusicRestOpenHandler.maxOpenValue = HELL_PI * 0.7f;
+    m_sheetMusicRestOpenHandler.openSpeed = 8.5f;
+    m_sheetMusicRestOpenHandler.closeSpeed = 8.5f;
+    m_sheetMusicRestOpenHandler.openedAudio = "Piano_LidClose.wav";
+    m_sheetMusicRestOpenHandler.closedAudio = "Piano_LidClose.wav";
+
+   //m_TopCoverOpenHandler;
+   //m_SheetMusicOpenHandler;
+}
+
+
+void Piano::CalculatePianoKeyWorldspaceCenters() {
+    m_meshNodes.UpdateRenderItems(m_transform.to_mat4());
+
+    for (auto& pair : m_keys) {
+        const uint64_t& objectId = pair.first;
+        PianoKey& key = pair.second;
+        uint32_t nodeIndex = m_meshNodes.m_localIndexMap[key.m_meshName];
+
+        RenderItem* renderItem = m_meshNodes.GetRenderItemByNodeIndex(nodeIndex);
+        AABB aabb = AABB(renderItem->aabbMin, renderItem->aabbMax);
+
+        key.m_worldSpaceCenter = aabb.GetCenter();
+    }
 }
 
 void Piano::SetPosition(glm::vec3 position) {
     m_createInfo.position = position;
     m_transform.position = position;
 
-    // Recalculate each key center
-    for (auto& pair : m_keys) {
-        PianoKey& pianoKey = pair.second;
-        pianoKey.UpdateWorldSpaceCenter(m_transform.to_mat4());
-    }
-
     // Update collision mesh position
     Physics::SetRigidStaticGlobalPose(m_rigidStaticId, m_transform.to_mat4());
+
+    CalculatePianoKeyWorldspaceCenters();
+}
+
+void Piano::InteractWithKeyboardCover() {
+    m_keyboardCoverOpenHandler.Interact();
+}
+
+void Piano::InteractWithTopCover() {
+    m_topCoverOpenHandler.Interact();
+}
+
+void Piano::InteractWithSheetMusicRestCover() {
+    m_sheetMusicRestOpenHandler.Interact();
 }
 
 void Piano::CleanUp() {
@@ -227,51 +273,40 @@ void Piano::Update(float deltaTime) {
         const uint64_t& objectId = pair.first;
         PianoKey& key = pair.second;
         key.Update(deltaTime);
+
+        int meshNodeIndex = m_meshNodes.m_localIndexMap[key.m_meshName];
+
+        m_meshNodes.m_transforms[meshNodeIndex].position.y = key.m_yTranslation;
+        m_meshNodes.m_transforms[meshNodeIndex].rotation.x = key.m_xRotation;
     }
 
-    UpdateRenderItems();
-}
+    m_topCoverOpenHandler.Update(deltaTime);
+    m_sheetMusicRestOpenHandler.Update(deltaTime);
+    m_keyboardCoverOpenHandler.Update(deltaTime);
+ 
+    
+    //if (m_keyboardCoverOpenState == OpenState::OPEN) {
+    //    m_keyboardCoverCurrentOpenValue = m_keyboardCoverMaxOpenValue;
+    //}
+    //if (m_keyboardCoverOpenState == OpenState::CLOSED) {
+    //    m_keyboardCoverCurrentOpenValue = 0;
+    //}
 
-void Piano::UpdateRenderItems() {
-    m_renderItems.clear();
+    Transform keyboardCoverTransform;
+    keyboardCoverTransform.rotation.x = -m_keyboardCoverOpenHandler.currentOpenValue;
+    m_meshNodes.SetTransformByMeshName("Yamaha_Keyboard.Cover", keyboardCoverTransform);
 
-    for (const auto& pair : m_bodyParts) {
-        const uint64_t& objectId = pair.first;
-        const PianoBodyPart& body = pair.second;
+    Transform topCoverTransform;
+    topCoverTransform.rotation.x = -m_topCoverOpenHandler.currentOpenValue;
+    m_meshNodes.SetTransformByMeshName("Yamaha_Case.Top.Cover", topCoverTransform);
 
-        Material* material = body.m_material;  
-        Mesh* mesh = AssetManager::GetMeshByIndex(body.m_meshIndex);
+    Transform sheetMusicRestTransform;
+    sheetMusicRestTransform.rotation.x = -m_sheetMusicRestOpenHandler.currentOpenValue;
+    m_meshNodes.SetTransformByMeshName("Yamaha_Lyrics.Stand", sheetMusicRestTransform);
 
-        RenderItem& renderItem = m_renderItems.emplace_back();
-        renderItem.modelMatrix = m_modelMatrix;
-        renderItem.inverseModelMatrix = inverse(renderItem.modelMatrix);
-        renderItem.meshIndex = body.m_meshIndex;
-        renderItem.baseColorTextureIndex = material->m_basecolor;
-        renderItem.rmaTextureIndex = material->m_rma;
-        renderItem.normalMapTextureIndex = material->m_normal;
-        renderItem.objectType = Util::EnumToInt(ObjectType::PIANO);
-        Util::UpdateRenderItemAABB(renderItem);
-        Util::PackUint64(objectId, renderItem.objectIdLowerBit, renderItem.objectIdUpperBit);
-    }
 
-    for (const auto& pair : m_keys) {
-        const uint64_t& objectId = pair.first;
-        const PianoKey& key = pair.second;
 
-        Material* material = key.m_material;
-        Mesh* mesh = AssetManager::GetMeshByIndex(key.m_meshIndex);
-
-        RenderItem& renderItem = m_renderItems.emplace_back();
-        renderItem.modelMatrix = m_modelMatrix * key.m_localOffsetMatrix;// key.m_localTransform.to_mat4();
-        renderItem.inverseModelMatrix = inverse(renderItem.modelMatrix);
-        renderItem.meshIndex = key.m_meshIndex;
-        renderItem.baseColorTextureIndex = material->m_basecolor;
-        renderItem.rmaTextureIndex = material->m_rma;
-        renderItem.normalMapTextureIndex = material->m_normal;
-        renderItem.objectType = Util::EnumToInt(ObjectType::PIANO_KEY);
-        Util::UpdateRenderItemAABB(renderItem);
-        Util::PackUint64(objectId, renderItem.objectIdLowerBit, renderItem.objectIdUpperBit);
-    }
+    m_meshNodes.UpdateRenderItems(m_transform.to_mat4());
 }
 
 void Piano::TriggerInternalNoteFromExternalBulletHit(glm::vec3 bulletHitPositon) {    
@@ -291,23 +326,19 @@ void Piano::TriggerInternalNoteFromExternalBulletHit(glm::vec3 bulletHitPositon)
     }
 
     if (closetKey) {
-        closetKey->PressKey();
+        closetKey->PressKey(127, 0.1f);
     }
 }
 
 void Piano::SubmitRenderItems() {
-    RenderDataManager::SubmitRenderItems(m_renderItems);
+    m_meshNodes.SubmitRenderItems();
     if (Editor::GetSelectedObjectId() == m_pianoObjectId) {
-        RenderDataManager::SubmitOutlineRenderItems(m_renderItems);
+        RenderDataManager::SubmitOutlineRenderItems(m_meshNodes.GetRenderItems());
     }
 }
 
 bool Piano::PianoKeyExists(uint64_t pianoKeyId) {
     return (m_keys.find(pianoKeyId) != m_keys.end());
-}
-
-bool Piano::PianoBodyPartKeyExists(uint64_t pianoBodyPartId) {
-    return (m_bodyParts.find(pianoBodyPartId) != m_bodyParts.end());
 }
 
 void Piano::PlayMajorFirstInversion(int rootNote) {
@@ -414,12 +445,6 @@ PianoKey* Piano::GetPianoKey(uint64_t pianoKeyId) {
     if (!PianoKeyExists(pianoKeyId)) return nullptr;
 
     return &m_keys[pianoKeyId];
-}
-
-PianoBodyPart* Piano::GetPianoBodyPart(uint64_t pianoBodyPartId) {
-    if (!PianoBodyPartKeyExists(pianoBodyPartId)) return nullptr;
-
-    return &m_bodyParts[pianoBodyPartId];
 }
 
 uint32_t Piano::MeshNameToNote(const std::string& meshName) {
@@ -549,32 +574,32 @@ void PianoKey::Update(float deltaTime) {
         }
     }
 
-    Mesh* mesh = AssetManager::GetMeshByIndex(m_meshIndex);
-    AABB aabb = AABB(mesh->aabbMin, mesh->aabbMax);
+    //Mesh* mesh = AssetManager::GetMeshByIndex(m_meshIndex);
+    //AABB aabb = AABB(mesh->aabbMin, mesh->aabbMax);
 
-    Transform orignOffsetTransform;
-    orignOffsetTransform.position = aabb.GetCenter();
-    orignOffsetTransform.position.y += aabb.GetExtents().y * 0.5f;
-    orignOffsetTransform.position.z -= aabb.GetExtents().z * 0.5f;
-
-    Transform rotationTransform;
-    rotationTransform.position.y = m_yTranslation;
-    rotationTransform.rotation.x = m_xRotation;
-
-    glm::mat4 originOffset = orignOffsetTransform.to_mat4();
-    glm::mat4 inverseOriginOffset = glm::inverse(originOffset);
-    glm::mat4 localRotation = rotationTransform.to_mat4();
-
-    m_localOffsetMatrix = originOffset * localRotation * inverseOriginOffset;
+    //Transform orignOffsetTransform;
+    //orignOffsetTransform.position = aabb.GetCenter();
+    //orignOffsetTransform.position.y += aabb.GetExtents().y * 0.5f;
+    //orignOffsetTransform.position.z -= aabb.GetExtents().z * 0.5f;
+    //
+    //Transform rotationTransform;
+    //rotationTransform.position.y = m_yTranslation;
+    //rotationTransform.rotation.x = m_xRotation;
+    //
+    //glm::mat4 originOffset = orignOffsetTransform.to_mat4();
+    //glm::mat4 inverseOriginOffset = glm::inverse(originOffset);
+    //glm::mat4 localRotation = rotationTransform.to_mat4();
+    //
+    //m_localOffsetMatrix = originOffset * localRotation * inverseOriginOffset;
 }
 
-void PianoKey::UpdateWorldSpaceCenter(glm::mat4 parentPianoModelMatrix) {
-    Mesh* mesh = AssetManager::GetMeshByIndex(m_meshIndex);
-    if (!mesh) return;
-
-    AABB aabb = AABB(mesh->aabbMin, mesh->aabbMax);
-    m_worldSpaceCenter = parentPianoModelMatrix * glm::vec4(aabb.GetCenter(), 1.0f);
-}
+//void PianoKey::UpdateWorldSpaceCenter(glm::mat4 parentPianoModelMatrix) {
+//    Mesh* mesh = AssetManager::GetMeshByIndex(m_meshIndex);
+//    if (!mesh) return;
+//
+//    AABB aabb = AABB(mesh->aabbMin, mesh->aabbMax);
+//    m_worldSpaceCenter = parentPianoModelMatrix * glm::vec4(aabb.GetCenter(), 1.0f);
+//}
 
 void PianoKey::PressKey(int velocity, float duration) {
     // Play sound if you were not pressed already

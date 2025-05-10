@@ -1,8 +1,11 @@
 #include "GameObject.h"
 #include "AssetManagement/AssetManager.h"
 #include "Physics/Physics.h"
+#include "Renderer/RenderDataManager.h"
 #include "Util.h"
 #include "UniqueID.h"
+
+#include "Bvh/Bvh.h"
 
 GameObject::GameObject(GameObjectCreateInfo createInfo) {
     SetModel(createInfo.modelName);
@@ -44,7 +47,7 @@ GameObjectCreateInfo GameObject::GetCreateInfo() {
 }
 
 void GameObject::Update(float deltaTime) {
-    UpdateRenderItems();
+    
 }
 
 void GameObject::CleanUp() {
@@ -67,6 +70,8 @@ void GameObject::SetScale(glm::vec3 scale) {
     m_transform.scale = scale;
 }
 
+
+
 void GameObject::SetModel(const std::string& name) {
     m_model = AssetManager::GetModelByIndex(AssetManager::GetModelIndexByName(name.c_str()));
     if (m_model) {
@@ -76,8 +81,10 @@ void GameObject::SetModel(const std::string& name) {
             meshRenderingInfo.meshIndex = meshIndex;
             meshRenderingInfo.materialIndex = AssetManager::GetMaterialIndexByName(DEFAULT_MATERIAL_NAME);
         }
+        m_meshNodes.InitFromModel(m_model);
     }
     else {
+        m_meshNodes.CleanUp();
         std::cout << "Failed to set model '" << name << "', it does not exist.\n";
     }
 }
@@ -148,6 +155,8 @@ bool GameObject::IsSelected() {
     return m_selected;
 }
 
+#include "Input/Input.h"
+
 void GameObject::UpdateRenderItems() {
     m_renderItems.clear();
     m_renderItemsBlended.clear();
@@ -155,31 +164,111 @@ void GameObject::UpdateRenderItems() {
     m_renderItemsHairTopLayer.clear();
     m_renderItemsHairBottomLayer.clear();
 
-    for (MeshRenderingInfo& meshRenderingInfo : m_meshRenderingInfoSet) {
-        Material* material = AssetManager::GetMaterialByIndex(meshRenderingInfo.materialIndex);
+    static float rot = 0;
+    rot += 1 / 60.0f;
+
+    Transform transform;
+    transform.rotation.x = rot;
+    m_meshNodes.SetTransformByMeshName("Yamaha_Keyboard.Cover", transform);
+
+    m_meshNodes.UpdateRenderItems(GetModelMatrix());
+
+    /*
+    for (int i = 0; i < m_meshNodes.GetNodeCount(); i++) {
+
+        Material* material = m_meshNodes.GetMaterial(i);
         if (!material) continue;
+
+        //material = AssetManager::GetMaterialByName("Piano0");
+
+        glm::mat4 meshModelMatrix = m_meshNodes.GetModelMatrix(i);
+        int32_t meshIndex = m_meshNodes.GetGlobalMeshIndex(i);
+
+        Mesh* mesh = AssetManager::GetMeshByIndex(meshIndex);
 
         RenderItem renderItem;
         renderItem.objectType = (int)ObjectType::GAME_OBJECT;
+
         renderItem.modelMatrix = GetModelMatrix();
+        if (!Input::KeyDown(HELL_KEY_T)) {
+            renderItem.modelMatrix = GetModelMatrix() * meshModelMatrix;
+        }
+
+        if (Input::KeyDown(HELL_KEY_M)) {
+            uint64_t meshBvhId = mesh->meshBvhId;// AssetManager::GetMeshByIndex(renderItem.meshIndex)->meshBvhId;
+            BVH::RenderMesh(meshBvhId, BLUE, renderItem.modelMatrix);
+            //std::cout << mesh->GetName() << ": " << mesh->meshBvhId << "\n";
+        }
+
         renderItem.inverseModelMatrix = glm::inverse(renderItem.modelMatrix);
-        renderItem.meshIndex = meshRenderingInfo.meshIndex;
+        renderItem.meshIndex = meshIndex;
         renderItem.baseColorTextureIndex = material->m_basecolor;
         renderItem.normalMapTextureIndex = material->m_normal;
         renderItem.rmaTextureIndex = material->m_rma;
         Util::PackUint64(m_objectId, renderItem.objectIdLowerBit, renderItem.objectIdUpperBit);
         Util::UpdateRenderItemAABB(renderItem);
 
-        BlendingMode blendingMode = meshRenderingInfo.blendingMode;
-        switch (blendingMode) {
-            case BlendingMode::NONE: m_renderItems.push_back(renderItem); break;
-            case BlendingMode::BLENDED: m_renderItemsBlended.push_back(renderItem); break;
-            case BlendingMode::ALPHA_DISCARDED: m_renderItemsAlphaDiscarded.push_back(renderItem); break;
-            case BlendingMode::HAIR_TOP_LAYER: m_renderItemsHairTopLayer.push_back(renderItem); break;
-            case BlendingMode::HAIR_UNDER_LAYER: m_renderItemsHairBottomLayer.push_back(renderItem); break;
-            default: break;
-        }
-    }
+        RenderDataManager::SubmitRenderItem(renderItem);
+
+    }*/
+
+
+
+
+
+    //for (uint32_t meshIndex : m_model->GetMeshIndices()) {
+    //
+    //    Material* material = AssetManager::GetDefaultMaterial();
+    //    if (!material) continue;
+    //
+    //    RenderItem renderItem;
+    //    renderItem.objectType = (int)ObjectType::GAME_OBJECT;
+    //    renderItem.modelMatrix = GetModelMatrix();
+    //    renderItem.inverseModelMatrix = glm::inverse(renderItem.modelMatrix);
+    //    renderItem.meshIndex = meshIndex;
+    //    renderItem.baseColorTextureIndex = material->m_basecolor;
+    //    renderItem.normalMapTextureIndex = material->m_normal;
+    //    renderItem.rmaTextureIndex = material->m_rma;
+    //    Util::PackUint64(m_objectId, renderItem.objectIdLowerBit, renderItem.objectIdUpperBit);
+    //    Util::UpdateRenderItemAABB(renderItem);
+    //
+    //    RenderDataManager::SubmitRenderItem(renderItem);
+    //
+    //    //BlendingMode blendingMode = meshRenderingInfo.blendingMode;
+    //    //switch (blendingMode) {
+    //    //    case BlendingMode::NONE: m_renderItems.push_back(renderItem); break;
+    //    //
+    //}
+
+    //for (MeshRenderingInfo& meshRenderingInfo : m_meshRenderingInfoSet) {
+    //    Material* material = AssetManager::GetMaterialByIndex(meshRenderingInfo.materialIndex);
+    //    if (!material) continue;
+    //
+    //    RenderItem renderItem;
+    //    renderItem.objectType = (int)ObjectType::GAME_OBJECT;
+    //    renderItem.modelMatrix = GetModelMatrix();
+    //    renderItem.inverseModelMatrix = glm::inverse(renderItem.modelMatrix);
+    //    renderItem.meshIndex = meshRenderingInfo.meshIndex;
+    //    renderItem.baseColorTextureIndex = material->m_basecolor;
+    //    renderItem.normalMapTextureIndex = material->m_normal;
+    //    renderItem.rmaTextureIndex = material->m_rma;
+    //    Util::PackUint64(m_objectId, renderItem.objectIdLowerBit, renderItem.objectIdUpperBit);
+    //    Util::UpdateRenderItemAABB(renderItem);
+    //
+    //    BlendingMode blendingMode = meshRenderingInfo.blendingMode;
+    //    switch (blendingMode) {
+    //        case BlendingMode::NONE: m_renderItems.push_back(renderItem); break;
+    //        case BlendingMode::BLENDED: m_renderItemsBlended.push_back(renderItem); break;
+    //        case BlendingMode::ALPHA_DISCARDED: m_renderItemsAlphaDiscarded.push_back(renderItem); break;
+    //        case BlendingMode::HAIR_TOP_LAYER: m_renderItemsHairTopLayer.push_back(renderItem); break;
+    //        case BlendingMode::HAIR_UNDER_LAYER: m_renderItemsHairBottomLayer.push_back(renderItem); break;
+    //        default: break;
+    //    }
+    //}
+}
+
+void GameObject::SubmitRenderItems() {
+    m_meshNodes.SubmitRenderItems();
 }
 
 void GameObject::SetConvexHullsFromModel(const std::string modelName) {

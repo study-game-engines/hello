@@ -10,7 +10,7 @@
 
 namespace World {
 
-    std::vector<RenderItem> g_renderItems;
+    //std::vector<RenderItem> g_renderItems;
     std::vector<RenderItem> g_renderItemsBlended;
     std::vector<RenderItem> g_renderItemsAlphaDiscarded;
     std::vector<RenderItem> g_renderItemsHairTopLayer;
@@ -30,58 +30,9 @@ namespace World {
         std::vector<Wall>& walls = GetWalls();
         std::vector<Window>& windows = GetWindows();
 
-
-      //  Model* model = AssetManager::GetModelByName("WeatherBoard");
-      //  for (uint32_t meshIndex : model->GetMeshIndices()) {
-      //
-      //      Material* material = AssetManager::GetMaterialByName("WeatherBoards1");
-      //
-      //      Transform transform;
-      //      transform.position = glm::vec3(-1.0, 0.0, 0.0f);
-      //
-      //      glm::mat4 modelMatrix = transform.to_mat4();
-      //
-      //      RenderItem renderItem;
-      //      renderItem.objectType = (int)ObjectType::GAME_OBJECT;
-      //      renderItem.modelMatrix = modelMatrix;
-      //      renderItem.inverseModelMatrix = glm::inverse(renderItem.modelMatrix);
-      //      renderItem.meshIndex = meshIndex;
-      //      renderItem.baseColorTextureIndex = material->m_basecolor;
-      //      renderItem.normalMapTextureIndex = material->m_normal;
-      //      renderItem.rmaTextureIndex = material->m_rma;
-      //      Util::PackUint64(0, renderItem.objectIdLowerBit, renderItem.objectIdUpperBit);
-      //      Util::UpdateRenderItemAABB(renderItem);
-      //
-      //      RenderDataManager::SubmitRenderItem(renderItem);
-      //
-      //
-      //      Mesh* mesh = AssetManager::GetMeshByIndex(meshIndex);
-      //
-      //      std::span<Vertex> vertices = AssetManager::GetMeshVerticesSpan(mesh);
-      //      std::span<uint32_t> indices = AssetManager::GetMeshIndicesSpan(mesh);
-      //
-      //
-      //      int i = 0;
-      //      for (Vertex& vertex : vertices) {
-      //         // Renderer::DrawPoint(vertex.position, GREEN);
-      //
-      //         // if (Input::KeyPressed(HELL_KEY_J)) {
-      //         //
-      //         //     std::cout << "Vertex vertex" << std::to_string(i) << ";\n";
-      //         //     std::cout << "vertex" << std::to_string(i) << ".position = glm::vec3(" << vertex.position << ");\n";
-      //         //     std::cout << "vertex" << std::to_string(i) << ".normal = glm::vec3(" << vertex.normal << ");\n";
-      //         //     std::cout << "vertex" << std::to_string(i) << ".tangent = glm::vec3(" << vertex.tangent << ");\n";
-      //         //     std::cout << "vertex" << std::to_string(i) << ".uv = glm::vec2(" << vertex.uv.x << ", " << vertex.uv.y << ");\n";
-      //         //     std::cout << "\n";
-      //         //     i++;
-      //         // }
-      //      }
-      //
-      //  }
-
-
         for (GameObject& gameObject : gameObjects) {
-            gameObject.UpdateRenderItems();
+            //gameObject.UpdateRenderItems();
+            //gameObject.SubmitRenderItems();
 
             // Selected outline?
             if (gameObject.IsSelected()) {
@@ -93,7 +44,7 @@ namespace World {
         }
 
         // Clear global render item vectors
-        g_renderItems.clear();
+        //g_renderItems.clear();
         g_skinnedRenderItems.clear();
         g_renderItemsBlended.clear();
         g_renderItemsAlphaDiscarded.clear();
@@ -101,7 +52,7 @@ namespace World {
         g_renderItemsHairBottomLayer.clear();
 
         for (PickUp& pickUp : pickUps) {
-            g_renderItems.insert(g_renderItems.end(), pickUp.GetRenderItems().begin(), pickUp.GetRenderItems().end());
+            RenderDataManager::SubmitRenderItems(pickUp.GetRenderItems());
         }
 
         for (Decal& decal : decals) {
@@ -128,7 +79,7 @@ namespace World {
 
         // Trees
         for (Tree& tree : trees) {
-            g_renderItems.insert(g_renderItems.end(), tree.GetRenderItems().begin(), tree.GetRenderItems().end());
+            RenderDataManager::SubmitRenderItems(tree.GetRenderItems());
 
             // Selected outline?
             if (tree.IsSelected()) {
@@ -138,8 +89,12 @@ namespace World {
 
         // Update each GameObject and collect render items
         for (GameObject& gameObject : gameObjects) {
+            continue;
+            continue;
+            continue;
+            continue;
             // Merge render items into global vectors
-            g_renderItems.insert(g_renderItems.end(), gameObject.GetRenderItems().begin(), gameObject.GetRenderItems().end());
+            //g_renderItems.insert(g_renderItems.end(), gameObject.GetRenderItems().begin(), gameObject.GetRenderItems().end());
             g_renderItemsBlended.insert(g_renderItemsBlended.end(), gameObject.GetRenderItemsBlended().begin(), gameObject.GetRenderItemsBlended().end());
             g_renderItemsAlphaDiscarded.insert(g_renderItemsAlphaDiscarded.end(), gameObject.GetRenderItemsAlphaDiscarded().begin(), gameObject.GetRenderItemsAlphaDiscarded().end());
             g_renderItemsHairTopLayer.insert(g_renderItemsHairTopLayer.end(), gameObject.GetRenderItemsHairTopLayer().begin(), gameObject.GetRenderItemsHairTopLayer().end());
@@ -148,20 +103,11 @@ namespace World {
 
         // Lights
         for (Light& light : lights) {
-            g_renderItems.insert(g_renderItems.end(), light.GetRenderItems().begin(), light.GetRenderItems().end());
+            RenderDataManager::SubmitRenderItems(light.GetRenderItems());
         }
 
         for (BulletCasing& bulletCasing : bulletCasings) {
-
-            RenderItem& renderItem = g_renderItems.emplace_back();
-            renderItem.modelMatrix = bulletCasing.GetModelMatrix();
-            renderItem.inverseModelMatrix = inverse(renderItem.modelMatrix);
-
-            Material* material = AssetManager::GetMaterialByIndex(bulletCasing.GetMaterialIndex());
-            renderItem.baseColorTextureIndex = material->m_basecolor;
-            renderItem.rmaTextureIndex = material->m_rma;
-            renderItem.normalMapTextureIndex = material->m_normal;
-            renderItem.meshIndex = bulletCasing.GetMeshIndex();
+            bulletCasing.SubmitRenderItem();
         }
 
         RenderDataManager::ResetBaseSkinnedVertex();
@@ -206,7 +152,7 @@ namespace World {
         }
     }
 
-    std::vector<RenderItem>& GetRenderItems() { return g_renderItems; }
+    //std::vector<RenderItem>& GetRenderItems() { return g_renderItems; }
     std::vector<RenderItem>& GetRenderItemsBlended() { return g_renderItemsBlended; }
     std::vector<RenderItem>& GetRenderItemsAlphaDiscarded() { return g_renderItemsAlphaDiscarded; }
     std::vector<RenderItem>& GetRenderItemsHairTopLayer() { return g_renderItemsHairTopLayer; }

@@ -134,6 +134,7 @@ namespace Editor {
 
     void OpenHouseEditor() {
         Audio::PlayAudio(AUDIO_SELECT, 1.0f);
+        World::DisableOcean();
 
         if (Editor::GetEditorMode() != EditorMode::HOUSE_EDITOR) {
 

@@ -239,9 +239,9 @@ namespace RenderDataManager {
         g_instanceData.clear();
         auto& set = g_drawCommandsSet;
 
-        std::vector<RenderItem> renderItems;
-        renderItems.insert(renderItems.end(), g_renderItems.begin(), g_renderItems.end());
-        renderItems.insert(renderItems.end(), World::GetRenderItems().begin(), World::GetRenderItems().end());
+        //std::vector<RenderItem> renderItems;
+        //renderItems.insert(renderItems.end(), g_renderItems.begin(), g_renderItems.end());
+        //renderItems.insert(renderItems.end(), World::GetRenderItems().begin(), World::GetRenderItems().end());
 
         // Clear any commands from last frame
         for (int i = 0; i < 4; i++) {
@@ -260,7 +260,7 @@ namespace RenderDataManager {
         std::vector<RenderItem>& hairTopLayer = World::GetRenderItemsHairTopLayer();
         std::vector<RenderItem>& hairBottomLayer = World::GetRenderItemsHairBottomLayer();
 
-        SortRenderItems(renderItems);
+        SortRenderItems(g_renderItems);
         SortRenderItems(renderItemsBlended);
         SortRenderItems(geometryAlphaDiscarded);
         SortRenderItems(hairTopLayer);
@@ -271,7 +271,7 @@ namespace RenderDataManager {
             if (!viewport->IsVisible()) continue;
 
             Frustum& frustum = viewport->GetFrustum();
-            CreateDrawCommands(set.geometry[i], renderItems, frustum, i);
+            CreateDrawCommands(set.geometry[i], g_renderItems, frustum, i);
             CreateDrawCommands(set.geometryBlended[i], renderItemsBlended, frustum, i);
             CreateDrawCommands(set.geometryAlphaDiscarded[i], geometryAlphaDiscarded, frustum, i);
             CreateDrawCommands(set.hairTopLayer[i], hairTopLayer, frustum, i);
@@ -294,8 +294,8 @@ namespace RenderDataManager {
 
             Frustum flashLightFrustum = player->GetFlashlightFrustum();
 
-            // Build multidraw commands for regular geometry
-            CreateDrawCommands(g_flashLightShadowMapDrawInfo.flashlightShadowMapGeometry[i], renderItems, flashLightFrustum, i);
+            // Build multi draw commands for regular geometry
+            CreateDrawCommands(g_flashLightShadowMapDrawInfo.flashlightShadowMapGeometry[i], g_renderItems, flashLightFrustum, i);
 
             // Frustum cull the heightmap chunks
             std::vector<HeightMapChunk>& chunks = World::GetHeightMapChunks();
@@ -397,7 +397,11 @@ namespace RenderDataManager {
         // g_renderItems is already sorted by this point
         // but if anything breaks, check here! (maybe you re-ordered things)
         for (const RenderItem& renderItem : g_renderItems) {
-            if (frustum->IntersectsAABBFast(renderItem)) {
+
+            //AABB aabb(renderItem.aabbMin, renderItem.aabbMax);
+            //if (frustum->IntersectsAABB(aabb)) {
+            
+            if (renderItem.castShadows && frustum->IntersectsAABBFast(renderItem)) {
                 g_instanceData.push_back(renderItem);
             }
         }

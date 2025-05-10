@@ -30,7 +30,13 @@ void Player::UpdateFlashlight(float deltaTime) {
     float distanceToRayHit = glm::distance(m_rayHitPosition, GetCameraPosition());
 
     // Centered pos/dir
-    glm::vec3 centeredFlashlightPosition = GetCameraPosition() - GetCameraForward() * glm::vec3(0.2f);
+    glm::vec3 centeredFlashlightPosition = GetCameraPosition();
+
+    //centeredFlashlightPosition += GetCameraUp() * glm::vec3(-0.01f);
+    //centeredFlashlightPosition += GetCameraRight() * glm::vec3(0.01f);
+    //centeredFlashlightPosition += GetCameraForward() * glm::vec3(0.05f);
+    centeredFlashlightPosition += GetCameraForward() * glm::vec3(-0.15f);
+
     glm::vec3 centeredFlashlightDirection = GetCameraForward();
 
     // Offset pos/dir
@@ -58,6 +64,8 @@ void Player::UpdateFlashlight(float deltaTime) {
     float interSpeed = 40;
     m_flashlightPosition = Util::LerpVec3(m_flashlightPosition, flashlightPositionTarget, deltaTime, interSpeed);
     m_flashlightDirection = Util::LerpVec3(m_flashlightDirection, flashlightDirectionTarget, deltaTime, interSpeed);
+
+    m_flashlightPosition = flashlightPositionTarget;
 
     // Projection view matrix
     float lightRadius = 10.0f;

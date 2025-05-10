@@ -318,7 +318,7 @@ namespace OpenGLRenderer {
         }
 
 
-        Material* material = AssetManager::GetMaterialByName("WeatherBoards1");
+        Material* material = AssetManager::GetMaterialByName("WeatherBoards0");
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, AssetManager::GetTextureByIndex(material->m_basecolor)->GetGLTexture().GetHandle());
         glActiveTexture(GL_TEXTURE1);

@@ -142,15 +142,15 @@ namespace Audio {
 
 
     uint64_t LoopAudioIfNotPlaying(const std::string& filename, float volume) {
-        // Check if the is already playing
+        // Check if an instance of this filename is already looping
         for (const auto& pair : g_playingAudio) {
             const AudioHandle& handle = pair.second;
-            if (handle.filename == filename && handle.state != AudioHandle::State::LOOPING) {
-                return 0;
+            if (handle.filename == filename && handle.state == AudioHandle::State::LOOPING) {
+                return 0; // Already looping, so do nothing
             }
         }
 
-        // If not, play it
+        // If not looping, start it
         return LoopAudio(filename, volume);
     }
 

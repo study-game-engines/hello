@@ -37,7 +37,7 @@ namespace AssetManager {
 
     // Mesh
     std::vector<Mesh>& GetMeshes();
-    int CreateMesh(const std::string& name, std::vector<Vertex>& vertices, std::vector<uint32_t>& indices, glm::vec3 aabbMin, glm::vec3 aabbMax);
+    int CreateMesh(const std::string& name, std::vector<Vertex>& vertices, std::vector<uint32_t>& indices, glm::vec3 aabbMin, glm::vec3 aabbMax, int parentIndex, glm::mat4 localTransform, glm::mat4 inverseBindTransform);
     int CreateMesh(const std::string& name, std::vector<Vertex>& vertices, std::vector<uint32_t>& indices);
     int GetMeshIndexByName(const std::string& name);
     int GetMeshIndexByName(const std::string& name);

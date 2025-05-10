@@ -21,6 +21,7 @@ struct Player {
     const bool HasControl();
     const bool IsLocal() const;
     const bool IsOnline() const;
+    const glm::vec3& GetFootPosition() const;
     const glm::mat4& GetProjectionMatrix() const;
     const glm::mat4& GetViewMatrix() const;
     const glm::mat4& GetInverseViewMatrix() const;
@@ -105,7 +106,7 @@ struct Player {
     //bool IsOverlappingLadder();
     //bool IsAtShop();
     bool IsPlayingPiano();
-    bool IsUnderWater();
+    //bool IsUnderWater();
 
     // Input
     int32_t GetKeyboardIndex();
@@ -327,6 +328,7 @@ private:
 
         glm::mat4 m_viewWeaponCameraMatrix;
 
+
         float m_yVelocity = 0;
 
         float m_weaponSwayX = 0;
@@ -334,7 +336,7 @@ private:
 
         // Swimming
         float m_swimVerticalAcceleration = 0.0f;
-        bool m_underWater = false;
+        //bool m_underWater = false;
 
     private:
 

@@ -227,6 +227,7 @@ namespace Editor {
 
     void OpenSectorEditor() {
         Audio::PlayAudio(AUDIO_SELECT, 1.0f);
+        World::EnableOcean();
 
         if (IsEditorClosed()) {
             OpenEditor();

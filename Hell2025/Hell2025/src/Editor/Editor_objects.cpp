@@ -39,6 +39,10 @@ namespace Editor {
             }
         }
 
+        ObjectType hovererdType = Editor::GetHoveredObjectType();
+
+        //std::cout << "Hover: "<< Util::ObjectTypeToString(hovererdType) << "\n";
+
         // Find parents if neccessary
         if (GetHoveredObjectType() == ObjectType::DOOR_FRAME) {
             Door* door = World::GetDoorByDoorFrameObjectId(GetHoveredObjectId());
@@ -47,8 +51,12 @@ namespace Editor {
                 SetHoveredObjectId(door->GetObjectId());
             }
         }
-        if (GetHoveredObjectType() == ObjectType::PIANO_KEY) {
-            Piano* piano = World::GetPianoByPianoKeyObjectId(GetHoveredObjectId());
+        if (GetHoveredObjectType() == ObjectType::PIANO_TOP_COVER ||
+            GetHoveredObjectType() == ObjectType::PIANO_KEY ||
+            GetHoveredObjectType() == ObjectType::PIANO_SHEET_MUSIC_REST ||
+            GetHoveredObjectType() == ObjectType::PIANO_SHEET_SUSTAIN_PEDAL ||
+            GetHoveredObjectType() == ObjectType::PIANO_KEYBOARD_COVER) {
+            Piano* piano = World::GetPianoByMeshNodeObjectId(GetHoveredObjectId());
             if (piano) {
                 SetHoveredObjectType(ObjectType::PIANO);
                 SetHoveredObjectId(piano->GetObjectId());

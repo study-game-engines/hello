@@ -1,4 +1,6 @@
 #include "Model.h"
+#include "AssetManagement/AssetManager.h"
+#include <stack>
 
 void Model::SetFileInfo(FileInfo fileInfo) {
     m_fileInfo = fileInfo;

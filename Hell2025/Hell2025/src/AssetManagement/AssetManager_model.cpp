@@ -41,10 +41,10 @@ namespace AssetManager {
 
     void LoadModel(Model* model) {
         const FileInfo& fileInfo = model->GetFileInfo();
-        std::string modelPath = "res/models/v2/" + fileInfo.name + "." + fileInfo.ext;
+        std::string modelPath = "res/models/" + fileInfo.name + "." + fileInfo.ext;
         std::string bvhPath = "res/models/bvh/" + fileInfo.name + ".bvh";
         model->m_modelData = File::ImportModelv2(modelPath);
-        //model->m_modelBvhData = File::ImportModelBvh(bvhPath);
+        model->m_modelBvhData = File::ImportModelBvh(bvhPath);
         model->SetLoadingState(LoadingState::LOADING_COMPLETE);
     }
 
@@ -52,13 +52,12 @@ namespace AssetManager {
         model.SetName(model.m_modelData.name);
         model.SetAABB(model.m_modelData.aabbMin, model.m_modelData.aabbMax);
         for (MeshData& meshData : model.m_modelData.meshes) {
-            int meshIndex = CreateMesh(meshData.name, meshData.vertices, meshData.indices, meshData.aabbMin, meshData.aabbMax);
+            int meshIndex = CreateMesh(meshData.name, meshData.vertices, meshData.indices, meshData.aabbMin, meshData.aabbMax, meshData.parentIndex, meshData.localTransform, meshData.inverseBindTransform);
             model.AddMeshIndex(meshIndex);
         }
     }
 
     void ExportMissingModels() {
-        //return;
         // Scan for new obj and fbx and export custom model format
         for (FileInfo& fileInfo : Util::IterateDirectory("res/models_raw", { "obj", "fbx" })) {
             std::string assetPath = "res/models/" + fileInfo.name + ".model";
@@ -66,17 +65,17 @@ namespace AssetManager {
             // If the file exists but timestamps don't match, re-export
             if (Util::FileExists(assetPath)) {
                 uint64_t lastModified = File::GetLastModifiedTime(fileInfo.path);
-                ModelHeader modelHeader = File::ReadModelHeader(assetPath);
+                ModelHeaderV2 modelHeader = File::ReadModelHeaderV2(assetPath);
                 if (modelHeader.timestamp != lastModified) {
                     File::DeleteFile(assetPath);
                     ModelData modelData = AssimpImporter::ImportFbx(fileInfo.path);
-                    File::ExportModel(modelData);
+                    File::ExportModelV2(modelData);
                 }
             }
             // File doesn't even exist yet, so export it
             else {
                 ModelData modelData = AssimpImporter::ImportFbx(fileInfo.path);
-                File::ExportModel(modelData);
+                File::ExportModelV2(modelData);
             }
         }
     }
@@ -91,7 +90,7 @@ namespace AssetManager {
 
             // If the file exists..
             if (Util::FileExists(bvhPath)) {
-                ModelHeader modelHeader = File::ReadModelHeader(modelPath);
+                ModelHeaderV2 modelHeader = File::ReadModelHeaderV2(modelPath);
                 ModelBvhHeader modelBvhHeader = File::ReadModelBvhHeader(bvhPath);
                 
                 // ... but timestamps don't match, then delete the old bvh file and trigger a re-export
@@ -107,7 +106,7 @@ namespace AssetManager {
 
             // Export the bvh from re-imported model data, not the most optimal, but this only happens once when there is no .bvh file
             if (exportRequired) {
-                ModelData modelData = File::ImportModel(modelPath);
+                ModelData modelData = File::ImportModelv2(modelPath);
                 File::ExportModelBvh(modelData);
             }
         }
@@ -123,7 +122,7 @@ namespace AssetManager {
                 continue;
             }
 
-            // Itereate each preloaded MeshBvh and extract the data
+            // Iterate each preloaded MeshBvh and extract the data
             for (int i = 0; i < model.m_modelBvhData.bvhs.size(); i++) {
                 MeshBvh& sourceMeshBvh = model.m_modelBvhData.bvhs[i];
                 uint32_t meshIndex = model.GetMeshIndices()[i];

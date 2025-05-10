@@ -51,9 +51,33 @@ void Player::Update(float deltaTime) {
     if (IsAwaitingSpawn()) Respawn();
 
     // Determine water state
-    m_underWater = GetCameraPosition().y < Ocean::GetWaterHeight() + 0.1f;
-    //m_underWater = false;
+    //m_underWater = World::OceanIsEnabled() && GetCameraPosition().y < Ocean::GetWaterHeight() + 0.1f;
 
+    if (World::HasOcean()) {
+        m_waterState.feetUnderWaterPrevious = m_waterState.feetUnderWater;
+        m_waterState.cameraUnderWaterPrevious = m_waterState.cameraUnderWater;
+        m_waterState.wadingPrevious = m_waterState.wading;
+        m_waterState.swimmingPrevious = m_waterState.swimming;
+        m_waterState.cameraUnderWater = GetCameraPosition().y < Ocean::GetWaterHeight();
+        m_waterState.feetUnderWater = GetFootPosition().y < Ocean::GetWaterHeight();
+        m_waterState.heightAboveWater = (GetFootPosition().y > Ocean::GetWaterHeight()) ? (GetFootPosition().y - Ocean::GetWaterHeight()) : 0.0f;
+        m_waterState.heightBeneathWater = (GetFootPosition().y < Ocean::GetWaterHeight()) ? (Ocean::GetWaterHeight() - GetFootPosition().y) : 0.0f;
+        m_waterState.swimming = m_waterState.cameraUnderWater && IsMoving();
+        m_waterState.wading = !m_waterState.cameraUnderWater && m_waterState.feetUnderWater && IsMoving();
+    } 
+    else {
+        m_waterState.feetUnderWaterPrevious = false;
+        m_waterState.cameraUnderWaterPrevious = false;
+        m_waterState.wadingPrevious = false;
+        m_waterState.swimmingPrevious = false;
+        m_waterState.cameraUnderWater = false;
+        m_waterState.feetUnderWater = false;
+        m_waterState.heightAboveWater = 0.0f;
+        m_waterState.heightBeneathWater = 0.0f;
+        m_waterState.swimming = false;
+        m_waterState.wading = false;
+    }
+ 
     UpdateMovement(deltaTime);
     UpdateCharacterController();
     UpdateHeadBob(deltaTime);
@@ -182,6 +206,10 @@ const glm::vec3& Player::GetCameraUp() const {
 
 const int32_t Player::GetViewportIndex() const {
     return m_viewportIndex;
+}
+
+const glm::vec3& Player::GetFootPosition() const {
+    return m_position;
 }
 
 Camera& Player::GetCamera() {

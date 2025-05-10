@@ -76,13 +76,13 @@ void Player::UpdateInteract() {
 
     if (!ViewportIsVisible()) return;
 
-    // If ray hit object is interactable, store it
-    if (World::ObjectTypeIsInteractable(m_rayHitObjectType, m_rayhitObjectId, GetCameraPosition())) {
+    // If ray hit object is intractable, store it
+    if (World::ObjectTypeIsInteractable(m_rayHitObjectType, m_rayhitObjectId, GetCameraPosition(), m_rayHitPosition)) {
         m_interactObjectType = m_rayHitObjectType;
         m_interactObjectId = m_rayhitObjectId;
     }
 
-    // Overwrite with PhysX overlap test if an overlap with interactle object is found
+    // Overwrite with PhysX overlap test if an overlap with interact object is found
     if (m_rayHitObjectType != ObjectType::NONE) {
 
         glm::vec3 spherePosition = m_rayHitPosition;
@@ -100,7 +100,7 @@ void Player::UpdateInteract() {
     
         if (overlapReport.hits.size()) {
             PhysicsUserData userData = overlapReport.hits[0].userData;
-            if (World::ObjectTypeIsInteractable(userData.objectType, userData.objectId, GetCameraPosition())) {
+            if (World::ObjectTypeIsInteractable(userData.objectType, userData.objectId, GetCameraPosition(), m_rayHitPosition)) {
                 if (userData.objectType != ObjectType::DOOR) {
                     m_interactObjectType = userData.objectType;
                     m_interactObjectId = userData.objectId;
@@ -128,6 +128,25 @@ void Player::UpdateInteract() {
                 door->Interact();
             }
         }
+        // Piano stuff
+        if (m_interactObjectType == ObjectType::PIANO_KEYBOARD_COVER) {
+            Piano* piano = World::GetPianoByMeshNodeObjectId(m_interactObjectId);
+            if (piano) {
+                piano->InteractWithKeyboardCover();
+            }
+        }
+        if (m_interactObjectType == ObjectType::PIANO_SHEET_MUSIC_REST) {
+            Piano* piano = World::GetPianoByMeshNodeObjectId(m_interactObjectId);
+            if (piano) {
+                piano->InteractWithSheetMusicRestCover();
+            }
+        }
+        if (m_interactObjectType == ObjectType::PIANO_TOP_COVER) {
+            Piano* piano = World::GetPianoByMeshNodeObjectId(m_interactObjectId);
+            if (piano) {
+                piano->InteractWithTopCover();
+            }
+        }
     }
 
     if (PressingInteract()) {
@@ -152,9 +171,13 @@ void Player::UpdateInteract() {
             // Sit at 
             if (result.objectType == ObjectType::PIANO) {
                 for (Piano& potentialPiano : World::GetPianos()) {
-                    if (potentialPiano.PianoBodyPartKeyExists(result.objectId)) {
-                        SitAtPiano(potentialPiano.GetObjectId());
-                    }
+                    //if (potentialPiano.PianoBodyPartKeyExists(result.objectId)) {
+                    //    SitAtPiano(potentialPiano.GetObjectId());
+                    //}
+
+                    // FIX MEEEEEEE
+                    // FIX MEEEEEEE
+                    // FIX MEEEEEEE
                 }
             }
         }

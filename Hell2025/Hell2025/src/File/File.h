@@ -10,9 +10,11 @@ namespace File {
 
     // Models
     void ExportModel(const ModelData& modelData);
+    void ExportModelV2(const ModelData& modelData);
     ModelData ImportModel(const std::string& filepath);
     ModelData ImportModelv2(const std::string& filepath);
     ModelHeader ReadModelHeader(const std::string& filepath);
+    ModelHeaderV2 ReadModelHeaderV2(const std::string& filepath);
 
     // Skinned Models
     void ExportSkinnedModel(const SkinnedModelData& modelData);
@@ -23,7 +25,7 @@ namespace File {
     void ExportModelBvh(const ModelData& modelData);
     ModelBvhData ImportModelBvh(const std::string& filepath);
     ModelBvhHeader ReadModelBvhHeader(const std::string& filepath);
-    //MeshBvhHeader ReadMeshBvhHeader(const std::string& filepath);
+    MeshBvhHeader ReadMeshBvhHeader(const std::string& filepath);
 
     // I/O
     void DeleteFile(const std::string& filePath);

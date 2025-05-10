@@ -82,7 +82,11 @@ enum class ObjectType {
     WALL_SEGMENT,
     WINDOW,
     PIANO,
-    PIANO_KEY
+    PIANO_KEY,
+    PIANO_KEYBOARD_COVER,
+    PIANO_TOP_COVER,
+    PIANO_SHEET_MUSIC_REST,
+    PIANO_SHEET_SUSTAIN_PEDAL,
 };
 
 enum class Axis {
@@ -284,4 +288,11 @@ enum class RendererOverrideState {
     CAMERA_NDOTL,
     TILE_HEATMAP,
     STATE_COUNT,
+};
+
+enum class OpenState {
+    OPEN,
+    OPENING,
+    CLOSED,
+    CLOSING
 };

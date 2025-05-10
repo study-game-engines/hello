@@ -11,6 +11,9 @@
 namespace OpenGLRenderer {
 
     void OceanPass() {
+        if (!World::HasOcean()) {
+            return;
+        }
 
         const ViewportData& viewportData = RenderDataManager::GetViewportData()[0];
 
@@ -73,7 +76,6 @@ namespace OpenGLRenderer {
 
         // Cleanup
         glCullFace(GL_BACK);
-
 
         // Composite the water result atop the lighting texture
         compositeShader->Bind();

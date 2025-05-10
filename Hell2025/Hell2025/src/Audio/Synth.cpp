@@ -49,7 +49,7 @@ namespace Synth {
         fluid_synth_program_select(g_synth, 1, sfid1, 0, 0);
         fluid_synth_program_select(g_synth, 2, sfid2, 0, 0);
 
-        fluid_synth_set_gain(g_synth, 3.0);
+        fluid_synth_set_gain(g_synth, 4.0);
     }
 
     int LoadSoundFont(const std::string& filename) {

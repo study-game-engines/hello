@@ -107,6 +107,9 @@ namespace World {
             }
             BVH::UpdateSceneBvh(viewportBvhData.sceneBvhId, viewportBvhData.instances);
         }
+
+        //BVH::RenderSceneBvh(g_viewportBvhData[0].sceneBvhId, BLUE);
+        
     }
 
     BvhRayResult ClosestHit(glm::vec3 rayOrigin, glm::vec3 rayDir, float maxRayDistance, int viewportIndex) {

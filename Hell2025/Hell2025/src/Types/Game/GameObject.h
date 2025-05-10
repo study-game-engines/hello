@@ -2,6 +2,7 @@
 #include "HellTypes.h"
 #include "CreateInfo.h"
 #include "Physics/Types/RigidDynamic.h"
+#include "Types/Renderer/MeshNodes.h"
 #include "Types/Renderer/Model.h"
 
 struct GameObject {
@@ -13,6 +14,8 @@ struct GameObject {
     Model* m_model = nullptr;
     Transform m_transform;
     std::vector<MeshRenderingInfo> m_meshRenderingInfoSet;
+
+    MeshNodes m_meshNodes;
 
     void CleanUp();
     void Update(float deltaTime);
@@ -27,6 +30,7 @@ struct GameObject {
     void SetMeshBlendingModes(BlendingMode blendingMode);
     void PrintMeshNames();
     void UpdateRenderItems();
+    void SubmitRenderItems();
     void SetConvexHullsFromModel(const std::string modelName);
     
     void BeginFrame();

@@ -125,6 +125,8 @@ void main() {
 
     vec3 worldSpacePosition = texture(WorldPositionTexture, uv_screenspace).rgb;
 
+    float fragDistance = distance(viewPos, worldSpacePosition);
+
     // Tile params
     uint tileIndex = gl_WorkGroupID.y * u_tileXCount + gl_WorkGroupID.x;
 	uint lightCount = tileData[tileIndex].lightCount;
@@ -144,6 +146,8 @@ void main() {
        
         float shadow = ShadowCalculation(lightIndex, lightPosition, lightRadius, worldSpacePosition.xyz, viewPos, normal.xyz);
 
+//        shadow = 1;
+
         directLighting += GetDirectLighting(lightPosition, lightColor, lightRadius, lightStrength, normal.xyz, worldSpacePosition.xyz, gammaBaseColor.rgb, roughness, metallic, viewPos) * shadow;
      
         // Subsurface scattering
@@ -160,9 +164,13 @@ void main() {
     for (int i = 0; i < 4; i++) {
 
     
+        if (fragDistance < 0.1) {
+            continue;
+        }
+
         float flashlightModifer = viewportData[i].flashlightModifer;
 
-        if (flashlightModifer > 0.1) { 
+        if (flashlightModifer > 0.05) { 
 
             mat4 flashlightProjectionView = viewportData[i].flashlightProjectionView;
             vec4 flashlightDir = viewportData[i].flashlightDir;
@@ -174,13 +182,20 @@ void main() {
 		    vec3 spotLightPos = flashlightPosition.xyz;
           //  spotLightPos -= playerForward * vec3(0.25);
 
+          
+            vec3 camightRight = normalize(viewportData[i].inverseView[0].xyz);
+
 		    vec3 spotLightDir = flashlightDir.xyz;
+
             vec3 spotLightColor = vec3(0.9, 0.95, 1.1);
+            //spotLightColor - vec3(1.00, 0.7799999713897705, 0.5289999842643738);
+
+
             float fresnelReflect = 0.9;
             float spotLightRadius = 50.0;
-            float spotLightStregth = 2.0;        
-            float innerAngle = cos(radians(00.0 * flashlightModifer));
-            float outerAngle = cos(radians(30.0));         
+            float spotLightStregth = 3.0;        
+            float innerAngle = cos(radians(5.0 * flashlightModifer));
+            float outerAngle = cos(radians(25.0));         
             mat4 lightProjectionView = flashlightProjectionView;
             vec3 cookie = ApplyCookie(lightProjectionView, worldSpacePosition.xyz, spotLightPos, spotLightColor, 10, FlashlightCookieTexture);
             vec3 spotLighting = GetSpotlightLighting(spotLightPos, spotLightDir, spotLightColor, spotLightRadius, spotLightStregth, innerAngle, outerAngle, normal.xyz, worldSpacePosition.xyz, gammaBaseColor.rgb, roughness, metallic, flashlightViewPos, lightProjectionView);
@@ -190,12 +205,35 @@ void main() {
             //FlashlighShadowMapArrayTexture
         
             spotLighting *= vec3(1 - shadow);
-          //  spotLighting *= cookie * cookie * 5 * spotLightColor;
+            spotLighting *= cookie *  spotLightColor;
           //  spotLighting *= cookie * spotLightColor;
             directLighting += vec3(spotLighting) * flashlightModifer;
         }
     }
 
+    // Self light hack (RE7 style) 
+    if (viewportData[viewportIndex].flashlightModifer > 0.1) { 
+        vec3 spotLightPos = viewPos;
+        vec3 spotLightDir = viewportData[viewportIndex].flashlightDir.xyz;
+        vec3 spotLightColor = vec3(0.9, 0.95, 1.1);
+
+        spotLightColor - vec3(1.00, 0.7799999713897705, 0.5289999842643738);
+
+        float spotLightRadius = 0.1;
+        float spotLightStregth = 20.0;        
+        float innerAngle = cos(radians(00.0 * viewportData[viewportIndex].flashlightModifer));
+        float outerAngle = cos(radians(40.0));   
+
+
+        mat4 lightProjectionView = viewportData[viewportIndex].flashlightProjectionView;
+        vec4 flashlightDir = viewportData[viewportIndex].flashlightDir;
+        vec4 flashlightPosition = viewportData[viewportIndex].flashlightPosition;
+        vec3 flashlightViewPos = viewportData[viewportIndex].inverseView[3].xyz;
+
+
+        vec3 re7Lighting = GetSpotlightLighting(spotLightPos, spotLightDir, spotLightColor, spotLightRadius, spotLightStregth, innerAngle, outerAngle, normal.xyz, worldSpacePosition.xyz, gammaBaseColor.rgb, roughness, metallic, flashlightViewPos, lightProjectionView);
+        directLighting += re7Lighting;
+    }
 
     // Ambient light
     vec3 amibentLightColor = vec3(1, 0.98, 0.94);

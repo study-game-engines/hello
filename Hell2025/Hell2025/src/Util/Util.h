@@ -15,6 +15,7 @@ namespace Util {
     void UnpackUint64(uint32_t xValue, uint32_t yValue, uint64_t& out);
 
     // Math
+    glm::vec3 GetMidPoint(const glm::vec3& a, const glm::vec3 b);
     float EulerYRotationBetweenTwoPoints(glm::vec3 a, glm::vec3 b);
     glm::mat4 RotationMatrixFromForwardVector(glm::vec3 forward, glm::vec3 worldForward, glm::vec3 worldUp);
     glm::vec2 ComputeCentroid2D(const std::vector<glm::vec2>& points);
@@ -123,6 +124,7 @@ namespace Util {
     AnimatedTransform BlendMultipleTransforms(const std::vector<AnimatedTransform>& transforms, const std::vector<float>& weights);
 
     // Conversions
+    std::string OpenStateToString(OpenState mode);
     std::string LightTypeToString(LightType type);
     std::string PickUpTypeToString(PickUpType type);
     std::string BlendingModeToString(BlendingMode mode);

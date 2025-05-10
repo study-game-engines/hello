@@ -15,6 +15,7 @@
 #include "World/SectorManager.h"
 
 namespace World {
+
     std::vector<Light> g_lights;
     std::vector<AnimatedGameObject> g_animatedGameObjects;
     std::vector<Bullet> g_bullets;
@@ -44,6 +45,10 @@ namespace World {
     uint32_t g_mapDepth = 0;
     std::string g_sectorNames[MAX_MAP_WIDTH][MAX_MAP_DEPTH];
     std::string g_heightMapNames[MAX_MAP_WIDTH][MAX_MAP_DEPTH];
+
+    struct WorldState {
+        bool oceanEnabled = true;
+    } g_worldState;
 
     void RecreateHieghtMapChunks();
     void AddSectorAtLocation(SectorCreateInfo& sectorCreateInfo, SpawnOffset spawnOffset);
@@ -269,6 +274,7 @@ namespace World {
         RecreateHieghtMapChunks();
         std::cout << "Loaded empty world\n";
     }
+
     void LoadSingleSector(SectorCreateInfo* sectorCreateInfo) {
         if (!sectorCreateInfo) return;
 
@@ -284,6 +290,15 @@ namespace World {
         RecreateHieghtMapChunks();
 
         std::cout << "Loaded Single Sector: '" << g_sectorNames[0][0] << "' with height map '" << g_heightMapNames[0][0] << "'\n";
+
+
+        // TEST REMOVE ME!
+        g_gameObjects.clear();
+        GameObjectCreateInfo createInfo;
+        createInfo.position = glm::vec3(37, 10.3f, 24);
+        createInfo.rotation.y = -HELL_PI / 2;
+        createInfo.modelName = "Piano";
+        AddGameObject(createInfo);
     }
 
     void LoadSingleHouse(HouseCreateInfo* houseCreateInfo) {
@@ -424,9 +439,11 @@ namespace World {
         return nullptr;
     }
 
-    Piano* GetPianoByPianoKeyObjectId(uint64_t objectId) {
+    Piano* GetPianoByMeshNodeObjectId(uint64_t objectId) {
         for (Piano& piano : g_pianos) {
-            if (piano.PianoKeyExists(objectId)) {
+
+            const MeshNodes& meshNodes = piano.GetMeshNodes();
+            if (meshNodes.HasNodeWithObjectId(objectId)) {
                 return &piano;
             }
         }
@@ -674,6 +691,18 @@ namespace World {
         wall.Init(createInfo);
 
         return wall.GetObjectId();
+    }
+
+    void EnableOcean() {
+        g_worldState.oceanEnabled = true;
+    }
+
+    void DisableOcean() {
+        g_worldState.oceanEnabled = false;
+    }
+
+    bool HasOcean() {
+        return g_worldState.oceanEnabled;
     }
 
     void AddWindow(WindowCreateInfo createInfo, SpawnOffset spawnOffset) {

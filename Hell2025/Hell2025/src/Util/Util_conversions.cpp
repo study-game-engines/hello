@@ -23,7 +23,7 @@ namespace Util {
             case PickUpType::SHOTGUN_AMMO_SLUG:     return "SHOTGUN_AMMO_SLUG";
             case PickUpType::AKS74U:                return "AKS74U";
             case PickUpType::REMINGTON_870:         return "REMINGTON_870";
-        default: return "UNKNOWN";
+            default: return "UNKNOWN";
         }
     }
 
@@ -31,7 +31,7 @@ namespace Util {
         if (str == "SHOTGUN_AMMO_BUCKSHOT") return PickUpType::SHOTGUN_AMMO_BUCKSHOT;
         if (str == "SHOTGUN_AMMO_SLUG")     return PickUpType::SHOTGUN_AMMO_SLUG;
         if (str == "AKS74U")                return PickUpType::AKS74U;
-        if (str == "REMINGTON_870")         return PickUpType::REMINGTON_870;        
+        if (str == "REMINGTON_870")         return PickUpType::REMINGTON_870;
         return PickUpType::UNDEFINED;
     }
 
@@ -53,25 +53,39 @@ namespace Util {
         }
     }
 
+    std::string OpenStateToString(OpenState mode) {
+        switch (mode) {
+            case OpenState::OPEN:               return "OPEN";
+            case OpenState::OPENING:            return "OPENING";
+            case OpenState::CLOSED:             return "CLOSED";
+            case OpenState::CLOSING:            return "CLOSING";
+            default: return "UNKNOWN";
+        }
+    }
+
     std::string ObjectTypeToString(ObjectType type) {
         switch (type) {
-            case ObjectType::NONE:          return "NONE";
-            case ObjectType::DECAL:         return "DECAL";
-            case ObjectType::DOOR:          return "DOOR";
-            case ObjectType::DOOR_FRAME:    return "DOOR_FRAME";
-            case ObjectType::GAME_OBJECT:   return "GAME_OBJECT";
-            case ObjectType::HEIGHT_MAP:    return "HEIGHT_MAP";
-            case ObjectType::PLANE:   return "HOUSE_PLANE";
-            case ObjectType::LIGHT:         return "LIGHT";
-            case ObjectType::PICK_UP:       return "PICK_UP";
-            case ObjectType::PIANO:         return "PIANO";
-            case ObjectType::PIANO_KEY:     return "PIANO_KEY";
-            case ObjectType::TREE:          return "TREE";
-            case ObjectType::UNDEFINED:     return "UNDEFINED";
-            case ObjectType::WALL:          return "WALL";
-            case ObjectType::WALL_SEGMENT:  return "WALL_SEGMENT";
-            case ObjectType::WINDOW:        return "WINDOW";
-            default:                        return "UNKNOWN";
+            case ObjectType::NONE:                          return "NONE";
+            case ObjectType::DECAL:                         return "DECAL";
+            case ObjectType::DOOR:                          return "DOOR";
+            case ObjectType::DOOR_FRAME:                    return "DOOR_FRAME";
+            case ObjectType::GAME_OBJECT:                   return "GAME_OBJECT";
+            case ObjectType::HEIGHT_MAP:                    return "HEIGHT_MAP";
+            case ObjectType::PLANE:                         return "HOUSE_PLANE";
+            case ObjectType::LIGHT:                         return "LIGHT";
+            case ObjectType::PICK_UP:                       return "PICK_UP";
+            case ObjectType::PIANO:                         return "PIANO";
+            case ObjectType::PIANO_KEY:                     return "PIANO_KEY";
+            case ObjectType::PIANO_KEYBOARD_COVER:          return "PIANO_KEYBOARD_COVER";
+            case ObjectType::PIANO_TOP_COVER:               return "PIANO_TOP_COVER";
+            case ObjectType::PIANO_SHEET_MUSIC_REST:        return "PIANO_SHEET_MUSIC_REST";
+            case ObjectType::PIANO_SHEET_SUSTAIN_PEDAL:     return "PIANO_SHEET_SUSTAIN_PEDAL";
+            case ObjectType::TREE:                          return "TREE";
+            case ObjectType::UNDEFINED:                     return "UNDEFINED";
+            case ObjectType::WALL:                          return "WALL";
+            case ObjectType::WALL_SEGMENT:                  return "WALL_SEGMENT";
+            case ObjectType::WINDOW:                        return "WINDOW";
+            default:                                        return "UNKNOWN";
         }
     }
 
@@ -90,7 +104,7 @@ namespace Util {
     std::string TrimTypeToString(TrimType type) {
         switch (type) {
             case TrimType::NONE:             return "NONE";
-            case TrimType::PLASTER :         return "PLASTER";
+            case TrimType::PLASTER:         return "PLASTER";
             case TrimType::TIMBER:           return "TIMBER";
             default:                         return "UNKNOWN";
         }
@@ -175,7 +189,7 @@ namespace Util {
             default: return "UNDEFINED";
         }
     }
-    
+
     std::string ViewportModeToString(const ShadingMode& viewportMode) {
         switch (viewportMode) {
             case ShadingMode::SHADED:            return "SHADED";

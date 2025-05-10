@@ -39,6 +39,8 @@ struct MeshHeaderV2 {
     int32_t parentIndex;
     glm::vec3 aabbMin;
     glm::vec3 aabbMax;
+    glm::mat4 localTransform;
+    glm::mat4 inverseBindTransform;
 };
 
 struct MeshHeader {
@@ -48,6 +50,7 @@ struct MeshHeader {
     glm::vec3 aabbMin;
     glm::vec3 aabbMax;
 };
+
 struct SkinnedModelHeader {
     char signature[18];     // "HELL_SKINNED_MODEL" 18 bytes
     uint32_t version;
@@ -96,9 +99,11 @@ struct MeshData {
     std::vector<uint32_t> indices;
     glm::vec3 aabbMin = glm::vec3(std::numeric_limits<float>::max());
     glm::vec3 aabbMax = glm::vec3(-std::numeric_limits<float>::max());
-    uint32_t vertexCount;
-    uint32_t indexCount;
+    uint32_t vertexCount = 0;
+    uint32_t indexCount = 0;
     uint32_t parentIndex = -1;
+    glm::mat4 localTransform = glm::mat4(1.0f);
+    glm::mat4 inverseBindTransform = glm::mat4(1.0f);
 };
 
 struct SkinnedMeshData {

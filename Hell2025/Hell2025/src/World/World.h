@@ -70,6 +70,10 @@ namespace World {
 
     void AddHouse(HouseCreateInfo houseCreateInfo, SpawnOffset spawnOffset);
 
+    void EnableOcean();
+    void DisableOcean();
+    bool HasOcean();
+
     // Creation
     void CreateGameObject();
     uint64_t CreateAnimatedGameObject();
@@ -99,7 +103,7 @@ namespace World {
     void UpdateDoorAndWindowCubeTransforms();
 
     // Util
-    bool ObjectTypeIsInteractable(ObjectType objectType, uint64_t objectId, glm::vec3 playerCameraPosition);
+    bool ObjectTypeIsInteractable(ObjectType objectType, uint64_t objectId, glm::vec3 playerCameraPosition, glm::vec3 rayHitPosition);
 
     // Map
     const std::string& GetCurrentMapName();
@@ -117,7 +121,7 @@ namespace World {
     Door* GetDoorByObjectId(uint64_t objectID);
     Door* GetDoorByDoorFrameObjectId(uint64_t objectID);
     Piano* GetPianoByObjectId(uint64_t objectId);
-    Piano* GetPianoByPianoKeyObjectId(uint64_t objectId);
+    Piano* GetPianoByMeshNodeObjectId(uint64_t objectId);
     PianoKey* GetPianoKeyByObjectId(uint64_t objectId);
     PickUp* GetPickUpByObjectId(uint64_t objectID);
     Plane* GetPlaneByObjectId(uint64_t objectID);

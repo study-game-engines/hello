@@ -6,6 +6,10 @@
 
 namespace Util {
 
+    glm::vec3 GetMidPoint(const glm::vec3& a, const glm::vec3 b) {
+        return a + b * 0.5f;
+    }
+
     float EulerYRotationBetweenTwoPoints(glm::vec3 a, glm::vec3 b) {
         float delta_x = b.x - a.x;
         float delta_y = b.z - a.z;

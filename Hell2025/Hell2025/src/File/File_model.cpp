@@ -73,6 +73,8 @@ namespace File {
             meshHeader.aabbMin = meshData.aabbMin;
             meshHeader.aabbMax = meshData.aabbMax;
             meshHeader.parentIndex = -1;
+            meshHeader.localTransform = glm::mat4(1.0f);
+            meshHeader.inverseBindTransform = glm::mat4(1.0f);
             MemCopyFileSignature(meshHeader.signature, HELL_MESH_SIGNATURE);
             MemCopyName(meshHeader.name, meshData.name);
             std::cout << meshData.name << " == " << meshHeader.name << "\n";
@@ -83,7 +85,7 @@ namespace File {
             // Write the data
             file.write(reinterpret_cast<const char*>(meshData.vertices.data()), meshData.vertices.size() * sizeof(Vertex));
             file.write(reinterpret_cast<const char*>(meshData.indices.data()), meshData.indices.size() * sizeof(uint32_t));
-            
+
             //#if PRINT_MESH_HEADERS_ON_WRITE
             PrintMeshHeader(meshHeader, "Wrote mesh: " + meshData.name);
             //#endif
@@ -178,14 +180,13 @@ namespace File {
     ModelData ImportModel(const std::string& filepath) {
         ModelData modelData;
 
-        std::cout << "ImportModel() " << filepath << "\n";
-        //return modelData;
-
         std::ifstream file(filepath, std::ios::binary);
         if (!file.is_open()) {
             std::cerr << "Failed to open file for reading: " << filepath << "\n";
             return modelData;
         }
+
+        FileInfo fileInfo = Util::GetFileInfoFromPath(filepath);
         ModelHeader modelHeader;
 
         // Read 10 bytes for HELL_MODEL
@@ -207,9 +208,6 @@ namespace File {
         std::string modelName(modelHeader.nameLength, '\0');
         file.read(&modelName[0], modelHeader.nameLength);
 
-        std::cout << modelName << " version: " << modelHeader.version << "\n";
-
-        FileInfo fileInfo = Util::GetFileInfoFromPath(filepath);
 
         // Store header data
         modelData.meshCount = modelHeader.meshCount;
@@ -247,20 +245,7 @@ namespace File {
         }
         file.close();
 
-         ExportModelV2(modelData);
-
-
-        // Seek to the end of the header
-
-        //std::string v2ath = "res/models/v2/" + fileInfo.name + "." + fileInfo.ext;
-        //std::ifstream file2(v2ath, std::ios::binary);
-        //file2.seekg(sizeof(ModelHeaderV2), std::ios::beg);
-        //// Read the header
-        //MeshHeaderV2 meshHeader = {};
-        //file2.read(reinterpret_cast<char*>(&meshHeader), sizeof(MeshHeaderV2));
-
-        //#if PRINT_MESH_HEADERS_ON_READ
-        //PrintMeshHeader(meshHeader, "TEST READ BACK MESH HEADER: " + filepath);
+        ExportModelV2(modelData);
 
         return modelData;
     }
@@ -290,9 +275,9 @@ namespace File {
             return modelData;
         }
 
-        //#if PRINT_MODEL_HEADERS_ON_READ
+        #if PRINT_MODEL_HEADERS_ON_READ
         PrintModelHeader(modelHeader, "Read model header in: " + filepath);
-        //#endif
+        #endif
 
         // Seek to the end of the header
         file.seekg(sizeof(ModelHeaderV2), std::ios::beg);
@@ -317,10 +302,12 @@ namespace File {
             // Read the header
             MeshHeaderV2 meshHeader = {};
             file.read(reinterpret_cast<char*>(&meshHeader), sizeof(MeshHeaderV2));
-            
-            //#if PRINT_MESH_HEADERS_ON_READ
-            PrintMeshHeader(meshHeader, "Read mesh: " + meshData.name);
-            //#endif
+
+            #if PRINT_MESH_HEADERS_ON_READ
+            //if (modelData.name == "Piano") {
+                PrintMeshHeader(meshHeader, "Read mesh: " + meshData.name);
+            //}
+            #endif
 
             meshData.name.assign(meshHeader.name, strnlen(meshHeader.name, sizeof(meshHeader.name)));
             //meshData.name = meshHeader.name;
@@ -330,6 +317,9 @@ namespace File {
             meshData.indices.resize(meshData.indexCount);
             meshData.aabbMin = meshHeader.aabbMin;
             meshData.aabbMax = meshHeader.aabbMax;
+            meshData.parentIndex = meshHeader.parentIndex;
+            meshData.localTransform = meshHeader.localTransform;
+            meshData.inverseBindTransform = meshHeader.inverseBindTransform;
             file.read(reinterpret_cast<char*>(meshData.vertices.data()), meshHeader.vertexCount * sizeof(Vertex));
             file.read(reinterpret_cast<char*>(meshData.indices.data()), meshHeader.indexCount * sizeof(uint32_t));
 

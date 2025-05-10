@@ -4,10 +4,11 @@
 #include "Editor/Editor.h"
 #include "Input/Input.h"
 #include "Ocean/Ocean.h"
+#include "World/World.h"
 #include "Util.h"
 
 void Player::UpdateMovement(float deltaTime) {
-    if (IsUnderWater()) {
+    if (World::HasOcean() && GetCameraPosition().y < Ocean::GetWaterHeight() + 0.1f) {
         UpdateSwimmingMovement(deltaTime);
     }
     else {
@@ -172,9 +173,9 @@ void Player::UpdateSwimmingMovement(float deltaTime) {
     MoveCharacterController(glm::vec3(displacement.x, displacement.y, displacement.z));
 }
 
-bool Player::IsUnderWater() {
-    return m_underWater;
-}
+//bool Player::IsUnderWater() {
+//    return m_underWater;
+//}
 
 bool Player::IsPlayingPiano() {
     return m_isPlayingPiano;
@@ -193,49 +194,49 @@ bool Player::IsGrounded() {
 }
 
 bool Player::FeetEnteredUnderwater() {
-    return false;
+    return !m_waterState.feetUnderWaterPrevious && m_waterState.feetUnderWater;
 }
 
 bool Player::FeetExitedUnderwater() {
-    return false;
+    return m_waterState.feetUnderWaterPrevious && !m_waterState.feetUnderWater;
 }
 
 bool Player::CameraEnteredUnderwater() {
-    return false;
+    return !m_waterState.cameraUnderWaterPrevious && m_waterState.cameraUnderWater;
 }
 
 bool Player::CameraExitedUnderwater() {
-    return false;
-}
-
-bool Player::IsSwimming() {
-    return false;
-}
-
-bool Player::IsWading() {
-    return false;
+    return m_waterState.cameraUnderWaterPrevious && !m_waterState.cameraUnderWater;
 }
 
 bool Player::CameraIsUnderwater() {
-    return false;
+    return m_waterState.cameraUnderWater;
 }
 
 bool Player::FeetBelowWater() {
-    return false;
+    return m_waterState.feetUnderWater;
+}
+
+bool Player::IsSwimming() {
+    return m_waterState.cameraUnderWater && IsMoving();
+}
+
+bool Player::IsWading() {
+    return m_waterState.wading;
 }
 
 bool Player::StartedSwimming() {
-    return false;
+    return !m_waterState.swimmingPrevious && m_waterState.swimming;
 }
 
 bool Player::StoppedSwimming() {
-    return false;
+    return m_waterState.swimmingPrevious && !m_waterState.swimming;
 }
 
 bool Player::StartingWading() {
-    return false;
+    return !m_waterState.wadingPrevious && m_waterState.wading;
 }
 
 bool Player::StoppedWading() {
-    return false;
+    return m_waterState.wadingPrevious && !m_waterState.wading;
 }

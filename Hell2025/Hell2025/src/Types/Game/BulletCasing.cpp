@@ -3,6 +3,7 @@
 #include "AssetManagement/AssetManager.h"
 #include "Audio/Audio.h"
 #include "Physics/Physics.h"
+#include "Renderer/RenderDataManager.h"
 
 BulletCasing::BulletCasing(BulletCasingCreateInfo createInfo) {
     m_materialIndex = createInfo.materialIndex;
@@ -58,4 +59,19 @@ void BulletCasing::Update(float deltaTime) {
     if (Physics::RigidDynamicExists(m_rigidDynamicId)) {
         m_modelMatrix = Physics::GetRigidDynamicWorldMatrix(m_rigidDynamicId);
     }
+}
+
+void BulletCasing::SubmitRenderItem() {
+    Material* material = AssetManager::GetMaterialByIndex(GetMaterialIndex());
+    
+    RenderItem renderItem;
+    renderItem.modelMatrix = GetModelMatrix();
+    renderItem.inverseModelMatrix = inverse(renderItem.modelMatrix);
+    renderItem.baseColorTextureIndex = material->m_basecolor;
+    renderItem.rmaTextureIndex = material->m_rma;
+    renderItem.normalMapTextureIndex = material->m_normal;
+    renderItem.meshIndex = GetMeshIndex();
+
+    Util::UpdateRenderItemAABB(renderItem);
+    RenderDataManager::SubmitRenderItem(renderItem);
 }

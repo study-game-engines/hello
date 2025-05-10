@@ -12,6 +12,7 @@ struct BulletCasing {
 
     void Update(float deltaTime);
     void CleanUp();
+    void SubmitRenderItem();
     //void CollisionResponse();
     const glm::mat4& GetModelMatrix();
 

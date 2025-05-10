@@ -8,7 +8,7 @@ namespace AssetManager {
     int g_nextVertexInsert = 0;
     int g_nextIndexInsert = 0;
 
-    int CreateMesh(const std::string& name, std::vector<Vertex>& vertices, std::vector<uint32_t>& indices, glm::vec3 aabbMin, glm::vec3 aabbMax) {
+    int CreateMesh(const std::string& name, std::vector<Vertex>& vertices, std::vector<uint32_t>& indices, glm::vec3 aabbMin, glm::vec3 aabbMax, int parentIndex, glm::mat4 localTransform, glm::mat4 inverseBindTransform) {
         std::vector<Mesh>& meshes = GetMeshes();
         std::vector<Vertex>& allVertices = GetVertices();
         std::vector<uint32_t>& allIndices = GetIndies();
@@ -23,6 +23,9 @@ namespace AssetManager {
         mesh.aabbMax = aabbMax;
         mesh.extents = aabbMax - aabbMin;
         mesh.boundingSphereRadius = std::max(mesh.extents.x, std::max(mesh.extents.y, mesh.extents.z)) * 0.5f;
+        mesh.parentIndex = parentIndex;
+        mesh.localTransform = localTransform;
+        mesh.inverseBindTransform = inverseBindTransform;
 
         allVertices.reserve(allVertices.size() + vertices.size());
         allVertices.insert(std::end(allVertices), std::begin(vertices), std::end(vertices));
@@ -45,7 +48,7 @@ namespace AssetManager {
             aabbMax = glm::max(aabbMax, v.position);
         }
 
-        return CreateMesh(name, vertices, indices, aabbMin, aabbMax);
+        return CreateMesh(name, vertices, indices, aabbMin, aabbMax, -1, glm::mat4(1.0f), glm::mat4(1.0f));
     }
 
     int GetMeshIndexByName(const std::string& name) {

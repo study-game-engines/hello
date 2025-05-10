@@ -213,7 +213,7 @@ namespace OpenGLBackEnd {
                 glCompressedTexImage2D(GL_TEXTURE_2D, i, texture.GetInternalFormat(), mipmapWidth, mipmapHeight, 0, texture.GetDataSize(i), nullptr);
             }
             if (texture.GetImageDataType() == ImageDataType::EXR) {
-                // TODO! glTexImage2D(GL_TEXTURE_2D, i, GL_RGB16, mipmapWidth, mipmapHeight, 0, GL_RGBA, GL_FLOAT, nullptr);
+                glTexImage2D(GL_TEXTURE_2D, i, GL_RGB16, mipmapWidth, mipmapHeight, 0, GL_RGBA, GL_FLOAT, nullptr);
             }
             mipmapWidth = std::max(1, mipmapWidth / 2);
             mipmapHeight = std::max(1, mipmapHeight / 2);
@@ -340,8 +340,7 @@ namespace OpenGLBackEnd {
             glCompressedTextureSubImage2D(textureHandle, level, 0, 0, width, height, internalFormat, dataSize, 0);
         }
         else if (texture->GetImageDataType() == ImageDataType::EXR) {
-            // Handle EXR case (example left as a placeholder)
-            // glTextureSubImage2D(textureHandle, level, 0, 0, width, height, format, GL_FLOAT, 0);
+            glTextureSubImage2D(textureHandle, level, 0, 0, width, height, GL_RGBA, GL_FLOAT, 0);
         }
 
         // Start PBO sync and assign job ID

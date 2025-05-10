@@ -31,7 +31,7 @@ namespace Game {
     std::vector<Player> g_onlinePlayers;
     SplitscreenMode g_splitscreenMode = SplitscreenMode::FULLSCREEN;
 
-    void UpdateLazyKeypresses();
+    void UpdateAudioLoops();
 
     void AddLocalPlayer(glm::vec3 position, glm::vec3 rotation) {
         if (g_localPlayers.size() == 4) {
@@ -117,6 +117,8 @@ namespace Game {
                 Physics::StepPhysics(g_fixedDeltaTime);
             }
         }
+
+        UpdateAudioLoops();
     }
 
     float GetDeltaTime() {
@@ -219,5 +221,31 @@ namespace Game {
         };
         int random = rand() % 4;
         Audio::PlayAudio(indoorFootstepFilenames[random], 0.5f);
+    }
+
+    void UpdateAudioLoops() {
+        // Under water loop
+        bool playersUnderWater = false;
+        for (Player& player : g_localPlayers) {
+            if (player.CameraIsUnderwater() && player.ViewportIsVisible()) {
+                playersUnderWater = true;
+                break;
+            }
+        }
+        if (playersUnderWater && g_totalTime > 1.0f) {
+            Audio::LoopAudioIfNotPlaying("Water_AmbientLoop.wav", 1.0);
+        }
+        else {
+            Audio::StopAudio("Water_AmbientLoop.wav");
+        }
+
+        // Wading loop
+        Player& player = g_localPlayers[0]; // WARNNG!!! Only works for player 0
+        if (player.IsWading()) {
+            Audio::LoopAudioIfNotPlaying("Water_PaddlingLoop_1.wav", 1.0);
+        }
+        else {
+            Audio::StopAudio("Water_PaddlingLoop_1.wav");
+        }
     }
 }

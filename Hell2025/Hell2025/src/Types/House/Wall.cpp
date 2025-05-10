@@ -247,6 +247,8 @@ void Wall::DrawSegmentVertices(glm::vec4 color) {
     }
 }
 
+
+
 void Wall::DrawSegmentLines(glm::vec4 color) {
     for (WallSegment& wallSegment : m_wallSegments) {
         const glm::vec3& p1 = wallSegment.GetStart();
@@ -257,5 +259,10 @@ void Wall::DrawSegmentLines(glm::vec4 color) {
         Renderer::DrawLine(p3, p4, color);
         Renderer::DrawLine(p1, p3, color);
         Renderer::DrawLine(p2, p4, color);
+
+        glm::vec3 midPoint = Util::GetMidPoint(wallSegment.GetStart(), wallSegment.GetEnd()); 
+        glm::vec3 normal = wallSegment.GetNormal();
+        glm::vec3 projectedMidPoint = midPoint + (normal * 0.2f);
+        Renderer::DrawLine(midPoint, projectedMidPoint, color);
     }
 }

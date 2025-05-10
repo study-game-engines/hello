@@ -10,12 +10,12 @@
 void Player::UpdateHeadBob(float deltaTime) {
 
     // If underwater, lerp head bob back to 0
-    if (IsUnderWater()) {
+    if (!CameraIsUnderwater()) {
         m_headBob.x = Util::FInterpTo(m_headBob.x, 0.0f, deltaTime, 10);
         m_headBob.y = Util::FInterpTo(m_headBob.y, 0.0f, deltaTime, 10);
         m_headBob.z = Util::FInterpTo(m_headBob.z, 0.0f, deltaTime, 10);
     }
-    else {
+    //else {
 
         if (IsMoving()) {
             m_headBobTime += deltaTime;
@@ -33,7 +33,7 @@ void Player::UpdateHeadBob(float deltaTime) {
         float noiseOffsetY = glm::perlin(glm::vec2(m_headBobTime * 0.1f, 0.0f)) * noiseIntensity;
         float noiseOffsetX = glm::perlin(glm::vec2(0.0f, m_headBobTime * 0.1f)) * noiseIntensity;
         m_headBob = glm::vec3(m_bobOffsetX + noiseOffsetX, m_bobOffsetY + noiseOffsetY, 0.0f);
-    }
+   // }
 }
 
 void Player::UpdateBreatheBob(float deltaTime) {

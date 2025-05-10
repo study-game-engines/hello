@@ -56,8 +56,8 @@ namespace AssetManager {
 
     void Init() {
         CompressMissingDDSTexutres();
-        //ExportMissingModels();
-        //ExportMissingModelBvhs();
+        ExportMissingModels();
+        ExportMissingModelBvhs();
         ExportMissingSkinnedModels();
         LoadMinimumTextures();
         FindAssetPaths();
@@ -166,7 +166,7 @@ namespace AssetManager {
             animation.SetFileInfo(fileInfo);
         }
         // Find .model files
-        for (FileInfo& fileInfo : Util::IterateDirectory("res/models/v2")) {
+        for (FileInfo& fileInfo : Util::IterateDirectory("res/models")) {
             Model& model = g_models.emplace_back();
             model.SetFileInfo(fileInfo);
         }
@@ -203,6 +203,14 @@ namespace AssetManager {
             Texture& texture = g_textures.emplace_back();
             texture.SetFileInfo(fileInfo);
             texture.SetImageDataType(ImageDataType::UNCOMPRESSED);
+            texture.SetTextureWrapMode(TextureWrapMode::CLAMP_TO_EDGE);
+            texture.SetMinFilter(TextureFilter::LINEAR);
+            texture.SetMagFilter(TextureFilter::LINEAR);
+        }
+        for (FileInfo& fileInfo : Util::IterateDirectory("res/textures/exr", { "exr" })) {
+            Texture& texture = g_textures.emplace_back();
+            texture.SetFileInfo(fileInfo);
+            texture.SetImageDataType(ImageDataType::EXR);
             texture.SetTextureWrapMode(TextureWrapMode::CLAMP_TO_EDGE);
             texture.SetMinFilter(TextureFilter::LINEAR);
             texture.SetMagFilter(TextureFilter::LINEAR);

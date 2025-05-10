@@ -30,6 +30,7 @@ void OpenGLTexture::AllocateMemory(int width, int height, int format, int intern
         return;
     }
     glCreateTextures(GL_TEXTURE_2D, 1, &m_handle);
+
     glTextureStorage2D(m_handle, mipmapLevelCount, internalFormat, width, height);
     m_width = width;
     m_height = height;

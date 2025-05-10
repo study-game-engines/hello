@@ -241,10 +241,10 @@ namespace ImageTools {
         float* floatPtr = nullptr;
         status = LoadEXRWithLayer(&floatPtr, &textureData.m_width, &textureData.m_height, filepath.c_str(), layername, &err);
         textureData.m_data = floatPtr;
-        textureData.m_channelCount = -1; // TODO
-        textureData.m_dataSize = -1; // TODO
-        textureData.m_format = -1; // TODO
-        textureData.m_internalFormat = -1; // TODO
+        textureData.m_channelCount = 3;
+        textureData.m_format = GL_RGB;
+        textureData.m_internalFormat = GL_RGB16;
+        textureData.m_dataSize = textureData.m_width * textureData.m_height * textureData.m_channelCount * sizeof(float);
         return textureData;
     }
 
