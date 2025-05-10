@@ -143,7 +143,7 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <ClCompile Include="src\API\OpenGL\Renderer\GL_renderer_util.cpp" />
     <ClCompile Include="src\API\OpenGL\Renderer\RenderPasses\GL_decal_pass.cpp" />
     <ClCompile Include="src\API\OpenGL\Renderer\RenderPasses\GL_glass_pass.cpp" />
-    <ClCompile Include="src\API\OpenGL\Renderer\RenderPasses\GL_ocean_pass.cpp" />
+    <ClCompile Include="src\API\OpenGL\Renderer\RenderPasses\GL_ocean_passes.cpp" />
     <ClCompile Include="src\API\OpenGL\Renderer\RenderPasses\GL_weatherboards_pass.cpp" />
     <ClCompile Include="src\API\OpenGL\Renderer\RenderPasses\GL_winston_pass.cpp" />
     <ClCompile Include="src\API\OpenGL\Renderer\Utility\GL_height_map_utility.cpp" />

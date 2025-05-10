@@ -3,10 +3,9 @@
 
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 
-layout(rgba8, binding = 0) uniform image2D LightingImage; // output
+layout(rgba16f, binding = 0) uniform image2D LightingImage; // output
 
 layout (binding = 0) uniform sampler2D WaterColorTexture;
-layout (binding = 1) uniform sampler2D HairTexture;
 layout (binding = 2) uniform sampler2D waterNormalTexture;
 layout (binding = 3) uniform sampler2D waterDUDVTexture;
 layout (binding = 4) uniform sampler2D UnderwaterMaskTexture;
@@ -14,6 +13,7 @@ layout (binding = 5) uniform sampler2D DownSampledFinalLightingTexture;
 
 uniform float u_time;
 uniform vec3 u_viewPos;
+uniform float u_oceanYOrigin;
 uniform mat4 u_inverseProjectionView;
 uniform vec2 u_resolution;
 
@@ -53,7 +53,7 @@ void main() {
     vec2 fragCoord = pixelCoords;
     vec3 rayDir = GetWorldRay(fragCoord, u_resolution, u_inverseProjectionView, u_viewPos);
     vec3 rayOrigin = u_viewPos;
-    float planeHeight = -0.65;
+    float planeHeight = u_oceanYOrigin;
     float t = (planeHeight - rayOrigin.y) / rayDir.y; // distance to ray hit
     
     // Ray points away from the ground plane
@@ -76,4 +76,10 @@ void main() {
         vec3 finalColor = (refractedColor * UNDER_WATER_TINT) + waterColor;
         imageStore(LightingImage, pixelCoords, vec4(vec3(finalColor), 1.0));
     }
+
+     // vec3 downSampledFinalLighting = texture(DownSampledFinalLightingTexture, uv_screenspace).rgb;
+
+    // imageStore(LightingImage, pixelCoords, vec4(downSampledFinalLighting * vec3(1,0,0), 1.0));
+
+    // imageStore(LightingImage, pixelCoords, vec4(vec3(underwaterMask), 1.0));
 }

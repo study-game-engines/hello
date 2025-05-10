@@ -201,6 +201,13 @@ namespace OpenGLRenderer {
             AssetManager::GetTextureByName("ny"),
             AssetManager::GetTextureByName("pz"),
             AssetManager::GetTextureByName("nz"),
+
+            //AssetManager::GetTextureByName("NightSky_Right"),
+            //AssetManager::GetTextureByName("NightSky_Left"),
+            //AssetManager::GetTextureByName("NightSky_Top"),
+            //AssetManager::GetTextureByName("NightSky_Bottom"),
+            //AssetManager::GetTextureByName("NightSky_Front"),
+            //AssetManager::GetTextureByName("NightSky_Back")
         };
         std::vector<GLuint> texturesHandles;
         for (Texture* texture : textures) {

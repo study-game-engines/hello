@@ -4,7 +4,8 @@
 #include "World/World.h"
 
 void Shark::Init() {
-    glm::vec3 initialPosition = glm::vec3(38.0f, 11.48f, 24.0f);
+    //glm::vec3 initialPosition = glm::vec3(38.0f, 11.48f, 24.0f);
+    glm::vec3 initialPosition = glm::vec3(27.0f, 9.05f, 22.0f);
 
     g_animatedGameObjectObjectId = World:: CreateAnimatedGameObject();
 

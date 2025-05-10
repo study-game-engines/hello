@@ -2,7 +2,6 @@
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 layout(binding = 0) uniform sampler2D hairCompositeTexture;
 layout(binding = 1) uniform sampler2D lightingTexture;
-layout(binding = 2) uniform sampler2D waterTexture;
 
 layout(rgba16f, binding = 0) uniform image2D outputImage;
 
@@ -25,18 +24,6 @@ void main() {
     float blendedAlpha = hairComposite.a + lighting.a * (1.0 - hairComposite.a);
     
     // Write the final composited color back to the lighting texture
-    vec4 finalOutput = vec4(blendedColor, blendedAlpha);
-
-
-      vec4 waterColor = texture(waterTexture, uv_screenspace);
-    
-
-    if (waterColor.rgb != vec3(0,0,0)) {
-        finalOutput = waterColor;
-    }
-
-
-
-    
+    vec4 finalOutput = vec4(blendedColor, blendedAlpha);    
     imageStore(outputImage, pixelCoords, finalOutput);
 }

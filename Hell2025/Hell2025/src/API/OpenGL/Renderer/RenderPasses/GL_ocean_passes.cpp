@@ -15,21 +15,10 @@
 
 namespace OpenGLRenderer {
 
-    void RenderOceanGeometry();
-    void OceanSurfaceCompositePass();
-    void UnderwaterCompositePass();
-
-    void OceanPass() {
+    void OceanGeometryPass() {
         if (!World::HasOcean()) {
             return;
         }
-
-        RenderOceanGeometry();
-        OceanSurfaceCompositePass();
-        UnderwaterCompositePass();
-    }
-
-    void RenderOceanGeometry() {
 
         OpenGLFrameBuffer* gBuffer = GetFrameBuffer("GBuffer");
         OpenGLFrameBuffer* waterFrameBuffer = GetFrameBuffer("Water");
@@ -45,7 +34,8 @@ namespace OpenGLRenderer {
         if (!fftFrameBuffer_band1) return;
         if (!skyboxCubemapView) return;
         if (!oceanMeshPatch) return;
-
+        if (!shader) return;
+        
         static bool wireframe = false;
         static bool swap = false;
         static bool test = false;
@@ -74,7 +64,6 @@ namespace OpenGLRenderer {
         }
 
         const ViewportData& viewportData = RenderDataManager::GetViewportData()[0];
-
         glm::mat4 projectionMatrix = viewportData.projection;
         glm::mat4 viewMatrix = viewportData.view;
         glm::vec3 viewPos = viewportData.viewPos;
@@ -170,85 +159,62 @@ namespace OpenGLRenderer {
     }
 
     void OceanSurfaceCompositePass() {
+        if (!World::HasOcean()) {
+            return;
+        }
+      
+        OpenGLFrameBuffer* gBuffer = GetFrameBuffer("GBuffer");
+        OpenGLFrameBuffer* waterFrameBuffer = GetFrameBuffer("Water");
+        OpenGLFrameBuffer* quaterSizeFrameBuffer = GetFrameBuffer("QuarterSize");
+        OpenGLShader* shader = GetShader("OceanSurfaceComposite");
+
+        if (!gBuffer) return;
+        if (!shader) return;
+        if (!waterFrameBuffer) return;
+        if (!quaterSizeFrameBuffer) return;
+
+        // Down sample the final lighting to 25%
+        BlitFrameBuffer(gBuffer, quaterSizeFrameBuffer, "FinalLighting", "DownsampledFinalLighting", GL_COLOR_BUFFER_BIT, GL_LINEAR);
+
+        const ViewportData& viewportData = RenderDataManager::GetViewportData()[0];
+        glm::mat4 projectionMatrix = viewportData.projection;
+        glm::mat4 viewMatrix = viewportData.view;
+        glm::vec3 viewPos = viewportData.viewPos;
+        glm::mat4 projectionView = viewportData.projectionView;
+
+        // Water surface composite
+        glm::mat4 inverseProjectionView = glm::inverse(projectionView);
+        glm::vec2 resolution = glm::vec2(gBuffer->GetWidth(), gBuffer->GetHeight());
+        shader->Bind();
+        shader->SetFloat("u_time", Game::GetTotalTime());
+        shader->SetVec3("u_viewPos", viewPos);
+        shader->SetVec2("u_resolution", resolution);
+        shader->SetMat4("u_inverseProjectionView", inverseProjectionView);
+        shader->SetFloat("u_oceanYOrigin", Ocean::GetOceanOriginY());
+
+        glBindImageTexture(0, gBuffer->GetColorAttachmentHandleByName("FinalLighting"), 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, waterFrameBuffer->GetColorAttachmentHandleByName("Color"));
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D, AssetManager::GetTextureByName("WaterNormals")->GetGLTexture().GetHandle());
+        glActiveTexture(GL_TEXTURE3);
+        glBindTexture(GL_TEXTURE_2D, AssetManager::GetTextureByName("WaterDUDV")->GetGLTexture().GetHandle());
+        glActiveTexture(GL_TEXTURE4);
+        glBindTexture(GL_TEXTURE_2D, waterFrameBuffer->GetColorAttachmentHandleByName("UnderwaterMask"));
+        glActiveTexture(GL_TEXTURE5);
+        glBindTexture(GL_TEXTURE_2D, quaterSizeFrameBuffer->GetColorAttachmentHandleByName("DownsampledFinalLighting"));
+
+        glDispatchCompute((gBuffer->GetWidth() + 7) / 8, (gBuffer->GetHeight() + 7) / 8, 1);
 
     }
 
-    void UnderwaterCompositePass() {
+
+    void OceanUnderwaterCompositePass() {
+        if (!World::HasOcean()) {
+            return;
+        }
+
     }
-
-
-        //if (!World::HasOcean()) {
-        //    return;
-        //}
-        //
-        //const ViewportData& viewportData = RenderDataManager::GetViewportData()[0];
-        //
-        //glm::vec3 viewPos = viewportData.viewPos;
-        //
-        //OpenGLCubemapView* skyboxCubemapView = GetCubemapView("SkyboxNightSky");
-        //OpenGLFrameBuffer* gBuffer = GetFrameBuffer("GBuffer");
-        //OpenGLFrameBuffer* waterFrameBuffer = GetFrameBuffer("Water");
-        //OpenGLMeshPatch* oceanMeshPatch = GetOceanMeshPatch();
-        //OpenGLShader* shader = GetShader("OceanColor");
-        //OpenGLShader* compositeShader = GetShader("OceanComposite");
-        //OpenGLSSBO* oceanPatchTransformsSSBO = GetSSBO("OceanPatchTransforms");
-        //
-        //if (!oceanMeshPatch) return;
-        //if (!skyboxCubemapView) return;
-        //if (!gBuffer) return;
-        //if (!waterFrameBuffer) return;
-        //if (!shader) return;
-        //if (!compositeShader) return;
-        //if (!oceanPatchTransformsSSBO) return;
-        //
-        //OpenGLRenderer::BlitFrameBufferDepth(gBuffer, waterFrameBuffer);
-        //
-        //waterFrameBuffer->Bind();
-        //waterFrameBuffer->SetViewport();
-        //waterFrameBuffer->DrawBuffers({ "Diffuse", "Specular" });
-        //
-        //shader->Bind();
-        //shader->SetInt("environmentMap", 0);
-        //shader->SetVec3("eyePos", viewPos);
-        //
-        //oceanPatchTransformsSSBO->Bind(6);
-        //
-        //glActiveTexture(GL_TEXTURE0);
-        //glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxCubemapView->GetHandle());
-        //
-        //glBindVertexArray(oceanMeshPatch->GetVAO());
-        //
-        //glMemoryBarrier(GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
-        //
-        //Viewport* viewport = ViewportManager::GetViewportByIndex(0);
-        //Frustum& frustum = viewport->GetFrustum();
-        //
-        //// Render ocean geometry and thus diffuse and specular color
-        //for (int i = 0; i < 1; i++) {
-        //    Viewport* viewport = ViewportManager::GetViewportByIndex(i);
-        //    if (viewport->IsVisible()) {
-        //        OpenGLRenderer::SetViewport(waterFrameBuffer, viewport);
-        //        int instanceCount = RenderDataManager::GetOceanPatchTransforms().size();
-        //
-        //        shader->SetFloat("u_normalModifier", 1.0f);
-        //        glCullFace(GL_BACK);
-        //        glDrawElementsInstanced(GL_TRIANGLE_STRIP, oceanMeshPatch->GetIndexCount(), GL_UNSIGNED_INT, nullptr, instanceCount);
-        //
-        //        shader->SetFloat("u_normalModifier", -1.0f);
-        //        glCullFace(GL_FRONT);
-        //        glDrawElementsInstanced(GL_TRIANGLE_STRIP, oceanMeshPatch->GetIndexCount(), GL_UNSIGNED_INT, nullptr, instanceCount);
-        //    }
-        //}
-        //
-        //// Cleanup
-        //glCullFace(GL_BACK);
-        //
-        //// Composite the water result atop the lighting texture
-        //compositeShader->Bind();
-        //glBindImageTexture(0, gBuffer->GetColorAttachmentHandleByName("FinalLighting"), 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F);
-        //glBindTextureUnit(0, waterFrameBuffer->GetColorAttachmentHandleByName("Diffuse"));
-        //glBindTextureUnit(1, waterFrameBuffer->GetColorAttachmentHandleByName("Specular"));
-        //glDispatchCompute(gBuffer->GetWidth() / TILE_SIZE, gBuffer->GetHeight() / TILE_SIZE, 1);
-    //}
+     
 
 }

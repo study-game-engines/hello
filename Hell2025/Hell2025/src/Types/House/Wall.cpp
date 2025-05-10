@@ -334,7 +334,7 @@ BoardVertexData Wall::CreateBoardVertexData(glm::vec3 begin, glm::vec3 end, glm:
 void Wall::CreateWeatherBoards() {
 
     float individialBoardHeight = 0.13f;
-    float desiredTotalWallHeight = 20.8;
+    float desiredTotalWallHeight = 2.8;
     int weatherBoardCount = desiredTotalWallHeight / individialBoardHeight;
     float actualFinalWallHeight = weatherBoardCount * individialBoardHeight;
     float weathboardStopScale = actualFinalWallHeight / WEATHERBOARD_STOP_MESH_HEGIHT;

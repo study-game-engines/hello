@@ -49,7 +49,9 @@ namespace OpenGLRenderer {
     void ImGuiPass();
     void LightCullingPass();
     void LightingPass();
-    void OceanPass();
+    void OceanGeometryPass();
+    void OceanSurfaceCompositePass();
+    void OceanUnderwaterCompositePass();
     void OutlinePass();
     void WinstonPass();
     void SkyBoxPass();
