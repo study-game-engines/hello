@@ -471,44 +471,51 @@ namespace RenderDataManager {
 
 
     void UpdateOceanPatchTransforms() {
+
+        // ALL THIS WORKS BUT U COMMENTED IT OUT DURING THE START OF YOUR PORT OF THE NEW OCEAN CODE
+        // ALL THIS WORKS BUT U COMMENTED IT OUT DURING THE START OF YOUR PORT OF THE NEW OCEAN CODE
+        // ALL THIS WORKS BUT U COMMENTED IT OUT DURING THE START OF YOUR PORT OF THE NEW OCEAN CODE
+
+
+
         // Offset water origin when in heightmap editor
-        glm::vec3 originOffset = glm::vec3(0.0f);
-        if (Editor::IsOpen() && Editor::GetEditorMode() == EditorMode::HEIGHTMAP_EDITOR) {
-            originOffset = glm::vec3(64.0f, 0.0f, 64.0f);
-        }
-
-        const float waterHeight = Ocean::GetWaterHeight();
-        int patchCount = 16;
-        float scale = 0.03125f;
-        float patchOffset = Ocean::GetOceanSize().y * scale;
-
-        Transform patchTransform;
-        patchTransform.scale = glm::vec3(scale);
-
-        g_oceanPatchTransforms.clear();
-        
-        Viewport* viewport = ViewportManager::GetViewportByIndex(0);
-        Frustum& frustum = viewport->GetFrustum();
-
-        for (int x = 0; x < patchCount; x++) {
-            for (int z = 0; z < patchCount; z++) {
-                patchTransform.position = glm::vec3(patchOffset * x, waterHeight, patchOffset * z);
-                patchTransform.position += originOffset;
-                
-                float threshold = 0.25f;
-                glm::vec3 aabbMin = patchTransform.position;
-                glm::vec3 aabbMax = aabbMin;
-                aabbMin.x += Ocean::GetOceanSize().x * scale;
-                aabbMin.z += Ocean::GetOceanSize().y * scale;
-                aabbMin.y -= threshold;
-                aabbMax.y += threshold;
-                AABB aabb(aabbMin, aabbMax);
-
-                if (frustum.IntersectsAABB(aabb)) {
-                    g_oceanPatchTransforms.push_back(patchTransform.to_mat4());
-                }
-            }
-        }
+        //glm::vec3 originOffset = glm::vec3(0.0f);
+        //if (Editor::IsOpen() && Editor::GetEditorMode() == EditorMode::HEIGHTMAP_EDITOR) {
+        //    originOffset = glm::vec3(64.0f, 0.0f, 64.0f);
+        //}
+        //
+        //const float waterHeight = Ocean::GetWaterHeight();
+        //int patchCount = 16;
+        //float scale = 0.03125f;
+        //float patchOffset = Ocean::GetOceanSize().y * scale;
+        //
+        //Transform patchTransform;
+        //patchTransform.scale = glm::vec3(scale);
+        //
+        //g_oceanPatchTransforms.clear();
+        //
+        //Viewport* viewport = ViewportManager::GetViewportByIndex(0);
+        //Frustum& frustum = viewport->GetFrustum();
+        //
+        //for (int x = 0; x < patchCount; x++) {
+        //    for (int z = 0; z < patchCount; z++) {
+        //        patchTransform.position = glm::vec3(patchOffset * x, waterHeight, patchOffset * z);
+        //        patchTransform.position += originOffset;
+        //        
+        //        float threshold = 0.25f;
+        //        glm::vec3 aabbMin = patchTransform.position;
+        //        glm::vec3 aabbMax = aabbMin;
+        //        aabbMin.x += Ocean::GetOceanSize().x * scale;
+        //        aabbMin.z += Ocean::GetOceanSize().y * scale;
+        //        aabbMin.y -= threshold;
+        //        aabbMax.y += threshold;
+        //        AABB aabb(aabbMin, aabbMax);
+        //
+        //        if (frustum.IntersectsAABB(aabb)) {
+        //            g_oceanPatchTransforms.push_back(patchTransform.to_mat4());
+        //        }
+        //    }
+        //}
     }
 
 

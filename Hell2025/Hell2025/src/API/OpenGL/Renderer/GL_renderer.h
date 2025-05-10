@@ -131,4 +131,7 @@ namespace OpenGLRenderer {
     RenderItem2D CreateRenderItem2D(const std::string& textureName, glm::ivec2 location, glm::ivec2 viewportSize, Alignment alignment, glm::vec3 colorTint = WHITE, glm::ivec2 size = glm::ivec2(-1, -1));
     BlitRect BlitRectFromFrameBufferViewport(OpenGLFrameBuffer* framebuffer, Viewport* viewport);
     GLint CreateQuadVAO();
+
+
+    int GetFftDisplayMode();
 }

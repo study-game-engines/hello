@@ -388,6 +388,7 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <None Include="res\shaders\OpenGL\GL_editor_mesh.frag" />
     <None Include="res\shaders\OpenGL\GL_editor_mesh.vert" />
     <None Include="res\shaders\OpenGL\GL_emissive_composite.comp" />
+    <None Include="res\shaders\OpenGL\GL_gaussian_blur.comp" />
     <None Include="res\shaders\OpenGL\GL_gizmo.frag" />
     <None Include="res\shaders\OpenGL\GL_gizmo.vert" />
     <None Include="res\shaders\OpenGL\GL_glass.frag" />
@@ -407,7 +408,17 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <None Include="res\shaders\OpenGL\GL_heightmap_physx_texture_generation.comp" />
     <None Include="res\shaders\OpenGL\GL_lighting.comp" />
     <None Include="res\shaders\OpenGL\GL_light_culling.comp" />
+    <None Include="res\shaders\OpenGL\GL_ocean_calculate_spectrum.comp" />
     <None Include="res\shaders\OpenGL\GL_ocean_composite.comp" />
+    <None Include="res\shaders\OpenGL\GL_ocean_geometry.frag" />
+    <None Include="res\shaders\OpenGL\GL_ocean_geometry.tesc" />
+    <None Include="res\shaders\OpenGL\GL_ocean_geometry.tese" />
+    <None Include="res\shaders\OpenGL\GL_ocean_geometry.vert" />
+    <None Include="res\shaders\OpenGL\GL_ocean_position_readback.comp" />
+    <None Include="res\shaders\OpenGL\GL_ocean_surface_composite.comp" />
+    <None Include="res\shaders\OpenGL\GL_ocean_underwater_composite.comp" />
+    <None Include="res\shaders\OpenGL\GL_ocean_underwater_mask_preprocess.comp" />
+    <None Include="res\shaders\OpenGL\GL_ocean_update_textures.comp" />
     <None Include="res\shaders\OpenGL\GL_outline.frag" />
     <None Include="res\shaders\OpenGL\GL_outline.vert" />
     <None Include="res\shaders\OpenGL\GL_shadow_cube_map.frag" />

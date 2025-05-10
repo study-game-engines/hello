@@ -163,3 +163,6 @@ vec3 FilmPixel(vec2 uv, float time) {
     return fract(sin(uvs * vec2(12.9898, 78.233) * time) * 43758.5453);
 }
 
+vec3 GammaCorrect(vec3 color) {
+    return pow(color, vec3(1.0/2.2));
+}

@@ -41,7 +41,7 @@ namespace OpenGLRenderer {
     std::unordered_map<std::string, OpenGLRasterizerState> g_rasterizerStates;
     std::unordered_map<std::string, OpenGLShadowCubeMapArray> g_shadowMapArrays;
 
-    OpenGLMeshPatch g_oceanMeshPatch;
+    OpenGLMeshPatch g_tesselationPatch;
 
     OpenGLFrameBuffer g_blurBuffers[4][4] = {};
 
@@ -51,6 +51,9 @@ namespace OpenGLRenderer {
     unsigned int g_lightDepthMaps;
     constexpr unsigned int g_depthMapResolution = 4096;
 
+    int g_fftDisplayMode = 0;
+    int g_fftEditBand = 0;
+    
     void LoadShaders();
 
     IndirectBuffer g_indirectBuffer;
@@ -61,8 +64,14 @@ namespace OpenGLRenderer {
 
     void ClearRenderTargets();
 
+    int GetFftDisplayMode() {
+        return g_fftDisplayMode;
+    }
+
     void Init() {
         const Resolutions& resolutions = Config::GetResolutions();
+
+        Ocean::Init();
 
         g_frameBuffers["GBuffer"] = OpenGLFrameBuffer("GBuffer", resolutions.gBuffer);
         g_frameBuffers["GBuffer"].CreateAttachment("BaseColor", GL_RGBA8);
@@ -75,8 +84,9 @@ namespace OpenGLRenderer {
         g_frameBuffers["GBuffer"].CreateDepthAttachment(GL_DEPTH_COMPONENT32F);
       
         g_frameBuffers["Water"] = OpenGLFrameBuffer("Water", resolutions.gBuffer);
-        g_frameBuffers["Water"].CreateAttachment("Diffuse", GL_RGBA8);
-        g_frameBuffers["Water"].CreateAttachment("Specular", GL_RGBA8);
+        g_frameBuffers["Water"].CreateAttachment("Color", GL_RGBA8);
+        g_frameBuffers["Water"].CreateAttachment("UnderwaterMask", GL_R8);
+        g_frameBuffers["Water"].CreateAttachment("WorldPosition", GL_RGBA32F);
         g_frameBuffers["Water"].CreateDepthAttachment(GL_DEPTH_COMPONENT32F);
 
         g_frameBuffers["WIP"] = OpenGLFrameBuffer("WIP", resolutions.gBuffer);
@@ -111,14 +121,15 @@ namespace OpenGLRenderer {
         g_frameBuffers["FlashlightShadowMap"] = OpenGLFrameBuffer("Flashlight", FLASHLIGHT_SHADOWMAP_SIZE, FLASHLIGHT_SHADOWMAP_SIZE);
         g_frameBuffers["FlashlightShadowMap"].CreateDepthAttachment(GL_DEPTH32F_STENCIL8, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_BORDER, glm::vec4(1.0f));
 
-        g_frameBuffers["FFT"].Create("FFT", Ocean::GetOceanSize().x, Ocean::GetOceanSize().y);
-        g_frameBuffers["FFT"].CreateAttachment("Height", GL_R32F);
-               
-        g_shadowMaps["FlashlightShadowMaps"] = OpenGLShadowMap("FlashlightShadowMaps", 1024, 1024, 4);
+        g_frameBuffers["FFT_band0"].Create("FFT_band0", Ocean::GetFFTResolution(0).x, Ocean::GetFFTResolution(0).y);
+        g_frameBuffers["FFT_band0"].CreateAttachment("Displacement", GL_RGBA32F, GL_LINEAR, GL_LINEAR, GL_REPEAT);
+        g_frameBuffers["FFT_band0"].CreateAttachment("Normals", GL_RGBA32F, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, true);
 
-        // Ocean init shit
-        const glm::uvec2 oceanSize = Ocean::GetOceanSize();
-        g_oceanMeshPatch.Resize(Ocean::GetMeshSize().x, Ocean::GetMeshSize().y);
+        g_frameBuffers["FFT_band1"].Create("FFT_band1", Ocean::GetFFTResolution(1).x, Ocean::GetFFTResolution(1).y);
+        g_frameBuffers["FFT_band1"].CreateAttachment("Displacement", GL_RGBA32F, GL_LINEAR, GL_LINEAR, GL_REPEAT, true);
+        g_frameBuffers["FFT_band1"].CreateAttachment("Normals", GL_RGBA32F, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, true);
+
+        g_shadowMaps["FlashlightShadowMaps"] = OpenGLShadowMap("FlashlightShadowMaps", 1024, 1024, 4);
 
         GLbitfield staticFlags = GL_MAP_READ_BIT | GL_MAP_WRITE_BIT;
         GLbitfield dynamicFlags = GL_DYNAMIC_STORAGE_BIT | GL_MAP_READ_BIT | GL_MAP_WRITE_BIT;
@@ -131,7 +142,13 @@ namespace OpenGLRenderer {
         g_ssbos["SkinningTransforms"] = OpenGLSSBO(sizeof(glm::mat4) * MAX_ANIMATED_TRANSFORMS, GL_DYNAMIC_STORAGE_BIT);
         g_ssbos["LightSpaceMatrices"] = OpenGLSSBO(sizeof(glm::mat4) * MAX_VIEWPORT_COUNT * SHADOW_CASCADE_COUNT, GL_DYNAMIC_STORAGE_BIT);
         g_ssbos["Lights"] = OpenGLSSBO(sizeof(GPULight) * MAX_GPU_LIGHTS, GL_DYNAMIC_STORAGE_BIT);
-        g_ssbos["ffth0"] = OpenGLSSBO(oceanSize.x * oceanSize.y * sizeof(std::complex<float>), staticFlags);
+
+        //g_ssbos["ffth0"] = OpenGLSSBO(oceanSize.x * oceanSize.y * sizeof(std::complex<float>), staticFlags);
+
+        g_ssbos["ffth0Band0"] = OpenGLSSBO(Ocean::GetFFTResolution(0).x * Ocean::GetFFTResolution(0).y * sizeof(std::complex<float>), staticFlags);
+        g_ssbos["ffth0Band1"] = OpenGLSSBO(Ocean::GetFFTResolution(1).x * Ocean::GetFFTResolution(1).y * sizeof(std::complex<float>), staticFlags);
+
+        const glm::uvec2 oceanSize = Ocean::GetBaseFFTResolution(); // WARNING!!! This size must bit your largest FFT dimensions
         g_ssbos["fftSpectrumInSSBO"] = OpenGLSSBO(oceanSize.x * oceanSize.y * sizeof(std::complex<float>), dynamicFlags);
         g_ssbos["fftSpectrumOutSSBO"] = OpenGLSSBO(oceanSize.x * oceanSize.y * sizeof(std::complex<float>), dynamicFlags);
         g_ssbos["fftDispInXSSBO"] = OpenGLSSBO(oceanSize.x * oceanSize.y * sizeof(std::complex<float>), dynamicFlags);
@@ -144,9 +161,14 @@ namespace OpenGLRenderer {
         g_ssbos["fftGradZOutSSBO"] = OpenGLSSBO(oceanSize.x * oceanSize.y * sizeof(std::complex<float>), dynamicFlags);
         g_ssbos["OceanPatchTransforms"] = OpenGLSSBO(sizeof(glm::mat4(1.0f)), GL_DYNAMIC_STORAGE_BIT);
 
-        // Precompute HO
-        std::vector<std::complex<float>> h0 = Ocean::ComputeH0();
-        g_ssbos["ffth0"].CopyFrom(h0.data(), sizeof(std::complex<float>) * h0.size());
+        g_tesselationPatch.Resize2(Ocean::GetTesslationMeshSize().x, Ocean::GetTesslationMeshSize().y);
+
+        // Upload HO
+        const std::vector<std::complex<float>>& h0Band0 = Ocean::GetH0(0);
+        const std::vector<std::complex<float>>& h0Band1 = Ocean::GetH0(1);
+        g_ssbos["ffth0Band0"].CopyFrom(h0Band0.data(), sizeof(std::complex<float>) * h0Band0.size());
+        g_ssbos["ffth0Band1"].CopyFrom(h0Band1.data(), sizeof(std::complex<float>) * h0Band1.size());
+
 
         int tileXCount = g_frameBuffers["GBuffer"].GetWidth() / TILE_SIZE;
         int tileYCount = g_frameBuffers["GBuffer"].GetHeight() / TILE_SIZE;
@@ -217,11 +239,16 @@ namespace OpenGLRenderer {
         g_shaders["HeightMapPaint"] = OpenGLShader({ "GL_heightmap_paint.comp" });
         g_shaders["LightCulling"] = OpenGLShader({ "GL_light_culling.comp" });
         g_shaders["Lighting"] = OpenGLShader({ "GL_lighting.comp" });
+
+        g_shaders["OceanSurfaceComposite"] = OpenGLShader({ "GL_ocean_surface_composite.comp" });
+        g_shaders["OceanGeometry"] = OpenGLShader({ "GL_ocean_geometry.vert", "GL_ocean_geometry.frag", "GL_ocean_geometry.tesc", "GL_ocean_geometry.tese" });
         g_shaders["OceanCalculateSpectrum"] = OpenGLShader({ "GL_ocean_calculate_spectrum.comp" });
-        g_shaders["OceanColor"] = OpenGLShader({ "GL_ocean_color.vert", "GL_ocean_color.frag" });
-        g_shaders["OceanComposite"] = OpenGLShader({ "GL_ocean_composite.comp" });
-        g_shaders["OceanUpdateMesh"] = OpenGLShader({ "GL_ocean_update_mesh.comp" });
-        g_shaders["OceanUpdateNormals"] = OpenGLShader({ "GL_ocean_update_normals.comp" });
+        g_shaders["OceanUpdateTextures"] = OpenGLShader({ "GL_ocean_update_textures.comp" });
+        g_shaders["OceanUnderwaterComposite"] = OpenGLShader({ "GL_ocean_underwater_composite.comp" });
+        g_shaders["OceanUnderwaterMaskPreProcess"] = OpenGLShader({ "GL_ocean_underwater_mask_preprocess.comp" });
+        g_shaders["OceanPositionReadback"] = OpenGLShader({ "GL_ocean_position_readback.comp" });
+        g_shaders["GaussianBlur"] = OpenGLShader({ "GL_gaussian_blur.comp" });
+
         g_shaders["Outline"] = OpenGLShader({ "GL_outline.vert", "GL_outline.frag" });
         g_shaders["OutlineComposite"] = OpenGLShader({ "GL_outline_composite.comp" });
         g_shaders["OutlineMask"] = OpenGLShader({ "GL_outline_mask.vert", "GL_outline_mask.frag" });
@@ -340,6 +367,60 @@ namespace OpenGLRenderer {
         //dstRect.y1 = gBuffer.GetHeight() * 0.6f;
         //OpenGLRenderer::BlitToDefaultFrameBuffer(&gBuffer, "Glass", srcRect, dstRect, GL_COLOR_BUFFER_BIT, GL_LINEAR);
         
+
+
+
+        // DEBUG RENDER FFT TEXTURES TO THE SCREEN
+        static bool showNormals = false;
+        if (Input::KeyPressed(HELL_KEY_M)) {
+            showNormals = !showNormals;
+        }
+        if (Input::KeyPressed(HELL_KEY_5)) {
+            g_fftDisplayMode = 1;
+            g_fftEditBand = 0;
+        }
+        if (Input::KeyPressed(HELL_KEY_6)) {
+            g_fftDisplayMode = 2;
+            g_fftEditBand = 1;
+        }
+        if (Input::KeyPressed(HELL_KEY_7)) {
+            g_fftDisplayMode = 0;
+        }
+
+
+        OpenGLFrameBuffer* fft_band0 = &g_frameBuffers["FFT_band0"];
+        OpenGLFrameBuffer* fft_band1 = &g_frameBuffers["FFT_band1"];
+        OpenGLFrameBuffer* waterFramebuffer = &g_frameBuffers["Water"];
+
+        int size = fft_band0->GetWidth() * 1.5f;
+
+        BlitRect blitRect;
+        blitRect.x1 = size;
+        blitRect.y1 = size;
+
+        if (GetFftDisplayMode() == 1 && !showNormals) {            
+            OpenGLRenderer::BlitToDefaultFrameBuffer(fft_band0, "Displacement", blitRect, blitRect, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        }
+        if (GetFftDisplayMode() == 1 && showNormals) {
+            OpenGLRenderer::BlitToDefaultFrameBuffer(fft_band0, "Normals", blitRect, blitRect, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        }
+
+        if (GetFftDisplayMode() == 2 && !showNormals) {
+            OpenGLRenderer::BlitToDefaultFrameBuffer(fft_band1, "Displacement", blitRect, blitRect, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        }
+        if (GetFftDisplayMode() == 2 && showNormals) {
+            OpenGLRenderer::BlitToDefaultFrameBuffer(fft_band1, "Normals", blitRect, blitRect, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        }
+       // if (GetFftDisplayMode() == 0) {
+       //
+       //     blitRect.x1 = waterFramebuffer->GetWidth() * 1.0f;// 0.5f;
+       //     blitRect.y1 = waterFramebuffer->GetHeight() * 1.0f;//0.5f;
+       //     blitRect.x1 = BackEnd::GetFullScreenWidth();
+       //     blitRect.y1 = BackEnd::GetFullScreenHeight();
+       //     OpenGLRenderer::BlitToDefaultFrameBuffer(waterFramebuffer, "Color", blitRect, blitRect, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+       // }
+       //
+       // std::cout << "GetFftDisplayMode(): " << GetFftDisplayMode() << "\n";
     }
 
     void ClearRenderTargets() {
@@ -349,8 +430,9 @@ namespace OpenGLRenderer {
 
         // Water
         waterFrameBuffer->Bind();
-        waterFrameBuffer->ClearAttachment("Diffuse", 0, 0, 0, 0);
-        waterFrameBuffer->ClearAttachment("Specular", 0, 0, 0, 0);
+        waterFrameBuffer->ClearAttachment("Color", 0, 0, 0, 0);
+        waterFrameBuffer->ClearAttachment("UnderwaterMask", 0);
+        waterFrameBuffer->ClearAttachment("WorldPosition", 0, 0, 0, 0);
 
         // GBuffer
         glDepthMask(GL_TRUE);
@@ -456,7 +538,7 @@ namespace OpenGLRenderer {
     }
 
     OpenGLMeshPatch* GetOceanMeshPatch() {
-        return &g_oceanMeshPatch;
+        return &g_tesselationPatch;
     }
 
     OpenGLShader* GetShader(const std::string& name) {

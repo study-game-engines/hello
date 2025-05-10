@@ -33,19 +33,34 @@ void OpenGLFrameBuffer::Create(const char* name, const glm::ivec2& size) {
     Create(name, size.x, size.y);
 }
 
-void OpenGLFrameBuffer::CreateAttachment(const char* name, GLenum internalFormat, GLenum minFilter, GLenum magFilter) {
+void OpenGLFrameBuffer::CreateAttachment(const char* name, GLenum internalFormat, GLenum minFilter, GLenum magFilter, GLenum wrap, bool allocateMips) {
     ColorAttachment& colorAttachment = m_colorAttachments.emplace_back();
     colorAttachment.name = name;
     colorAttachment.internalFormat = internalFormat;
     colorAttachment.format = OpenGLUtil::GLInternalFormatToGLFormat(internalFormat);
     colorAttachment.type = OpenGLUtil::GLInternalFormatToGLType(internalFormat);
     glCreateTextures(GL_TEXTURE_2D, 1, &colorAttachment.handle);
-    glTextureStorage2D(colorAttachment.handle, 1, internalFormat, m_width, m_height);
-    glTextureParameteri(colorAttachment.handle, GL_TEXTURE_MIN_FILTER, minFilter);
-    glTextureParameteri(colorAttachment.handle, GL_TEXTURE_MAG_FILTER, magFilter);
-    glTextureParameteri(colorAttachment.handle, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTextureParameteri(colorAttachment.handle, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glNamedFramebufferTexture(m_handle, GL_COLOR_ATTACHMENT0 + m_colorAttachments.size() - 1, colorAttachment.handle, 0); 
+
+    int levels = 1;
+    if (allocateMips) {
+        int maxDim = std::max(m_width, m_height);
+        levels = 1 + (int)floor(log2(maxDim));
+    }
+
+    glTextureStorage2D(colorAttachment.handle, levels, internalFormat, m_width, m_height);
+    glTextureParameteri(colorAttachment.handle, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTextureParameteri(colorAttachment.handle, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    if (allocateMips) {
+        glTextureParameteri(colorAttachment.handle, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTextureParameteri(colorAttachment.handle, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        //glTextureParameteri(colorAttachment.handle, GL_TEXTURE_WRAP_S, wrap);
+        //glTextureParameteri(colorAttachment.handle, GL_TEXTURE_WRAP_T, wrap);
+        glTextureParameteri(colorAttachment.handle, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTextureParameteri(colorAttachment.handle, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    }
+
+    glNamedFramebufferTexture(m_handle, GL_COLOR_ATTACHMENT0 + m_colorAttachments.size() - 1, colorAttachment.handle, 0);
     std::string debugLabel = "Texture (FBO: " + std::string(m_name) + " Tex: " + std::string(name) + ")";
     glObjectLabel(GL_TEXTURE, colorAttachment.handle, static_cast<GLsizei>(debugLabel.length()), debugLabel.c_str());
 }
