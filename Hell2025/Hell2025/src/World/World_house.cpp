@@ -7,6 +7,8 @@
 namespace World {
 
     MeshBuffer g_houseMeshBuffer;
+    MeshBuffer g_weatherBoardMeshBuffer;
+    
 
     void AddHouse(HouseCreateInfo houseCreateInfo, SpawnOffset spawnOffset) {
         for (DoorCreateInfo& createInfo : houseCreateInfo.doors) {
@@ -33,6 +35,7 @@ namespace World {
         }
 
         UpdateHouseMeshBuffer();
+        UpdateWeatherBoardMeshBuffer();
     }
 
     void SaveHouse() {
@@ -81,8 +84,37 @@ namespace World {
         g_houseMeshBuffer.UpdateBuffers();
     }
 
+    void UpdateWeatherBoardMeshBuffer() {
+        g_weatherBoardMeshBuffer.Reset();
+
+        std::vector<Vertex> vertices;
+        std::vector<uint32_t> indices;
+
+        for (Wall& wall : GetWalls()) {
+
+            for (BoardVertexData& boardVertexData : wall.m_boardVertexDataSet) {
+                uint32_t baseVertex = vertices.size();
+                vertices.insert(vertices.end(), boardVertexData.vertices.begin(), boardVertexData.vertices.end());
+
+                for (uint32_t& index : boardVertexData.indices) {
+                    indices.push_back(index + baseVertex);
+                }
+            }
+        }
+
+        g_weatherBoardMeshBuffer.GetGLMeshBuffer().ReleaseBuffers();
+        g_weatherBoardMeshBuffer.GetGLMeshBuffer().UpdateBuffers(vertices, indices);
+
+
+
+    }
+
     MeshBuffer& GetHouseMeshBuffer() {
         return g_houseMeshBuffer;
+    }
+
+    MeshBuffer& GetWeatherBoardMeshBuffer() {
+        return g_weatherBoardMeshBuffer;
     }
 
     Mesh* GetHouseMeshByIndex(uint32_t meshIndex) {

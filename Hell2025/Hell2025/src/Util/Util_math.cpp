@@ -6,6 +6,21 @@
 
 namespace Util {
 
+    glm::mat4 GetRotationMat4FromForwardVector(glm::vec3 forward) {
+        glm::vec3 worldUp = glm::vec3(0.0f, 1.0f, 0.0f);
+
+        forward = glm::normalize(forward);
+        glm::vec3 right = glm::normalize(glm::cross(worldUp, forward));
+        worldUp = glm::cross(forward, right);
+        glm::mat4 rotation = glm::mat4(1.0f);
+
+        rotation[0] = glm::vec4(right, 0.0f);
+        rotation[1] = glm::vec4(worldUp, 0.0f);
+        rotation[2] = glm::vec4(-forward, 0.0f);
+
+        return rotation;
+    }
+
     glm::vec3 GetMidPoint(const glm::vec3& a, const glm::vec3 b) {
         return a + b * 0.5f;
     }

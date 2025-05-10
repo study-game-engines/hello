@@ -52,6 +52,7 @@ struct WallCreateInfo {
     bool useReversePointOrder = false;
     TrimType ceilingTrimType = TrimType::NONE;
     TrimType floorTrimType = TrimType::NONE;
+    WallType wallType = WallType::INTERIOR;
 };
 
 struct LightCreateInfo {
@@ -79,6 +80,13 @@ struct PickUpCreateInfo {
     glm::vec3 position = glm::vec3(0.0f);
     glm::vec3 rotation = glm::vec3(0.0f);
     std::string pickUpType = "";
+};
+
+struct PictureFrameCreateInfo {
+    glm::vec3 position = glm::vec3(0.0f);
+    glm::vec3 rotation = glm::vec3(0.0f);
+    glm::vec3 scale = glm::vec3(1.0f);
+    PictureFrameType type = PictureFrameType::REGULAR_LANDSCAPE;
 };
 
 struct SpriteSheetObjectCreateInfo {

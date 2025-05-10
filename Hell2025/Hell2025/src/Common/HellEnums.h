@@ -78,6 +78,7 @@ enum class ObjectType {
     PICK_UP,
     TREE,
     UNDEFINED,
+    PICTURE_FRAME,
     WALL,
     WALL_SEGMENT,
     WINDOW,
@@ -273,6 +274,12 @@ enum struct TrimType {
     PLASTER
 };
 
+enum struct WallType {
+    INTERIOR,
+    WEATHER_BOARDS,
+    NONE
+};
+
 enum struct TreeType {
     TREE_LARGE_0 = 0,
     TREE_LARGE_1,
@@ -295,4 +302,11 @@ enum class OpenState {
     OPENING,
     CLOSED,
     CLOSING
+};
+
+enum class PictureFrameType {
+    BIG_LANDSCAPE,
+    TALL_THIN,
+    REGULAR_PORTRAIT,
+    REGULAR_LANDSCAPE
 };

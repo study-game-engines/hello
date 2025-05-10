@@ -12,7 +12,7 @@ struct MeshBuffer {
     void Reset();
 
     std::string& GetName()                  { return m_name; }
-    OpenGLMeshBuffer& GetGLMeshBuffer()           { return m_opengMeshBuffer; }
+    OpenGLMeshBuffer& GetGLMeshBuffer()     { return m_opengMeshBuffer; }
     VulkanDetachedMesh& GetVKMesh()         { return m_vulkanDetachedMesh; }
     std::vector<Vertex>& GetVertices()      { return m_vertices; }
     std::vector<uint32_t>& GetIndices()     { return m_indices; }

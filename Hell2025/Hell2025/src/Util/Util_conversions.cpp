@@ -41,6 +41,12 @@ namespace Util {
         return TrimType::NONE;
     }
 
+    WallType StringToWallType(const std::string& str) {
+        if (str == "INTERIOR") return WallType::INTERIOR;
+        if (str == "WEATHER_BOARDS") return WallType::WEATHER_BOARDS;
+        return WallType::NONE;
+    }
+
     std::string BlendingModeToString(BlendingMode mode) {
         switch (mode) {
             case BlendingMode::NONE:                return "NONE";
@@ -80,6 +86,7 @@ namespace Util {
             case ObjectType::PIANO_TOP_COVER:               return "PIANO_TOP_COVER";
             case ObjectType::PIANO_SHEET_MUSIC_REST:        return "PIANO_SHEET_MUSIC_REST";
             case ObjectType::PIANO_SHEET_SUSTAIN_PEDAL:     return "PIANO_SHEET_SUSTAIN_PEDAL";
+            case ObjectType::PICTURE_FRAME:                 return "PICTURE_FRAME";
             case ObjectType::TREE:                          return "TREE";
             case ObjectType::UNDEFINED:                     return "UNDEFINED";
             case ObjectType::WALL:                          return "WALL";
@@ -98,6 +105,15 @@ namespace Util {
             case PhysicsType::GROUND_PLANE:     return "GROUND_PLANE";
             case PhysicsType::UNDEFINED:        return "UNDEFINED";
             default:                            return "UNKNOWN";
+        }
+    }
+
+    std::string WallTypeToString(WallType type) {
+        switch (type) {
+            case WallType::INTERIOR:        return "INTERIOR";
+            case WallType::WEATHER_BOARDS:  return "WEATHER_BOARDS";
+            case WallType::NONE:            return "NONE";
+            default:                        return "UNKNOWN";
         }
     }
 

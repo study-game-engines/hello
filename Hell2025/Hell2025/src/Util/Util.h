@@ -15,6 +15,7 @@ namespace Util {
     void UnpackUint64(uint32_t xValue, uint32_t yValue, uint64_t& out);
 
     // Math
+    glm::mat4 GetRotationMat4FromForwardVector(glm::vec3 forward);
     glm::vec3 GetMidPoint(const glm::vec3& a, const glm::vec3 b);
     float EulerYRotationBetweenTwoPoints(glm::vec3 a, glm::vec3 b);
     glm::mat4 RotationMatrixFromForwardVector(glm::vec3 forward, glm::vec3 worldForward, glm::vec3 worldUp);
@@ -131,10 +132,12 @@ namespace Util {
     std::string ObjectTypeToString(ObjectType type);
     std::string PhysicsTypeToString(PhysicsType type);
     std::string TrimTypeToString(TrimType type);
+    std::string WallTypeToString(WallType type);
     BlendingMode StringToBlendingMode(const std::string& str);
     LightType StringToLightType(const std::string& str);
     PickUpType StringToPickUpType(const std::string& str);
     TrimType StringToTrimType(const std::string& str);
+    WallType StringToWallType(const std::string& str);
     ObjectType IntToEnum(int value);
     int32_t EnumToInt(ObjectType type);
     std::string FloatToString(float value, int prevision = 3);

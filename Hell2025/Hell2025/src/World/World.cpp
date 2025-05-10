@@ -28,6 +28,7 @@ namespace World {
     std::vector<HeightMapChunk> g_heightMapChunks;
     std::vector<Plane> g_planes;
     std::vector<PickUp> g_pickUps;
+    std::vector<PictureFrame> g_pictureFrames;
     std::vector<Piano> g_pianos;
     std::vector<Transform> g_doorAndWindowCubeTransforms;
     std::vector<Tree> g_trees;
@@ -59,12 +60,12 @@ namespace World {
     void Init() {
 
         // Create test shark
-        if (g_sharkAnimatedGameObject == 0 && false) {
+        if (g_sharkAnimatedGameObject == 0) {
             g_sharkAnimatedGameObject = CreateAnimatedGameObject();
             AnimatedGameObject* shark = GetAnimatedGameObjectByObjectId(g_sharkAnimatedGameObject);
             shark->SetSkinnedModel("Shark");
             shark->SetPosition(glm::vec3(36.0f, 12.0f, 25.0f));
-            shark->SetPosition(glm::vec3(38.0f, 11.25f, 24.0f));
+            shark->SetPosition(glm::vec3(38.0f, 11.48f, 24.0f));
             shark->SetAnimationModeToBindPose();
             shark->SetName("222");
             shark->SetAnimationModeToBindPose();
@@ -457,6 +458,7 @@ namespace World {
             UpdateClippingCubes();
             UpdateAllWallCSG();
             UpdateHouseMeshBuffer();
+            UpdateWeatherBoardMeshBuffer();
             Physics::ForceZeroStepUpdate();
         }
         Piano* piano = World::GetPianoByObjectId(objectId);
@@ -468,12 +470,14 @@ namespace World {
         if (plane) {
             plane->UpdateWorldSpaceCenter(position);
             UpdateHouseMeshBuffer();
+            UpdateWeatherBoardMeshBuffer();
         }
         Wall* wall = World::GetWallByObjectId(objectId);
         if (wall) {
             wall->UpdateWorldSpaceCenter(position);
             Physics::ForceZeroStepUpdate();
             UpdateHouseMeshBuffer();
+            UpdateWeatherBoardMeshBuffer();
         }
         Window* window = World::GetWindowByObjectId(objectId);
         if (window) {
@@ -481,6 +485,7 @@ namespace World {
             UpdateClippingCubes();
             UpdateAllWallCSG();
             UpdateHouseMeshBuffer();
+            UpdateWeatherBoardMeshBuffer();
             Physics::ForceZeroStepUpdate();
         }
     }
@@ -576,11 +581,20 @@ namespace World {
         g_pianos.clear();
         g_pickUps.clear();
         g_planes.clear();
+        g_pictureFrames.clear();
         g_trees.clear();
         g_walls.clear();
         g_windows.clear();
 
         std::cout << "Reset world\n";
+
+        PictureFrameCreateInfo createInfo;
+        createInfo.position = glm::vec3(38.4f, 11.9f, 25.0f);
+        createInfo.rotation.y = HELL_PI * -0.5f;
+        createInfo.type = PictureFrameType::BIG_LANDSCAPE;
+        AddPictureFrame(createInfo);
+
+
     }
 
     void UpdateClippingCubes() {
@@ -670,6 +684,13 @@ namespace World {
 
         PickUp& pickUp = g_pickUps.emplace_back();
         pickUp.Init(createInfo);
+    }
+
+    void AddPictureFrame(PictureFrameCreateInfo createInfo, SpawnOffset spawnOffset) {
+        createInfo.position += spawnOffset.translation;
+
+        PictureFrame& pictureFrame = g_pictureFrames.emplace_back();
+        pictureFrame.Init(createInfo);
     }
 
     void AddTree(TreeCreateInfo createInfo, SpawnOffset spawnOffset) {
@@ -824,6 +845,7 @@ namespace World {
     std::vector<Light>& GetLights()                             { return g_lights; };
     std::vector<Piano>& GetPianos()                             { return g_pianos; };
     std::vector<PickUp>& GetPickUps()                           { return g_pickUps; };
+    std::vector<PictureFrame>& GetPictureFrames()               { return g_pictureFrames; };
     std::vector<Transform>& GetDoorAndWindowCubeTransforms()    { return g_doorAndWindowCubeTransforms; }
     std::vector<Tree>& GetTrees()                               { return g_trees; };
     std::vector<Wall>& GetWalls()                               { return g_walls; }

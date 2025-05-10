@@ -12,6 +12,7 @@
 #include "Types/House/Plane.h"
 #include "Types/House/Wall.h"
 #include "Types/House/Window.h"
+#include "Types/Misc/PictureFrame.h"
 #include "Types/Misc/Piano.h"
 #include "Types/Exterior/Tree.h"
 #include "Util/Util.h"
@@ -64,6 +65,7 @@ namespace World {
     void AddLight(LightCreateInfo createInfo, SpawnOffset spawnOffset = SpawnOffset());
     void AddPiano(PianoCreateInfo createInfo, SpawnOffset spawnOffset);
     void AddPickUp(PickUpCreateInfo createInfo, SpawnOffset spawnOffset = SpawnOffset());
+    void AddPictureFrame(PictureFrameCreateInfo createInfo, SpawnOffset spawnOffset = SpawnOffset());
     void AddTree(TreeCreateInfo createInfo, SpawnOffset spawnOffset = SpawnOffset());
     uint64_t AddWall(WallCreateInfo createInfo, SpawnOffset spawnOffset = SpawnOffset());
     void AddWindow(WindowCreateInfo createInfo, SpawnOffset spawnOffset);
@@ -113,8 +115,10 @@ namespace World {
     void UpdateClippingCubes();
     void UpdateAllWallCSG();
     void UpdateHouseMeshBuffer();
+    void UpdateWeatherBoardMeshBuffer();
 
     MeshBuffer& GetHouseMeshBuffer();
+    MeshBuffer& GetWeatherBoardMeshBuffer();
     Mesh* GetHouseMeshByIndex(uint32_t meshIndex);
 
     AnimatedGameObject* GetAnimatedGameObjectByObjectId(uint64_t objectID);
@@ -150,6 +154,7 @@ namespace World {
     std::vector<Light>& GetLights();
     std::vector<Piano>& GetPianos();
     std::vector<PickUp>& GetPickUps();
+    std::vector<PictureFrame>& GetPictureFrames();
     std::vector<Transform>& GetDoorAndWindowCubeTransforms();
     std::vector<Tree>& GetTrees();
     std::vector<Wall>& GetWalls();

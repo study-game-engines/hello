@@ -55,6 +55,10 @@ namespace World {
             RenderDataManager::SubmitRenderItems(pickUp.GetRenderItems());
         }
 
+        for (PictureFrame& pictureFrame : GetPictureFrames()) {
+            RenderDataManager::SubmitRenderItems(pictureFrame.GetRenderItems());
+        }
+
         for (Decal& decal : decals) {
             decal.SubmitRenderItem();
         }
@@ -119,10 +123,11 @@ namespace World {
 
         for (Wall& wall : GetWalls()) {
             wall.SubmitRenderItems();
+            RenderDataManager::SubmitRenderItems(wall.GetWeatherBoardstopRenderItems());
         }
 
         // Hack to render door and window cube transforms
-        if (false) {
+        if (true && false) {
             int meshIndex = AssetManager::GetMeshIndexByModelNameMeshName("Primitives", "Cube");
             std::vector<Transform>& transforms = GetDoorAndWindowCubeTransforms();
             for (Transform& transform : transforms) {

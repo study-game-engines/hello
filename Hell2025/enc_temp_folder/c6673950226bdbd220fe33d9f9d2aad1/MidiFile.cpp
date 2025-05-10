@@ -33,8 +33,6 @@ void MidiFile::Update(float deltaTime) {
 
         Piano& piano = World::GetPianos()[0];
 
-        glClear(GL_COLOR_BUFFER_BIT);
-
         switch (currentEvent.type) {
             case MidiEventType::NOTE_ON: {
                 if (printDebug) {

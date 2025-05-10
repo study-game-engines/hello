@@ -60,7 +60,8 @@ namespace nlohmann {
             {"TextureRotation", createInfo.textureRotation},
             {"TrimTypeCeiling", Util::TrimTypeToString(createInfo.ceilingTrimType)},
             {"TrimTypeFloor",  Util::TrimTypeToString(createInfo.floorTrimType)},
-            {"UseReversePointOrder", createInfo.useReversePointOrder}
+            {"UseReversePointOrder", createInfo.useReversePointOrder},
+            {"WallType",  Util::WallTypeToString(createInfo.wallType)}
         };
     }
 
@@ -137,6 +138,7 @@ namespace nlohmann {
         info.textureRotation = j.value("TextureRotation", 0.0f);
         info.ceilingTrimType = Util::StringToTrimType(j.value("TrimTypeCeiling", "NONE"));
         info.floorTrimType = Util::StringToTrimType(j.value("TrimTypeCeiling", "NONE"));
+        info.wallType = Util::StringToWallType(j.value("WallType", "NONE"));
         info.useReversePointOrder = j.value("UseReversePointOrder", false);
     }
 
