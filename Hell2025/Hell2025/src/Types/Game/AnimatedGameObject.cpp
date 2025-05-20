@@ -34,6 +34,13 @@ void AnimatedGameObject::UpdateRenderItems() {
             renderItem.ignoredViewportIndex = m_ignoredViewportIndex;
             renderItem.exclusiveViewportIndex = m_exclusiveViewportIndex;
             renderItem.baseSkinnedVertex = RenderDataManager::GetBaseSkinnedVertex() + mesh->baseVertexLocal;
+            renderItem.furLength = m_meshRenderingEntries[i].furLength;
+            renderItem.furUVScale = m_meshRenderingEntries[i].furUVScale;
+            renderItem.furShellDistanceAttenuation = m_meshRenderingEntries[i].furShellDistanceAttenuation;
+
+            if (m_skinnedModel->GetName() == "Kangaroo") {
+                renderItem.customFlag = 1;
+            }
         }
     }
     RenderDataManager::IncrementBaseSkinnedVertex(m_skinnedModel->GetVertexCount());
@@ -106,6 +113,39 @@ void AnimatedGameObject::SetMeshMaterialByMeshName(const std::string& meshName, 
     for (MeshRenderingEntry& meshRenderingEntry : m_meshRenderingEntries) {
         if (meshRenderingEntry.meshName == meshName) {
             meshRenderingEntry.materialIndex = AssetManager::GetMaterialIndexByName(materialName);
+        }
+    }
+}
+
+void AnimatedGameObject::SetMeshFurLength(const std::string& meshName, float furLength) {
+    if (!m_skinnedModel) {
+        return;
+    }
+    for (MeshRenderingEntry& meshRenderingEntry : m_meshRenderingEntries) {
+        if (meshRenderingEntry.meshName == meshName) {
+            meshRenderingEntry.furLength = furLength;
+        }
+    }
+}
+
+void AnimatedGameObject::SetMeshFurUVScale(const std::string& meshName, float uvScale) {
+    if (!m_skinnedModel) {
+        return;
+    }
+    for (MeshRenderingEntry& meshRenderingEntry : m_meshRenderingEntries) {
+        if (meshRenderingEntry.meshName == meshName) {
+            meshRenderingEntry.furUVScale = uvScale;
+        }
+    }
+}
+
+void AnimatedGameObject::SetMeshFurShellDistanceAttenuation(const std::string& meshName, float furShellDistanceAttenuation) {
+    if (!m_skinnedModel) {
+        return;
+    }
+    for (MeshRenderingEntry& meshRenderingEntry : m_meshRenderingEntries) {
+        if (meshRenderingEntry.meshName == meshName) {
+            meshRenderingEntry.furShellDistanceAttenuation = furShellDistanceAttenuation;
         }
     }
 }

@@ -36,6 +36,12 @@ in vec4 WorldPos;
 in vec3 ViewPos;
 in vec3 EmissiveColor;
 
+
+layout (binding = 6) uniform sampler2D woundMaskTexture;
+layout (binding = 7) uniform sampler2D woundBaseColorTexture;
+layout (binding = 8) uniform sampler2D woundNormalTexture;
+layout (binding = 9) uniform sampler2D woundRmaTexture;
+
 void main() {
 #if ENABLE_BINDLESS == 1
     vec4 baseColor = texture(sampler2D(textureSamplers[BaseColorTextureIndex]), TexCoord);
@@ -46,6 +52,21 @@ void main() {
     vec3 normalMap = texture2D(normalTexture, TexCoord).rgb;
     vec3 rma = texture2D(rmaTexture, TexCoord).rgb;
 #endif
+
+
+    float woundMask = texture2D(woundMaskTexture, TexCoord).r;
+
+    vec4 woundBaseColor = texture2D(woundBaseColorTexture, TexCoord);
+    vec3 woundNormalMap = texture2D(woundNormalTexture, TexCoord).rgb;
+    vec3 woundRma = texture2D(woundRmaTexture, TexCoord).rgb;
+
+//    baseColor += woundMask;
+
+    baseColor = mix(baseColor, woundBaseColor, woundMask);
+    normalMap = mix(normalMap, woundNormalMap, woundMask);
+    rma = mix(rma, woundRma, woundMask);
+
+    //baseColor = woundBaseColor;
 
     mat3 tbn = mat3(normalize(Tangent), normalize(BiTangent), normalize(Normal));
     normalMap.rgb = normalMap.rgb * 2.0 - 1.0;

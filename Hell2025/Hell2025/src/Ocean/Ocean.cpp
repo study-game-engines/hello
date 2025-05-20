@@ -13,6 +13,7 @@
 namespace Ocean {
 
     FFTBand g_fftBands[2];
+    OceanReadbackData g_oceanReadbackData;
 
     const unsigned int g_baseFftResolution = 512;
     const float g_cellSize = 0.3f;
@@ -20,7 +21,7 @@ namespace Ocean {
     const float g_oceanMeshToGridRatio = 8.0f;       // Ratio of original ocean mesh size to the FFT grid size; used to scale the model matrix
     const float g_meshSubdivisionFactor = 32.0f;     // Number of mesh subdivisions per FFT grid cell; controls mesh density 
     const float g_modelMatrixScale = g_oceanMeshToGridRatio / g_baseFftResolution; // was g_fftResolution.x;
-    const float g_oceanOriginY = 10.0f;
+    const float g_oceanOriginY = 30.0f;
 
     //glm::vec2 g_mWindDir = glm::normalize(glm::vec2(1.0f, 0.0f));
     float g_windSpeed = 75.0f;
@@ -61,6 +62,11 @@ namespace Ocean {
         g_fftBands[1].amplitude = 0.00001f;
         g_fftBands[1].windDir = glm::normalize(glm::vec2(0.9f, -0.4f));
         g_fftBands[1].h0 = ComputeH0(g_fftBands[1], 42);
+
+        g_oceanReadbackData.heightPlayer0 = g_oceanOriginY;
+        g_oceanReadbackData.heightPlayer1 = g_oceanOriginY;
+        g_oceanReadbackData.heightPlayer2 = g_oceanOriginY;
+        g_oceanReadbackData.heightPlayer3 = g_oceanOriginY;
     }
 
     void ReComputeH0() {
@@ -161,8 +167,14 @@ namespace Ocean {
         return g_oceanOriginY;
     }
 
-    const float GetWaterHeight() {
-        return g_oceanOriginY;
+    const float GetWaterHeightAtPlayer(int playerIndex) {
+        switch (playerIndex) {
+            case 0: return g_oceanReadbackData.heightPlayer0;
+            case 1: return g_oceanReadbackData.heightPlayer1;
+            case 2: return g_oceanReadbackData.heightPlayer2;
+            case 3: return g_oceanReadbackData.heightPlayer3;
+            default: return g_oceanOriginY;
+        }
     }
 
     const glm::uvec2 GetBaseFFTResolution() {
@@ -191,5 +203,9 @@ namespace Ocean {
 
     FFTBand& GetFFTBandByIndex(int bandIndex) {
         return g_fftBands[bandIndex];
+    }
+
+    OceanReadbackData& GetOceanReadBackData() {
+        return g_oceanReadbackData;
     }
 }

@@ -33,6 +33,24 @@ namespace OpenGLRenderer {
         gBuffer->DrawBuffers({ "BaseColor", "Normal", "RMA", "WorldSpacePosition", "Emissive" });
         SetRasterizerState("GeometryPass_NonBlended");
 
+        OpenGLFrameBuffer* decalMasksFBO = GetFrameBuffer("DecalMasks");
+        glActiveTexture(GL_TEXTURE6);
+        glBindTexture(GL_TEXTURE_2D, decalMasksFBO->GetColorAttachmentHandleByName("DecalMask0"));
+        glActiveTexture(GL_TEXTURE7);
+        glBindTexture(GL_TEXTURE_2D, AssetManager::GetTextureByName("KangarooBlood_ALB")->GetGLTexture().GetHandle());
+        glActiveTexture(GL_TEXTURE8);
+        glBindTexture(GL_TEXTURE_2D, AssetManager::GetTextureByName("KangarooBlood_NRM")->GetGLTexture().GetHandle());
+        glActiveTexture(GL_TEXTURE9);
+        glBindTexture(GL_TEXTURE_2D, AssetManager::GetTextureByName("KangarooBlood_RMA")->GetGLTexture().GetHandle());
+
+
+        //glActiveTexture(GL_TEXTURE7);
+        //glBindTexture(GL_TEXTURE_2D, AssetManager::GetTextureByName("KangarooFlesh_ALB")->GetGLTexture().GetHandle());
+        //glActiveTexture(GL_TEXTURE8);
+        //glBindTexture(GL_TEXTURE_2D, AssetManager::GetTextureByName("KangarooFlesh_NRM")->GetGLTexture().GetHandle());
+        //glActiveTexture(GL_TEXTURE9);
+        //glBindTexture(GL_TEXTURE_2D, AssetManager::GetTextureByName("KangarooFlesh_RMA")->GetGLTexture().GetHandle());
+
         for (int i = 0; i < 4; i++) {
             Viewport* viewport = ViewportManager::GetViewportByIndex(i);
             if (viewport->IsVisible()) {

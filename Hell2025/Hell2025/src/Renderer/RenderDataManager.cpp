@@ -29,7 +29,13 @@ namespace RenderDataManager {
     std::vector<HouseRenderItem> g_houseRenderItems;
     std::vector<HouseRenderItem> g_houseOutlineRenderItems;
     std::vector<RenderItem> g_decalRenderItems;
+
     std::vector<RenderItem> g_renderItems;
+    std::vector<RenderItem> g_renderItemsBlended;
+    std::vector<RenderItem> g_renderItemsAlphaDiscarded;
+    std::vector<RenderItem> g_renderItemsHairTopLayer;
+    std::vector<RenderItem> g_renderItemsHairBottomLayer;
+
     std::vector<RenderItem> g_outlineRenderItems;
     std::vector<RenderItem> g_shadowMapRenderItems;
 
@@ -59,7 +65,13 @@ namespace RenderDataManager {
         g_decalRenderItems.clear();
         g_houseOutlineRenderItems.clear();
         g_houseRenderItems.clear();
+
         g_renderItems.clear();
+        g_renderItemsBlended.clear();
+        g_renderItemsAlphaDiscarded.clear();
+        g_renderItemsHairTopLayer.clear();
+        g_renderItemsHairBottomLayer.clear();
+
         g_outlineRenderItems.clear();
 
         g_gpuLightsHighRes.clear();
@@ -83,13 +95,15 @@ namespace RenderDataManager {
             glm::mat4 viewMatrix = glm::mat4(1);
             if (Editor::IsOpen()) {
                 viewMatrix = Editor::GetViewportViewMatrix(i);
-                g_viewportData[0].orthoSize = Editor::GetEditorOrthoSize(i);
-                g_viewportData[0].isOrtho = true;
+                g_viewportData[i].orthoSize = Editor::GetEditorOrthoSize(i);
+                g_viewportData[i].isOrtho = true;
+                g_viewportData[i].fov = 1.0f;
             }
             else {
                 viewMatrix = Game::GetLocalPlayerCameraByIndex(i)->GetViewMatrix();
-                g_viewportData[0].orthoSize = 0.0f;
-                g_viewportData[0].isOrtho = false;
+                g_viewportData[i].orthoSize = 0.0f;
+                g_viewportData[i].isOrtho = false;
+                g_viewportData[i].fov = Game::GetLocalPlayerFovByIndex(i);
             }
 
             g_viewportData[i].projection = viewport->GetProjectionMatrix();
@@ -255,16 +269,11 @@ namespace RenderDataManager {
             g_flashLightShadowMapDrawInfo.houseMeshRenderItems[i].clear();
         }
 
-        std::vector<RenderItem>& renderItemsBlended = World::GetRenderItemsBlended();
-        std::vector<RenderItem>& geometryAlphaDiscarded = World::GetRenderItemsAlphaDiscarded();
-        std::vector<RenderItem>& hairTopLayer = World::GetRenderItemsHairTopLayer();
-        std::vector<RenderItem>& hairBottomLayer = World::GetRenderItemsHairBottomLayer();
-
         SortRenderItems(g_renderItems);
-        SortRenderItems(renderItemsBlended);
-        SortRenderItems(geometryAlphaDiscarded);
-        SortRenderItems(hairTopLayer);
-        SortRenderItems(hairBottomLayer);
+        SortRenderItems(g_renderItemsBlended);
+        SortRenderItems(g_renderItemsAlphaDiscarded);
+        SortRenderItems(g_renderItemsHairTopLayer);
+        SortRenderItems(g_renderItemsHairBottomLayer);
 
         for (int i = 0; i < 4; i++) {
             Viewport* viewport = ViewportManager::GetViewportByIndex(i);
@@ -272,10 +281,10 @@ namespace RenderDataManager {
 
             Frustum& frustum = viewport->GetFrustum();
             CreateDrawCommands(set.geometry[i], g_renderItems, frustum, i);
-            CreateDrawCommands(set.geometryBlended[i], renderItemsBlended, frustum, i);
-            CreateDrawCommands(set.geometryAlphaDiscarded[i], geometryAlphaDiscarded, frustum, i);
-            CreateDrawCommands(set.hairTopLayer[i], hairTopLayer, frustum, i);
-            CreateDrawCommands(set.hairBottomLayer[i], hairBottomLayer, frustum, i);
+            CreateDrawCommands(set.geometryBlended[i], g_renderItemsBlended, frustum, i);
+            CreateDrawCommands(set.geometryAlphaDiscarded[i], g_renderItemsAlphaDiscarded, frustum, i);
+            CreateDrawCommands(set.hairTopLayer[i], g_renderItemsHairTopLayer, frustum, i);
+            CreateDrawCommands(set.hairBottomLayer[i], g_renderItemsHairBottomLayer, frustum, i);
         }
 
         CreateDrawCommandsSkinned(set.skinnedGeometry, World::GetSkinnedRenderItems());
@@ -633,6 +642,22 @@ namespace RenderDataManager {
 
     void SubmitRenderItems(const std::vector<RenderItem>& renderItems) {
         g_renderItems.insert(g_renderItems.begin(), renderItems.begin(), renderItems.end());
+    }
+
+    void SubmitRenderItemsBlended(const std::vector<RenderItem>& renderItems) {
+        g_renderItemsBlended.insert(g_renderItemsBlended.begin(), renderItems.begin(), renderItems.end());
+    }
+
+    void SubmitRenderItemsAlphaDiscard(const std::vector<RenderItem>& renderItems) {
+        g_renderItemsAlphaDiscarded.insert(g_renderItemsAlphaDiscarded.begin(), renderItems.begin(), renderItems.end());
+    }
+
+    void SubmitRenderItemsAlphaHairTopLayer(const std::vector<RenderItem>& renderItems) {
+        g_renderItemsHairTopLayer.insert(g_renderItemsHairTopLayer.begin(), renderItems.begin(), renderItems.end());
+    }
+
+    void SubmitRenderItemsAlphaHairBottomLayer(const std::vector<RenderItem>& renderItems) {
+        g_renderItemsHairBottomLayer.insert(g_renderItemsHairBottomLayer.begin(), renderItems.begin(), renderItems.end());
     }
 
     void SubmitRenderItems(const std::vector<HouseRenderItem>& renderItems) {

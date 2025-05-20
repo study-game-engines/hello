@@ -21,6 +21,9 @@ namespace Game {
     int32_t GetLocalPlayerCount();
     int32_t GetOnlinePlayerCount();
     Camera* GetLocalPlayerCameraByIndex(uint32_t index);
+    float GetLocalPlayerFovByIndex(uint32_t index);
+
+    glm::vec3 GetMoonlightDirection();
     
     // Audio
     void PlayFootstepIndoorAudio();

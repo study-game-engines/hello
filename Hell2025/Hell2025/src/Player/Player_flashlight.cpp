@@ -68,7 +68,7 @@ void Player::UpdateFlashlight(float deltaTime) {
     m_flashlightPosition = flashlightPositionTarget;
 
     // Projection view matrix
-    float lightRadius = 10.0f;
+    float lightRadius = 50.0f;
     float outerAngle = glm::radians(30.0f);
     glm::vec3 flashlightTargetPosition = m_flashlightPosition + m_flashlightDirection;
     glm::mat4 flashlightViewMatrix = glm::lookAt(m_flashlightPosition, flashlightTargetPosition, GetCameraUp());

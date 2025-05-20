@@ -1,6 +1,7 @@
 #version 430 core
 layout(local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
 
+#include "../common/constants.glsl"
 #include "../common/types.glsl"
 
 layout (binding = 0, r16f) uniform image2D HeightMapImage;
@@ -16,6 +17,9 @@ uniform float u_brushStrength;
 uniform int u_mode;
 uniform float u_noiseStrength;
 uniform int u_layerIndex;
+uniform float u_minPaintHeight;
+uniform float u_maxPaintHeight;
+uniform float u_brushSize = 50;
 
 // 2D Random Gradient Function
 vec2 randomGradient(vec2 p) {
@@ -75,14 +79,24 @@ void main() {
     int paintX = int(mouseWorldPos.x / 0.25);
     int paintY = int(mouseWorldPos.z / 0.25);
 
+    // Bail if invalid mouse coords
+    if (mouseUV == vec2(0,0)) {
+        return;
+    }
+
     // Compute distance from brush center
     float dist = length(vec2(pixelCoords) - vec2(paintX, paintY));
     
-    float u_brushSize = 50;
     //float u_brushStrength = 1;
 
     // Compute falloff correctly
     float falloff = smoothstep(0.0, u_brushSize, dist);
+    
+    // Bail if outside brush
+    if (dist > u_brushSize) {
+        return;
+    }
+    
     
 
    //float d = distance(mouseWorldPos, worldSpacePosition.xyz);
@@ -96,10 +110,20 @@ void main() {
     
     float newHeight = currentHeight;
     
+    
+
     // First paint normally
     float strengthModifier = 0.01;
     float strength = u_brushStrength * strengthModifier;
     newHeight += strength * (1.0 - falloff);
+
+    
+    // Clamp to min max settings
+    float normalizedMinPaintHeight = u_minPaintHeight / HEIGHTMAP_SCALE_Y;
+    float normalizedMaxPaintHeight = u_maxPaintHeight / HEIGHTMAP_SCALE_Y;
+    newHeight = min(newHeight, normalizedMaxPaintHeight);
+    newHeight = max(newHeight, normalizedMinPaintHeight);
+
     
     // Then apply FBM noise if brush is set to Perlin mode
     if (u_mode == 0) {

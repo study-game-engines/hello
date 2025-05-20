@@ -4,26 +4,37 @@
 #include "Input/Input.h"
 #include "Util.h"
 
+void MeshNodes::InitFromModel(const std::string & modelName) {
+    Model* model = AssetManager::GetModelByName(modelName);
+    if (model) {
+        InitFromModel(model);
+    }
+    else {
+        std::cout << "MeshNodes::InitFromModel() failed: '" << modelName << "' does not exist!\n";
+    }
+}
+
 void MeshNodes::InitFromModel(Model* model) {
     CleanUp();
 
     if (!model) return;
 
-    size_t meshCount = model->GetMeshCount();
+    m_modelName = model->GetName();
+    m_nodeCount = model->GetMeshCount();
     int32_t materialIndex = AssetManager::GetMaterialIndexByName(DEFAULT_MATERIAL_NAME);
 
-    m_blendingModes.resize(meshCount, BlendingMode::NONE);
-    m_materialIndices.resize(meshCount, materialIndex);
-    m_transforms.resize(meshCount, Transform());
-    m_localParentIndices.resize(meshCount, -1);
-    m_localTransforms.resize(meshCount, glm::mat4(1.0f));
-    m_inverseBindTransforms.resize(meshCount, glm::mat4(1.0f));
-    m_modelMatrices.resize(meshCount, glm::mat4(1.0f));
-    m_objectTypes.resize(meshCount, ObjectType::UNDEFINED);
-    m_objectIds.resize(meshCount, 0);
+    m_blendingModes.resize(m_nodeCount, BlendingMode::BLEND_DISABLED);
+    m_materialIndices.resize(m_nodeCount, materialIndex);
+    m_transforms.resize(m_nodeCount, Transform());
+    m_localParentIndices.resize(m_nodeCount, -1);
+    m_localTransforms.resize(m_nodeCount, glm::mat4(1.0f));
+    m_inverseBindTransforms.resize(m_nodeCount, glm::mat4(1.0f));
+    m_modelMatrices.resize(m_nodeCount, glm::mat4(1.0f));
+    m_objectTypes.resize(m_nodeCount, ObjectType::UNDEFINED);
+    m_objectIds.resize(m_nodeCount, 0);
 
     // Map mesh names to their local index and extra parent index and transforms
-    for (int i = 0; i < meshCount; i++) {
+    for (int i = 0; i < m_nodeCount; i++) {
         int meshIndex = model->GetMeshIndices()[i];
 
         Mesh* mesh = AssetManager::GetMeshByIndex(meshIndex);
@@ -42,6 +53,16 @@ void MeshNodes::InitFromModel(Model* model) {
     }
 }
 
+void MeshNodes::PrintMeshNames() {
+    std::cout << m_modelName << "\n";
+    for (uint32_t meshIndex : m_globalMeshIndices) {
+        Mesh* mesh = AssetManager::GetMeshByIndex(meshIndex);
+        if (mesh) {
+            std::cout << "-" << meshIndex << ": " << mesh->GetName() << "\n";
+        }
+    }
+}
+
 bool MeshNodes::HasNodeWithObjectId(uint64_t objectId) const {
     for (uint64_t queryId : m_objectIds) {
         if (queryId == objectId) {
@@ -52,6 +73,8 @@ bool MeshNodes::HasNodeWithObjectId(uint64_t objectId) const {
 }
 
 void MeshNodes::CleanUp() {
+    m_modelName = "";
+    m_nodeCount = 0;
     m_blendingModes.clear();
     m_globalMeshIndices.clear();
     m_materialIndices.clear();
@@ -71,6 +94,32 @@ void MeshNodes::SetTransformByMeshName(const std::string& meshName, Transform tr
 
         if (nodeIndex >= 0 && nodeIndex < GetNodeCount()) {
             m_transforms[nodeIndex] = transform;
+        }
+    }
+}
+
+void MeshNodes::SetMaterialByMeshName(const std::string& meshName, const std::string& materialName) {
+    int materialIndex = AssetManager::GetMaterialIndexByName(materialName);
+    if (materialIndex == -1) {
+        std::cout << "MeshNodes::SetMaterialByMeshName() failed: '" << materialName << "' not found!\n";
+        return;
+    }
+
+    if (m_localIndexMap.find(meshName) != m_localIndexMap.end()) {
+        int nodeIndex = m_localIndexMap[meshName];
+
+        if (nodeIndex >= 0 && nodeIndex < GetNodeCount()) {
+            m_materialIndices[nodeIndex] = materialIndex;
+        }
+    }
+}
+
+void MeshNodes::SetBlendingModeByMeshName(const std::string& meshName, BlendingMode blendingMode) {
+    if (m_localIndexMap.find(meshName) != m_localIndexMap.end()) {
+        int nodeIndex = m_localIndexMap[meshName];
+
+        if (nodeIndex >= 0 && nodeIndex < GetNodeCount()) {
+            m_blendingModes[nodeIndex] = blendingMode;
         }
     }
 }
@@ -136,9 +185,12 @@ void MeshNodes::UpdateRenderItems(const glm::mat4& worldMatrix) {
     UpdateHierachy();
 
     m_renderItems.clear();
+    m_renderItemsBlended.clear();
+    m_renderItemsAlphaDiscarded.clear();
+    m_renderItemsHairTopLayer.clear();
+    m_renderItemsHairBottomLayer.clear();
 
     for (int i = 0; i < GetNodeCount(); i++) {
-
         Material* material = GetMaterial(i);
         if (!material) continue;
 
@@ -148,13 +200,7 @@ void MeshNodes::UpdateRenderItems(const glm::mat4& worldMatrix) {
 
         glm::mat4 meshModelMatrix = GetMeshModelMatrix(i);
 
-        // Remove me
-        if (Input::KeyDown(HELL_KEY_T)) {
-            meshModelMatrix = glm::mat4(1.0f);
-        }
-        // Remove me
-
-        RenderItem& renderItem = m_renderItems.emplace_back();
+        RenderItem renderItem;
         renderItem.objectType = (int)m_objectTypes[i];
         renderItem.modelMatrix = worldMatrix * meshModelMatrix;
         renderItem.inverseModelMatrix = glm::inverse(renderItem.modelMatrix);
@@ -164,12 +210,16 @@ void MeshNodes::UpdateRenderItems(const glm::mat4& worldMatrix) {
         renderItem.rmaTextureIndex = material->m_rma;
         Util::PackUint64(m_objectIds[i], renderItem.objectIdLowerBit, renderItem.objectIdUpperBit);
         Util::UpdateRenderItemAABB(renderItem);
-    }
-}
 
-void MeshNodes::SubmitRenderItems() {
-    for (RenderItem& renderItem : m_renderItems) {
-        RenderDataManager::SubmitRenderItem(renderItem);
+        BlendingMode blendingMode = m_blendingModes[i];
+        switch (blendingMode) {
+            case BlendingMode::BLEND_DISABLED:      m_renderItems.push_back(renderItem); break;
+            case BlendingMode::BLENDED:             m_renderItemsBlended.push_back(renderItem); break;
+            case BlendingMode::ALPHA_DISCARDED:     m_renderItemsAlphaDiscarded.push_back(renderItem); break;
+            case BlendingMode::HAIR_TOP_LAYER:      m_renderItemsHairTopLayer.push_back(renderItem); break;
+            case BlendingMode::HAIR_UNDER_LAYER:    m_renderItemsHairBottomLayer.push_back(renderItem); break;
+            default: break;
+        }
     }
 }
 

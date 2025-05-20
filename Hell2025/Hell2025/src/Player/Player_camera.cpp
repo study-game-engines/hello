@@ -8,23 +8,19 @@
 #include "Util.h"
 
 void Player::UpdateHeadBob(float deltaTime) {
+  
+    bool pressingMoveKey = PressingWalkLeft() || PressingWalkRight() || PressingWalkForward() || PressingWalkBackward();
 
-    // If underwater, lerp head bob back to 0
-    if (!CameraIsUnderwater()) {
-        m_headBob.x = Util::FInterpTo(m_headBob.x, 0.0f, deltaTime, 10);
-        m_headBob.y = Util::FInterpTo(m_headBob.y, 0.0f, deltaTime, 10);
-        m_headBob.z = Util::FInterpTo(m_headBob.z, 0.0f, deltaTime, 10);
-    }
-    //else {
+    if (!CameraIsUnderwater() && !FeetBelowWater() && pressingMoveKey) {
 
-        if (IsMoving()) {
-            m_headBobTime += deltaTime;
-        }
+        m_headBobTime += deltaTime;
 
         float walkSpeed = 3.2f;
+
         if (IsCrouching()) {
             walkSpeed *= 0.75f;
         }
+
         float bobIntensity = 0.05f;
         float noiseIntensity = 0.02f;
         float frequency = 4.5f * walkSpeed;
@@ -33,7 +29,16 @@ void Player::UpdateHeadBob(float deltaTime) {
         float noiseOffsetY = glm::perlin(glm::vec2(m_headBobTime * 0.1f, 0.0f)) * noiseIntensity;
         float noiseOffsetX = glm::perlin(glm::vec2(0.0f, m_headBobTime * 0.1f)) * noiseIntensity;
         m_headBob = glm::vec3(m_bobOffsetX + noiseOffsetX, m_bobOffsetY + noiseOffsetY, 0.0f);
-   // }
+    }
+    else {
+        // TODO: find the values that make a footstep always play on the first step u take
+        m_headBobTime = Util::FInterpTo(m_headBobTime, 0.2f, deltaTime, 10);
+        m_headBob.x = Util::FInterpTo(m_headBob.x, 0.0f, deltaTime, 10);
+        m_headBob.y = Util::FInterpTo(m_headBob.y, 0.0f, deltaTime, 10);
+        m_headBob.z = Util::FInterpTo(m_headBob.z, 0.0f, deltaTime, 10);
+        m_bobOffsetX = Util::FInterpTo(m_bobOffsetX, 0.0f, deltaTime, 10);
+        m_bobOffsetY = Util::FInterpTo(m_bobOffsetY, 0.0f, deltaTime, 10);
+    }
 }
 
 void Player::UpdateBreatheBob(float deltaTime) {
@@ -84,14 +89,13 @@ void Player::UpdateCamera(float deltaTime) {
     }
    // m_currentViewHeight += viewHeightModifer;
 
+    // Chunk position
+    //m_chunkPos = ivecXZ(static_cast<int>(std::floor(m_camera.GetPosition().x / CHUNK_SIZE_WORLDSPACE)),
+    //                   static_cast<int>(std::floor(m_camera.GetPosition().z / CHUNK_SIZE_WORLDSPACE)));
 
     // Position
     m_camera.SetPosition(m_position + glm::vec3(0, m_currentViewHeight + viewHeightModifer, 0) + m_headBob + m_breatheBob);
-
-    // Chunk position
-    m_chunkPos = ivecXZ(static_cast<int>(std::floor(m_camera.GetPosition().x / CHUNK_SIZE_WORLDSPACE)),
-                       static_cast<int>(std::floor(m_camera.GetPosition().z / CHUNK_SIZE_WORLDSPACE)));
-
+   
     // Get view weapon camera matrix
     AnimatedGameObject* viewWeapon = GetViewWeaponAnimatedGameObject();
     SkinnedModel* model = viewWeapon->m_skinnedModel;
@@ -106,4 +110,12 @@ void Player::UpdateCamera(float deltaTime) {
         }
     }
     m_viewWeaponCameraMatrix = inverse(cameraBindMatrix) * cameraMatrix;
+
+    // Build CSM view matrix
+    glm::vec3 csmViewPosition = m_position + glm::vec3(0, m_currentViewHeight + viewHeightModifer, 0);
+    glm::quat orient = glm::quat(m_camera.GetQuaternionRotation());
+    glm::mat4 rot = glm::mat4_cast(glm::conjugate(orient)); // inverse rotation
+    glm::mat4 trans = glm::translate(glm::mat4(1.0f), -m_position);
+    glm::mat4 baseViewMatrix = rot * trans;
+    m_csmViewMatrix = m_viewWeaponCameraMatrix * baseViewMatrix;
 }

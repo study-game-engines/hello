@@ -45,6 +45,9 @@ public:
     void DrawBuffers(std::vector<const char*> attachmentNames);
     void DrawBuffer(const char* attachmentName);
     void ClearAttachment(const char* attachmentName, GLfloat r, GLfloat g = 0.0f, GLfloat b = 0.0f, GLfloat a = 0.0f);
+
+    void ClearTexImage(const char* attachmentName, GLfloat r, GLfloat g, GLfloat b, GLfloat a);
+
     void ClearAttachmentI(const char* attachmentName, GLint r, GLint g = 0, GLint b = 0, GLint a = 0);
     void ClearAttachmentUI(const char* attachmentName, GLint r, GLint g = 0, GLint b = 0, GLint a = 0);
     void ClearAttachmenSubRegion(const char* attachmentName, GLint xOffset, GLint yOffset, GLsizei width, GLsizei height, GLfloat r, GLfloat g = 0.0f, GLfloat b = 0.0f, GLfloat a = 0.0f);

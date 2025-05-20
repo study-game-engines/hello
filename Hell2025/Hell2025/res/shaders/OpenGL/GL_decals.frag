@@ -50,15 +50,6 @@ void main() {
  
    vec3 finalColor = directLighting;
  
-   // Tone mapping
-   finalColor = mix(finalColor, Tonemap_ACES(finalColor), 1.0);   
-   
-   // Gamma correct
-   finalColor = pow(finalColor, vec3(1.0/2.2));
- 
-   finalColor = mix(finalColor, Tonemap_ACES(finalColor), 0.35);  
- 
    FragOut.rgb = vec3(finalColor);
    FragOut.a = baseColor.a;
-   
 }

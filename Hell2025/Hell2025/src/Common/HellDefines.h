@@ -66,7 +66,7 @@
 
 // Height map
 #define HEIGHT_MAP_SIZE 256
-#define HEIGHTMAP_SCALE_Y 25.0f
+#define HEIGHTMAP_SCALE_Y 40.0f
 #define HEIGHTMAP_SCALE_XZ 0.25f
 #define VERTICES_PER_CHUNK 1089 // 33 * 33
 #define INDICES_PER_CHUNK 6144 // 32 * 32 * 6

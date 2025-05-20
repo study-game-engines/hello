@@ -10,10 +10,12 @@ namespace OpenGLRenderer {
 
     void RenderFlashLightShadowMaps();
     void RenderPointLightShadowMaps();
+    void RenderMoonLightCascadedShadowMaps();
 
     void RenderShadowMaps() {
         RenderFlashLightShadowMaps();
         RenderPointLightShadowMaps();
+        RenderMoonLightCascadedShadowMaps();
     }
 
     void RenderFlashLightShadowMaps() {
@@ -94,7 +96,7 @@ namespace OpenGLRenderer {
     void RenderPointLightShadowMaps() {
 
         OpenGLShader* shader = GetShader("ShadowCubeMap");
-        OpenGLShadowCubeMapArray* hiResShadowMaps = GetShadowMapArray("HiRes");
+        OpenGLShadowCubeMapArray* hiResShadowMaps = GetShadowCubeMapArray("HiRes");
         const DrawCommandsSet& drawInfoSet = RenderDataManager::GetDrawInfoSet();
 
         if (!shader) return;
@@ -193,5 +195,90 @@ namespace OpenGLRenderer {
         }
 
         glCullFace(GL_BACK);
+    }
+
+
+    void RenderMoonLightCascadedShadowMaps() {
+
+        const ViewportData& viewportData = RenderDataManager::GetViewportData()[0];
+
+        glm::vec3 lightDir = Game::GetMoonlightDirection();
+        glm::mat4 viewMatrix = viewportData.view;
+        
+        float viewportWidth = viewportData.width;
+        float viewportHeight = viewportData.height;
+        float fov = viewportData.fov;
+
+        std::vector<float>& cascadeLevels = GetShadowCascadeLevels();
+
+        const std::vector<glm::mat4>& lightProjectionViews = Util::GetLightProjectionViews(viewMatrix, lightDir, cascadeLevels, viewportWidth, viewportHeight, fov);
+
+        OpenGLSSBO* lightProjViewSSBO = GetSSBO("CSMLightProjViewMatrices");
+        OpenGLShader* shader = GetShader("ShadowMap");
+        OpenGLShadowMapArray* shadowMapArray = GetShadowMapArray("MoonlightPlayer1");
+
+        if (!lightProjViewSSBO) return;
+        if (!shader) return;
+
+        lightProjViewSSBO->Update(sizeof(glm::mat4x4) * lightProjectionViews.size(), &lightProjectionViews[0]);
+        lightProjViewSSBO->Bind(15);
+        
+        shader->Bind();
+        shader->SetBool("u_useInstanceData", false);
+        
+        size_t numLayers = lightProjectionViews.size();
+        
+        shadowMapArray->Bind();
+        shadowMapArray->SetViewport();
+
+        glDisable(GL_CULL_FACE);
+        //glEnable(GL_CULL_FACE);
+        //glCullFace(GL_FRONT);  // peter panning
+
+        for (size_t i = 0; i < numLayers; ++i) {
+
+            shadowMapArray->SetTextureLayer(i);
+            shadowMapArray->ClearDepth();
+
+        
+            shader->SetMat4("u_projectionView", lightProjectionViews[i]);
+                    
+            // Geometry
+            glBindVertexArray(OpenGLBackEnd::GetVertexDataVAO());
+            for (const RenderItem& renderItem : RenderDataManager::GetRenderItems()) {
+                uint32_t meshIndex = renderItem.meshIndex;
+                glm::mat4 modelMatrix = renderItem.modelMatrix;
+                glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(modelMatrix)));
+                Mesh* mesh = AssetManager::GetMeshByIndex(meshIndex);
+                shader->SetMat4("u_modelMatrix", modelMatrix);
+                glDrawElementsInstancedBaseVertex(GL_TRIANGLES, mesh->indexCount, GL_UNSIGNED_INT, (GLvoid*)(mesh->baseIndex * sizeof(GLuint)), 1, mesh->baseVertex);
+            }
+
+            // House
+            shader->SetMat4("u_modelMatrix", glm::mat4(1.0f));
+            OpenGLMeshBuffer& houseMeshBuffer = World::GetHouseMeshBuffer().GetGLMeshBuffer();
+            glBindVertexArray(houseMeshBuffer.GetVAO());
+            //glDisable(GL_CULL_FACE);
+            const std::vector<HouseRenderItem>& renderItems = RenderDataManager::GetHouseRenderItems();            
+            for (const HouseRenderItem& renderItem : renderItems) {
+                int indexCount = renderItem.indexCount;
+                int baseVertex = renderItem.baseVertex;
+                int baseIndex = renderItem.baseIndex;
+                glDrawElementsBaseVertex(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, (void*)(sizeof(unsigned int) * baseIndex), baseVertex);
+            }            
+           // glEnable(GL_CULL_FACE);
+
+            // Weather boards
+            MeshBuffer weatherboardMeshBuffer = World::GetWeatherBoardMeshBuffer();
+            glBindVertexArray(weatherboardMeshBuffer.GetGLMeshBuffer().GetVAO());
+            int indexCount = weatherboardMeshBuffer.GetGLMeshBuffer().GetIndexCount();
+            if (indexCount > 0) {
+                int baseIndex = 0;
+                int baseVertex = 0;
+                glDrawElementsBaseVertex(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, (void*)(sizeof(unsigned int) * baseIndex), baseVertex);
+            }
+        }
+        glCullFace(GL_BACK);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 }

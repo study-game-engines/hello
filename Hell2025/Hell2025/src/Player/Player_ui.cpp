@@ -44,13 +44,17 @@ void Player::UpdateUI() {
         std::string text = "";
         text += "Cam Pos: " + Util::Vec3ToString(GetCameraPosition()) + "\n";
         text += "Cam Euler: " + Util::Vec3ToString(GetCameraRotation()) + "\n";
-        text += "Weapon Action: " + Util::WeaponActionToString(GetCurrentWeaponAction()) + "\n";
-        text += "Interact object: " + Util::ObjectTypeToString(m_interactObjectType) + " " + std::to_string(m_interactObjectId) + "\n";
-        text += "BVH ray: " + Util::ObjectTypeToString(m_bvhRayResult.objectType) + " " + std::to_string(m_bvhRayResult.objectId) + "\n";
-        text += "PhysX ray: " + Util::ObjectTypeToString(m_physXRayResult.userData.objectType) + " " + std::to_string(m_physXRayResult.userData.objectId) + " " + Util::PhysicsTypeToString(m_physXRayResult.userData.physicsType) + " " + std::to_string(m_physXRayResult.userData.physicsId) + "\n";
+     // text += "Weapon Action: " + Util::WeaponActionToString(GetCurrentWeaponAction()) + "\n";
+     // text += "Interact object: " + Util::ObjectTypeToString(m_interactObjectType) + " " + std::to_string(m_interactObjectId) + "\n";
+     // text += "BVH ray: " + Util::ObjectTypeToString(m_bvhRayResult.objectType) + " " + std::to_string(m_bvhRayResult.objectId) + "\n";
+     // text += "PhysX ray: " + Util::ObjectTypeToString(m_physXRayResult.userData.objectType) + " " + std::to_string(m_physXRayResult.userData.objectId) + " " + Util::PhysicsTypeToString(m_physXRayResult.userData.physicsType) + " " + std::to_string(m_physXRayResult.userData.physicsId) + "\n";
+     //
+     //
+     // text += "Ray hit found: " + Util::BoolToString(m_rayHitFound) + " " + Util::ObjectTypeToString(m_rayHitObjectType) + " " + std::to_string(m_rayhitObjectId) + "\n";
 
-
-        text += "Ray hit found: " + Util::BoolToString(m_rayHitFound) + " " + Util::ObjectTypeToString(m_rayHitObjectType) + " " + std::to_string(m_rayhitObjectId) + "\n";
+        text += "Movement Dir: " + Util::Vec3ToString(m_movementDirection) + "\n";
+        text += "Acceleration: " + std::to_string(m_acceleration) + "\n";
+        text += "Y Velocity: " + std::to_string(m_yVelocity) + "\n";
 
         glm::vec3 rayOrigin = GetCameraPosition();
         glm::vec3 rayDir = GetCameraForward();

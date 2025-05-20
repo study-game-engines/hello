@@ -91,21 +91,13 @@ void main() {
         vec3 cookie = ApplyCookie(lightProjectionView, WorldPos.xyz, spotLightPos, spotLightColor, 10, FlashlightCookieTexture);
         vec3 spotLighting = GetSpotlightLighting(spotLightPos, spotLightDir, spotLightColor, spotLightRadius, spotLightStregth, innerAngle, outerAngle, normal.xyz, WorldPos.xyz, gammaBaseColor.rgb, roughness, metallic, viewPos, lightProjectionView);
         vec4 FragPosLightSpace = lightProjectionView * vec4(WorldPos.xyz, 1.0);
-        float shadow = SpotlightShadowCalculation(FragPosLightSpace, normal.xyz, spotLightDir, WorldPos.xyz, spotLightPos, viewPos, FlashlighShadowMapTextureArray, layerIndex);  
+        float shadow = 1.0;//SpotlightShadowCalculation(FragPosLightSpace, normal.xyz, spotLightDir, WorldPos.xyz, spotLightPos, viewPos, FlashlighShadowMapTextureArray, layerIndex);  
         spotLighting *= vec3(1 - shadow);
         spotLighting *= cookie * cookie * 5 * spotLightColor;
         directLighting += vec3(spotLighting) * flashlightModifer;
     }
 
     vec3 finalColor = directLighting;
-
-    // Tone mapping
-    finalColor = mix(finalColor, Tonemap_ACES(finalColor), 1.0);   
-    
-    // Gamma correct
-    finalColor = pow(finalColor, vec3(1.0/2.2));
-
-	finalColor = mix(finalColor, Tonemap_ACES(finalColor), 0.35);  
 
     FragOut.rgb = vec3(finalColor);
 	FragOut.a = 1.0;

@@ -36,7 +36,6 @@ struct Piano {
     void SetSustain(bool value);
     void Update(float deltaTime);
     void CleanUp();
-    void SubmitRenderItems();
     void TriggerInternalNoteFromExternalBulletHit(glm::vec3 bulletHitPositon);
     void CalculatePianoKeyWorldspaceCenters();
 

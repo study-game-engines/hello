@@ -1,20 +1,13 @@
 #include "World.h"
 #include "AssetManagement/AssetManager.h"
 #include "Core/Game.h"
-#include "Renderer/RenderDataManager.h"
-
-
-
-#include "Renderer/Renderer.h"
+#include "Editor/Editor.h"
 #include "Input/Input.h"
+#include "Renderer/RenderDataManager.h"
+#include "Renderer/Renderer.h"
 
 namespace World {
 
-    //std::vector<RenderItem> g_renderItems;
-    std::vector<RenderItem> g_renderItemsBlended;
-    std::vector<RenderItem> g_renderItemsAlphaDiscarded;
-    std::vector<RenderItem> g_renderItemsHairTopLayer;
-    std::vector<RenderItem> g_renderItemsHairBottomLayer;
     std::vector<RenderItem> g_skinnedRenderItems;
 
     void SubmitRenderItems() {
@@ -31,8 +24,12 @@ namespace World {
         std::vector<Window>& windows = GetWindows();
 
         for (GameObject& gameObject : gameObjects) {
-            //gameObject.UpdateRenderItems();
-            //gameObject.SubmitRenderItems();
+            gameObject.UpdateRenderItems();
+            RenderDataManager::SubmitRenderItems(gameObject.GetRenderItems());
+            RenderDataManager::SubmitRenderItemsBlended(gameObject.GetRenderItemsBlended());
+            RenderDataManager::SubmitRenderItemsAlphaDiscard(gameObject.GetRenderItemsAlphaDiscarded());
+            RenderDataManager::SubmitRenderItemsAlphaHairTopLayer(gameObject.GetRenderItemsHairTopLayer());
+            RenderDataManager::SubmitRenderItemsAlphaHairBottomLayer(gameObject.GetRenderItemsHairBottomLayer());
 
             // Selected outline?
             if (gameObject.IsSelected()) {
@@ -44,12 +41,7 @@ namespace World {
         }
 
         // Clear global render item vectors
-        //g_renderItems.clear();
         g_skinnedRenderItems.clear();
-        g_renderItemsBlended.clear();
-        g_renderItemsAlphaDiscarded.clear();
-        g_renderItemsHairTopLayer.clear();
-        g_renderItemsHairBottomLayer.clear();
 
         for (PickUp& pickUp : pickUps) {
             RenderDataManager::SubmitRenderItems(pickUp.GetRenderItems());
@@ -57,6 +49,15 @@ namespace World {
 
         for (PictureFrame& pictureFrame : GetPictureFrames()) {
             RenderDataManager::SubmitRenderItems(pictureFrame.GetRenderItems());
+        }
+
+        for (Mermaid& mermaid: GetMermaids()) {
+            RenderDataManager::SubmitRenderItems(mermaid.GetRenderItems());
+            RenderDataManager::SubmitRenderItemsBlended(mermaid.GetRenderItemsBlended());
+            RenderDataManager::SubmitRenderItemsAlphaDiscard(mermaid.GetRenderItemsAlphaDiscarded());
+            RenderDataManager::SubmitRenderItemsAlphaHairTopLayer(mermaid.GetRenderItemsHairTopLayer());
+            RenderDataManager::SubmitRenderItemsAlphaHairBottomLayer(mermaid.GetRenderItemsHairBottomLayer());
+
         }
 
         for (Decal& decal : decals) {
@@ -73,7 +74,10 @@ namespace World {
         }
 
         for (Piano& piano : pianos) {
-            piano.SubmitRenderItems();
+            RenderDataManager::SubmitRenderItems(piano.GetRenderItems());
+            if (Editor::GetSelectedObjectId() == piano.GetObjectId()) {
+                RenderDataManager::SubmitOutlineRenderItems(piano.GetRenderItems());
+            }
         }
 
         // Window
@@ -89,20 +93,6 @@ namespace World {
             if (tree.IsSelected()) {
                 RenderDataManager::SubmitOutlineRenderItems(tree.GetRenderItems());
             }
-        }
-
-        // Update each GameObject and collect render items
-        for (GameObject& gameObject : gameObjects) {
-            continue;
-            continue;
-            continue;
-            continue;
-            // Merge render items into global vectors
-            //g_renderItems.insert(g_renderItems.end(), gameObject.GetRenderItems().begin(), gameObject.GetRenderItems().end());
-            g_renderItemsBlended.insert(g_renderItemsBlended.end(), gameObject.GetRenderItemsBlended().begin(), gameObject.GetRenderItemsBlended().end());
-            g_renderItemsAlphaDiscarded.insert(g_renderItemsAlphaDiscarded.end(), gameObject.GetRenderItemsAlphaDiscarded().begin(), gameObject.GetRenderItemsAlphaDiscarded().end());
-            g_renderItemsHairTopLayer.insert(g_renderItemsHairTopLayer.end(), gameObject.GetRenderItemsHairTopLayer().begin(), gameObject.GetRenderItemsHairTopLayer().end());
-            g_renderItemsHairBottomLayer.insert(g_renderItemsHairBottomLayer.end(), gameObject.GetRenderItemsHairBottomLayer().begin(), gameObject.GetRenderItemsHairBottomLayer().end());
         }
 
         // Lights
@@ -157,10 +147,5 @@ namespace World {
         }
     }
 
-    //std::vector<RenderItem>& GetRenderItems() { return g_renderItems; }
-    std::vector<RenderItem>& GetRenderItemsBlended() { return g_renderItemsBlended; }
-    std::vector<RenderItem>& GetRenderItemsAlphaDiscarded() { return g_renderItemsAlphaDiscarded; }
-    std::vector<RenderItem>& GetRenderItemsHairTopLayer() { return g_renderItemsHairTopLayer; }
-    std::vector<RenderItem>& GetRenderItemsHairBottomLayer() { return g_renderItemsHairBottomLayer; }
     std::vector<RenderItem>& GetSkinnedRenderItems() { return g_skinnedRenderItems; }
 }

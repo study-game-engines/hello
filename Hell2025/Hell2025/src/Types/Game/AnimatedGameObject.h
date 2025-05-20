@@ -11,6 +11,9 @@ struct MeshRenderingEntry {
     bool drawingEnabled = true;
     bool renderAsGlass = false;
     int meshIndex = -1;
+    float furLength = 0.0f;
+    float furShellDistanceAttenuation = 0.0f;
+    float furUVScale = 0.0f;
 };
 
 struct JointWorldMatrix {
@@ -64,6 +67,11 @@ public:
     void SetMeshMaterialByMeshName(const std::string& meshName, const std::string& materialName);
     void SetMeshMaterialByMeshIndex(int meshIndex, const std::string& materialName);
     void SetMeshToRenderAsGlassByMeshIndex(const std::string& materialName);
+    void SetMeshFurLength(const std::string& meshName, float furLength);
+    void SetMeshFurShellDistanceAttenuation(const std::string& meshName, float furShellDistanceAttenuation);
+    void SetMeshFurUVScale(const std::string& meshName, float uvScale);
+    
+
     void SetMeshEmissiveColorTextureByMeshName(const std::string& meshName, const std::string& textureName);
 	void SetAllMeshMaterials(const std::string& materialName);
 

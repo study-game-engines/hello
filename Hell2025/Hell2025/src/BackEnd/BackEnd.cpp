@@ -26,6 +26,7 @@
 #include "UI/UIBackEnd.h"
 #include "Viewport/ViewportManager.h"
 #include "Weapon/WeaponManager.h"
+#include "World/HouseManager.h"
 #include "World/World.h"
 
 #include "GLFWIntegration.h"
@@ -349,6 +350,10 @@ namespace BackEnd {
                 Audio::PlayAudio(AUDIO_SELECT, 1.00f);
                 Debug::NextDebugRenderMode();
             }
+        }
+
+        if (Input::KeyPressed(HELL_KEY_F11)) {
+            HouseManager::LoadAllHouseFilesFromDisk();
         }
     }
 }

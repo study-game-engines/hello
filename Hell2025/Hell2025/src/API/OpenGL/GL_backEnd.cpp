@@ -408,7 +408,7 @@ namespace OpenGLBackEnd {
     }
 
     //void ReadBackHeightmapMeshData() {
-    //    int indexCount = (HEIGHT_MAP_SIZE - 1) * (HEIGHT_MAP_SIZE - 1) * 6;
+    //    int indexCount = (     - 1) * (HEIGHT_MAP_SIZE - 1) * 6;
     //    int vertexCount = HEIGHT_MAP_SIZE * HEIGHT_MAP_SIZE;
     //    int vertexBufferSize = HEIGHT_MAP_SIZE * HEIGHT_MAP_SIZE * sizeof(Vertex);
     //    int indexBufferSize = (HEIGHT_MAP_SIZE - 1) * (HEIGHT_MAP_SIZE - 1) * 6 * sizeof(uint32_t);

@@ -71,8 +71,13 @@ struct Player {
     AmmoState* GetCurrentAmmoState();
     AmmoInfo* GetCurrentAmmoInfo();
 
-    //RenderItem CreateAttachmentRenderItem(WeaponAttachmentInfo* weaponAttachmentInfo, const char* boneName);
-   
+    void AddHorizontalImpulse(glm::vec3 direction, float force);
+    void AddVerticalImpulse(float force);
+    void SimulateVelocityMovement(float deltaTime, const glm::vec3& inputDirection, float maxSpeed, float accelerationStrength, float damping, bool applyGravity, float gravity);
+    //glm::vec3 m_velocity = glm::vec3(0.0f);
+    glm::vec3 m_movementDirection = glm::vec3(0.0f); // can be zero
+    float m_acceleration = 0.0f;
+    float m_speedBoost = 1.0f;
 
     glm::ivec2 GetViewportCenter();
     void CheckForMeleeHit();
@@ -147,6 +152,8 @@ struct Player {
     bool PressedTwo();
     bool PressedThree();
     bool PressedFour();
+
+    const float GetFov();
 
     ivecXZ GetChunkPos() { return m_chunkPos; }
 
@@ -324,9 +331,11 @@ private:
         PxShape* GetCharacterControllerShape();
         PxRigidDynamic* GetCharacterControllerActor();
 
-        glm::mat4 GetViewWeaponCameraMatrix();
+        glm::mat4& GetViewWeaponCameraMatrix();
+        glm::mat4& GetCSMViewMatrix();
 
         glm::mat4 m_viewWeaponCameraMatrix;
+        glm::mat4 m_csmViewMatrix;
 
 
         float m_yVelocity = 0;
@@ -336,6 +345,7 @@ private:
 
         // Swimming
         float m_swimVerticalAcceleration = 0.0f;
+        float m_smoothedWaterY;
         //bool m_underWater = false;
 
     private:

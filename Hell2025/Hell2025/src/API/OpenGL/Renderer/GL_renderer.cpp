@@ -18,7 +18,6 @@
 #include "UI/UIBackEnd.h"
 #include "UI/TextBlitter.h"
 #include "Types/Game/GameObject.h"
-#include "../Hardcoded.hpp"
 #include "../Timer.hpp"
 #include <glm/gtx/matrix_decompose.hpp>
 
@@ -32,20 +31,21 @@
 #include "Tools/ImageTools.h"
 
 namespace OpenGLRenderer {
-
     std::unordered_map<std::string, OpenGLShader> g_shaders;
     std::unordered_map<std::string, OpenGLFrameBuffer> g_frameBuffers;
     std::unordered_map<std::string, OpenGLShadowMap> g_shadowMaps;
     std::unordered_map<std::string, OpenGLCubemapView> g_cubemapViews;
     std::unordered_map<std::string, OpenGLSSBO> g_ssbos;
     std::unordered_map<std::string, OpenGLRasterizerState> g_rasterizerStates;
-    std::unordered_map<std::string, OpenGLShadowCubeMapArray> g_shadowMapArrays;
+    std::unordered_map<std::string, OpenGLShadowCubeMapArray> g_shadowCubeMapArrays;
+    std::unordered_map<std::string, OpenGLShadowMapArray> g_shadowMapArrays;
 
     OpenGLMeshPatch g_tesselationPatch;
 
     OpenGLFrameBuffer g_blurBuffers[4][4] = {};
 
-    std::vector<float> g_shadowCascadeLevels{ FAR_PLANE / 50.0f, FAR_PLANE / 25.0f, FAR_PLANE / 10.0f, FAR_PLANE / 2.0f };
+    //std::vector<float> g_shadowCascadeLevels{ FAR_PLANE / 50.0f, FAR_PLANE / 25.0f, FAR_PLANE / 10.0f, FAR_PLANE / 2.0f };
+    std::vector<float> g_shadowCascadeLevels{ 5.0f, 10.0f, 20.0f, 40.0f };
     const glm::vec3 g_lightDir = glm::normalize(glm::vec3(20.0f, 50, 20.0f));
     unsigned int g_lightFBO;
     unsigned int g_lightDepthMaps;
@@ -73,6 +73,15 @@ namespace OpenGLRenderer {
 
         Ocean::Init();
 
+        g_frameBuffers["DecalPainting"] = OpenGLFrameBuffer("DecalPainting", 512, 512);
+        g_frameBuffers["DecalPainting"].CreateAttachment("UVMap", GL_RGBA8, GL_LINEAR, GL_LINEAR);
+        g_frameBuffers["DecalPainting"].CreateDepthAttachment(GL_DEPTH_COMPONENT24);
+
+        g_frameBuffers["DecalMasks"] = OpenGLFrameBuffer("DecalMasks", 256, 256);
+        g_frameBuffers["DecalMasks"].CreateAttachment("DecalMask0", GL_RGBA8, GL_LINEAR, GL_LINEAR);
+
+        //g_frameBuffers["KanagarooDecalMap"].CreateAttachment("DecalMask", GL_RGBA8, GL_LINEAR, GL_LINEAR);
+
         g_frameBuffers["GBuffer"] = OpenGLFrameBuffer("GBuffer", resolutions.gBuffer);
         g_frameBuffers["GBuffer"].CreateAttachment("BaseColor", GL_RGBA8);
         g_frameBuffers["GBuffer"].CreateAttachment("Normal", GL_RGBA16F);
@@ -84,10 +93,14 @@ namespace OpenGLRenderer {
         g_frameBuffers["GBuffer"].CreateDepthAttachment(GL_DEPTH_COMPONENT32F);
 
         g_frameBuffers["QuarterSize"].Create("QuarterSize", resolutions.gBuffer.x / 4, resolutions.gBuffer.y / 4);
-        g_frameBuffers["QuarterSize"].CreateAttachment("DownsampledFinalLighting", GL_RGBA8);
+        g_frameBuffers["QuarterSize"].CreateAttachment("DownsampledFinalLighting", GL_RGBA16F);
+
+        g_frameBuffers["MiscFullSize"].Create("FullSize", resolutions.gBuffer);
+        g_frameBuffers["MiscFullSize"].CreateAttachment("GaussianFinalLightingIntermediate", GL_RGBA16F);
+        g_frameBuffers["MiscFullSize"].CreateAttachment("GaussianFinalLighting", GL_RGBA16F);
               
         g_frameBuffers["Water"] = OpenGLFrameBuffer("Water", resolutions.gBuffer);
-        g_frameBuffers["Water"].CreateAttachment("Color", GL_RGBA8);
+        g_frameBuffers["Water"].CreateAttachment("Color", GL_RGBA16F);
         g_frameBuffers["Water"].CreateAttachment("UnderwaterMask", GL_R8);
         g_frameBuffers["Water"].CreateAttachment("WorldPosition", GL_RGBA32F);
         g_frameBuffers["Water"].CreateDepthAttachment(GL_DEPTH_COMPONENT32F);
@@ -121,8 +134,8 @@ namespace OpenGLRenderer {
         g_frameBuffers["HeightMap"] = OpenGLFrameBuffer("HeightMap", HEIGHT_MAP_SIZE, HEIGHT_MAP_SIZE);
         g_frameBuffers["HeightMap"].CreateAttachment("Color", GL_R16F);
 
-        g_frameBuffers["FlashlightShadowMap"] = OpenGLFrameBuffer("Flashlight", FLASHLIGHT_SHADOWMAP_SIZE, FLASHLIGHT_SHADOWMAP_SIZE);
-        g_frameBuffers["FlashlightShadowMap"].CreateDepthAttachment(GL_DEPTH32F_STENCIL8, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_BORDER, glm::vec4(1.0f));
+        //g_frameBuffers["FlashlightShadowMap"] = OpenGLFrameBuffer("Flashlight", FLASHLIGHT_SHADOWMAP_SIZE, FLASHLIGHT_SHADOWMAP_SIZE);
+        //g_frameBuffers["FlashlightShadowMap"].CreateDepthAttachment(GL_DEPTH32F_STENCIL8, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_BORDER, glm::vec4(1.0f));
 
         g_frameBuffers["FFT_band0"].Create("FFT_band0", Ocean::GetFFTResolution(0).x, Ocean::GetFFTResolution(0).y);
         g_frameBuffers["FFT_band0"].CreateAttachment("Displacement", GL_RGBA32F, GL_LINEAR, GL_LINEAR, GL_REPEAT);
@@ -143,7 +156,7 @@ namespace OpenGLRenderer {
         g_ssbos["RendererData"] = OpenGLSSBO(sizeof(RendererData), GL_DYNAMIC_STORAGE_BIT);
         g_ssbos["InstanceData"] = OpenGLSSBO(sizeof(RenderItem) * MAX_INSTANCE_DATA_COUNT, GL_DYNAMIC_STORAGE_BIT);
         g_ssbos["SkinningTransforms"] = OpenGLSSBO(sizeof(glm::mat4) * MAX_ANIMATED_TRANSFORMS, GL_DYNAMIC_STORAGE_BIT);
-        g_ssbos["LightSpaceMatrices"] = OpenGLSSBO(sizeof(glm::mat4) * MAX_VIEWPORT_COUNT * SHADOW_CASCADE_COUNT, GL_DYNAMIC_STORAGE_BIT);
+        g_ssbos["CSMLightProjViewMatrices"] = OpenGLSSBO(sizeof(glm::mat4) * MAX_VIEWPORT_COUNT * SHADOW_CASCADE_COUNT, GL_DYNAMIC_STORAGE_BIT);
         g_ssbos["Lights"] = OpenGLSSBO(sizeof(GPULight) * MAX_GPU_LIGHTS, GL_DYNAMIC_STORAGE_BIT);
 
         //g_ssbos["ffth0"] = OpenGLSSBO(oceanSize.x * oceanSize.y * sizeof(std::complex<float>), staticFlags);
@@ -184,10 +197,17 @@ namespace OpenGLRenderer {
         LoadShaders();
 
         // Allocate shadow map array memory
-        g_shadowMapArrays["HiRes"] = OpenGLShadowCubeMapArray();
-        g_shadowMapArrays["HiRes"].Init(SHADOWMAP_HI_RES_COUNT, SHADOW_MAP_HI_RES_SIZE);
+        g_shadowCubeMapArrays["HiRes"] = OpenGLShadowCubeMapArray();
+        g_shadowCubeMapArrays["HiRes"].Init(SHADOWMAP_HI_RES_COUNT, SHADOW_MAP_HI_RES_SIZE);
 
-        GrassInit();
+        // Moon light shadow maps
+        float depthMapResolution = 2048; 
+        int layerCount = g_shadowCascadeLevels.size() + 1;
+        g_shadowMapArrays["MoonlightPlayer1"] = OpenGLShadowMapArray();
+        g_shadowMapArrays["MoonlightPlayer1"].Init(layerCount, depthMapResolution, GL_DEPTH_COMPONENT32F);
+
+        InitGrass();
+        InitOceanHeightReadback();
     }
 
     void InitMain() {
@@ -201,6 +221,13 @@ namespace OpenGLRenderer {
             AssetManager::GetTextureByName("ny"),
             AssetManager::GetTextureByName("pz"),
             AssetManager::GetTextureByName("nz"),
+
+            //AssetManager::GetTextureByName("NightSky_Right"),
+            //AssetManager::GetTextureByName("NightSky_Left"),
+            //AssetManager::GetTextureByName("NightSky_Top"),
+            //AssetManager::GetTextureByName("NightSky_Bottom"),
+            //AssetManager::GetTextureByName("NightSky_Front"),
+            //AssetManager::GetTextureByName("NightSky_Back"),
         };
         std::vector<GLuint> texturesHandles;
         for (Texture* texture : textures) {
@@ -219,10 +246,15 @@ namespace OpenGLRenderer {
         g_shaders["BlurVertical"] = OpenGLShader({ "GL_blur_vertical.vert", "GL_blur.frag" });
         g_shaders["ComputeSkinning"] = OpenGLShader({ "GL_compute_skinning.comp" });
         g_shaders["DebugTextured"] = OpenGLShader({ "GL_debug_textured.vert", "GL_debug_textured.frag" });
+        g_shaders["DebugView"] = OpenGLShader({ "GL_debug_view.comp" });
         g_shaders["DebugTileView"] = OpenGLShader({ "GL_debug_tile_view.comp" });
         g_shaders["DebugVertex"] = OpenGLShader({ "gl_debug_vertex.vert", "gl_debug_vertex.frag" });
+        g_shaders["DecalPaintUVs"] = OpenGLShader({ "gl_decal_paint_uvs.vert", "gl_decal_paint_uvs.frag" });
+        g_shaders["DecalPaintMask"] = OpenGLShader({ "gl_decal_paint_mask.comp" });
         g_shaders["Decals"] = OpenGLShader({ "GL_decals.vert", "GL_decals.frag" });
         g_shaders["EditorMesh"] = OpenGLShader({ "GL_editor_mesh.vert", "GL_editor_mesh.frag" });
+        g_shaders["Fur"] = OpenGLShader({ "GL_fur.vert", "GL_fur.frag" });
+        g_shaders["FurComposite"] = OpenGLShader({ "GL_fur_composite.comp" });
         g_shaders["EmissiveComposite"] = OpenGLShader({ "GL_emissive_composite.comp" });
         g_shaders["GBuffer"] = OpenGLShader({ "GL_GBuffer.vert", "GL_gBuffer.frag" });
         g_shaders["Gizmo"] = OpenGLShader({ "GL_gizmo.vert", "GL_gizmo.frag" });
@@ -243,6 +275,9 @@ namespace OpenGLRenderer {
         g_shaders["LightCulling"] = OpenGLShader({ "GL_light_culling.comp" });
         g_shaders["Lighting"] = OpenGLShader({ "GL_lighting.comp" });
 
+
+        g_shaders["CSMLighting"] = OpenGLShader({ "GL_lighting.vert", "GL_lighting.frag"});
+
         g_shaders["OceanSurfaceComposite"] = OpenGLShader({ "GL_ocean_surface_composite.comp" });
         g_shaders["OceanGeometry"] = OpenGLShader({ "GL_ocean_geometry.vert", "GL_ocean_geometry.frag", "GL_ocean_geometry.tesc", "GL_ocean_geometry.tese" });
         g_shaders["OceanCalculateSpectrum"] = OpenGLShader({ "GL_ocean_calculate_spectrum.comp" });
@@ -255,6 +290,7 @@ namespace OpenGLRenderer {
         g_shaders["Outline"] = OpenGLShader({ "GL_outline.vert", "GL_outline.frag" });
         g_shaders["OutlineComposite"] = OpenGLShader({ "GL_outline_composite.comp" });
         g_shaders["OutlineMask"] = OpenGLShader({ "GL_outline_mask.vert", "GL_outline_mask.frag" });
+        g_shaders["PostProcessing"] = OpenGLShader({ "GL_post_processing.comp" });
         g_shaders["ShadowMap"] = OpenGLShader({ "GL_shadow_map.vert", "GL_shadow_map.frag" });
         g_shaders["ShadowCubeMap"] = OpenGLShader({ "GL_shadow_cube_map.vert", "GL_shadow_cube_map.frag" });
         g_shaders["SolidColor"] = OpenGLShader({ "GL_solid_color.vert", "GL_solid_color.frag" });
@@ -293,22 +329,29 @@ namespace OpenGLRenderer {
         g_ssbos["OceanPatchTransforms"].Update(oceanPatchTransforms.size() * sizeof(glm::mat4), (void*)&oceanPatchTransforms[0]);
     }
 
+    void PreGameLogicComputePasses() {
+        PaintHeightMap();
+        ComputeOceanFFTPass();
+        OceanHeightReadback();
+    }
+
     void RenderGame() {
         glDisable(GL_DITHER);
 
-        ComputeOceanFFTPass();
         ComputeSkinningPass();
         ClearRenderTargets();
         UpdateSSBOS();
         RenderShadowMaps();
         SkyBoxPass();
         HeightMapPass();
-        GrassPass();
+        DecalPaintingPass();
         GeometryPass();
+        GrassPass();
         WeatherBoardsPass();
         TextureReadBackPass();
         LightCullingPass();
         LightingPass();
+        FurPass();
         OceanGeometryPass();
         OceanSurfaceCompositePass();
         GlassPass();
@@ -316,8 +359,9 @@ namespace OpenGLRenderer {
         EmissivePass();
         HairPass();
         OceanUnderwaterCompositePass();
-        DebugTileViewPass();
         WinstonPass();
+        PostProcessingPass();
+        DebugViewPass();
         SpriteSheetPass();
         DebugPass();
         EditorPass();
@@ -333,21 +377,24 @@ namespace OpenGLRenderer {
         // Blit to swapchain
         OpenGLRenderer::BlitToDefaultFrameBuffer(&finalImageBuffer, "Color", GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
-                 
+
         UIPass();
         ImGuiPass();
 
-        //OpenGLFrameBuffer& worldFramebuffer = g_frameBuffers["World"];
-        //BlitRect srcRect;
-        //srcRect.x0 = 0;
-        //srcRect.y0 = 0;
-        //srcRect.x1 = worldFramebuffer.GetWidth();
-        //srcRect.y1 = worldFramebuffer.GetHeight();
-        //
-        //BlitRect dstRect = srcRect;
-        //dstRect.x1 = worldFramebuffer.GetWidth() * 0.5f;
-        //dstRect.y1 = worldFramebuffer.GetHeight() * 0.5f;
-        //OpenGLRenderer::BlitToDefaultFrameBuffer(&worldFramebuffer, "HeightMap", srcRect, dstRect, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+        // World height map
+        if (false) {
+            OpenGLFrameBuffer& worldFramebuffer = g_frameBuffers["World"];
+            BlitRect srcRect;
+            srcRect.x0 = 0;
+            srcRect.y0 = 0;
+            srcRect.x1 = worldFramebuffer.GetWidth();
+            srcRect.y1 = worldFramebuffer.GetHeight();
+
+            BlitRect dstRect = srcRect;
+            dstRect.x1 = worldFramebuffer.GetWidth() * 2.5f;
+            dstRect.y1 = worldFramebuffer.GetHeight() * 2.5f;
+            OpenGLRenderer::BlitToDefaultFrameBuffer(&worldFramebuffer, "HeightMap", srcRect, dstRect, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+        }
 
         //OpenGLFrameBuffer& fftFramebuffer = g_frameBuffers["FFT"];
         //BlitRect srcRect;
@@ -371,7 +418,7 @@ namespace OpenGLRenderer {
         //dstRect.x1 = gBuffer.GetWidth() * 0.6f;
         //dstRect.y1 = gBuffer.GetHeight() * 0.6f;
         //OpenGLRenderer::BlitToDefaultFrameBuffer(&gBuffer, "Glass", srcRect, dstRect, GL_COLOR_BUFFER_BIT, GL_LINEAR);
-        
+
 
 
 
@@ -403,7 +450,7 @@ namespace OpenGLRenderer {
         blitRect.x1 = size;
         blitRect.y1 = size;
 
-        if (GetFftDisplayMode() == 1 && !showNormals) {            
+        if (GetFftDisplayMode() == 1 && !showNormals) {
             OpenGLRenderer::BlitToDefaultFrameBuffer(fft_band0, "Displacement", blitRect, blitRect, GL_COLOR_BUFFER_BIT, GL_NEAREST);
         }
         if (GetFftDisplayMode() == 1 && showNormals) {
@@ -426,6 +473,27 @@ namespace OpenGLRenderer {
        // }
        //
        // std::cout << "GetFftDisplayMode(): " << GetFftDisplayMode() << "\n";
+
+
+        // Render decal painting shit
+        if (false) {
+            OpenGLFrameBuffer* decalPaintingFBO = GetFrameBuffer("DecalPainting");
+            OpenGLFrameBuffer* decalMasksFBO = GetFrameBuffer("DecalMasks");
+
+            int blitSize = 420;
+
+            glBindFramebuffer(GL_READ_FRAMEBUFFER, decalPaintingFBO->GetHandle());
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+            glReadBuffer(decalPaintingFBO->GetColorAttachmentSlotByName("UVMap"));
+            glDrawBuffer(GL_BACK);
+            glBlitFramebuffer(0, 0, decalPaintingFBO->GetWidth(), decalPaintingFBO->GetHeight(), 0, 0, blitSize, blitSize, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+            glBindFramebuffer(GL_READ_FRAMEBUFFER, decalMasksFBO->GetHandle());
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+            glReadBuffer(decalMasksFBO->GetColorAttachmentSlotByName("DecalMask0"));
+            glDrawBuffer(GL_BACK);
+            glBlitFramebuffer(0, 0, decalMasksFBO->GetWidth(), decalMasksFBO->GetHeight(), 0, blitSize, blitSize, blitSize + blitSize, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        }
     }
 
     void ClearRenderTargets() {
@@ -561,10 +629,16 @@ namespace OpenGLRenderer {
         return (it != g_shadowMaps.end()) ? &it->second : nullptr;
     }
 
-    OpenGLShadowCubeMapArray* GetShadowMapArray(const std::string& name) {
+    OpenGLShadowCubeMapArray* GetShadowCubeMapArray(const std::string& name) {
+        auto it = g_shadowCubeMapArrays.find(name);
+        return (it != g_shadowCubeMapArrays.end()) ? &it->second : nullptr;
+    }
+
+    OpenGLShadowMapArray* GetShadowMapArray(const std::string& name) {
         auto it = g_shadowMapArrays.find(name);
         return (it != g_shadowMapArrays.end()) ? &it->second : nullptr;
     }
+
 
     OpenGLFrameBuffer* GetBlurBuffer(int viewportIndex, int bufferIndex) {
         if (viewportIndex < 0 || viewportIndex >= 4) return nullptr;
@@ -615,160 +689,8 @@ namespace OpenGLRenderer {
         }
     }
 
-    std::vector<glm::mat4> getLightSpaceMatrices();
-
-    //void CascadedShadowMappingPass() {
-    //
-    //    const std::vector<glm::mat4> lightMatrices = getLightSpaceMatrices();
-    //
-    //    g_ssbos["LightSpaceMatrices"].Update(lightMatrices.size() * sizeof(glm::mat4), (void*)&lightMatrices[0]);
-    //    g_ssbos["LightSpaceMatrices"].Bind(0);           
-    //
-    //
-    //    for (int i = 0; i < lightMatrices.size(); i++) {
-    //
-    //        std::cout << i << "\n";
-    //        std::cout << Util::Mat4ToString(lightMatrices[i]);
-    //
-    //        std::cout << "\n\n";
-    //    }
-    //
-    //
-    //    std::cout <<  "\n";
-    //
-    //    OpenGLShader* csmDepthShader = GetShader("CSMDepth");        
-    //    csmDepthShader->Use();
-    //
-    //    glBindFramebuffer(GL_FRAMEBUFFER, g_lightFBO);
-    //    glViewport(0, 0, g_depthMapResolution, g_depthMapResolution);
-    //    glClear(GL_DEPTH_BUFFER_BIT);
-    //    glCullFace(GL_FRONT);  // peter panning
-    //
-    //    glBindVertexArray(OpenGLBackEnd::GetVertexDataVAO());
-    //
-    //    for (RenderItem& renderItem : Scene::GetRenderItems()) {
-    //        Mesh* mesh = AssetManager::GetMeshByIndex(renderItem.meshIndex);
-    //        csmDepthShader->SetMat4("model", renderItem.modelMatrix);
-    //        glDrawElementsInstancedBaseVertexBaseInstance(GL_TRIANGLES, mesh->indexCount, GL_UNSIGNED_INT, (void*)(sizeof(unsigned int) * mesh->baseIndex), 1, mesh->baseVertex, 0);
-    //    }
-    //
-    //    glCullFace(GL_BACK);
-    //    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    //}
-
-
-
-
-
-
-
-
-
-
-
-    std::vector<glm::vec4> getFrustumCornersWorldSpace(const glm::mat4& projview)
-    {
-        const auto inv = glm::inverse(projview);
-
-        std::vector<glm::vec4> frustumCorners;
-        for (unsigned int x = 0; x < 2; ++x)
-        {
-            for (unsigned int y = 0; y < 2; ++y)
-            {
-                for (unsigned int z = 0; z < 2; ++z)
-                {
-                    const glm::vec4 pt = inv * glm::vec4(2.0f * x - 1.0f, 2.0f * y - 1.0f, 2.0f * z - 1.0f, 1.0f);
-                    frustumCorners.push_back(pt / pt.w);
-                }
-            }
-        }
-
-        return frustumCorners;
-    }
-
-
-    std::vector<glm::vec4> getFrustumCornersWorldSpace(const glm::mat4& proj, const glm::mat4& view)
-    {
-        return getFrustumCornersWorldSpace(proj * view);
-    }
-
-    glm::mat4 getLightSpaceMatrix(const float nearPlane, const float farPlane) {
-
-        const std::vector<ViewportData>& playerData = RenderDataManager::GetViewportData();
-        glm::mat4 projectionMatrx = playerData[0].projection;
-        glm::mat4 viewMatrix = playerData[0].view;
-
-        std::vector<glm::vec4> corners = getFrustumCornersWorldSpace(projectionMatrx, viewMatrix);
-
-        glm::vec3 center = glm::vec3(0, 0, 0);
-        for (const auto& v : corners) {
-            center += glm::vec3(v);
-
-        }
-        center /= corners.size();
-
-
-
-
-        for (glm::vec4& corner : corners) {
-            DrawPoint(corner, RED);
-        }
-
-        DrawPoint(glm::vec3(0, 0, 0), YELLOW);
-
-
-        const auto lightView = glm::lookAt(center + g_lightDir, center, glm::vec3(0.0f, 1.0f, 0.0f));
-
-        float minX = std::numeric_limits<float>::max();
-        float maxX = std::numeric_limits<float>::lowest();
-        float minY = std::numeric_limits<float>::max();
-        float maxY = std::numeric_limits<float>::lowest();
-        float minZ = std::numeric_limits<float>::max();
-        float maxZ = std::numeric_limits<float>::lowest();
-        for (const auto& v : corners) {
-            const auto trf = lightView * v;
-            minX = std::min(minX, trf.x);
-            maxX = std::max(maxX, trf.x);
-            minY = std::min(minY, trf.y);
-            maxY = std::max(maxY, trf.y);
-            minZ = std::min(minZ, trf.z);
-            maxZ = std::max(maxZ, trf.z);
-        }
-
-        // Tune this parameter according to the scene
-        constexpr float zMult = 10.0f;
-        if (minZ < 0) {
-            minZ *= zMult;
-        }
-        else {
-            minZ /= zMult;
-        }
-        if (maxZ < 0) {
-            maxZ /= zMult;
-        }
-        else {
-            maxZ *= zMult;
-        }
-
-       // const glm::mat4 lightProjection = glm::orthoZO(minX, maxX, minY, maxY, minZ, maxZ);
-        const glm::mat4 lightProjection = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ);
-        return lightProjection * lightView;
-    }
-
-    std::vector<glm::mat4> getLightSpaceMatrices() {
-        std::vector<glm::mat4> ret;
-        for (size_t i = 0; i < g_shadowCascadeLevels.size() + 1; ++i) {
-            if (i == 0)  {
-                ret.push_back(getLightSpaceMatrix(NEAR_PLANE, g_shadowCascadeLevels[i]));
-            }
-            else if (i < g_shadowCascadeLevels.size()) {
-                ret.push_back(getLightSpaceMatrix(g_shadowCascadeLevels[i - 1], g_shadowCascadeLevels[i]));
-            }
-            else {
-                ret.push_back(getLightSpaceMatrix(g_shadowCascadeLevels[i - 1], FAR_PLANE));
-            }
-        }
-        return ret;
+    std::vector<float>& GetShadowCascadeLevels() {
+        return g_shadowCascadeLevels;
     }
 }
 

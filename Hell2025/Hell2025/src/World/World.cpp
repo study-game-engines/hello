@@ -5,9 +5,9 @@
 #include "UniqueID.h"
 #include "Util.h"
 
+#include "AssetManagement/AssetManager.h"
 #include "Audio/Audio.h"
 #include "Core/Game.h"
-#include "Enemies/Shark/Shark.h"
 #include "Input/Input.h"
 #include "Renderer/Renderer.h"
 #include "Renderer/RenderDataManager.h"
@@ -27,6 +27,7 @@ namespace World {
     std::vector<Decal> g_decals;
     std::vector<GameObject> g_gameObjects;
     std::vector<HeightMapChunk> g_heightMapChunks;
+    std::vector<Mermaid> g_mermaids;
     std::vector<Plane> g_planes;
     std::vector<PickUp> g_pickUps;
     std::vector<PictureFrame> g_pictureFrames;
@@ -57,25 +58,50 @@ namespace World {
     void AddSectorAtLocation(SectorCreateInfo& sectorCreateInfo, SpawnOffset spawnOffset);
     void ProcessBullets();
 
-   // uint64_t g_sharkAnimatedGameObject = 0;
+    uint64_t g_rooAnimatedGameObject = 0;
+
+    AnimatedGameObject* GetRooTest() {
+        return GetAnimatedGameObjectByObjectId(g_rooAnimatedGameObject);
+    }
 
     void Init() {
 
 
-        // Create test shark
-        //if (g_sharkAnimatedGameObject == 0) {
-        //    g_sharkAnimatedGameObject = CreateAnimatedGameObject();
-        //    AnimatedGameObject* shark = GetAnimatedGameObjectByObjectId(g_sharkAnimatedGameObject);
-        //    shark->SetSkinnedModel("Shark");
-        //    shark->SetPosition(glm::vec3(36.0f, 12.0f, 25.0f));
-        //    shark->SetPosition(glm::vec3(38.0f, 11.48f, 24.0f));
-        //    shark->SetAnimationModeToBindPose();
-        //    shark->SetName("222");
-        //    shark->SetAnimationModeToBindPose();
-        //    shark->SetAllMeshMaterials("Shark");
-        //    shark->SetScale(0.01);
-        //    shark->PlayAndLoopAnimation("Shark_Swim");
-        //}
+        // Create test roo
+        if (g_rooAnimatedGameObject == 0) {
+            g_rooAnimatedGameObject = CreateAnimatedGameObject();
+            AnimatedGameObject* roo = GetAnimatedGameObjectByObjectId(g_rooAnimatedGameObject);
+            roo->SetSkinnedModel("Kangaroo");
+            roo->SetPosition(glm::vec3(36, 30.4f, 36));
+            roo->SetRotationY(HELL_PI);
+            roo->SetAnimationModeToBindPose();
+            roo->SetName("Roo");
+            roo->SetAllMeshMaterials("CheckerBoard");
+            roo->SetAllMeshMaterials("Leopard");
+            roo->SetScale(0.9f);
+            roo->PrintMeshNames();
+            //roo->PlayAndLoopAnimation("Kangaroo_Test");
+
+
+
+        //createInfo.position = glm::vec3(36, 10.3f, 25);
+        //createInfo.scale = glm::vec3(0.9);
+        //createInfo.scale = glm::vec3(0.8f);
+        ////createInfo.scale = glm::vec3(0.5f);
+        //createInfo.rotation.y = -HELL_PI;
+        
+            std::vector<std::string> meshNames;
+            meshNames.push_back("Mesh.001");
+            meshNames.push_back("Mesh.002");
+            meshNames.push_back("Mesh.003");
+            meshNames.push_back("Mesh.004");
+            meshNames.push_back("Mesh");
+            for (const std::string& meshName : meshNames) {
+                roo->SetMeshFurLength(meshName, 10);
+                roo->SetMeshFurShellDistanceAttenuation(meshName, 10);
+                roo->SetMeshFurUVScale(meshName, 30);
+            }
+        }
 
 
         //LoadMap("TestMap");
@@ -99,6 +125,18 @@ namespace World {
         }
         for (Tree& tree : g_trees) {
             tree.BeginFrame();
+        }
+
+        AnimatedGameObject* roo = GetAnimatedGameObjectByObjectId(g_rooAnimatedGameObject);
+        if (roo) {
+            roo->SetPosition(glm::vec3(31, 30.4f, 36));
+            roo->SetRotationY(HELL_PI * -0.5);
+            roo->SetAnimationModeToBindPose();
+            roo->SetName("Roo");
+            roo->SetAllMeshMaterials("Kangaroo");
+            roo->SetMeshMaterialByMeshName("Mesh.021", "KangarooIris");
+            roo->SetMeshMaterialByMeshName("Mesh.022", "KangarooIris");
+            roo->SetScale(0.8f);
         }
     }
 
@@ -288,14 +326,45 @@ namespace World {
 
         std::cout << "Loaded Single Sector: '" << g_sectorNames[0][0] << "' with height map '" << g_heightMapNames[0][0] << "'\n";
 
-
         // TEST REMOVE ME!
         g_gameObjects.clear();
-        GameObjectCreateInfo createInfo;
-        createInfo.position = glm::vec3(37, 10.3f, 24);
-        createInfo.rotation.y = -HELL_PI / 2;
-        createInfo.modelName = "Piano";
-        AddGameObject(createInfo);
+
+        GameObjectCreateInfo createInfo2;
+        createInfo2.position = glm::vec3(22.0f, 30.5f, 39.0f);
+        createInfo2.scale = glm::vec3(1.0f);
+        createInfo2.modelName = "Bunny";
+        AddGameObject(createInfo2);
+        g_gameObjects[0].m_meshNodes.m_materialIndices[0] = AssetManager::GetMaterialIndexByName("Leopard");
+        g_gameObjects[0].m_meshNodes.m_materialIndices[1] = AssetManager::GetMaterialIndexByName("Leopard");
+
+
+
+        //GameObjectCreateInfo createInfo;
+        //createInfo.position = glm::vec3(32, 10.3f, 28);
+        ////createInfo.position = glm::vec3(37, 10.3f, 26);
+        //createInfo.position = glm::vec3(36, 10.3f, 25);
+        //createInfo.scale = glm::vec3(0.9);
+        //createInfo.scale = glm::vec3(0.8f);
+        ////createInfo.scale = glm::vec3(0.5f);
+        //createInfo.rotation.y = -HELL_PI;
+        //createInfo.modelName = "Kangaroo";
+        //AddGameObject(createInfo);
+        //g_gameObjects[0].m_meshNodes.m_materialIndices[0] = AssetManager::GetMaterialIndexByName("Kangaroo");
+        //g_gameObjects[0].m_meshNodes.m_materialIndices[1] = AssetManager::GetMaterialIndexByName("Kangaroo");
+        //g_gameObjects[0].m_meshNodes.m_materialIndices[2] = AssetManager::GetMaterialIndexByName("Kangaroo");
+        //g_gameObjects[0].m_meshNodes.m_materialIndices[3] = AssetManager::GetMaterialIndexByName("Kangaroo");
+        //g_gameObjects[0].m_meshNodes.m_materialIndices[4] = AssetManager::GetMaterialIndexByName("Kangaroo");
+        //
+        //g_gameObjects[0].SetMeshMaterial("Body_Low", "Kangaroo");
+        //g_gameObjects[0].SetMeshMaterial("Nails_Low", "Kangaroo");
+        //g_gameObjects[0].SetMeshMaterial("Teeth_Low", "Kangaroo");
+        //g_gameObjects[0].SetMeshMaterial("Tongue_Low", "Kangaroo");
+        //g_gameObjects[0].SetMeshMaterial("LeftEye_Iris", "KangarooIris");
+        //g_gameObjects[0].SetMeshMaterial("RightEye_Iris", "KangarooIris");
+        //g_gameObjects[0].SetMeshMaterial("Eyes_Low", "CheckerBoard"); 
+        //g_gameObjects[0].SetMeshBlendingMode("LeftEye_Sclera", BlendingMode::BLENDED);
+        //g_gameObjects[0].SetMeshBlendingMode("RightEye_Sclera", BlendingMode::BLENDED);
+        //g_gameObjects[0].PrintMeshNames();
     }
 
     void LoadSingleHouse(HouseCreateInfo* houseCreateInfo) {
@@ -346,7 +415,7 @@ namespace World {
             AddTree(createInfo, spawnOffset);
         }
        
-        glm::vec3 houseLocation = glm::vec3(34.0f, 10.25f, 25.0f);
+        glm::vec3 houseLocation = glm::vec3(15.0f, 30.5f, 40.0f);
 
         SpawnOffset houseSpawnOffset = spawnOffset;
         houseSpawnOffset.translation += houseLocation;
@@ -558,6 +627,9 @@ namespace World {
         for (GameObject& gameObject : g_gameObjects) {
             gameObject.CleanUp();
         }
+        for (Mermaid& mermaid: g_mermaids) {
+            mermaid.CleanUp();
+        }
         for (Plane& housePlane : g_planes) {
             housePlane.CleanUp();
         }
@@ -584,6 +656,7 @@ namespace World {
         g_gameObjects.clear();
         g_heightMapChunks.clear();
         g_lights.clear();
+        g_mermaids.clear();
         g_pianos.clear();
         g_pickUps.clear();
         g_planes.clear();
@@ -596,16 +669,19 @@ namespace World {
         std::cout << "Reset world\n";
 
         PictureFrameCreateInfo createInfo;
-        createInfo.position = glm::vec3(38.4f, 11.9f, 25.0f);
+        createInfo.position = glm::vec3(38.4f, 31.9f, 25.0f);
         createInfo.rotation.y = HELL_PI * -0.5f;
         createInfo.type = PictureFrameType::BIG_LANDSCAPE;
         AddPictureFrame(createInfo);
 
+        MermaidCreateInfo mermaidCreateInfo;
+        mermaidCreateInfo.position = glm::vec3(25.0f - 16, 29.5f, 23.3f - 15);
+        //mermaidCreateInfo.position = glm::vec3(32.0f, 9.5f, 35.3f);
+        mermaidCreateInfo.rotation.y = 0.25f;
+        AddMermaid(mermaidCreateInfo);
 
         Shark& shark = g_sharks.emplace_back();
         shark.Init();
-
-
     }
 
     void UpdateClippingCubes() {
@@ -681,6 +757,11 @@ namespace World {
     void AddLight(LightCreateInfo createInfo, SpawnOffset spawnOffset) {
         createInfo.position += spawnOffset.translation;
         g_lights.push_back(Light(createInfo));
+    }
+
+    void AddMermaid(MermaidCreateInfo createInfo, SpawnOffset spawnOffset) {
+        Mermaid& mermaid = g_mermaids.emplace_back();
+        mermaid.Init(createInfo, spawnOffset);
     }
 
     void AddPiano(PianoCreateInfo createInfo, SpawnOffset spawnOffset) {
@@ -854,6 +935,7 @@ namespace World {
     std::vector<GameObject>& GetGameObjects()                   { return g_gameObjects; }
     std::vector<Plane>& GetPlanes()                             { return g_planes; }
     std::vector<Light>& GetLights()                             { return g_lights; };
+    std::vector<Mermaid>& GetMermaids()                         { return g_mermaids; }
     std::vector<Piano>& GetPianos()                             { return g_pianos; };
     std::vector<PickUp>& GetPickUps()                           { return g_pickUps; };
     std::vector<PictureFrame>& GetPictureFrames()               { return g_pictureFrames; };

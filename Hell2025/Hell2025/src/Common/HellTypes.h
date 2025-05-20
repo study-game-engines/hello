@@ -32,7 +32,7 @@ struct RenderItem {
     int32_t rmaTextureIndex = 0;
 
     int32_t objectType = 0;
-    int32_t padding0 = 0;
+    int32_t padding = 0;
     int32_t baseSkinnedVertex = 0;
     int32_t ignoredViewportIndex = -1;
 
@@ -45,6 +45,11 @@ struct RenderItem {
     float emissiveG = 0.0f;
     float emissiveB = 0.0f;
     int32_t castShadows = 1; // True or false
+
+    float furLength = 0.0f;
+    float furShellDistanceAttenuation = 0.0f;
+    float furUVScale = 0.0f;
+    int customFlag = 0;
 };
 
 struct HouseRenderItem {
@@ -274,7 +279,7 @@ struct ViewportData {
     float flashlightModifer;
     bool isOrtho;
     float orthoSize;
-    float padding2;
+    float fov;
 
     glm::vec4 viewPos;
     glm::vec4 cameraForward;
@@ -615,4 +620,11 @@ struct BvhRayResult {
     glm::mat4 primitiveTransform = glm::mat4(1.0f);
     glm::vec3 nodeBoundsMin = glm::vec3(0.0f);
     glm::vec3 nodeBoundsMax = glm::vec3(0.0f);
+};
+
+struct OceanReadbackData {
+    float heightPlayer0 = 0.0f;
+    float heightPlayer1 = 0.0f;
+    float heightPlayer2 = 0.0f;
+    float heightPlayer3 = 0.0f;
 };

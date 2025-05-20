@@ -34,12 +34,14 @@ namespace Ocean {
     const float GetMeshSubdivisionFactor();
     const float GetModelMatrixScale();
     const float GetOceanOriginY();
-    const float GetWaterHeight();
+    const float GetWaterHeightAtPlayer(int playerIndex);
     const glm::uvec2 GetBaseFFTResolution();
     const glm::vec2 GetPatchSimSize(int bandIndex);
     const glm::uvec2 GetTesslationMeshSize();
     const glm::uvec2 GetFFTResolution(int bandIndex);
 
     void ReComputeH0();
+
     FFTBand& GetFFTBandByIndex(int bandIndex);
+    OceanReadbackData& GetOceanReadBackData();
 };

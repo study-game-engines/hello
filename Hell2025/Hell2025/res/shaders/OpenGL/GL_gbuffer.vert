@@ -64,7 +64,7 @@ void main() {
     Tangent = normalize(normalMatrix * vec4(vTangent, 0)).xyz;
     BiTangent = normalize(cross(Normal, Tangent));
     
-	TexCoord = vUV;
+	TexCoord = vUV * 1;
     WorldPos = modelMatrix * vec4(vPosition, 1.0);
     ViewPos = viewportData[viewportIndex].inverseView[3].xyz;
 

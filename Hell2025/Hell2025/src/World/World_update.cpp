@@ -48,6 +48,10 @@ namespace World {
             light.Update(deltaTime);
         }
 
+        for (Mermaid& mermaid : GetMermaids()) {
+            mermaid.Update(deltaTime);
+        }
+
         for (PickUp& pickUp : pickUps) {
             pickUp.Update(deltaTime);
         }

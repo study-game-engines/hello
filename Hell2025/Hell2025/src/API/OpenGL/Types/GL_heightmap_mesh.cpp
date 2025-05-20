@@ -18,7 +18,7 @@ void OpenGLHeightMapMesh::AllocateMemory(int heightMapCount) {
         Create();
     }
 
-    int chunkSize = HEIGHT_MAP_SIZE / 8;     // For a 256 heightmap, chunkSize = 32
+    int chunkSize = HEIGHT_MAP_SIZE / 8;     // #define HEIGHT_MAP_SIZE 256
     int chunkWidth = chunkSize + 1;          // 33 vertices per chunk
     int chunkDepth = chunkSize + 1;          // 33 vertices per chunk
 

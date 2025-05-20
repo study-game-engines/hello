@@ -78,6 +78,8 @@ namespace Editor {
     float GetHeightMapBrushSize();
     float GetHeightMapBrushStrength();
     float GetHeightMapNoiseStrength();
+    float GetHeightMapMinPaintHeight();
+    float GetHeightMapMaxPaintHeight();
      
     // House Editor
     void InitHouseEditor();
@@ -126,7 +128,7 @@ namespace Editor {
     //int GetSelectedObjectIndex();
     //int GetHoveredObjectIndex();
     bool IsOpen();
-    bool IsEditorClosed();
+    bool IsClosed();
     bool IsViewportOrthographic(uint32_t viewportIndex);
     bool EditorIsIdle();
     bool EditorWasIdleLastFrame();

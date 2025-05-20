@@ -5,6 +5,7 @@
 const std::vector<const char*> bigLandscapeImages = {
     "Picture_RainbowMage",
     "Picture_SHNakedLady",
+    "Picture_Minotaur"
 };
 
 void PictureFrame::Init(PictureFrameCreateInfo createInfo) {

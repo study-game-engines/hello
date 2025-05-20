@@ -3,6 +3,7 @@
 #include "API/Vulkan/Renderer/VK_renderer.h"
 #include "BackEnd/BackEnd.h"
 #include "Editor/Editor.h"
+#include "Timer.hpp"
 
 namespace Renderer {
 
@@ -41,6 +42,15 @@ namespace Renderer {
         }
         else if (BackEnd::GetAPI() == API::VULKAN) {
             VulkanRenderer::RenderLoadingScreen();
+        }
+    }
+
+    void PreGameLogicComputePasses() {
+        if (BackEnd::GetAPI() == API::OPENGL) {
+            OpenGLRenderer::PreGameLogicComputePasses();
+        }
+        else if (BackEnd::GetAPI() == API::VULKAN) {
+            // TODO: VulkanRenderer::PreGameLogicComputePasses();
         }
     }
 

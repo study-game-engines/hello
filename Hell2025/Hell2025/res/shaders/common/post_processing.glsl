@@ -166,3 +166,12 @@ vec3 FilmPixel(vec2 uv, float time) {
 vec3 GammaCorrect(vec3 color) {
     return pow(color, vec3(1.0/2.2));
 }
+
+vec3 AdjustContrast(vec3 color, float contrast) {
+    return (color - 0.5) * contrast + 0.5;
+}
+
+// Overload for a single channel
+float AdjustContrast(float c, float contrast) {
+    return (c - 0.5) * contrast + 0.5;
+}

@@ -25,6 +25,11 @@ namespace RenderDataManager {
     void SubmitDecalRenderItem(const RenderItem& renderItem);
     void SubmitRenderItem(const RenderItem& renderItem);
     void SubmitRenderItems(const std::vector<RenderItem>& renderItems);
+    void SubmitRenderItemsBlended(const std::vector<RenderItem>& renderItems);
+    void SubmitRenderItemsAlphaDiscard(const std::vector<RenderItem>& renderItems);
+    void SubmitRenderItemsAlphaHairTopLayer(const std::vector<RenderItem>& renderItems);
+    void SubmitRenderItemsAlphaHairBottomLayer(const std::vector<RenderItem>& renderItems);
+
     void SubmitOutlineRenderItem(const RenderItem& renderItem);
     void SubmitOutlineRenderItems(const std::vector<RenderItem>& renderItems);
 

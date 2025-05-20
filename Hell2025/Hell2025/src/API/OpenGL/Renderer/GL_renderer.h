@@ -8,6 +8,7 @@
 #include "API/OpenGL/Types/GL_shader.h"
 #include "API/OpenGL/Types/GL_shadow_map.h"
 #include "API/OpenGL/Types/GL_shadow_cube_map_array.h"
+#include "API/OpenGL/Types/GL_shadow_map_array.h"
 #include "API/OpenGL/Types/GL_ssbo.hpp"
 #include "Viewport/Viewport.h"
 
@@ -26,21 +27,28 @@ namespace OpenGLRenderer {
     void Init();
     void InitMain();
     void RenderLoadingScreen();
+
+    void PreGameLogicComputePasses();
     void RenderGame();
 
     // Compute passes
     void ComputeSkinningPass();
     void ComputeOceanFFTPass();
+    void OceanHeightReadback();
+    void PaintHeightMap();
 
     // Init passes
-    void GrassInit();
+    void InitGrass();
+    void InitOceanHeightReadback();
 
     // Render passes
     void DebugPass();
-    void DebugTileViewPass();
+    void DebugViewPass();
     void DecalPass();
+    void DecalPaintingPass();
     void EditorPass();
     void EmissivePass();
+    void FurPass();
     void GeometryPass();
     void GlassPass();
     void GrassPass();
@@ -53,6 +61,7 @@ namespace OpenGLRenderer {
     void OceanSurfaceCompositePass();
     void OceanUnderwaterCompositePass();
     void OutlinePass();
+    void PostProcessingPass();
     void WinstonPass();
     void SkyBoxPass();
     void SpriteSheetPass();
@@ -92,8 +101,11 @@ namespace OpenGLRenderer {
     OpenGLFrameBuffer* GetFrameBuffer(const std::string& name);
     OpenGLShader* GetShader(const std::string& name);
     OpenGLShadowMap* GetShadowMap(const std::string& name);
-    OpenGLShadowCubeMapArray* GetShadowMapArray(const std::string& name);
+    OpenGLShadowCubeMapArray* GetShadowCubeMapArray(const std::string& name);
+    OpenGLShadowMapArray* GetShadowMapArray(const std::string& name);
     OpenGLMeshPatch* GetOceanMeshPatch();
+
+    std::vector<float>& GetShadowCascadeLevels();
 
     // SSBOs
     void CreateSSBO(const std::string& name, float size, GLbitfield flags);

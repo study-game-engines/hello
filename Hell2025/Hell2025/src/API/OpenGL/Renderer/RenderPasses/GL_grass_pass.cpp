@@ -90,11 +90,10 @@ namespace OpenGLRenderer {
 #define BLADE_SPACING 0.0185185185185185f
 #define BLADES_PER_TILE_AXIS 432
 
-    void GrassInit();
     void GenerateBladePositions(float xOffset, float zOffset, int viewportIndex);
     void RenderGrass(int viewportIndex);
 
-    void GrassInit() {
+    void InitGrass() {
         int bladesPerHeightMapAxis = HEIGHT_MAP_SIZE * HEIGHTMAP_SCALE_XZ / BLADE_SPACING;
         int bufferSize = bladesPerHeightMapAxis * bladesPerHeightMapAxis * sizeof(glm::vec4);
         //std::cout << "Grass SSBO allocated: " << Util::BytesToMBString(bufferSize) << "\n";
@@ -251,7 +250,7 @@ namespace OpenGLRenderer {
         generationShader->SetFloat("spacing", BLADE_SPACING);
         generationShader->SetVec3("offset", glm::vec3(xOffset, 0.0f, zOffset));
         generationShader->SetFloat("u_heightMapWorldSpaceSize", HEIGHT_MAP_SIZE * HEIGHTMAP_SCALE_XZ);
-        generationShader->SetFloat("u_waterHeight", Ocean::GetWaterHeight());
+        generationShader->SetFloat("u_waterHeight", Ocean::GetOceanOriginY());
         
         // Dispatch compute shader
         const int workGroupSize = 16;

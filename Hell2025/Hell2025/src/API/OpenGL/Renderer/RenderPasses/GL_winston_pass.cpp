@@ -1,4 +1,5 @@
 #include "API/OpenGL/Renderer/GL_renderer.h"
+#include "API/OpenGL/GL_backend.h"
 #include "AssetManagement/AssetManager.h"
 #include "Core/Game.h"
 #include "Renderer/RenderDataManager.h"
@@ -29,6 +30,7 @@ namespace OpenGLRenderer {
         glEnable(GL_BLEND);
 
         glBindTextureUnit(0, gBuffer->GetDepthAttachmentHandle());
+        glBindVertexArray(OpenGLBackEnd::GetVertexDataVAO());
 
         for (int i = 0; i < 4; i++) {
             Viewport* viewport = ViewportManager::GetViewportByIndex(i);

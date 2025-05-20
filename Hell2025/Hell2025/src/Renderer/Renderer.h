@@ -5,6 +5,7 @@
 namespace Renderer {
     void InitMain();
     void RenderLoadingScreen();
+    void PreGameLogicComputePasses();
     void RenderGame();
     void HotloadShaders();
     void NextRendererOverrideState();

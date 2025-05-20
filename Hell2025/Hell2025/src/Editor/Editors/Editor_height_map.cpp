@@ -41,14 +41,16 @@ namespace Editor {
         EditorUI::FloatSliderInput brushSize;
         EditorUI::FloatSliderInput brushStrength;
         EditorUI::FloatSliderInput noiseStrength;
-
-
+        EditorUI::FloatInput minPaintHeight;
+        EditorUI::FloatInput maxPaintHeight;
     } g_heightMapEditorImguiElements;
 
     int g_heightMapPaintMode = 0;
     float g_brushSize = 16;
-    float brushStrength = 1;
-    float noiseStrength = 1;
+    float g_brushStrength = 1;
+    float g_noiseStrength = 1;
+    float g_minPaintHeight = 0.0f;
+    float g_maxPaintHeight = HEIGHTMAP_SCALE_Y;
 
     void InitHeightMapEditorFileMenu();
     void InitHeightMapEditorPropertiesElements();
@@ -101,19 +103,29 @@ namespace Editor {
         elements.mode.SetText("Mystery Mode Toggle");
         elements.mode.SetState(g_heightMapPaintMode);
 
-        ;
 
-        elements.brushSize.SetText("Brush Size");
-        elements.brushSize.SetRange(0.0f, 32.0f);
-        elements.brushSize.SetValue(g_brushSize);
+        EditorUI::FloatSliderInput minHeight;
+        EditorUI::FloatSliderInput maxHeight;
+
+        elements.minPaintHeight.SetText("Min Height");
+        elements.minPaintHeight.SetRange(0.0f, HEIGHTMAP_SCALE_Y);
+        elements.minPaintHeight.SetValue(0.0f);
+
+        elements.maxPaintHeight.SetText("Max Height");
+        elements.maxPaintHeight.SetRange(0.0f, HEIGHTMAP_SCALE_Y);
+        elements.maxPaintHeight.SetValue(HEIGHTMAP_SCALE_Y);
 
         elements.brushStrength.SetText("Brush Strength");
         elements.brushStrength.SetRange(0.0f, 1.0f);
-        elements.brushStrength.SetValue(brushStrength);
+        elements.brushStrength.SetValue(g_brushStrength);
 
         elements.noiseStrength.SetText("Noise Strength");
         elements.noiseStrength.SetRange(0.0f, 1.0f);
-        elements.noiseStrength.SetValue(noiseStrength);
+        elements.noiseStrength.SetValue(g_noiseStrength);
+
+        elements.brushSize.SetText("Brush Size");
+        elements.brushSize.SetRange(0.0f, 100.0f);
+        elements.brushSize.SetValue(g_brushSize);
 
         elements.newFileWindow.SetTitle("New Height Map");
         elements.newFileWindow.SetCallback(Callbacks::NewHeightMap);
@@ -183,6 +195,14 @@ namespace Editor {
                 std::cout << "brush size slider: " << elements.brushSize.GetValue() << "\n";
             }
 
+            if (elements.minPaintHeight.CreateImGuiElements()) {
+                g_minPaintHeight = elements.minPaintHeight.GetValue();
+            }
+
+            if (elements.maxPaintHeight.CreateImGuiElements()) {
+                g_maxPaintHeight = elements.maxPaintHeight.GetValue();
+            }
+
             if (elements.brushStrength.CreateImGuiElements()) {
                 g_brushSize = elements.brushStrength.GetValue();
                 std::cout << "brush strength slider: " << elements.brushStrength.GetValue() << "\n";
@@ -194,69 +214,6 @@ namespace Editor {
             }
 
             bool reloadRequired = false;
-
-            // Iterate each sector in the current map, and store any heightmap name in the disabled options list
-            //std::vector<std::string> disabledOptions;
-            //MapCreateInfo* mapCreateInfo = MapManager::GetHeightMapEditorMapCreateInfo();
-            //if (mapCreateInfo) {
-            //    for (auto it = mapCreateInfo->sectorLocations.begin(); it != mapCreateInfo->sectorLocations.end(); ) {
-            //        const std::string& sectorName = it->second;
-            //        const std::string& heightMapName = SectorManager::GetSectorHeightMapName(sectorName);
-            //        if (heightMapName != "None") {
-            //            disabledOptions.push_back(heightMapName);
-            //        }
-            //        it++;
-            //    }
-            //}
-            //
-            //if (Input::KeyPressed(HELL_KEY_I)) {                
-            //    std::cout << "\n";
-            //    for (auto& str : disabledOptions) {
-            //        std::cout << str << "\n";
-            //    }
-            //}
-            //
-            //if (elements.heightMapDropwDownN.CreateImGuiElements(disabledOptions)) {
-            //    SectorCreateInfo* sectorCreateInfo = SectorManager::GetSectorCreateInfoByName("HeightMapEditor_N");
-            //    sectorCreateInfo->heightMapName = elements.heightMapDropwDownN.GetSelectedOptionText();
-            //    reloadRequired = true;
-            //}
-            //if (elements.heightMapDropwDownS.CreateImGuiElements(disabledOptions)) {
-            //    SectorCreateInfo* sectorCreateInfo = SectorManager::GetSectorCreateInfoByName("HeightMapEditor_S");
-            //    sectorCreateInfo->heightMapName = elements.heightMapDropwDownS.GetSelectedOptionText();
-            //    reloadRequired = true;
-            //}
-            //if (elements.heightMapDropwDownE.CreateImGuiElements(disabledOptions)) {
-            //    SectorCreateInfo* sectorCreateInfo = SectorManager::GetSectorCreateInfoByName("HeightMapEditor_E");
-            //    sectorCreateInfo->heightMapName = elements.heightMapDropwDownE.GetSelectedOptionText();
-            //    reloadRequired = true;
-            //}
-            //if (elements.heightMapDropwDownW.CreateImGuiElements(disabledOptions)) {
-            //    SectorCreateInfo* sectorCreateInfo = SectorManager::GetSectorCreateInfoByName("HeightMapEditor_W");
-            //    sectorCreateInfo->heightMapName = elements.heightMapDropwDownW.GetSelectedOptionText();
-            //    reloadRequired = true;
-            //}
-            //if (elements.heightMapDropwDownNW.CreateImGuiElements(disabledOptions)) {
-            //    SectorCreateInfo* sectorCreateInfo = SectorManager::GetSectorCreateInfoByName("HeightMapEditor_NW");
-            //    sectorCreateInfo->heightMapName = elements.heightMapDropwDownNW.GetSelectedOptionText();
-            //    reloadRequired = true;
-            //}
-            //if (elements.heightMapDropwDownNE.CreateImGuiElements(disabledOptions)) {
-            //    SectorCreateInfo* sectorCreateInfo = SectorManager::GetSectorCreateInfoByName("HeightMapEditor_NE");
-            //    sectorCreateInfo->heightMapName = elements.heightMapDropwDownNE.GetSelectedOptionText();
-            //    reloadRequired = true;
-            //}
-            //if (elements.heightMapDropwDownSW.CreateImGuiElements(disabledOptions)) {
-            //    SectorCreateInfo* sectorCreateInfo = SectorManager::GetSectorCreateInfoByName("HeightMapEditor_SW");
-            //    sectorCreateInfo->heightMapName = elements.heightMapDropwDownSW.GetSelectedOptionText();
-            //    reloadRequired = true;
-            //}
-            //if (elements.heightMapDropwDownSE.CreateImGuiElements(disabledOptions)) {
-            //    SectorCreateInfo* sectorCreateInfo = SectorManager::GetSectorCreateInfoByName("HeightMapEditor_SE");
-            //    sectorCreateInfo->heightMapName = elements.heightMapDropwDownSE.GetSelectedOptionText();
-            //    reloadRequired = true;
-            //}
-            //ImGui::Dummy(ImVec2(0.0f, 20.0f));
 
             if (reloadRequired) {
                 MapCreateInfo* mapCreateInfo = MapManager::GetMapCreateInfoByName("HeightMapEditorMap");
@@ -279,7 +236,7 @@ namespace Editor {
     void OpenHeightMapEditor() {
         Audio::PlayAudio(AUDIO_SELECT, 1.0f);
 
-        if (IsEditorClosed()) {
+        if (IsClosed()) {
             OpenEditor();
         }
 
@@ -287,8 +244,15 @@ namespace Editor {
             SetEditorMode(EditorMode::HEIGHTMAP_EDITOR);
         }
 
-        MapCreateInfo* mapCreateInfo = MapManager::GetHeightMapEditorMapCreateInfo();
-        World::LoadMap(mapCreateInfo);
+        std::string sectorName = "TestSector";
+        SectorCreateInfo* sectorCreateInfo = SectorManager::GetSectorCreateInfoByName(sectorName);
+        if (sectorCreateInfo) {
+            World::LoadSingleSector(sectorCreateInfo);
+        }
+
+        //World::LoadSingleSector(sectorCreateInfo);
+        //MapCreateInfo* mapCreateInfo = MapManager::GetHeightMapEditorMapCreateInfo();
+        //World::LoadMap(mapCreateInfo);
 
         ReconfigureHeightMapEditorImGuiElements();
     }
@@ -386,10 +350,18 @@ namespace Editor {
     }
 
     float GetHeightMapBrushStrength() {
-        return brushStrength;
+        return g_brushStrength;
     }
 
     float GetHeightMapNoiseStrength() {
-        return noiseStrength;
+        return g_noiseStrength;
+    }
+
+    float GetHeightMapMinPaintHeight() {
+        return g_minPaintHeight;
+    }
+
+    float GetHeightMapMaxPaintHeight() {
+        return g_maxPaintHeight;
     }
 }

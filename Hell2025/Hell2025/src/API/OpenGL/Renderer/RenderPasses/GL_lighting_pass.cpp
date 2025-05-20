@@ -1,5 +1,6 @@
 #include "../GL_renderer.h"
 #include "AssetManagement/AssetManager.h"
+#include "Core/Game.h"
 #include "World/World.h"
 
 namespace OpenGLRenderer {
@@ -30,7 +31,7 @@ namespace OpenGLRenderer {
         OpenGLFrameBuffer* gBuffer = GetFrameBuffer("GBuffer");
         OpenGLFrameBuffer* finalImageFBO = GetFrameBuffer("FinalImage");
         OpenGLShadowMap* flashLightShadowMapsFBO = GetShadowMap("FlashlightShadowMaps");
-        OpenGLShadowCubeMapArray* hiResShadowMaps = GetShadowMapArray("HiRes");
+        OpenGLShadowCubeMapArray* hiResShadowMaps = GetShadowCubeMapArray("HiRes");
         OpenGLShader* lightingShader = GetShader("Lighting");
 
         if (!gBuffer) return;
@@ -43,6 +44,20 @@ namespace OpenGLRenderer {
         lightingShader->SetFloat("u_viewportHeight", gBuffer->GetHeight());
         lightingShader->SetInt("u_tileXCount", gBuffer->GetWidth() / TILE_SIZE);
         lightingShader->SetInt("u_tileYCount", gBuffer->GetHeight() / TILE_SIZE);
+
+        // Warning this CSM shit is p1 only atm, especially cause of hardcoded FULL SCREEN viewport dimensions
+
+        float viewportWidth = gBuffer->GetWidth();
+        float viewportHeight = gBuffer->GetHeight();
+        std::vector<float>& cascadeLevels = GetShadowCascadeLevels();
+
+        lightingShader->SetVec3("u_moonlightDir", Game::GetMoonlightDirection());
+        lightingShader->SetFloat("farPlane", FAR_PLANE);
+        lightingShader->SetVec2("u_viewportSize", glm::vec2(viewportWidth, viewportHeight));
+        lightingShader->SetInt("cascadeCount", cascadeLevels.size() + 1);
+        for (size_t i = 0; i < cascadeLevels.size(); ++i) {
+            lightingShader->SetFloat("u_cascadePlaneDistances[" + std::to_string(i) + "]", cascadeLevels[i]);
+        }
 
         glBindTextureUnit(0, gBuffer->GetColorAttachmentHandleByName("BaseColor"));
         glBindTextureUnit(1, gBuffer->GetColorAttachmentHandleByName("Normal"));
@@ -57,6 +72,14 @@ namespace OpenGLRenderer {
 
         glActiveTexture(GL_TEXTURE9);
         glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, hiResShadowMaps->GetDepthTexture());
+
+
+        OpenGLSSBO* lightProjViewSSBO = GetSSBO("CSMLightProjViewMatrices");
+        OpenGLShadowMapArray* shadowMapArray = GetShadowMapArray("MoonlightPlayer1");
+        lightProjViewSSBO->Bind(15);
+
+        glActiveTexture(GL_TEXTURE10);
+        glBindTexture(GL_TEXTURE_2D_ARRAY, shadowMapArray->GetDepthTexture());
 
         glBindImageTexture(0, gBuffer->GetColorAttachmentHandleByName("FinalLighting"), 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F);
 

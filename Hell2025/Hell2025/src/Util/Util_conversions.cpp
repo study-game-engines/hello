@@ -49,7 +49,7 @@ namespace Util {
 
     std::string BlendingModeToString(BlendingMode mode) {
         switch (mode) {
-            case BlendingMode::NONE:                return "NONE";
+            case BlendingMode::BLEND_DISABLED:      return "BLEND_DISABLED";
             case BlendingMode::BLENDED:             return "BLENDED";
             case BlendingMode::ALPHA_DISCARDED:     return "ALPHA_DISCARDED";
             case BlendingMode::HAIR_UNDER_LAYER:    return "HAIR_UNDER_LAYER";
@@ -132,7 +132,7 @@ namespace Util {
         if (str == "HAIR_UNDER_LAYER") return BlendingMode::HAIR_UNDER_LAYER;
         if (str == "HAIR_TOP_LAYER") return BlendingMode::HAIR_TOP_LAYER;
         if (str == "DO_NOT_RENDER") return BlendingMode::DO_NOT_RENDER;
-        return BlendingMode::NONE;
+        return BlendingMode::BLEND_DISABLED;
     }
 
     std::string WeaponActionToString(const WeaponAction& weaponAction) {

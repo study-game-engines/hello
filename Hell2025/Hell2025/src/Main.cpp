@@ -21,10 +21,12 @@
 
 #include "API/Vulkan/vk_backend.h"
 
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+/*
 int main2() {
     VulkanBackEnd::Init();
     return 0;
-}
+}*/
 
 int main() {
     std::cout << "We are all alone on life's journey, held captive by the limitations of human consciousness.\n";
@@ -53,6 +55,7 @@ int main() {
         }
         // Update/render game
         else {
+            Renderer::PreGameLogicComputePasses();
             BackEnd::UpdateGame();
             Renderer::RenderGame();
         }

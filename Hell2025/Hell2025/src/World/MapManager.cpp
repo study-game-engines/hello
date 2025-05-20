@@ -15,17 +15,20 @@ namespace MapManager {
 
         // Create heightmap editor map
         SetMapName(&g_heightMapEditorMap, "HeightMapEditorMap");
-        SetMapWidth(&g_heightMapEditorMap, 3);
-        SetMapDepth(&g_heightMapEditorMap, 3);
-        SetSectorName(&g_heightMapEditorMap, 0, 0, "HeightMapEditor_SW");
-        SetSectorName(&g_heightMapEditorMap, 1, 0, "HeightMapEditor_S");
-        SetSectorName(&g_heightMapEditorMap, 2, 0, "HeightMapEditor_SE");
-        SetSectorName(&g_heightMapEditorMap, 0, 1, "HeightMapEditor_W");
-        SetSectorName(&g_heightMapEditorMap, 1, 1, "HeightMapEditor_Center");
-        SetSectorName(&g_heightMapEditorMap, 2, 1, "HeightMapEditor_E");
-        SetSectorName(&g_heightMapEditorMap, 0, 2, "HeightMapEditor_NW");
-        SetSectorName(&g_heightMapEditorMap, 1, 2, "HeightMapEditor_N");
-        SetSectorName(&g_heightMapEditorMap, 2, 2, "HeightMapEditor_NE");
+        SetMapWidth(&g_heightMapEditorMap, 1);
+        SetMapDepth(&g_heightMapEditorMap, 1); 
+        SetSectorName(&g_heightMapEditorMap, 0, 0, "TestHeightMap");
+        //SetMapWidth(&g_heightMapEditorMap, 3);
+        //SetMapDepth(&g_heightMapEditorMap, 3);
+        //SetSectorName(&g_heightMapEditorMap, 0, 0, "HeightMapEditor_SW");
+        //SetSectorName(&g_heightMapEditorMap, 1, 0, "HeightMapEditor_S");
+        //SetSectorName(&g_heightMapEditorMap, 2, 0, "HeightMapEditor_SE");
+        //SetSectorName(&g_heightMapEditorMap, 0, 1, "HeightMapEditor_W");
+        //SetSectorName(&g_heightMapEditorMap, 1, 1, "HeightMapEditor_Center");
+        //SetSectorName(&g_heightMapEditorMap, 2, 1, "HeightMapEditor_E");
+        //SetSectorName(&g_heightMapEditorMap, 0, 2, "HeightMapEditor_NW");
+        //SetSectorName(&g_heightMapEditorMap, 1, 2, "HeightMapEditor_N");
+        //SetSectorName(&g_heightMapEditorMap, 2, 2, "HeightMapEditor_NE");
 
         // Load maps
         // TODO

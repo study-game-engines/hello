@@ -19,10 +19,13 @@ out vec3 Bitangent;
 
 uniform mat4 modelMatrix;
 uniform mat4 inverseModelMatrix;
+uniform float u_textureScaling;
+
+flat out int vtxID;
 
 void main() {
     // Pass UV coordinates (scaled as desired)
-    TexCoord = vUV * 50.0;
+    TexCoord = vUV * 50.0 * u_textureScaling;
     
     // Retrieve projection and view info from the viewport buffer.
     int viewportIndex = gl_BaseInstance;
@@ -47,4 +50,6 @@ void main() {
     
     // Finally, compute the clip-space position.
     gl_Position = projectionView * worldPos4;
+
+    vtxID = gl_VertexID;
 }

@@ -50,18 +50,16 @@ void Player::Update(float deltaTime) {
 
     if (IsAwaitingSpawn()) Respawn();
 
-    // Determine water state
-    //m_underWater = World::OceanIsEnabled() && GetCameraPosition().y < Ocean::GetWaterHeight() + 0.1f;
-
     if (World::HasOcean()) {
+        float waterHeight = Ocean::GetWaterHeightAtPlayer(m_viewportIndex);
         m_waterState.feetUnderWaterPrevious = m_waterState.feetUnderWater;
         m_waterState.cameraUnderWaterPrevious = m_waterState.cameraUnderWater;
         m_waterState.wadingPrevious = m_waterState.wading;
         m_waterState.swimmingPrevious = m_waterState.swimming;
-        m_waterState.cameraUnderWater = GetCameraPosition().y < Ocean::GetWaterHeight();
-        m_waterState.feetUnderWater = GetFootPosition().y < Ocean::GetWaterHeight();
-        m_waterState.heightAboveWater = (GetFootPosition().y > Ocean::GetWaterHeight()) ? (GetFootPosition().y - Ocean::GetWaterHeight()) : 0.0f;
-        m_waterState.heightBeneathWater = (GetFootPosition().y < Ocean::GetWaterHeight()) ? (Ocean::GetWaterHeight() - GetFootPosition().y) : 0.0f;
+        m_waterState.cameraUnderWater = GetCameraPosition().y < waterHeight;
+        m_waterState.feetUnderWater = GetFootPosition().y < waterHeight;
+        m_waterState.heightAboveWater = (GetFootPosition().y > waterHeight) ? (GetFootPosition().y - waterHeight) : 0.0f;
+        m_waterState.heightBeneathWater = (GetFootPosition().y < waterHeight) ? (waterHeight - GetFootPosition().y) : 0.0f;
         m_waterState.swimming = m_waterState.cameraUnderWater && IsMoving();
         m_waterState.wading = !m_waterState.cameraUnderWater && m_waterState.feetUnderWater && IsMoving();
     } 
@@ -77,6 +75,9 @@ void Player::Update(float deltaTime) {
         m_waterState.swimming = false;
         m_waterState.wading = false;
     }
+
+    // Weapon audio frequency (for under water)
+    m_weaponAudioFrequency = CameraIsUnderwater() ? 0.4f : 1.0f;
  
     UpdateMovement(deltaTime);
     UpdateCharacterController();
@@ -116,7 +117,7 @@ void Player::Respawn() {
 
 
     if (m_viewportIndex == 0) {
-        SetFootPosition(glm::vec3(36.0f, 10.25f, 25.0f));
+        SetFootPosition(glm::vec3(17.0f, 30.25f, 41.5f));
     }
 
     m_weaponStates.clear();
@@ -209,7 +210,14 @@ const int32_t Player::GetViewportIndex() const {
 }
 
 const glm::vec3& Player::GetFootPosition() const {
-    return m_position;
+    PxExtendedVec3 pxPos = m_characterController->getFootPosition();
+    return glm::vec3(
+        static_cast<float>(pxPos.x),
+        static_cast<float>(pxPos.y),
+        static_cast<float>(pxPos.z)
+    );
+
+    //return m_position;
 }
 
 Camera& Player::GetCamera() {
@@ -258,10 +266,13 @@ float Player::GetWeaponAudioFrequency() {
     return m_weaponAudioFrequency;
 }
 
-glm::mat4 Player::GetViewWeaponCameraMatrix() {
+glm::mat4& Player::GetViewWeaponCameraMatrix() {
     return m_viewWeaponCameraMatrix;
 }
 
+glm::mat4& Player::GetCSMViewMatrix() {
+    return m_csmViewMatrix;
+}
 
 void Player::DisplayInfoText(const std::string& text) {
     m_infoTextTimer = 2.0f;
@@ -271,5 +282,9 @@ void Player::DisplayInfoText(const std::string& text) {
 void Player::UpdateAnimatedGameObjects(float deltaTime) {
     m_viewWeaponAnimatedGameObject.Update(deltaTime);
     m_characterModelAnimatedGameObject.Update(deltaTime);
+}
+
+const float Player::GetFov() {
+    return m_cameraZoom;
 }
 

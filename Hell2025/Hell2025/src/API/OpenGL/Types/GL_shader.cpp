@@ -308,6 +308,50 @@ std::string GetShaderCompileErrors(unsigned int shader, const std::string& filen
     return result;
 }
 
+std::string GetLinkingErrors(unsigned int programId) {
+    GLint linkStatus;
+    glGetProgramiv(programId, GL_LINK_STATUS, &linkStatus);
+
+    if (linkStatus == GL_FALSE) {
+        GLint logLength;
+        glGetProgramiv(programId, GL_INFO_LOG_LENGTH, &logLength);
+
+        if (logLength > 0) {
+            std::vector<char> infoLogBuffer(logLength + 1); // +1 for null terminator
+            glGetProgramInfoLog(programId, logLength, NULL, &infoLogBuffer[0]);
+
+            std::string fullLog(infoLogBuffer.data());
+            std::stringstream logStream(fullLog);
+            std::string line;
+            std::string resultToShow = "\n";
+
+            const std::string assemblyStartDelimiter = "-- internal assembly text --";
+            bool assemblySectionEncountered = false;
+
+            while (std::getline(logStream, line)) {
+                if (assemblySectionEncountered) {
+                    break;
+                }
+
+                resultToShow += "    " + line + "\n";
+
+                // Now, check if THIS line was the delimiter
+                if (line.find(assemblyStartDelimiter) != std::string::npos) {
+                    resultToShow += "    (Following internal assembly text omitted for brevity)\n";
+                    assemblySectionEncountered = true;
+                    break;
+                }
+            }
+            return resultToShow;
+        }
+        else {
+            return "\n    An unknown linking error occurred (no info log available).\n";
+        }
+    }
+    return "";
+}
+
+/*
 std::string GetLinkingErrors(unsigned int shader) {
     int success;
     char infoLog[1024];
@@ -322,7 +366,7 @@ std::string GetLinkingErrors(unsigned int shader) {
         }
     }
     return result;
-}
+}*/
 
 int GetErrorLineNumber(const std::string& error) {
     size_t firstColon = error.find(':');

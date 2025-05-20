@@ -3,7 +3,7 @@
 
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 
-layout(rgba8, binding = 0) uniform image2D LightingImage; // output
+layout(rgba16f, binding = 0) uniform image2D LightingImage; // output
 layout (binding = 1) uniform sampler2D UnderwaterMaskTexture;
 layout (binding = 2) uniform sampler2D GaussianFinalLighting;
 layout (binding = 3) uniform sampler2D WaterColorTexture;
@@ -54,235 +54,121 @@ vec3 ApplyDepthFog(vec3 sceneColor, float depth, vec3 fogColor, float fogStart, 
     return mix(sceneColor, fogColor, fogFactor);
 }
 
+void main() {
 
-void main2() {
-ivec2 pixelCoords = ivec2(gl_GlobalInvocationID.xy);   
+    ivec2 pixelCoords = ivec2(gl_GlobalInvocationID.xy);   
     ivec2 outputImageSize = imageSize(LightingImage);
     vec2 uv_screenspace = (vec2(pixelCoords) + 0.5) / vec2(outputImageSize);
-
-    // Don't process out of bounds pixels
-    if (pixelCoords.x >= outputImageSize.x || pixelCoords.y >= outputImageSize.y) {
-        return;
-    }    
-    
-    vec4 lighting = imageLoad(LightingImage, pixelCoords);
-    vec3 gaussianFinalLighting = texture(GaussianFinalLighting, uv_screenspace).rgb;
-    float underwaterMask = texture(UnderwaterMaskTexture, uv_screenspace).r;
-    vec3 waterColor = texture(WaterColorTexture, uv_screenspace).rgb;
-    vec3 worldPos = texture(WorldPositionTexture, uv_screenspace).xyz;
-    vec3 waterWorldPos = texture(WaterWorldPositionTexture, uv_screenspace).xyz;
-    vec3 Normal = texture(NormalsTexture, uv_screenspace).xyz;
-
-    const float distortionSpeed = 0.05;
-    const float distortionFactor = 0.0024;
-    const float waterUVScaling = 0.55;
-
-        float offsetX = mod(u_time * distortionSpeed, 1.0);
-        
-        vec2 uv_dudv = vec2(uv_screenspace + vec2(offsetX, 0));
-
-        vec2 distortion = texture(WaterDUDVTexture, uv_dudv).rg * 2 - 1;
-        vec2 uv_refraction = uv_screenspace + (distortion * distortionFactor);
-        uv_refraction = clamp(uv_refraction, 0, 1);
-
-        vec3 distortedFinalLighting = texture(GaussianFinalLighting, uv_refraction).rgb;
-
-       // vec3 finalColor = distortedFinalLighting;
-       // imageStore(LightingImage, pixelCoords, vec4(vec3(finalColor), 1.0));
-
-        vec3 finalColor = (distortedFinalLighting * UNDER_WATER_TINT * 4);
-        finalColor += waterColor;
-
-        
-      //float viewDistance = distance(u_viewPos, worldPos);
-      //
-      //float startDistance;
-      //float endDistance;
-      //float exponent;
-      //vec3 fogColor;
-      //
-      //startDistance = 5;
-      //endDistance = 15;
-      //exponent = 1;
-      //fogColor = vec3(0.1, 0.25, 0.3) * 0.2;
-      //fogColor = vec3(0.35, 0.35, 0.3) * 0.2;
-      //vec3 nearFog = ApplyFog(finalColor, viewDistance, startDistance, endDistance, exponent, fogColor);        
-      //finalColor = mix(finalColor, nearFog, 0.9);
-      //
-      //nearFog = ApplyFog(waterColor, viewDistance, startDistance, endDistance, exponent, fogColor);    
-      /// waterColor = mix(waterColor, nearFog, 0.5);
-      //
-      //startDistance = 5;
-      //endDistance = 40;
-      //exponent = 1;
-      //fogColor = vec3(0.1, 0.5, 0.3) * 0.2;;//vec3(0.05, 0.1, 0.2) * 0.2;
-      //vec3 distantFog = ApplyFog(finalColor, viewDistance, startDistance, endDistance, exponent, fogColor);  
-      //finalColor = mix(finalColor, distantFog, 0.75);
-      //
-      ////waterColor = ApplyFog(waterColor, viewDistance, startDistance, endDistance, exponent, fogColor);
-      //
-      //vec3 yolo = (distortedFinalLighting * UNDER_WATER_TINT) ;//+ waterColor;
-      //
-      //
-      //
-      //
-      //finalColor = mix(finalColor, yolo, 0.85);
-      //
-      //finalColor += waterColor;
-      //
-      //
-      //float depth = worldPos.y;
-      //vec3 depthFogColor = vec3(0.02, 0.025, 0.03) * 0.95; // cold black-blue, like deep ocean
-      ////depthFogColor = vec3(1, 0, 0); // cold black-blue, like deep ocean
-      //float depthFogStart = -1;
-      //float depthFogEnd = -5;
-      //
-      //// Depth fog
-      //finalColor = ApplyDepthFog(finalColor, depth, depthFogColor, depthFogStart, depthFogEnd);
-      //
-      //
-
-
-
-
-
-
-
-
-
-       // finalColor = mix(finalColor, distantFog, 0.9);
-        
-       // finalColor = distantFog;
-       // finalColor = nearFog;
-
-
-    //finalColor = distortedFinalLighting;
-
-    //finalColor.r = 0;
-    
     vec3 rayDir = GetWorldRay(pixelCoords, u_resolution, u_inverseProjectionView, u_viewPos);
-    float sampleDist = 5.0;
-    vec3 samplePos = u_viewPos + rayDir * sampleDist;
 
-    float waterHeight = -0.65;
-    //float yDepthScale = 2;
-
-    ivec3 volumeSize = textureSize(OceanTexture3D, 0);
-
-    vec3 volumeOrigin = vec3(
-        u_viewPos.x - volumeSize.x / 2.0f,
-        waterHeight - volumeSize.y,
-        u_viewPos.z - volumeSize.z / 2.0f
-    );
-
-    vec3 localPos = samplePos - volumeOrigin;
-    
-    // Water surface 
-    if (waterWorldPos != vec3(0,0,0)) {
-        localPos = waterWorldPos - volumeOrigin;
-    }
-    // Regular geometry
-    else if (Normal != vec3(0,0,0)) {
-        localPos = worldPos - volumeOrigin;
-    }
-        //localPos = waterWorldPos - volumeOrigin;
-
-    //localPos.y *= yDepthScale;
-    vec3 uvw = clamp(localPos / volumeSize, 0.0, 1.0);
-
-    vec3 fogColor = texture(OceanTexture3D, uvw).rgb;
-    float noise = fract(sin(dot(pixelCoords + u_time, vec2(12.9898,78.233))) * 43758.5453);
-    //float noise = fract(sin(dot(pixelCoords, vec2(12.9898,78.233))) * 43758.5453);
     float ditherStrength = 1.0 / 255.0;
     ditherStrength *= 2;
+    
+    float noise = fract(sin(dot(pixelCoords + u_time, vec2(12.9898,78.233))) * 43758.5453);
 
-   
-    fogColor += (noise - 0.5) * ditherStrength;
-    
-    
-    bool skyBox = Normal == vec3(0,0,0) && waterWorldPos == vec3(0,0,0);
-    bool regularGeometry = Normal != vec3(0,0,0) && waterWorldPos == vec3(0,0,0);
+    // Camera Ray fog
+    vec3 down = vec3(0.0, -1.0, 0.0);
+    float downwardness = clamp(dot(rayDir, down), 0.0, 1.0); // 0 = flat, 1 = straight down
+    float darknessCurve = 0.95;
+    float darkness = mix(1.0, 0.0, pow(downwardness, darknessCurve)); // blend to black as you look down
+    vec3 finalRayFog = vec3(0.4, 0.8, 0.6) * darkness * 0.00125;
 
-    // If you aren't the water surface...
+    //finalRayFog += (noise - 0.5) * ditherStrength;
     
-    // Regular geometry
-    if (regularGeometry) {
-        float viewDistance = distance(u_viewPos, worldPos);
-        float startDistance = 10;
-        float endDistance = 35;
-        float exponent = 2;
-        vec3 fogColor = vec3(0.4, 0.8, 0.6) * 0.035; // volume fill pass was * 0.35
-        vec3 distantFog = ApplyFog(finalColor, viewDistance, startDistance, endDistance, exponent, fogColor);  
-        finalColor = mix(finalColor, distantFog, 0.95);
+
+    
+    vec4 gBufferLighting = imageLoad(LightingImage, pixelCoords);    
+    vec3 waterColor = texture(WaterColorTexture, uv_screenspace).rgb;
+    vec3 Normal = texture(NormalsTexture, uv_screenspace).xyz;
+    vec3 geometryWorldPos = texture(WorldPositionTexture, uv_screenspace).xyz;
+    vec3 waterWorldPos = texture(WaterWorldPositionTexture, uv_screenspace).xyz;
+    vec3 gaussianFinalLighting2 = texture(GaussianFinalLighting, uv_screenspace).rgb;
+
+    
+    //imageStore(LightingImage, pixelCoords, vec4(finalColor, 1.0));
+
+    float underwaterMask = texture(UnderwaterMaskTexture, uv_screenspace).r;
+
+    // Non water
+    if (underwaterMask == 0.0) {
+        return;
     }
-     // Skybox pixels
-    else if (skyBox) {       
-        finalColor = fogColor * 5 * fogColor;
-//        finalColor *= 0.5;    
-        finalColor += waterColor;
-    }   
-    // Water surface
-    else {            
-        float viewDistance = distance(u_viewPos, waterWorldPos);
-        float startDistance = 10;
-        float endDistance = 35;
-        float exponent = 1.0;
-        vec3 fogColor = vec3(0.4, 0.8, 0.6) * 0.045; // volume fill pass was * 0.35
-        vec3 distantFog = ApplyFog(finalColor, viewDistance, startDistance, endDistance, exponent, fogColor);  
-        finalColor = mix(finalColor, distantFog, 0.95);
 
-        
-        vec3 rayDir = normalize(u_cameraForward);
-        float rayDistance = length(waterWorldPos - u_viewPos);
-        vec3 samplePos = u_viewPos + rayDir * rayDistance;
-        vec3 localPos = samplePos - volumeOrigin;
-        vec3 uvw = clamp(localPos / volumeSize, 0.0, 1.0);
-        vec3 sampledFogColor = texture(OceanTexture3D, uvw).rgb;
-        //finalColor = sampledFogColor;
+    // ocean surface
+    if (underwaterMask > 0.75) {
+       return;
+    }
+
+    // Refactored final lighting
+    const float distortionSpeed = 0.05;
+    const float distortionFactor = 0.0024;
+    const float waterUVScaling = 0.155;
+    float offsetX = mod(u_time * distortionSpeed, 1.0);        
+    vec2 uv_dudv = vec2(uv_screenspace + vec2(offsetX, 0));
+    vec2 distortion = texture(WaterDUDVTexture, uv_dudv).rg * 2 - 1;
+    vec2 uv_refraction = uv_screenspace + (distortion * distortionFactor);
+    uv_refraction = clamp(uv_refraction, 0, 1);
+    vec3 refactoredFinalLighting = texture(GaussianFinalLighting, uv_refraction).rgb;
+
+    // mix in water
+    vec3 hack = refactoredFinalLighting * UNDER_WATER_TINT * 1.5;
+    refactoredFinalLighting = mix(hack, refactoredFinalLighting, 0.5);
+
+    // Above water skybox
+    if (Normal == vec3(0,0,0) && waterWorldPos != vec3(0,0,0)) {
+        vec3 color = refactoredFinalLighting.rgb * 0.25 + waterColor;
+
+        // Fogg
+        vec3 u_fogColor = vec3(0.00326, 0.00217, 0.00073) * 0.01;
+        float u_fogStartDistance = 10.0;
+        float u_fogEndDistance = 50.0;
+        float u_fogExponent = 0.5;
+        float dist = length(u_viewPos - waterWorldPos);
+        float fogRange = u_fogEndDistance - u_fogStartDistance;
+        float normDist = (dist - u_fogStartDistance) / max(fogRange, 0.0001);
+        normDist = clamp(normDist, 0.0, 1.0);
+        float fogEffect = pow(normDist, u_fogExponent);
+        float fogFactor = 1.0 - fogEffect;
+
+        color = mix(u_fogColor * 0.1, color, fogFactor);
+
+        float brightness = dot(color, vec3(0.2126, 0.7152, 0.0722));
+
+        if (brightness < 0.002) {
+            color = finalRayFog;
+        }
+
+        imageStore(LightingImage, pixelCoords, vec4(color, 1.0));
+        return;
+    }
+    // Under water skybox
+    else if (Normal == vec3(0,0,0) && waterWorldPos == vec3(0,0,0)) {    
+        imageStore(LightingImage, pixelCoords, vec4(finalRayFog, 1.0));
+    }
+    else {
+        vec3 color = (refactoredFinalLighting.rgb) + waterColor;
+
+        // Subtle green
+        color = mix(color, color * UNDER_WATER_TINT, 0.15);
+
+        if (geometryWorldPos.y < 10) {
+            color = mix(color, color * UNDER_WATER_TINT * UNDER_WATER_TINT, 0.9 );
+        }
+
+        imageStore(LightingImage, pixelCoords, vec4(color, 1.0));
     }
     
-           // finalColor += waterColor;
-            //
-    //finalColor = Normal;
-
-   // finalColor = vec3(pos.x / size.x, pos.y / size.y, pos.z / size.z);//uvw;
-
-     vec3 down = vec3(0.0, -1.0, 0.0);
-    float downwardness = dot(rayDir, down); // 1 when looking straight down, 0 when horizontal, -1 when straight up
-    downwardness = clamp(downwardness, 0.0, 1.0); // clamp anything above horizon to 1.0
-    float darkness = mix(1.0, 0.0, downwardness); // fades from 1.0 (bright) to 0.0 (black) as you look down
-    vec3 finalFog = fogColor * darkness;
-
-    finalColor = vec3(0.4, 0.8, 0.6) * darkness * 0.1;
-    finalColor += (noise - 0.5) * ditherStrength;
-
-    if (underwaterMask < 0.75 && underwaterMask > 0.25) {
-
-        imageStore(LightingImage, pixelCoords, vec4(finalColor, 1.0));
-   }
-  
-   // imageStore(LightingImage, pixelCoords, vec4(vec3(worldPos.y), 1.0));
 
 
-   // }
+
+
+  //imageStore(LightingImage, pixelCoords, vec4(distortedFinalLighting, 1.0));
 }
 
+void main2() { 
+    //return;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-void main() {
-ivec2 pixelCoords = ivec2(gl_GlobalInvocationID.xy);   
+    ivec2 pixelCoords = ivec2(gl_GlobalInvocationID.xy);   
     ivec2 outputImageSize = imageSize(LightingImage);
     vec2 uv_screenspace = (vec2(pixelCoords) + 0.5) / vec2(outputImageSize);
 
@@ -313,120 +199,27 @@ ivec2 pixelCoords = ivec2(gl_GlobalInvocationID.xy);
 
         vec3 distortedFinalLighting = texture(GaussianFinalLighting, uv_refraction).rgb;
 
-       // vec3 finalColor = distortedFinalLighting;
-       // imageStore(LightingImage, pixelCoords, vec4(vec3(finalColor), 1.0));
-
         vec3 finalColor = (distortedFinalLighting * UNDER_WATER_TINT * 4);
         finalColor += waterColor;
 
         
-      //float viewDistance = distance(u_viewPos, worldPos);
-      //
-      //float startDistance;
-      //float endDistance;
-      //float exponent;
-      //vec3 fogColor;
-      //
-      //startDistance = 5;
-      //endDistance = 15;
-      //exponent = 1;
-      //fogColor = vec3(0.1, 0.25, 0.3) * 0.2;
-      //fogColor = vec3(0.35, 0.35, 0.3) * 0.2;
-      //vec3 nearFog = ApplyFog(finalColor, viewDistance, startDistance, endDistance, exponent, fogColor);        
-      //finalColor = mix(finalColor, nearFog, 0.9);
-      //
-      //nearFog = ApplyFog(waterColor, viewDistance, startDistance, endDistance, exponent, fogColor);    
-      /// waterColor = mix(waterColor, nearFog, 0.5);
-      //
-      //startDistance = 5;
-      //endDistance = 40;
-      //exponent = 1;
-      //fogColor = vec3(0.1, 0.5, 0.3) * 0.2;;//vec3(0.05, 0.1, 0.2) * 0.2;
-      //vec3 distantFog = ApplyFog(finalColor, viewDistance, startDistance, endDistance, exponent, fogColor);  
-      //finalColor = mix(finalColor, distantFog, 0.75);
-      //
-      ////waterColor = ApplyFog(waterColor, viewDistance, startDistance, endDistance, exponent, fogColor);
-      //
-      //vec3 yolo = (distortedFinalLighting * UNDER_WATER_TINT) ;//+ waterColor;
-      //
-      //
-      //
-      //
-      //finalColor = mix(finalColor, yolo, 0.85);
-      //
-      //finalColor += waterColor;
-      //
-      //
-      //float depth = worldPos.y;
-      //vec3 depthFogColor = vec3(0.02, 0.025, 0.03) * 0.95; // cold black-blue, like deep ocean
-      ////depthFogColor = vec3(1, 0, 0); // cold black-blue, like deep ocean
-      //float depthFogStart = -1;
-      //float depthFogEnd = -5;
-      //
-      //// Depth fog
-      //finalColor = ApplyDepthFog(finalColor, depth, depthFogColor, depthFogStart, depthFogEnd);
-      //
-      //
-
-
-
-
-
-
-
-
-
-       // finalColor = mix(finalColor, distantFog, 0.9);
-        
-       // finalColor = distantFog;
-       // finalColor = nearFog;
-
-
-    //finalColor = distortedFinalLighting;
-
-    //finalColor.r = 0;
     
     vec3 rayDir = GetWorldRay(pixelCoords, u_resolution, u_inverseProjectionView, u_viewPos);
     float sampleDist = 5.0;
     vec3 samplePos = u_viewPos + rayDir * sampleDist;
 
-    float waterHeight = -0.65;
-    //float yDepthScale = 2;
 
-    ivec3 volumeSize = textureSize(OceanTexture3D, 0);
-
-    vec3 volumeOrigin = vec3(
-        u_viewPos.x - volumeSize.x / 2.0f,
-        waterHeight - volumeSize.y,
-        u_viewPos.z - volumeSize.z / 2.0f
-    );
-
-    vec3 localPos = samplePos - volumeOrigin;
-    
-    // Water surface 
-    if (waterWorldPos != vec3(0,0,0)) {
-        localPos = waterWorldPos - volumeOrigin;
-    }
-    // Regular geometry
-    else if (Normal != vec3(0,0,0)) {
-        localPos = worldPos - volumeOrigin;
-    }
-        //localPos = waterWorldPos - volumeOrigin;
-
-    //localPos.y *= yDepthScale;
-    vec3 uvw = clamp(localPos / volumeSize, 0.0, 1.0);
-
-    vec3 fogColor = texture(OceanTexture3D, uvw).rgb;
     float noise = fract(sin(dot(pixelCoords + u_time, vec2(12.9898,78.233))) * 43758.5453);
     //float noise = fract(sin(dot(pixelCoords, vec2(12.9898,78.233))) * 43758.5453);
     float ditherStrength = 1.0 / 255.0;
     ditherStrength *= 2;
 
    
-    fogColor += (noise - 0.5) * ditherStrength;
     
     bool skyBox = Normal == vec3(0,0,0) && waterWorldPos == vec3(0,0,0);
     bool regularGeometry = Normal != vec3(0,0,0) && waterWorldPos == vec3(0,0,0);
+
+    regularGeometry = true;
 
     // Camera Ray fog
     vec3 down = vec3(0.0, -1.0, 0.0);
@@ -446,12 +239,14 @@ ivec2 pixelCoords = ivec2(gl_GlobalInvocationID.xy);
         vec3 fogColor = vec3(0.4, 0.8, 0.6) * 0.035; // volume fill pass was * 0.35
         vec3 distantFog = ApplyFog(finalColor, viewDistance, startDistance, endDistance, exponent, fogColor);  
         finalColor = mix(finalColor, distantFog, 0.95);
+        finalColor = mix(finalColor, distantFog, 0.95);
     }
      // Skybox pixels
-    else if (skyBox) {       
-        finalColor = fogColor * 5 * fogColor;
+    else if (skyBox && false) {       
+        finalColor = finalRayFog * 5 * finalRayFog;
         finalColor += waterColor;
         finalColor = finalRayFog;
+        finalColor = vec3(1,1,0);
     }   
     // Water surface
     else {
@@ -461,11 +256,12 @@ ivec2 pixelCoords = ivec2(gl_GlobalInvocationID.xy);
         float t = clamp(waterSurfaceDistance / maxDist, 0.0, 1.0);
         float blendFactor = pow(t, exponent);
         finalColor = mix(finalColor, finalRayFog, blendFactor);
+        finalColor = vec3(1,0,0);
     }
     
     // Depth darkness
-    float depthStart = -2.0;
-    float depthEnd   = -20.0;
+    float depthStart = -2.0 + 10;
+    float depthEnd   = -20.0 + 10;
     float depthExponent = 1.5;
     float maxDarkness = 0.65; 
 
@@ -479,4 +275,10 @@ ivec2 pixelCoords = ivec2(gl_GlobalInvocationID.xy);
     if (underwaterMask < 0.75 && underwaterMask > 0.25) {
         imageStore(LightingImage, pixelCoords, vec4(finalColor, 1.0));
     }
+
+    
+
+    
+   // imageStore(LightingImage, pixelCoords, vec4(gaussianFinalLighting, 1.0));
+
 }

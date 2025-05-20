@@ -18,14 +18,18 @@ struct OceanReadbackData {
 
 layout (std430, binding = 6) restrict buffer Buffer { OceanReadbackData oceanReadbackData; };
 
+uniform vec3 positionPlayer0;
+
 void main() {
+
+
 
     float fftResoltion_band0 = 512.0;
     float fftResoltion_band1 = 512.0;
     float patchSize_band0 = 8.0;
     float patchSize_band1 = 13.123;
 
-    vec3 queryPosition = vec3(3, 0, 3);
+    vec3 queryPosition = positionPlayer0;
 
     highp vec2 uv_band0 = fract(queryPosition.xz / patchSize_band0);
     highp vec2 uv_band1 = fract(queryPosition.xz / patchSize_band1);

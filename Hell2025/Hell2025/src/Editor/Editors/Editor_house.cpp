@@ -151,7 +151,7 @@ namespace Editor {
             }
 
             Editor::SetEditorMode(EditorMode::HOUSE_EDITOR);
-            if (Editor::IsEditorClosed()) {
+            if (Editor::IsClosed()) {
                 Editor::OpenEditor();
             }
         }

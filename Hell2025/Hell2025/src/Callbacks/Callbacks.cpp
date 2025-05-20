@@ -85,7 +85,7 @@ namespace Callbacks {
     void OpenWeaponsEditor() {
         if (Editor::GetEditorMode() != EditorMode::WEAPON_EDITOR) {
             Editor::SetEditorMode(EditorMode::WEAPON_EDITOR);
-            if (Editor::IsEditorClosed()) {
+            if (Editor::IsClosed()) {
                 Editor::OpenEditor();
             }
         }

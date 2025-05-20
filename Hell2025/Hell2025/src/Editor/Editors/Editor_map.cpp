@@ -124,7 +124,7 @@ namespace Editor {
     void OpenMapEditor() {
         Audio::PlayAudio(AUDIO_SELECT, 1.0f);
 
-        if (Editor::IsEditorClosed()) {
+        if (Editor::IsClosed()) {
             Editor::OpenEditor();
         }
 

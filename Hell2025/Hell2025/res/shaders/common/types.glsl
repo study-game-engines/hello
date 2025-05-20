@@ -27,7 +27,7 @@ struct ViewportData {
     float flashlightModifer;
     bool isOrtho;
     float orthoSize;
-    float padding2;
+    float fov;
     vec4 viewPos;
     vec4 cameraForward;
 };
@@ -73,6 +73,11 @@ struct RenderItem {
     float emissiveG;
     float emissiveB;
     int castShadows; // True or false
+
+    float furLength;
+    float furShellDistanceAttenuation;
+    float furUVScale;
+    int customFlag;
 };
 
 struct Light {

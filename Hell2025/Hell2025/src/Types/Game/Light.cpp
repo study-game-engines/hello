@@ -29,12 +29,12 @@ Light::Light(LightCreateInfo createInfo) {
             m_transform1.position = m_position;
             m_transform1.scale.y = glm::distance(rayResult.hitPosition, m_position);
             m_transform2.position = rayResult.hitPosition;
-            std::cout << "hit found: " << Util::Vec3ToString(rayResult.hitPosition) << "\n";
+            //std::cout << "hit found: " << Util::Vec3ToString(rayResult.hitPosition) << "\n";
         }
         else {
             m_model1 = nullptr;
             m_model2 = nullptr;
-            std::cout << "no hit\n";
+            //std::cout << "no hit\n";
         }
     }
 

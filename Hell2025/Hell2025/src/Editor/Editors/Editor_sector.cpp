@@ -229,7 +229,7 @@ namespace Editor {
         Audio::PlayAudio(AUDIO_SELECT, 1.0f);
         World::EnableOcean();
 
-        if (IsEditorClosed()) {
+        if (IsClosed()) {
             OpenEditor();
         }
 
@@ -253,6 +253,10 @@ namespace Editor {
         ReconfigureSectorEditorImGuiElements();
     }
 
+    // WARNING! this code is fucked and broken add duplicates everything from the world into the sector!
+    // WARNING! this code is fucked and broken add duplicates everything from the world into the sector!
+    // WARNING! this code is fucked and broken add duplicates everything from the world into the sector!
+    // WARNING! this code is fucked and broken add duplicates everything from the world into the sector!
     void UpdateSectorEditor() {
         // Update the current SectorCreateInfo with the actual state of the objects in the world (for saving)
         SectorCreateInfo* sectorCreateInfo = SectorManager::GetSectorCreateInfoByName(g_sectorName);
@@ -263,23 +267,23 @@ namespace Editor {
         sectorCreateInfo->pickUps.clear();
         sectorCreateInfo->trees.clear();
 
-        sectorCreateInfo->gameObjects.reserve(World::GetRenderItemsAlphaDiscarded().size());
+        sectorCreateInfo->gameObjects.reserve(World::GetGameObjects().size());
         sectorCreateInfo->lights.reserve(World::GetLights().size());
         sectorCreateInfo->pickUps.reserve(World::GetPickUps().size());
         sectorCreateInfo->trees.reserve(World::GetTrees().size());
 
-        for (GameObject& gameObject : World::GetGameObjects()) {
-            sectorCreateInfo->gameObjects.emplace_back(gameObject.GetCreateInfo());
-        }
-        for (Light& light : World::GetLights()) {
-            sectorCreateInfo->lights.emplace_back(light.GetCreateInfo());
-        }
-        for (PickUp& pickUp : World::GetPickUps()) {
-            sectorCreateInfo->pickUps.emplace_back(pickUp.GetCreateInfo());
-        }
-        for (Tree& tree : World::GetTrees()) {
-            sectorCreateInfo->trees.emplace_back(tree.GetCreateInfo());
-        }
+        //for (GameObject& gameObject : World::GetGameObjects()) {
+        //    sectorCreateInfo->gameObjects.emplace_back(gameObject.GetCreateInfo());
+        //}
+        //for (Light& light : World::GetLights()) {
+        //    sectorCreateInfo->lights.emplace_back(light.GetCreateInfo());
+        //}
+        //for (PickUp& pickUp : World::GetPickUps()) {
+        //    sectorCreateInfo->pickUps.emplace_back(pickUp.GetCreateInfo());
+        //}
+        //for (Tree& tree : World::GetTrees()) {
+        //    sectorCreateInfo->trees.emplace_back(tree.GetCreateInfo());
+        //}
 
         // Draw sector perimeter
         glm::vec3 p0 = glm::vec3(0.0f, 0.0f, 0.0f);

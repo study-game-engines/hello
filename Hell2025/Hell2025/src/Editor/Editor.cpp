@@ -234,7 +234,7 @@ namespace Editor {
         return g_isOpen;
     }
 
-    bool IsEditorClosed() {
+    bool IsClosed() {
         return !g_isOpen;
     }
 

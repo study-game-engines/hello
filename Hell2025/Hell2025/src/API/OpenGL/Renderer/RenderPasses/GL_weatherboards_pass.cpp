@@ -28,7 +28,7 @@ namespace OpenGLRenderer {
         if (!debugShader) return;
 
         gBuffer->Bind();
-        gBuffer->DrawBuffers({ "BaseColor", "Normal", "RMA", "WorldSpacePosition" });
+        gBuffer->DrawBuffers({ "BaseColor", "Normal", "RMA", "WorldSpacePosition", "Emissive" });
 
 
 
@@ -66,6 +66,7 @@ namespace OpenGLRenderer {
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, AssetManager::GetTextureByIndex(material->m_rma)->GetGLTexture().GetHandle());
 
+        SetRasterizerState("GeometryPass_NonBlended");
 
         for (int i = 0; i < 4; i++) {
             int indexCount = weatherboardMeshBuffer.GetGLMeshBuffer().GetIndexCount();

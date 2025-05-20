@@ -135,6 +135,7 @@ void Piano::Init(PianoCreateInfo& createInfo) {
             m_meshNodes.m_objectIds[i] = localObjectId;
             m_meshNodes.m_objectTypes[i] = ObjectType::PIANO_KEY;
 
+            m_keys[localObjectId] = PianoKey();
             PianoKey& pianoKey = m_keys[localObjectId];
             pianoKey.m_meshName = mesh->GetName();
             pianoKey.m_note = MeshNameToNote(mesh->GetName());
@@ -327,13 +328,6 @@ void Piano::TriggerInternalNoteFromExternalBulletHit(glm::vec3 bulletHitPositon)
 
     if (closetKey) {
         closetKey->PressKey(127, 0.1f);
-    }
-}
-
-void Piano::SubmitRenderItems() {
-    m_meshNodes.SubmitRenderItems();
-    if (Editor::GetSelectedObjectId() == m_pianoObjectId) {
-        RenderDataManager::SubmitOutlineRenderItems(m_meshNodes.GetRenderItems());
     }
 }
 

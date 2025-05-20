@@ -12,8 +12,7 @@ void Wall::Init(WallCreateInfo createInfo) {
     m_createInfo = createInfo;
 
     UpdateSegmentsAndVertexData();
-
-    std::cout << "Wall::Init(): " << Util::WallTypeToString(m_createInfo.wallType) << "\n";
+    //std::cout << "Wall::Init(): " << Util::WallTypeToString(m_createInfo.wallType) << "\n";
 }
 
 void Wall::UpdateSegmentsAndVertexData() {
@@ -365,13 +364,8 @@ void Wall::CreateWeatherBoards() {
         Util::PackUint64(m_objectId, renderItem.objectIdLowerBit, renderItem.objectIdUpperBit);
     }
 
-    std::cout << "Wall::CreateWeatherBoards()\n";
-
     // Ensure all the door and window cube transforms exist at the time this runs
     World::UpdateDoorAndWindowCubeTransforms();
-
-
-
 
     m_boardVertexDataSet.clear();
 

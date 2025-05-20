@@ -14,6 +14,11 @@ struct DecalCreateInfo {
     uint64_t parentObjectId = 0;
 };
 
+struct MermaidCreateInfo {
+    glm::vec3 position;
+    glm::vec3 rotation;
+};
+
 struct DoorCreateInfo {
     glm::vec3 position;
     glm::vec3 rotation;

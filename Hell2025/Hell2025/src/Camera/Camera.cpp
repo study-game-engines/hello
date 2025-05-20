@@ -7,42 +7,30 @@
 #include "Util.h"
 
 void Camera::Update() {
-    m_inverseViewMatrix = glm::translate(glm::mat4(1), m_position) * glm::mat4_cast(glm::quat(m_rotation));
-    m_viewMatrix = glm::inverse(m_inverseViewMatrix);
-    m_right = glm::vec3(m_inverseViewMatrix[0]);
-    m_up = glm::vec3(m_inverseViewMatrix[1]);
-    m_forward = glm::vec3(-m_inverseViewMatrix[2]);
 
+    glm::mat4 viewWeaponCameraMatrix = glm::mat4(1.0f);
 
-
-    // FIXXXXXXXXXXXXX
-    // FIXXXXXXXXXXXXX
-    // FIXXXXXXXXXXXXX
-    // FIXXXXXXXXXXXXX
-    Player* player = nullptr;
     for (int i = 0; i < Game::GetLocalPlayerCount(); i++) {
-        Player* queryPlayer = Game::GetLocalPlayerByIndex(i);
-        if (&queryPlayer->GetCamera() == this) {
-            player = queryPlayer;
+        Player* player = Game::GetLocalPlayerByIndex(i);
+        if (&player->GetCamera() == this) {
+            viewWeaponCameraMatrix = player->GetViewWeaponCameraMatrix();
+            break;
         }
     }
-    if (!player) {
-        return;
-    }
-    // FIXXXXXXXXXXXXX
-    // FIXXXXXXXXXXXXX
-    // FIXXXXXXXXXXXXX
-    // FIXXXXXXXXXXXXX
-    // FIXXXXXXXXXXXXX
 
+    // Build base view directly from position + rotation
+    glm::quat orient = glm::quat(m_rotation);
+    glm::mat4 rot = glm::mat4_cast(glm::conjugate(orient)); // inverse rotation
+    glm::mat4 trans = glm::translate(glm::mat4(1.0f), -m_position);
+    glm::mat4 baseViewMatrix = rot * trans;
 
-    glm::mat4 viewWeaponCameraMatrix = player->GetViewWeaponCameraMatrix();
-
-    m_viewMatrix = viewWeaponCameraMatrix * m_viewMatrix;
+    // Then apply weapon camera matrix
+    m_viewMatrix = viewWeaponCameraMatrix * baseViewMatrix;
     m_inverseViewMatrix = glm::inverse(m_viewMatrix);
+
     m_right = glm::vec3(m_inverseViewMatrix[0]);
     m_up = glm::vec3(m_inverseViewMatrix[1]);
-    m_forward = glm::vec3(-m_inverseViewMatrix[2]);
+    m_forward = -glm::vec3(m_inverseViewMatrix[2]);
 }
 
 void Camera::SetPosition(glm::vec3 position) {

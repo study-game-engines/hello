@@ -10,7 +10,7 @@ layout(std430, binding = 3) readonly buffer renderItemsBuffer {
 
 uniform mat4 u_projectionView;
 uniform mat4 u_modelMatrix;
-uniform bool u_useInstanceData;
+uniform bool u_useInstanceData = false;
 
 void main() {
 

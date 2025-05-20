@@ -15,12 +15,19 @@ in vec3 Tangent;
 in vec3 BiTangent;
 in vec3 WorldPos;
 
+uniform int u_test;
+flat in int vtxID;
+
 void main() {
     vec4 baseColor = texture2D(baseColorTexture, TexCoord);
     vec3 normalMap = texture2D(normalTexture, TexCoord).rgb;
     vec3 rma = texture2D(rmaTexture, TexCoord).rgb;
 
     BaseColorOut = baseColor;
+
+    //BaseColorOut.rgb = vec3(float(u_test) / 100.0);
+    //BaseColorOut.rgb = vec3(float(vtxID) / 1089.0);
+
     RMAOut = vec4(rma, 1);
     NormalOut.rgb = normalize(Normal);
     WorldPosOut = vec4(WorldPos, 0.0);

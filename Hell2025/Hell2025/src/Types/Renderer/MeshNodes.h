@@ -17,12 +17,15 @@ struct MeshNodes {
     std::vector<uint64_t> m_objectIds;
     std::unordered_map<std::string, uint32_t> m_localIndexMap; // maps mesh name to its local index
 
+    void InitFromModel(const std::string& modelName);
     void InitFromModel(Model* model);
     void CleanUp();
     void UpdateHierachy();
     void UpdateRenderItems(const glm::mat4& worldMatrix);
-    void SubmitRenderItems();
     void SetTransformByMeshName(const std::string& meshName, Transform transform);
+    void SetMaterialByMeshName(const std::string& meshName, const std::string& materialName);
+    void SetBlendingModeByMeshName(const std::string& meshName, BlendingMode blendingMode);
+    void PrintMeshNames();
 
     bool HasNodeWithObjectId(uint64_t objectId) const;
         
@@ -33,9 +36,19 @@ struct MeshNodes {
     glm::mat4 GetInverseBindTransform(int nodeIndex);
     glm::mat4 GetMeshModelMatrix(int nodeIndex);
 
-    const size_t GetNodeCount() const                       { return m_globalMeshIndices.size(); }
-    const std::vector<RenderItem>& GetRenderItems() const   { return m_renderItems; }
+    const size_t GetNodeCount() const                                       { return m_nodeCount; }
+    const std::vector<RenderItem>& GetRenderItems() const                   { return m_renderItems; }
+    const std::vector<RenderItem>& GetRenderItemsBlended()const             { return m_renderItemsBlended; }
+    const std::vector<RenderItem>& GetRenderItemsAlphaDiscarded() const     { return m_renderItemsAlphaDiscarded; }
+    const std::vector<RenderItem>& GetRenderItemsHairTopLayer() const       { return m_renderItemsHairTopLayer; }
+    const std::vector<RenderItem>& GetRenderItemsHairBottomLayer() const    { return m_renderItemsHairBottomLayer; }
 
 private:
+    uint32_t m_nodeCount = 0;
+    std::string m_modelName = "UNDEFINED\n";
     std::vector<RenderItem> m_renderItems;
+    std::vector<RenderItem> m_renderItemsBlended;
+    std::vector<RenderItem> m_renderItemsAlphaDiscarded;
+    std::vector<RenderItem> m_renderItemsHairTopLayer;
+    std::vector<RenderItem> m_renderItemsHairBottomLayer;
 };

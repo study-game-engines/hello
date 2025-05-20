@@ -8,6 +8,7 @@
 #include <assimp/matrix3x3.h>
 #include <assimp/matrix4x4.h>
 #include <span>
+#include <vector>
 
 namespace Util {
     // Black magic
@@ -106,6 +107,10 @@ namespace Util {
     void UpdateRenderItemAABBFastA(RenderItem& renderItem);
     void UpdateRenderItemAABBFastB(RenderItem& renderItem);
     AABB ComputeWorldAABB(glm::vec3& localAabbMin, glm::vec3& localAabbMax, glm::mat4& modelMatrix);
+    glm::mat4 GetLightSpaceMatrix(const glm::mat4& viewMatrix, glm::vec3 lightDir, const float viewportWidth, const float viewportHeight, const float fov, const float nearPlane, const float farPlane);
+    std::vector<glm::vec4> GetFrustumCornersWorldSpace(const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix);
+    std::vector<glm::mat4> GetLightProjectionViews(const glm::mat4& viewMatrix, glm::vec3 lightDir, std::vector<float>& shadowCascadeLevels, const float viewportWidth, const float viewportHeight, const float fov);
+
 
     // Animation
     //int FindAnimatedNodeIndex(float AnimationTime, const AnimatedNode* animatedNode);

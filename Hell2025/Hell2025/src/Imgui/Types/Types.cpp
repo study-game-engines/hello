@@ -535,6 +535,56 @@ namespace EditorUI {
         return m_value;
     }
 
+    //
+
+    void FloatInput::SetText(const std::string& text) {
+        m_text = text;
+    }
+
+    void FloatInput::SetValue(float value) {
+        m_value = value;
+    }
+
+    void FloatInput::SetRange(float min, float max) {
+        m_min = min;
+        m_max = max;
+    }
+
+    bool FloatInput::CreateImGuiElements() {
+        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4, 6));
+        ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 2.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 3));
+
+        float padding = 40;
+        float valueMargin = EDITOR_LEFT_PANEL_WIDTH * 0.35f;
+        float labelMargin = valueMargin - 12.0f;
+        float inputFieldWidth = EDITOR_LEFT_PANEL_WIDTH - valueMargin - padding;
+        ImGui::PushItemWidth(inputFieldWidth);
+
+        bool valueChanged = false;
+
+        // Input
+        CreateRightJustifiedText(m_text, labelMargin);
+        ImGui::SameLine(valueMargin);
+        if (ImGui::InputFloat(std::string("##" + m_text).c_str(), &m_value)) {
+            valueChanged = true;
+            m_value = std::clamp(m_value, m_min, m_max);
+        }
+
+        ImGui::Dummy(ImVec2(0.0f, 1.0f));
+        ImGui::PopStyleVar(3);
+        ImGui::PopItemWidth();
+
+        return valueChanged;
+    }
+
+    float FloatInput::GetValue() {
+        return m_value;
+    }
+
+
+    //
+
     void FloatSliderInput::SetText(const std::string& text) {
         m_text = text;
     }

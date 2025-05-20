@@ -27,6 +27,7 @@ namespace Game {
     float g_totalTime = 0;
     double g_deltaTimeAccumulator = 0.0;
     double g_fixedDeltaTime = 1.0 / 60.0;
+    glm::vec3 g_moonlightDirection = glm::normalize(glm::vec3(0.0, 0.2, 0.5));
     std::vector<Player> g_localPlayers;
     std::vector<Player> g_onlinePlayers;
     SplitscreenMode g_splitscreenMode = SplitscreenMode::FULLSCREEN;
@@ -113,7 +114,7 @@ namespace Game {
         // Physics
         while (g_deltaTimeAccumulator >= g_fixedDeltaTime) {
             g_deltaTimeAccumulator -= g_fixedDeltaTime;
-            if (Editor::IsEditorClosed()) {
+            if (Editor::IsClosed()) {
                 Physics::StepPhysics(g_fixedDeltaTime);
             }
         }
@@ -152,6 +153,16 @@ namespace Game {
         else {
             std::cout << "Game::GetLocalPlayerCameraByIndex(int index) failed. " << index << " out of range of local player count " << g_localPlayers.size() << "\n";
             return nullptr;
+        }
+    }
+
+    float GetLocalPlayerFovByIndex(uint32_t index) {
+        if (index >= 0 && index < g_localPlayers.size()) {
+            return g_localPlayers[index].GetFov();
+        }
+        else {
+            std::cout << "Game::GetLocalPlayerFOVByIndex(int index) failed. " << index << " out of range of local player count " << g_localPlayers.size() << "\n";
+            return 1.0f;
         }
     }
 
@@ -247,5 +258,9 @@ namespace Game {
         else {
             Audio::StopAudio("Water_PaddlingLoop_1.wav");
         }
+    }
+
+    glm::vec3 GetMoonlightDirection() {
+        return g_moonlightDirection;
     }
 }

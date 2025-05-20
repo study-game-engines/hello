@@ -54,10 +54,8 @@ void OpenGLFrameBuffer::CreateAttachment(const char* name, GLenum internalFormat
     if (allocateMips) {
         glTextureParameteri(colorAttachment.handle, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         glTextureParameteri(colorAttachment.handle, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        //glTextureParameteri(colorAttachment.handle, GL_TEXTURE_WRAP_S, wrap);
-        //glTextureParameteri(colorAttachment.handle, GL_TEXTURE_WRAP_T, wrap);
-        glTextureParameteri(colorAttachment.handle, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTextureParameteri(colorAttachment.handle, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTextureParameteri(colorAttachment.handle, GL_TEXTURE_WRAP_S, wrap);
+        glTextureParameteri(colorAttachment.handle, GL_TEXTURE_WRAP_T, wrap);
     }
 
     glNamedFramebufferTexture(m_handle, GL_COLOR_ATTACHMENT0 + m_colorAttachments.size() - 1, colorAttachment.handle, 0);
@@ -104,6 +102,23 @@ void OpenGLFrameBuffer::DrawBuffer(const char* attachmentName) {
     }
 }
 
+
+void OpenGLFrameBuffer::ClearTexImage(const char* attachmentName, GLfloat r, GLfloat g, GLfloat b, GLfloat a) {
+    int index = -1;
+    for (int i = 0; i < m_colorAttachments.size(); i++) {
+        if (StrCmp(attachmentName, m_colorAttachments[i].name))
+            index = i;
+    }
+    if (index >= 0) {
+        GLuint tex = m_colorAttachments[index].handle;
+        float cc[4] = { r,g,b,a };
+        glClearTexImage(tex, 0, GL_RGBA, GL_FLOAT, cc);
+    }
+    else {
+        std::cout << "OpenGLFrameBuffer::ClearTexImage() failed: '" << attachmentName << "' not found!\n";
+    }
+}
+
 void OpenGLFrameBuffer::ClearAttachment(const char* attachmentName, GLfloat r, GLfloat g, GLfloat b, GLfloat a) {
     for (int i = 0; i < m_colorAttachments.size(); i++) {
         if (StrCmp(attachmentName, m_colorAttachments[i].name)) {
@@ -115,7 +130,7 @@ void OpenGLFrameBuffer::ClearAttachment(const char* attachmentName, GLfloat r, G
             glClearTexSubImage(texture, 0, 0, 0, 0, GetWidth(), GetHeight(), 1, format, type, clearColor);
             return;
         }
-    }
+}
 }
 
 void OpenGLFrameBuffer::ClearAttachmentI(const char* attachmentName, GLint r, GLint g, GLint b, GLint a) {

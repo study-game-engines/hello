@@ -1,7 +1,8 @@
 #pragma once
 #include "HellTypes.h"
 #include "Core/Debug.h"
-#include "Enemies/Shark/Shark.h"
+#include "Game/Allies/Mermaid/Mermaid.h"
+#include "Game/Enemies/Shark/Shark.h"
 #include "Types/Game/AnimatedGameObject.h"
 #include "Types/Game/Bullet.h"
 #include "Types/Game/BulletCasing.h"
@@ -30,6 +31,8 @@ struct ViewportBvhData {
 };
 
 namespace World {
+    AnimatedGameObject* GetRooTest();
+
     void Init();
     void BeginFrame();
     void Update(float deltaTime);
@@ -64,6 +67,7 @@ namespace World {
     void AddHousePlane(PlaneCreateInfo createInfo, SpawnOffset spawnOffset);
     void AddGameObject(GameObjectCreateInfo createInfo, SpawnOffset spawnOffset = SpawnOffset());
     void AddLight(LightCreateInfo createInfo, SpawnOffset spawnOffset = SpawnOffset());
+    void AddMermaid(MermaidCreateInfo createInfo, SpawnOffset spawnOffset = SpawnOffset());
     void AddPiano(PianoCreateInfo createInfo, SpawnOffset spawnOffset);
     void AddPickUp(PickUpCreateInfo createInfo, SpawnOffset spawnOffset = SpawnOffset());
     void AddPictureFrame(PictureFrameCreateInfo createInfo, SpawnOffset spawnOffset = SpawnOffset());
@@ -153,6 +157,7 @@ namespace World {
     std::vector<HeightMapChunk>& GetHeightMapChunks();
     std::vector<Plane>& GetPlanes();
     std::vector<Light>& GetLights();
+    std::vector<Mermaid>& GetMermaids();
     std::vector<Piano>& GetPianos();
     std::vector<PickUp>& GetPickUps();
     std::vector<PictureFrame>& GetPictureFrames();
@@ -162,11 +167,11 @@ namespace World {
     std::vector<Wall>& GetWalls();
     std::vector<Window>& GetWindows();
 
-    std::vector<RenderItem>& GetRenderItems();
-    std::vector<RenderItem>& GetRenderItemsBlended();
-    std::vector<RenderItem>& GetRenderItemsAlphaDiscarded();
-    std::vector<RenderItem>& GetRenderItemsHairTopLayer();
-    std::vector<RenderItem>& GetRenderItemsHairBottomLayer();
+    //std::vector<RenderItem>& GetRenderItems();
+    //std::vector<RenderItem>& GetRenderItemsBlended();
+    //std::vector<RenderItem>& GetRenderItemsAlphaDiscarded();
+    //std::vector<RenderItem>& GetRenderItemsHairTopLayer();
+    //std::vector<RenderItem>& GetRenderItemsHairBottomLayer();
     std::vector<RenderItem>& GetSkinnedRenderItems();
 }
 

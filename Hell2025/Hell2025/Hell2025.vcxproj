@@ -61,7 +61,7 @@
     <ClCompile>
       <WarningLevel>TurnOffAllWarnings</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;GLM_FORCE_DEPTH_ZERO_TO_ONE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>vendor\compressonator\include\;vendor\gli\include;src\Util;src\Common;vendor\glad\include;vendor\GLFW\include;vendor\glm;vendor\stb_image;vendor\assimp\include;vendor;vendor\fmod\include;vendor\tinyexr;vendor\VkBootstrap;vendor\Vulkan\include;vendor\VulkanMemoryAllocator\include;vendor\physx\include;vendor\nlohmann_json\include;vendor\imgui\include;vendor\lodepng\include;vendor\bvh\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
@@ -98,7 +98,7 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;TRACY_ENABLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;TRACY_ENABLE;GLM_FORCE_DEPTH_ZERO_TO_ONE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>vendor\earcut\include;vendor\clipper\include;src;vendor\compressonator\include\;vendor\gli\include;src\Util;src\Common;vendor\glad\include;vendor\GLFW\include;vendor\glm;vendor\stb_image;vendor\assimp\include;vendor;vendor\fmod\include;vendor\tinyexr;vendor\VkBootstrap;vendor\Vulkan\include;vendor\VulkanMemoryAllocator\include;vendor\physx\include;vendor\nlohmann_json\include;vendor\imgui\include;vendor\lodepng\include;vendor\bvh\include;vendor\fluidsynth\include;vendor\midifile\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
@@ -141,9 +141,12 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <ClCompile Include="src\API\OpenGL\Renderer\ComputePasses\GL_compute_skinning.cpp" />
     <ClCompile Include="src\API\OpenGL\Renderer\GL_renderer.cpp" />
     <ClCompile Include="src\API\OpenGL\Renderer\GL_renderer_util.cpp" />
+    <ClCompile Include="src\API\OpenGL\Renderer\RenderPasses\GL_decal_painting_pass.cpp" />
     <ClCompile Include="src\API\OpenGL\Renderer\RenderPasses\GL_decal_pass.cpp" />
+    <ClCompile Include="src\API\OpenGL\Renderer\RenderPasses\GL_fur_pass.cpp" />
     <ClCompile Include="src\API\OpenGL\Renderer\RenderPasses\GL_glass_pass.cpp" />
     <ClCompile Include="src\API\OpenGL\Renderer\RenderPasses\GL_ocean_passes.cpp" />
+    <ClCompile Include="src\API\OpenGL\Renderer\RenderPasses\GL_post_processing.cpp" />
     <ClCompile Include="src\API\OpenGL\Renderer\RenderPasses\GL_weatherboards_pass.cpp" />
     <ClCompile Include="src\API\OpenGL\Renderer\RenderPasses\GL_winston_pass.cpp" />
     <ClCompile Include="src\API\OpenGL\Renderer\Utility\GL_height_map_utility.cpp" />
@@ -154,7 +157,7 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <ClCompile Include="src\API\OpenGL\Renderer\RenderPasses\GL_geometry_pass.cpp" />
     <ClCompile Include="src\API\OpenGL\Renderer\RenderPasses\GL_grass_pass.cpp" />
     <ClCompile Include="src\API\OpenGL\Renderer\RenderPasses\GL_hair_pass.cpp" />
-    <ClCompile Include="src\API\OpenGL\Renderer\RenderPasses\GL_heightmap_pass.cpp" />
+    <ClCompile Include="src\API\OpenGL\Renderer\RenderPasses\GL_heightmap_passes.cpp" />
     <ClCompile Include="src\API\OpenGL\Renderer\RenderPasses\GL_lighting_pass.cpp" />
     <ClCompile Include="src\API\OpenGL\Renderer\RenderPasses\GL_loading_screen.cpp" />
     <ClCompile Include="src\API\OpenGL\Renderer\GL_rasterizer_states.cpp" />
@@ -172,6 +175,7 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <ClCompile Include="src\API\OpenGL\Types\GL_shader.cpp" />
     <ClCompile Include="src\API\OpenGL\Types\GL_shadow_cube_map_array.cpp" />
     <ClCompile Include="src\API\OpenGL\Types\GL_shadow_map.cpp" />
+    <ClCompile Include="src\API\OpenGL\Types\GL_shadow_map_array.cpp" />
     <ClCompile Include="src\API\OpenGL\Types\GL_texture.cpp" />
     <ClCompile Include="src\API\OpenGL\Types\GL_texture_array.cpp" />
     <ClCompile Include="src\API\Vulkan\Managers\vk_command_manager.cpp" />
@@ -218,7 +222,8 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <ClCompile Include="src\Editor\Editors\Editor_sector.cpp" />
     <ClCompile Include="src\Editor\Editors\House\Editor_wall_placement.cpp" />
     <ClCompile Include="src\Editor\Editor_objects.cpp" />
-    <ClCompile Include="src\Enemies\Shark\Shark.cpp" />
+    <ClCompile Include="src\Game\Allies\Mermaid\Mermaid.cpp" />
+    <ClCompile Include="src\Game\Enemies\Shark\Shark.cpp" />
     <ClCompile Include="src\File\File_debug.cpp" />
     <ClCompile Include="src\File\File_bvh.cpp" />
     <ClCompile Include="src\Bvh\Bvh.cpp" />
@@ -385,11 +390,18 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <None Include="res\shaders\OpenGL\GL_debug_tile_view.comp" />
     <None Include="res\shaders\OpenGL\gl_debug_vertex.frag" />
     <None Include="res\shaders\OpenGL\gl_debug_vertex.vert" />
+    <None Include="res\shaders\OpenGL\GL_debug_view.comp" />
     <None Include="res\shaders\OpenGL\GL_decals.frag" />
     <None Include="res\shaders\OpenGL\GL_decals.vert" />
+    <None Include="res\shaders\OpenGL\GL_decal_paint_mask.comp" />
+    <None Include="res\shaders\OpenGL\GL_decal_paint_uvs.frag" />
+    <None Include="res\shaders\OpenGL\GL_decal_paint_uvs.vert" />
     <None Include="res\shaders\OpenGL\GL_editor_mesh.frag" />
     <None Include="res\shaders\OpenGL\GL_editor_mesh.vert" />
     <None Include="res\shaders\OpenGL\GL_emissive_composite.comp" />
+    <None Include="res\shaders\OpenGL\GL_fur.frag" />
+    <None Include="res\shaders\OpenGL\GL_fur.vert" />
+    <None Include="res\shaders\OpenGL\GL_fur_composite.comp" />
     <None Include="res\shaders\OpenGL\GL_gaussian_blur.comp" />
     <None Include="res\shaders\OpenGL\GL_gizmo.frag" />
     <None Include="res\shaders\OpenGL\GL_gizmo.vert" />
@@ -423,6 +435,7 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <None Include="res\shaders\OpenGL\GL_ocean_update_textures.comp" />
     <None Include="res\shaders\OpenGL\GL_outline.frag" />
     <None Include="res\shaders\OpenGL\GL_outline.vert" />
+    <None Include="res\shaders\OpenGL\GL_post_processing.comp" />
     <None Include="res\shaders\OpenGL\GL_shadow_cube_map.frag" />
     <None Include="res\shaders\OpenGL\GL_shadow_cube_map.vert" />
     <None Include="res\shaders\OpenGL\GL_shadow_map_flashlight.frag" />
@@ -448,6 +461,7 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <None Include="src\Python\BlenderModelExportV2_indentity_transforms.py" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\API\OpenGL\Types\GL_shadow_map_array.h" />
     <ClInclude Include="src\Common\HellGlm.h" />
     <ClInclude Include="src\API\OpenGL\GL_backend.h" />
     <ClInclude Include="src\API\OpenGL\Renderer\GL_renderer.h" />
@@ -497,7 +511,8 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <ClInclude Include="src\Callbacks\Callbacks.h" />
     <ClInclude Include="src\Common\UniqueID.h" />
     <ClInclude Include="src\Bvh\Bvh.h" />
-    <ClInclude Include="src\Enemies\Shark\Shark.h" />
+    <ClInclude Include="src\Game\Allies\Mermaid\Mermaid.h" />
+    <ClInclude Include="src\Game\Enemies\Shark\Shark.h" />
     <ClInclude Include="src\Handlers\OpenHandler.h" />
     <ClInclude Include="src\Modelling\Clipping.h" />
     <ClInclude Include="src\Modelling\Types\ClippingCube.h" />

@@ -36,7 +36,7 @@ enum class BakeState {
 };
 
 enum class BlendingMode { 
-    NONE, 
+    BLEND_DISABLED, 
     BLENDED,
     ALPHA_DISCARDED,
     HAIR_UNDER_LAYER,

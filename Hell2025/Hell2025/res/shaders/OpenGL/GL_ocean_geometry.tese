@@ -14,6 +14,7 @@ uniform mat4 u_projectionView;
 uniform vec2 u_fftGridSize;
 uniform vec3 u_viewPos;
 uniform int u_mode = 0;
+uniform float u_oceanOriginY;
 
 layout(binding = 0) uniform sampler2D DisplacementTexture_band0;
 layout(binding = 1) uniform sampler2D NormalTexture_band0;
@@ -91,7 +92,7 @@ void main() {
     float waterSurfaceDistance = distance(u_viewPos, WorldPos);
     float maxDist = 70.0;
     if (waterSurfaceDistance > maxDist) {
-        WorldPos.y = -0.65;
+    //    WorldPos.y = u_oceanOriginY;
     } 
     
 

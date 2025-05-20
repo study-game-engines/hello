@@ -8,59 +8,79 @@
 #include "Util.h"
 
 void Player::UpdateMovement(float deltaTime) {
-    if (World::HasOcean() && GetCameraPosition().y < Ocean::GetWaterHeight() + 0.1f) {
-        UpdateSwimmingMovement(deltaTime);
+    // Hack to move faster when pressing SHIFT
+    m_speedBoost = Input::KeyDown(GLFW_KEY_LEFT_SHIFT) ? 5.0f : 1.0f;
+
+    // Hack to control camera height
+    float heightSpeed = 3.0f;
+    if (Input::KeyDown(HELL_KEY_EQUAL)) {
+        m_position.y += deltaTime * heightSpeed * m_speedBoost;
     }
-    else {
-        UpdateWalkingMovement(deltaTime);
+    if (Input::KeyDown(GLFW_KEY_MINUS)) {
+        m_position.y -= deltaTime * heightSpeed * m_speedBoost;
+    }
+
+    if (Editor::IsClosed() && m_controlEnabled) {
+        if (World::HasOcean() && GetCameraPosition().y < Ocean::GetWaterHeightAtPlayer(m_viewportIndex) + 0.1f) {
+            UpdateSwimmingMovement(deltaTime);
+            //std::cout << " swimming\n";
+        }
+        else {
+            UpdateWalkingMovement(deltaTime);
+            //std::cout << " walking\n";
+        }
     }
 }
 
 void Player::UpdateWalkingMovement(float deltaTime) {
-
     m_moving = false;
     m_crouching = PressingCrouch();
     m_groundedLastFrame = m_grounded;
 
-    if (!ViewportIsVisible()) {
-        //return;
-    }
-    
     if (!Editor::IsOpen() && m_controlEnabled) {
-        // Speed factor
-        float speedFactor = 1.0f;
-        if (Input::KeyDown(GLFW_KEY_LEFT_SHIFT)) {
-            speedFactor = 5.0f;
+
+        float accelerationSpeed = 7.5f;
+        float decelerationSpeed = 4.0f;
+        float airbornDamping = 2.5f;
+
+        m_walkingSpeed = 4.25f;
+        m_crouchingSpeed = 2.325f;
+
+        glm::vec3 inputDirection = glm::vec3(0.0f);
+
+        // WSAD input
+        if (PressingWalkLeft()) inputDirection -= m_camera.GetRight();
+        if (PressingWalkRight()) inputDirection += m_camera.GetRight();
+        if (PressingWalkForward()) inputDirection += m_camera.GetForwardXZ();
+        if (PressingWalkBackward()) inputDirection -= m_camera.GetForwardXZ();
+
+        // Accelerate
+        if (PressingWalkLeft() || PressingWalkRight() || PressingWalkForward() || PressingWalkBackward()) {
+            m_movementDirection = glm::normalize(inputDirection);
+            m_acceleration += accelerationSpeed * deltaTime;
+        }
+        // Walking deceleration
+        else if (m_grounded) {
+            m_acceleration -= accelerationSpeed * deltaTime;
+        }
+        // Airborne deceleration
+        else {
+            m_acceleration -= airbornDamping * deltaTime;
+        }     
+
+        // Clamp acceleration between 0 and 1
+        m_acceleration = glm::clamp(m_acceleration, 0.0f, 1.0f);
+
+        // Zero out movement direction when no longer moving
+        if (m_acceleration == 0.0f) {
+            m_movementDirection = glm::vec3(0.0f);
         }
 
-        // View height
-        float heightSpeed = 3.0f;
-        if (Input::KeyDown(HELL_KEY_EQUAL)) {
-            m_position.y += deltaTime * heightSpeed * speedFactor;
-        }
-        if (Input::KeyDown(GLFW_KEY_MINUS)) {
-            m_position.y -= deltaTime * heightSpeed * speedFactor;
-        }
-
-        // WSAD
-        glm::vec3 displacement = glm::vec3(0);
-        if (PressingWalkLeft()) {
-            displacement -= m_camera.GetRight();
+        // Determine if moving
+        if (glm::length(m_movementDirection) > 0.001f) {
             m_moving = true;
         }
-        if (PressingWalkRight()) {
-            displacement += m_camera.GetRight();
-            m_moving = true;
-        }
-        if (PressingWalkForward()) {
-            displacement += m_camera.GetForwardXZ();
-            m_moving = true;
-        }
-        if (PressingWalkBackward()) {
-            displacement -= m_camera.GetForwardXZ();
-            m_moving = true;
-        }
-
+        
         // Calculate movement speed
         float targetSpeed = m_crouching ? m_crouchingSpeed : m_walkingSpeed;
         float interpolationSpeed = 18.0f;
@@ -70,26 +90,24 @@ void Player::UpdateWalkingMovement(float deltaTime) {
         }
         m_currentSpeed = Util::FInterpTo(m_currentSpeed, targetSpeed, deltaTime, interpolationSpeed);
 
-        displacement *= m_currentSpeed * deltaTime * speedFactor;
-
-
         // Jump
         if (PresingJump() && HasControl() && m_grounded) {
-            m_yVelocity = 4.9f;  // better magic value for jump strength
+            m_yVelocity = 4.5f;  // Magic value for jump strength
             m_grounded = false;
         }
-        //if (IsOverlappingLadder()) {
-        //    m_grounded = true;
-        //}
 
         // Gravity
         if (m_grounded) {
-            m_yVelocity = -3.5f;
+            m_yVelocity = -3.5f; // Keep the player on the ground
         }
         else {
             float gravity = 15.75f; // 9.8 feels like the moon
             m_yVelocity -= gravity * deltaTime;
         }
+
+        // Move character controller
+        glm::vec3 displacement = m_movementDirection * m_acceleration;
+        displacement *= m_currentSpeed * deltaTime * m_speedBoost;
         displacement.y += m_yVelocity * deltaTime;
         MoveCharacterController(glm::vec3(displacement.x, displacement.y, displacement.z));
 
@@ -98,6 +116,19 @@ void Player::UpdateWalkingMovement(float deltaTime) {
         for (CharacterCollisionReport& report : Physics::GetCharacterCollisionReports()) {
             m_grounded = (report.characterController == m_characterController && report.hitNormal.y > 0.5f);
         }
+
+        // Check for head hitting ceiling
+        bool ceilingHit = false;
+        for (CharacterCollisionReport& report : Physics::GetCharacterCollisionReports()) {
+            if (report.characterController == m_characterController && report.hitNormal.y < -0.5f) {
+                ceilingHit = true;
+                break;
+            }
+        }
+        if (ceilingHit && m_yVelocity > 0.0f) {
+            m_yVelocity = 0.0f;
+        }
+
         Physics::ClearCharacterControllerCollsionReports();
 
         // Character controller AABB
@@ -115,28 +146,62 @@ void Player::UpdateWalkingMovement(float deltaTime) {
     }
 }
 
+inline float SmoothLerp(float current, float target, float deltaTime, float smoothTime) {
+    // t: fraction of the gap closed this frame (smoothTime in seconds to close ~63%)
+    float t = 1.0f - std::exp(-deltaTime / smoothTime);
+    return current + (target - current) * t;
+}
+
 void Player::UpdateSwimmingMovement(float deltaTime) {
     m_moving = false;
+    m_crouching = false;
+    m_grounded = false;
+    m_groundedLastFrame = false;
 
-    // WSAD movement
-    glm::vec3 displacement = glm::vec3(0);
-    if (PressingWalkForward()) {
-        displacement += m_camera.GetForward();
+
+    float accelerationSpeed = 7.5f;
+    float decelerationSpeed = 4.0f;
+    float airbornDamping = 2.5f;
+
+    m_walkingSpeed = 4.25f;
+    m_crouchingSpeed = 2.325f;
+
+    glm::vec3 inputDirection = glm::vec3(0.0f);
+
+    // WSAD input
+    if (PressingWalkLeft()) inputDirection -= m_camera.GetRight();
+    if (PressingWalkRight()) inputDirection += m_camera.GetRight();
+    if (PressingWalkForward()) inputDirection += m_camera.GetForward();
+    if (PressingWalkBackward()) inputDirection -= m_camera.GetForward();
+
+    // Accelerate
+    if (PressingWalkLeft() || PressingWalkRight() || PressingWalkForward() || PressingWalkBackward()) {
+        m_movementDirection = glm::normalize(inputDirection);
+        m_acceleration += accelerationSpeed * deltaTime;
+    }
+    // Walking deceleration
+    else if (m_grounded) {
+        m_acceleration -= accelerationSpeed * deltaTime;
+    }
+    // Airborne deceleration
+    else {
+        m_acceleration -= airbornDamping * deltaTime;
+    }
+
+    // Clamp acceleration between 0 and 1
+    m_acceleration = glm::clamp(m_acceleration, 0.0f, 1.0f);
+
+    // Zero out movement direction when no longer moving
+    if (m_acceleration == 0.0f) {
+        m_movementDirection = glm::vec3(0.0f);
+    }
+
+    // Determine if moving
+    if (glm::length(m_movementDirection) > 0.001f) {
         m_moving = true;
     }
-    if (PressingWalkBackward()) {
-        displacement -= m_camera.GetForward();
-        m_moving = true;
-    }
-    if (PressingWalkLeft()) {
-        displacement -= m_camera.GetRight();
-        m_moving = true;
-    }
-    if (PressingWalkRight()) {
-        displacement += m_camera.GetRight();;
-        m_moving = true;
-    }
-    // Calculate speed
+
+    // Calculate movement speed
     float targetSpeed = m_swimmingSpeed;
     float interpolationSpeed = 18.0f;
     if (!IsMoving()) {
@@ -145,13 +210,15 @@ void Player::UpdateSwimmingMovement(float deltaTime) {
     }
     m_currentSpeed = Util::FInterpTo(m_currentSpeed, targetSpeed, deltaTime, interpolationSpeed);
 
-    // Normalize displacement vector and include player speed
-    float len = length(displacement);
-    if (len != 0.0) {
-        displacement = (displacement / len) * m_currentSpeed * deltaTime;
-    }
-    float yDisplacement = m_yVelocity * deltaTime;
-    displacement.y += yDisplacement;
+
+
+    // Move character controller
+    glm::vec3 displacement = m_movementDirection * m_acceleration;
+    displacement *= m_currentSpeed * deltaTime * m_speedBoost;
+    displacement.y += m_yVelocity * deltaTime;
+
+    //float yDisplacement = m_yVelocity * deltaTime;
+    //displacement.y += m_yVelocity * deltaTime;;
     float yVelocityCancelationInterpolationSpeed = 15;
     m_yVelocity = Util::FInterpTo(m_yVelocity, 0, deltaTime, yVelocityCancelationInterpolationSpeed);
 
@@ -171,7 +238,99 @@ void Player::UpdateSwimmingMovement(float deltaTime) {
     displacement.y += m_swimVerticalAcceleration;
 
     MoveCharacterController(glm::vec3(displacement.x, displacement.y, displacement.z));
+
+    Physics::ClearCharacterControllerCollsionReports();
+
+    // Character controller AABB
+    PxRigidDynamic* actor = m_characterController->getActor();
+    PxBounds3 bounds = actor->getWorldBounds();
+    glm::vec3 aabbMin = glm::vec3(bounds.minimum.x, bounds.minimum.y, bounds.minimum.z);
+    glm::vec3 aabbMax = glm::vec3(bounds.maximum.x, bounds.maximum.y, bounds.maximum.z);
+    m_characterControllerAABB = AABB(aabbMin, aabbMax);
+
+    static bool test = false;
+    if (Input::KeyPressed(HELL_KEY_L)) {
+        test = !test;
+    }
+    test = true;
+
+    m_swimmingSpeed = 3.0;
+
+    // Snap to ocean surface
+    if (!PressingCrouch()) {
+        const float surfaceThreshold = 0.05f;
+        float targetY = Ocean::GetWaterHeightAtPlayer(m_viewportIndex) - m_viewHeightStanding + 0.05f;
+        m_smoothedWaterY = SmoothLerp(m_smoothedWaterY, targetY, deltaTime, 0.1f);
+        glm::vec3 footPos = GetFootPosition();
+        float dy = m_smoothedWaterY - footPos.y;
+        glm::vec3 snapDisplacement{ 0.0f, dy, 0.0f };
+        if (glm::abs(dy) < surfaceThreshold) {
+
+            float downDot = glm::dot(m_camera.GetForward(), glm::vec3(0.0f, -1.0f, 0.0f));
+            const float lookDownThreshold = 0.01f;
+            if (downDot < lookDownThreshold) {
+                MoveCharacterController(snapDisplacement);
+            }
+        }
+    }
 }
+
+   //m_moving = false;
+   //
+   //// WSAD movement
+   //glm::vec3 displacement = glm::vec3(0);
+   //if (PressingWalkForward()) {
+   //    displacement += m_camera.GetForward();
+   //    m_moving = true;
+   //}
+   //if (PressingWalkBackward()) {
+   //    displacement -= m_camera.GetForward();
+   //    m_moving = true;
+   //}
+   //if (PressingWalkLeft()) {
+   //    displacement -= m_camera.GetRight();
+   //    m_moving = true;
+   //}
+   //if (PressingWalkRight()) {
+   //    displacement += m_camera.GetRight();;
+   //    m_moving = true;
+   //}
+   //// Calculate speed
+   //float targetSpeed = m_swimmingSpeed;
+   //float interpolationSpeed = 18.0f;
+   //if (!IsMoving()) {
+   //    targetSpeed = 0.0f;
+   //    interpolationSpeed = 22.0f;
+   //}
+   //m_currentSpeed = Util::FInterpTo(m_currentSpeed, targetSpeed, deltaTime, interpolationSpeed);
+   //
+   //// Normalize displacement vector and include player speed
+   //float len = length(displacement);
+   //if (len != 0.0) {
+   //    displacement = (displacement / len) * m_currentSpeed * deltaTime;
+   //}
+   //float yDisplacement = m_yVelocity * deltaTime;
+   //displacement.y += yDisplacement;
+   //float yVelocityCancelationInterpolationSpeed = 15;
+   //m_yVelocity = Util::FInterpTo(m_yVelocity, 0, deltaTime, yVelocityCancelationInterpolationSpeed);
+   //
+   //float m_swimVerticalInterpolationSpeed = 15.0f;
+   //float m_swimMaxVerticalAcceleration = 0.05f;
+   //
+   //// Vertical movement
+   //if (PressingCrouch()) {
+   //    m_swimVerticalAcceleration = Util::FInterpTo(m_swimVerticalAcceleration, -m_swimMaxVerticalAcceleration, deltaTime, m_swimVerticalInterpolationSpeed);
+   //}
+   //else if (PresingJump()) {
+   //    m_swimVerticalAcceleration = Util::FInterpTo(m_swimVerticalAcceleration, m_swimMaxVerticalAcceleration, deltaTime, m_swimVerticalInterpolationSpeed);
+   //}
+   //else {
+   //    m_swimVerticalAcceleration = Util::FInterpTo(m_swimVerticalAcceleration, 0.0f, deltaTime, 20.0f);
+   //}
+   //displacement.y += m_swimVerticalAcceleration;
+   //
+   //MoveCharacterController(glm::vec3(displacement.x, displacement.y, displacement.z));
+//}
 
 //bool Player::IsUnderWater() {
 //    return m_underWater;

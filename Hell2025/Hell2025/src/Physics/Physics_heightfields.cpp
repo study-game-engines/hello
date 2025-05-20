@@ -24,7 +24,7 @@ namespace Physics {
             float threshold = 0.25f;
 
             // Enable heightfield physics if other active PhysX object AABBs intersect heightfield AABB
-            if (Editor::IsEditorClosed()) {
+            if (Editor::IsClosed()) {
 
                 // Players
                 for (int i = 0; i < Game::GetLocalPlayerCount(); i++) {

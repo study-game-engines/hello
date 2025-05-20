@@ -26,8 +26,8 @@ namespace OpenGLRenderer {
         glBindTextureUnit(0, gBuffer->GetDepthAttachmentHandle());
         glBindTextureUnit(7, AssetManager::GetTextureByName("Flashlight2")->GetGLTexture().GetHandle());
 
-        OpenGLFrameBuffer* flashLightShadowMapFBO = GetFrameBuffer("FlashlightShadowMap");
-        glBindTextureUnit(8, flashLightShadowMapFBO->GetDepthAttachmentHandle());
+        //OpenGLFrameBuffer* flashLightShadowMapFBO = GetFrameBuffer("FlashlightShadowMap");
+        //glBindTextureUnit(8, flashLightShadowMapFBO->GetDepthAttachmentHandle());
 
         std::vector<Window>& windows = World::GetWindows();
         
