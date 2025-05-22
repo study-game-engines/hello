@@ -90,7 +90,7 @@ namespace World {
             RenderDataManager::SubmitRenderItems(tree.GetRenderItems());
 
             // Selected outline?
-            if (tree.IsSelected()) {
+            if (Editor::GetSelectedObjectId() == tree.GetObjectId()) {
                 RenderDataManager::SubmitOutlineRenderItems(tree.GetRenderItems());
             }
         }

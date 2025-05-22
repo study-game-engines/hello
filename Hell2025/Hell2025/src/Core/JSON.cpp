@@ -35,6 +35,15 @@ namespace nlohmann {
         };
     }
 
+    void to_json(nlohmann::json& j, const PictureFrameCreateInfo& createInfo) {
+        j = nlohmann::json{
+            {"Position", createInfo.position},
+            {"Rotation", createInfo.rotation},
+            {"Scale", createInfo.scale},
+            {"Type", Util::PictureFrameTypeToString(createInfo.type)},
+        };
+    }
+
     void to_json(nlohmann::json& j, const PlaneCreateInfo& createInfo) {
         j = nlohmann::json{
             {"P0", createInfo.p0},
@@ -114,6 +123,13 @@ namespace nlohmann {
     void from_json(const nlohmann::json& j, PianoCreateInfo& info) {
         info.position = j.value("Position", glm::vec3(0.0f));
         info.rotation = j.value("Rotation", glm::vec3(0.0f));
+    }
+
+    void from_json(const nlohmann::json& j, PictureFrameCreateInfo& info) {
+        info.position = j.value("Position", glm::vec3(0.0f));
+        info.rotation = j.value("Rotation", glm::vec3(0.0f));
+        info.scale = j.value("Scale", glm::vec3(0.0f));
+        info.type = Util::StringToPictureFrameType(j.value("Type", "UNDEFINED"));
     }
 
     void from_json(const nlohmann::json& j, PlaneCreateInfo& info) {

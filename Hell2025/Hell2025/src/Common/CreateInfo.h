@@ -148,6 +148,7 @@ struct HouseCreateInfo {
     std::vector<PlaneCreateInfo> planes;
     std::vector<LightCreateInfo> lights;
     std::vector<PianoCreateInfo> pianos;
+    std::vector<PictureFrameCreateInfo> pictureFrames;
     std::vector<WallCreateInfo> walls;
     std::vector<WindowCreateInfo> windows;
 };

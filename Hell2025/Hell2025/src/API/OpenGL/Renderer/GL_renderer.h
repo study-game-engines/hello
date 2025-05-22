@@ -53,7 +53,8 @@ namespace OpenGLRenderer {
     void GlassPass();
     void GrassPass();
     void HairPass();
-    void HeightMapPass();
+    void HeightMapPass(); 
+    void HouseGeometryPass();
     void ImGuiPass();
     void LightCullingPass();
     void LightingPass();

@@ -139,7 +139,7 @@ namespace OpenGLRenderer {
         OpenGLFrameBuffer* wipBuffer = GetFrameBuffer("WIP");
         OpenGLSSBO* bladeositionsSSBO = GetSSBO("BladePositions");
 
-        BlitFrameBuffer(gBuffer, wipBuffer, "WorldSpacePosition", "WorldSpacePosition", GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        BlitFrameBuffer(gBuffer, wipBuffer, "WorldPosition", "WorldPosition", GL_COLOR_BUFFER_BIT, GL_NEAREST);
        
         // Bindings
         glBindVertexArray(g_grassGeometryMesh.GetVAO());
@@ -148,7 +148,7 @@ namespace OpenGLRenderer {
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 10, g_grassGeometryMesh.GetVBO());
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 11, g_grassGeometryMesh.GetEBO());
         glBindTextureUnit(0, worldFramebuffer->GetColorAttachmentHandleByName("HeightMap"));
-        glBindTextureUnit(1, wipBuffer->GetColorAttachmentHandleByName("WorldSpacePosition"));
+        glBindTextureUnit(1, wipBuffer->GetColorAttachmentHandleByName("WorldPosition"));
         glBindTextureUnit(2, AssetManager::GetTextureByName("Perlin")->GetGLTexture().GetHandle());
 
         // GL State
@@ -273,7 +273,7 @@ namespace OpenGLRenderer {
         OpenGLRenderer::SetViewport(gBuffer, viewport);
 
         gBuffer->Bind();
-        gBuffer->DrawBuffers({ "BaseColor", "Normal", "RMA", "WorldSpacePosition", "Emissive" });
+        gBuffer->DrawBuffers({ "BaseColor", "Normal", "RMA", "WorldPosition", "Emissive" });
            
         glm::mat4 projectionView = viewportData[viewportIndex].projectionView;
 

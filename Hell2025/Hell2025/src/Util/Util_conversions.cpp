@@ -35,6 +35,14 @@ namespace Util {
         return PickUpType::UNDEFINED;
     }
 
+    PictureFrameType StringToPictureFrameType(const std::string& str) {
+        if (str == "BIG_LANDSCAPE")         return PictureFrameType::BIG_LANDSCAPE;
+        if (str == "TALL_THIN")             return PictureFrameType::TALL_THIN;
+        if (str == "REGULAR_PORTRAIT")      return PictureFrameType::REGULAR_PORTRAIT;
+        if (str == "REGULAR_LANDSCAPE")     return PictureFrameType::REGULAR_LANDSCAPE;
+        return PictureFrameType::UNDEFINED;
+    }
+
     TrimType StringToTrimType(const std::string& str) {
         if (str == "PLASTER") return TrimType::PLASTER;
         if (str == "TIMBER") return TrimType::TIMBER;
@@ -93,6 +101,16 @@ namespace Util {
             case ObjectType::WALL_SEGMENT:                  return "WALL_SEGMENT";
             case ObjectType::WINDOW:                        return "WINDOW";
             default:                                        return "UNKNOWN";
+        }
+    }
+
+    std::string PictureFrameTypeToString(PictureFrameType type) {
+        switch (type) {
+            case PictureFrameType::BIG_LANDSCAPE:       return "BIG_LANDSCAPE";
+            case PictureFrameType::REGULAR_LANDSCAPE:   return "REGULAR_LANDSCAPE";
+            case PictureFrameType::REGULAR_PORTRAIT:    return "REGULAR_PORTRAIT";
+            case PictureFrameType::TALL_THIN:           return "TALL_THIN";
+            default:                                    return "UNKNOWN";
         }
     }
 

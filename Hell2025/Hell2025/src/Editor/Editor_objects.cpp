@@ -111,6 +111,12 @@ namespace Editor {
                     Gizmo::SetPosition(window->GetPosition());
                 }
             }
+            if (GetSelectedObjectType() == ObjectType::TREE) {
+                Tree* tree = World::GetTreeByObjectId(GetSelectedObjectId());
+                if (tree) {
+                    Gizmo::SetPosition(tree->GetPosition());
+                }
+            }
         }
     }
 

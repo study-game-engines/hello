@@ -49,7 +49,7 @@ namespace World {
     uint32_t g_mapDepth = 0;
     std::string g_sectorNames[MAX_MAP_WIDTH][MAX_MAP_DEPTH];
     std::string g_heightMapNames[MAX_MAP_WIDTH][MAX_MAP_DEPTH];
-
+    
     struct WorldState {
         bool oceanEnabled = true;
     } g_worldState;
@@ -80,7 +80,7 @@ namespace World {
             roo->SetAllMeshMaterials("Leopard");
             roo->SetScale(0.9f);
             roo->PrintMeshNames();
-            //roo->PlayAndLoopAnimation("Kangaroo_Test");
+            roo->PlayAndLoopAnimation("Kangaroo_Hop");
 
 
 
@@ -131,12 +131,17 @@ namespace World {
         if (roo) {
             roo->SetPosition(glm::vec3(31, 30.4f, 36));
             roo->SetRotationY(HELL_PI * -0.5);
-            roo->SetAnimationModeToBindPose();
+
+
+            //roo->SetPosition(glm::vec3(29, 30.4f, 39));
+            //roo->SetRotationY(HELL_PI * -0.85);
             roo->SetName("Roo");
             roo->SetAllMeshMaterials("Kangaroo");
-            roo->SetMeshMaterialByMeshName("Mesh.021", "KangarooIris");
-            roo->SetMeshMaterialByMeshName("Mesh.022", "KangarooIris");
-            roo->SetScale(0.8f);
+            roo->SetMeshMaterialByMeshName("LeftEye_Iris", "KangarooIris");
+            roo->SetMeshMaterialByMeshName("RightEye_Iris", "KangarooIris");
+            roo->DisableDrawingForMeshByMeshName("LeftEye_Sclera");
+            roo->DisableDrawingForMeshByMeshName("RightEye_Sclera");
+            roo->SetScale(1.0f);
         }
     }
 
@@ -414,7 +419,10 @@ namespace World {
         for (TreeCreateInfo& createInfo : sectorCreateInfo.trees) {
             AddTree(createInfo, spawnOffset);
         }
-       
+            
+        std::cout << "scetor trees: " << sectorCreateInfo.trees.size() << "\n";
+        std::cout << "trees: " << g_trees.size() << "\n";
+
         glm::vec3 houseLocation = glm::vec3(15.0f, 30.5f, 40.0f);
 
         SpawnOffset houseSpawnOffset = spawnOffset;
@@ -675,7 +683,7 @@ namespace World {
         AddPictureFrame(createInfo);
 
         MermaidCreateInfo mermaidCreateInfo;
-        mermaidCreateInfo.position = glm::vec3(25.0f - 16, 29.5f, 23.3f - 15);
+        mermaidCreateInfo.position = glm::vec3(40.0f, 29.5f, 49.0f);
         //mermaidCreateInfo.position = glm::vec3(32.0f, 9.5f, 35.3f);
         mermaidCreateInfo.rotation.y = 0.25f;
         AddMermaid(mermaidCreateInfo);
@@ -915,6 +923,14 @@ namespace World {
         return nullptr;
     }
 
+    Tree* GetTreeByObjectId(uint64_t objectId) {
+        for (Tree& tree : g_trees) {
+            if (tree.GetObjectId() == objectId) {
+                return &tree;
+            }
+        }
+        return nullptr;
+    }
     Window* GetWindowByObjectId(uint64_t objectId) {
         for (Window& window : g_windows) {
             if (window.GetObjectId() == objectId) {

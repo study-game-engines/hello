@@ -21,7 +21,7 @@ namespace OpenGLRenderer {
         shader->SetInt("u_tileXCount", gBuffer->GetWidth() / TILE_SIZE);
         shader->SetInt("u_tileYCount", gBuffer->GetHeight() / TILE_SIZE);
         
-        glBindTextureUnit(0, gBuffer->GetColorAttachmentHandleByName("WorldSpacePosition"));
+        glBindTextureUnit(0, gBuffer->GetColorAttachmentHandleByName("WorldPosition"));
         glBindTextureUnit(1, gBuffer->GetColorAttachmentHandleByName("Normal"));
 
         glDispatchCompute(gBuffer->GetWidth() / TILE_SIZE, gBuffer->GetHeight() / TILE_SIZE, 1);
@@ -63,7 +63,7 @@ namespace OpenGLRenderer {
         glBindTextureUnit(1, gBuffer->GetColorAttachmentHandleByName("Normal"));
         glBindTextureUnit(2, gBuffer->GetColorAttachmentHandleByName("RMA"));
         glBindTextureUnit(3, gBuffer->GetDepthAttachmentHandle());
-        glBindTextureUnit(4, gBuffer->GetColorAttachmentHandleByName("WorldSpacePosition"));
+        glBindTextureUnit(4, gBuffer->GetColorAttachmentHandleByName("WorldPosition"));
         glBindTextureUnit(5, finalImageFBO->GetColorAttachmentHandleByName("ViewportIndex"));
         glBindTextureUnit(6, gBuffer->GetColorAttachmentHandleByName("Emissive"));
         glBindTextureUnit(7, AssetManager::GetTextureByName("Flashlight2")->GetGLTexture().GetHandle());

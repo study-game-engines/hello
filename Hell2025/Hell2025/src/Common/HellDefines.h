@@ -4,7 +4,7 @@
 #define DEFAULT_MATERIAL_NAME "CheckerBoard"
 #define TIME_WRAP 10000.0f
 
-#define NEAR_PLANE 0.004f
+#define NEAR_PLANE 0.005f
 #define FAR_PLANE 256.0f
 
 #define ORANGE              glm::vec4(1.00f, 0.65f, 0.00f, 1.0f)

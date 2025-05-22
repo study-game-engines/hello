@@ -51,6 +51,7 @@ void Player::Update(float deltaTime) {
     if (IsAwaitingSpawn()) Respawn();
 
     if (World::HasOcean()) {
+        float feetHeight = GetFootPosition().y;
         float waterHeight = Ocean::GetWaterHeightAtPlayer(m_viewportIndex);
         m_waterState.feetUnderWaterPrevious = m_waterState.feetUnderWater;
         m_waterState.cameraUnderWaterPrevious = m_waterState.cameraUnderWater;
@@ -61,7 +62,7 @@ void Player::Update(float deltaTime) {
         m_waterState.heightAboveWater = (GetFootPosition().y > waterHeight) ? (GetFootPosition().y - waterHeight) : 0.0f;
         m_waterState.heightBeneathWater = (GetFootPosition().y < waterHeight) ? (waterHeight - GetFootPosition().y) : 0.0f;
         m_waterState.swimming = m_waterState.cameraUnderWater && IsMoving();
-        m_waterState.wading = !m_waterState.cameraUnderWater && m_waterState.feetUnderWater && IsMoving();
+        m_waterState.wading = !m_waterState.cameraUnderWater && m_waterState.feetUnderWater && IsMoving() && feetHeight < waterHeight - 0.5f;
     } 
     else {
         m_waterState.feetUnderWaterPrevious = false;

@@ -308,5 +308,6 @@ enum class PictureFrameType {
     BIG_LANDSCAPE,
     TALL_THIN,
     REGULAR_PORTRAIT,
-    REGULAR_LANDSCAPE
+    REGULAR_LANDSCAPE,
+    UNDEFINED
 };

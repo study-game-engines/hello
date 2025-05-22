@@ -74,7 +74,7 @@ namespace Editor {
     void CloseAllHeightMapEditorWindows();
     void CreateHeigthMapEditorImGuiElements();
 
-    int GetHeightMapPaintMode();
+    float GetHeightMapNoiseScale();
     float GetHeightMapBrushSize();
     float GetHeightMapBrushStrength();
     float GetHeightMapNoiseStrength();

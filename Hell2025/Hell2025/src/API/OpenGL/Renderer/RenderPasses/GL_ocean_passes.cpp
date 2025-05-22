@@ -98,7 +98,7 @@ namespace OpenGLRenderer {
         glActiveTexture(GL_TEXTURE4);
         glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxCubemapView->GetHandle());
         glActiveTexture(GL_TEXTURE5);
-        glBindTexture(GL_TEXTURE_2D, gBuffer->GetColorAttachmentHandleByName("WorldSpacePosition"));
+        glBindTexture(GL_TEXTURE_2D, gBuffer->GetColorAttachmentHandleByName("WorldPosition"));
         glBindTextureUnit(6, AssetManager::GetTextureByName("Flashlight2")->GetGLTexture().GetHandle());
         glBindTextureUnit(7, flashLightShadowMapsFBO->GetDepthTextureHandle());
         glActiveTexture(GL_TEXTURE8);
@@ -257,7 +257,7 @@ namespace OpenGLRenderer {
         underwaterMaskPreProcessShader->SetInt("u_mode", GetFftDisplayMode());
         underwaterMaskPreProcessShader->SetFloat("u_oceanOriginY", Ocean::GetOceanOriginY());
         glBindImageTexture(0, waterFrameBuffer->GetColorAttachmentHandleByName("UnderwaterMask"), 0, GL_FALSE, 0, GL_READ_WRITE, GL_R8);
-        glBindTextureUnit(1, gBuffer->GetColorAttachmentHandleByName("WorldSpacePosition"));
+        glBindTextureUnit(1, gBuffer->GetColorAttachmentHandleByName("WorldPosition"));
         glBindTextureUnit(2, fftFrameBuffer_band0->GetColorAttachmentHandleByName("Displacement"));
         glBindTextureUnit(3, fftFrameBuffer_band1->GetColorAttachmentHandleByName("Displacement"));
         glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
@@ -284,7 +284,7 @@ namespace OpenGLRenderer {
         glBindTextureUnit(1, waterFrameBuffer->GetColorAttachmentHandleByName("UnderwaterMask"));
         glBindTextureUnit(2, miscFullSizeFrameBuffer->GetColorAttachmentHandleByName("GaussianFinalLighting"));
         glBindTextureUnit(3, waterFrameBuffer->GetColorAttachmentHandleByName("Color"));
-        glBindTextureUnit(4, gBuffer->GetColorAttachmentHandleByName("WorldSpacePosition"));
+        glBindTextureUnit(4, gBuffer->GetColorAttachmentHandleByName("WorldPosition"));
         glBindTextureUnit(5, gBuffer->GetColorAttachmentHandleByName("Normal"));
         glBindTextureUnit(6, waterFrameBuffer->GetColorAttachmentHandleByName("WorldPosition"));
         glActiveTexture(GL_TEXTURE7);

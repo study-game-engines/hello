@@ -267,7 +267,7 @@ namespace EditorUI {
         ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4, 0));
         ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 2.0f);
         float padding = 40;
-        float valueMargin = EDITOR_LEFT_PANEL_WIDTH * 0.35f;
+        float valueMargin = EDITOR_LEFT_PANEL_WIDTH * 0.4f;
         float labelMargin = valueMargin - 12.0f;
         float inputFieldWidth = EDITOR_LEFT_PANEL_WIDTH - valueMargin - padding;
         ImGui::PushItemWidth(inputFieldWidth);
@@ -340,7 +340,7 @@ namespace EditorUI {
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 3));
 
         float padding = 40.0f;
-        float valueMargin = EDITOR_LEFT_PANEL_WIDTH * 0.35f;
+        float valueMargin = EDITOR_LEFT_PANEL_WIDTH * 0.4f;
         float labelMargin = valueMargin - 12.0f;
         float inputFieldWidth = EDITOR_LEFT_PANEL_WIDTH - valueMargin - padding;
 
@@ -418,7 +418,7 @@ namespace EditorUI {
         ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 2.0f);
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 3));
         float padding = 40.0f;
-        float valueMargin = EDITOR_LEFT_PANEL_WIDTH * 0.35f;
+        float valueMargin = EDITOR_LEFT_PANEL_WIDTH * 0.4f;
         float labelMargin = valueMargin - 12.0f;
         CreateRightJustifiedText(m_text, labelMargin);
         ImGui::SameLine(valueMargin);
@@ -451,7 +451,7 @@ namespace EditorUI {
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 3));
 
         float padding = 40;
-        float valueMargin = EDITOR_LEFT_PANEL_WIDTH * 0.35f;
+        float valueMargin = EDITOR_LEFT_PANEL_WIDTH * 0.4f;
         float labelMargin = valueMargin - 12.0f;
         float inputFieldWidth = EDITOR_LEFT_PANEL_WIDTH - valueMargin - padding;
         ImGui::PushItemWidth(inputFieldWidth);
@@ -509,7 +509,7 @@ namespace EditorUI {
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 3));
 
         float padding = 40;
-        float valueMargin = EDITOR_LEFT_PANEL_WIDTH * 0.35f;
+        float valueMargin = EDITOR_LEFT_PANEL_WIDTH * 0.4f;
         float labelMargin = valueMargin - 12.0f;
         float inputFieldWidth = EDITOR_LEFT_PANEL_WIDTH - valueMargin - padding;
         ImGui::PushItemWidth(inputFieldWidth);
@@ -556,7 +556,7 @@ namespace EditorUI {
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 3));
 
         float padding = 40;
-        float valueMargin = EDITOR_LEFT_PANEL_WIDTH * 0.35f;
+        float valueMargin = EDITOR_LEFT_PANEL_WIDTH * 0.4f;
         float labelMargin = valueMargin - 12.0f;
         float inputFieldWidth = EDITOR_LEFT_PANEL_WIDTH - valueMargin - padding;
         ImGui::PushItemWidth(inputFieldWidth);
@@ -604,7 +604,7 @@ namespace EditorUI {
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 3));
 
         float padding = 40.0f;
-        float valueMargin = EDITOR_LEFT_PANEL_WIDTH * 0.35f;
+        float valueMargin = EDITOR_LEFT_PANEL_WIDTH * 0.4f;
         float labelMargin = valueMargin - 12.0f;
         float inputFieldWidth = EDITOR_LEFT_PANEL_WIDTH - valueMargin - padding;
         ImGui::PushItemWidth(inputFieldWidth);

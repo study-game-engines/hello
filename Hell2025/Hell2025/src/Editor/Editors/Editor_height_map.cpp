@@ -35,21 +35,19 @@ namespace Editor {
         EditorUI::CheckBox drawWater;
         EditorUI::NewFileWindow newFileWindow;
         EditorUI::OpenFileWindow openFileWindow;
-        EditorUI::IntegerInput test;
-
-        EditorUI::CheckBox mode;
         EditorUI::FloatSliderInput brushSize;
         EditorUI::FloatSliderInput brushStrength;
         EditorUI::FloatSliderInput noiseStrength;
+        EditorUI::FloatSliderInput noiseScale;
         EditorUI::FloatInput minPaintHeight;
         EditorUI::FloatInput maxPaintHeight;
     } g_heightMapEditorImguiElements;
 
-    int g_heightMapPaintMode = 0;
     float g_brushSize = 16;
     float g_brushStrength = 1;
     float g_noiseStrength = 1;
     float g_minPaintHeight = 0.0f;
+    float g_noiseScale = 0.5f;
     float g_maxPaintHeight = HEIGHTMAP_SCALE_Y;
 
     void InitHeightMapEditorFileMenu();
@@ -96,16 +94,6 @@ namespace Editor {
         elements.heightMapDropwDownNW.SetText("Height Map NW");
         elements.heightMapDropwDownSE.SetText("Height Map SE");
         elements.heightMapDropwDownSW.SetText("Height Map SW");
-        elements.test.SetText("Integer Test");
-        elements.test.SetRange(-1, 10);
-        elements.test.SetValue(8);
-
-        elements.mode.SetText("Mystery Mode Toggle");
-        elements.mode.SetState(g_heightMapPaintMode);
-
-
-        EditorUI::FloatSliderInput minHeight;
-        EditorUI::FloatSliderInput maxHeight;
 
         elements.minPaintHeight.SetText("Min Height");
         elements.minPaintHeight.SetRange(0.0f, HEIGHTMAP_SCALE_Y);
@@ -122,6 +110,10 @@ namespace Editor {
         elements.noiseStrength.SetText("Noise Strength");
         elements.noiseStrength.SetRange(0.0f, 1.0f);
         elements.noiseStrength.SetValue(g_noiseStrength);
+
+        elements.noiseScale.SetText("Noise Scale");
+        elements.noiseScale.SetRange(0.0f, 1.0f);
+        elements.noiseScale.SetValue(g_noiseScale);
 
         elements.brushSize.SetText("Brush Size");
         elements.brushSize.SetRange(0.0f, 100.0f);
@@ -185,14 +177,8 @@ namespace Editor {
         if (elements.heightMapPropertiesHeader.CreateImGuiElement()) {
             elements.heightMapNameInput.CreateImGuiElement();
 
-            if (elements.mode.CreateImGuiElements()) {
-                std::cout << "toggled mode \n";
-                g_heightMapPaintMode = elements.mode.GetState();
-            }
-
             if (elements.brushSize.CreateImGuiElements()) {
                 g_brushSize = elements.brushSize.GetValue();
-                std::cout << "brush size slider: " << elements.brushSize.GetValue() << "\n";
             }
 
             if (elements.minPaintHeight.CreateImGuiElements()) {
@@ -204,13 +190,15 @@ namespace Editor {
             }
 
             if (elements.brushStrength.CreateImGuiElements()) {
-                g_brushSize = elements.brushStrength.GetValue();
-                std::cout << "brush strength slider: " << elements.brushStrength.GetValue() << "\n";
+                g_brushStrength = elements.brushStrength.GetValue();
             }
 
             if (elements.noiseStrength.CreateImGuiElements()) {
-                g_brushSize = elements.noiseStrength.GetValue();
-                std::cout << "noise slider: " << elements.noiseStrength.GetValue() << "\n";
+                g_noiseStrength = elements.noiseStrength.GetValue();
+            }
+
+            if (elements.noiseScale.CreateImGuiElements()) {
+                g_noiseScale = elements.noiseScale.GetValue();
             }
 
             bool reloadRequired = false;
@@ -341,8 +329,8 @@ namespace Editor {
         elements.openFileWindow.Close();
     }
 
-    int GetHeightMapPaintMode() {
-        return g_heightMapPaintMode;
+    float GetHeightMapNoiseScale() {
+        return g_noiseScale;
     }
 
     float GetHeightMapBrushSize() {

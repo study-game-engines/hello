@@ -22,7 +22,7 @@ namespace OpenGLRenderer {
         if (!g_mouseRayReadBack.IsRequestInProgress()) {
             OpenGLFrameBuffer* gBuffer = GetFrameBuffer("GBuffer");
             GLuint fboHandle = gBuffer->GetHandle();
-            GLuint attachment = gBuffer->GetColorAttachmentSlotByName("WorldSpacePosition");
+            GLuint attachment = gBuffer->GetColorAttachmentSlotByName("WorldPosition");
             int mappedMouseX = Util::MapRange(Input::GetMouseX(), 0, BackEnd::GetCurrentWindowWidth(), 0, gBuffer->GetWidth());
             int mappedMouseY = Util::MapRange(Input::GetMouseY(), 0, BackEnd::GetCurrentWindowHeight(), gBuffer->GetHeight(), 0);
             int xOffset = mappedMouseX;
@@ -45,7 +45,7 @@ namespace OpenGLRenderer {
             if (!g_playerRayReadBack[i].IsRequestInProgress()) {
                 OpenGLFrameBuffer* gBuffer = GetFrameBuffer("GBuffer");
                 GLuint fboHandle = gBuffer->GetHandle();
-                GLuint attachment = gBuffer->GetColorAttachmentSlotByName("WorldSpacePosition");
+                GLuint attachment = gBuffer->GetColorAttachmentSlotByName("WorldPosition");
 
                 Player* player = Game::GetLocalPlayerByIndex(i);
                 glm::ivec2 coords = player->GetViewportCenter();

@@ -47,17 +47,38 @@ void Player::UpdateAudio() {
     }
 
     if (FeetEnteredUnderwater()) {
-        Audio::PlayAudio("Water_Impact0.wav", 1.0);
+        if (m_yVelocity < -5.0f) {
+            Audio::PlayAudio("Water_Impact0.wav", 1.0);
+        }
     }
 
     if (CameraExitedUnderwater()) {
         Audio::PlayAudio("Water_ExitAndPant0.wav", 1.0);
     }
-
-    if (!FeetBelowWater()) { 
+    
+    if (!IsWading()) {
         // Footsteps
         if (m_bobOffsetY < -0.04f && !m_footstepPlayed && IsGrounded()) {
-            Game::PlayFootstepOutdoorAudio();
+
+            if (FeetBelowWater()) {
+                std::vector<const char*> filenames = {
+                    "Water_Wade_End_1.wav",
+                    "Water_Wade_End_2.wav",
+                    "Water_Wade_End_3.wav",
+                    "Water_Wade_End_4.wav",
+                    "Water_Wade_End_5.wav",
+                    "Water_Wade_End_6.wav",
+                    "Water_Wade_End_7.wav",
+                    "Water_Wade_End_8.wav",
+                    "Water_Wade_End_9.wav",
+                };
+                int random = rand() % filenames.size();
+                Audio::PlayAudio(filenames[random], 0.75f);
+            }
+            else {
+                Game::PlayFootstepOutdoorAudio();
+            }
+
             m_footstepPlayed = true;
         }
         if (m_bobOffsetY > 0.0f) {

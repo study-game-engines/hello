@@ -155,53 +155,31 @@ namespace OpenGLRenderer {
         if (Editor::GetEditorMode() != EditorMode::HEIGHTMAP_EDITOR) return;
         if (ImGuiBackEnd::OwnsMouse()) return;
 
-        //OpenGLFrameBuffer* heightmapFBO = GetFrameBuffer("HeightMap");
         OpenGLFrameBuffer* worldFramebuffer = GetFrameBuffer("World");
         OpenGLFrameBuffer* gBuffer = GetFrameBuffer("GBuffer");
         OpenGLShader* shader = GetShader("HeightMapPaint");
 
-        int paintX = static_cast<int>(GetMouseRayWorldPostion().x / (float)worldFramebuffer->GetWidth());
-        int paintY = static_cast<int>(GetMouseRayWorldPostion().z / (float)worldFramebuffer->GetHeight());
-                   
-        int mode = Editor::GetHeightMapPaintMode();
-        float brushStrength = Editor::GetHeightMapBrushStrength();
-        float noiseStrength = Editor::GetHeightMapNoiseStrength();
-
-        if (Input::RightMouseDown()) {
-            brushStrength *= -1;
-        }
-
         if (Input::LeftMouseDown() || Input::RightMouseDown()) {
-            
             shader->Bind();
-            shader->SetInt("u_paintX", paintX);
-            shader->SetInt("u_paintY", paintY);
-            shader->SetInt("u_mode", mode);
+            shader->SetInt("u_paintX", static_cast<int>(GetMouseRayWorldPostion().x / (float)worldFramebuffer->GetWidth()));
+            shader->SetInt("u_paintY", static_cast<int>(GetMouseRayWorldPostion().z / (float)worldFramebuffer->GetHeight()));
             shader->SetFloat("u_brushSize", Editor::GetHeightMapBrushSize());
-            shader->SetFloat("u_brushStrength", brushStrength);
+            shader->SetFloat("u_brushStrength", Editor::GetHeightMapBrushStrength() * (Input::RightMouseDown() ? -1.0f : 1.0f));
+            shader->SetFloat("u_noiseStrength", Editor::GetHeightMapNoiseStrength());
+            shader->SetFloat("u_noiseScale", Editor::GetHeightMapNoiseScale());
             shader->SetFloat("u_minPaintHeight", Editor::GetHeightMapMinPaintHeight());
             shader->SetFloat("u_maxPaintHeight", Editor::GetHeightMapMaxPaintHeight());
 
             glMemoryBarrier(GL_ALL_BARRIER_BITS);
-
             glBindImageTexture(0, worldFramebuffer->GetColorAttachmentHandleByName("HeightMap"), 0, GL_FALSE, 0, GL_READ_WRITE, GL_R16F);
-            glBindTextureUnit(1, gBuffer->GetColorAttachmentHandleByName("WorldSpacePosition"));
-
-            //OpenGLTextureArray& heightmapTextureArray = HeightMapManager::GetGLTextureArray();
-            //glBindImageTexture(0, heightmapTextureArray.GetHandle(), 0, GL_TRUE, 0, GL_READ_ONLY, GL_R16F);
-
-            glDispatchCompute(Editor::GetHeightMapBrushSize(), Editor::GetHeightMapBrushSize(), 1);
+            glBindTextureUnit(1, gBuffer->GetColorAttachmentHandleByName("WorldPosition"));
+            glDispatchCompute(worldFramebuffer->GetWidth() / 32, worldFramebuffer->GetHeight() / 32, 1);
 
             GenerateHeightMapVertexData();
-            //RecalculateAllHeightMapData();
         }
-
-        DrawPoint(GetMouseRayWorldPostion(), RED);
     }
 
     void GenerateHeightMapVertexData() {
-        std::cout << "GenerateHeightMapVertexData()\n";
-
         OpenGLFrameBuffer* worldFramebuffer = GetFrameBuffer("World");
         OpenGLHeightMapMesh& heightMapMesh = OpenGLBackEnd::GetHeightMapMesh();
         OpenGLShader* shader = GetShader("HeightMapVertexGeneration");
@@ -326,7 +304,7 @@ namespace OpenGLRenderer {
         glm::mat4 inverseModelMatrix = glm::inverse(modelMatrix);
 
         gBuffer->Bind();
-        gBuffer->DrawBuffers({ "BaseColor", "Normal", "RMA", "WorldSpacePosition" });
+        gBuffer->DrawBuffers({ "BaseColor", "Normal", "RMA", "WorldPosition" });
 
         shader->Bind();
         shader->SetMat4("modelMatrix", modelMatrix);

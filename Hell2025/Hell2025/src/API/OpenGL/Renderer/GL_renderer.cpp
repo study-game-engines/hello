@@ -87,7 +87,7 @@ namespace OpenGLRenderer {
         g_frameBuffers["GBuffer"].CreateAttachment("Normal", GL_RGBA16F);
         g_frameBuffers["GBuffer"].CreateAttachment("RMA", GL_RGBA8);
         g_frameBuffers["GBuffer"].CreateAttachment("FinalLighting", GL_RGBA16F);
-        g_frameBuffers["GBuffer"].CreateAttachment("WorldSpacePosition", GL_RGBA32F);
+        g_frameBuffers["GBuffer"].CreateAttachment("WorldPosition", GL_RGBA32F);
         g_frameBuffers["GBuffer"].CreateAttachment("Emissive", GL_RGBA8);
         g_frameBuffers["GBuffer"].CreateAttachment("Glass", GL_RGBA8);
         g_frameBuffers["GBuffer"].CreateDepthAttachment(GL_DEPTH_COMPONENT32F);
@@ -106,7 +106,7 @@ namespace OpenGLRenderer {
         g_frameBuffers["Water"].CreateDepthAttachment(GL_DEPTH_COMPONENT32F);
 
         g_frameBuffers["WIP"] = OpenGLFrameBuffer("WIP", resolutions.gBuffer);
-        g_frameBuffers["WIP"].CreateAttachment("WorldSpacePosition", GL_RGBA32F);
+        g_frameBuffers["WIP"].CreateAttachment("WorldPosition", GL_RGBA32F);
 
         g_frameBuffers["Outline"] = OpenGLFrameBuffer("Outline", resolutions.gBuffer);
         g_frameBuffers["Outline"].CreateAttachment("Mask", GL_R8);
@@ -345,8 +345,9 @@ namespace OpenGLRenderer {
         SkyBoxPass();
         HeightMapPass();
         DecalPaintingPass();
-        GeometryPass();
+        HouseGeometryPass();
         GrassPass();
+        GeometryPass();
         WeatherBoardsPass();
         TextureReadBackPass();
         LightCullingPass();
@@ -513,7 +514,7 @@ namespace OpenGLRenderer {
         gBuffer->ClearAttachment("BaseColor", 0, 0, 0, 0);
         gBuffer->ClearAttachment("Normal", 0, 0, 0, 0);
         gBuffer->ClearAttachment("RMA", 0, 0, 0, 0);
-        gBuffer->ClearAttachment("WorldSpacePosition", 0, 0);
+        gBuffer->ClearAttachment("WorldPosition", 0, 0);
         gBuffer->ClearAttachment("Emissive", 0, 0, 0, 0);
         gBuffer->ClearAttachment("Glass", 0, 1, 0, 0);
         gBuffer->ClearDepthAttachment();

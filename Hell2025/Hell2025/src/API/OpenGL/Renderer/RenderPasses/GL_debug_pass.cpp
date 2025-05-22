@@ -1,4 +1,5 @@
 #include "../GL_renderer.h" 
+#include "Editor/Editor.h"
 #include "Viewport/ViewportManager.h"
 #include "Renderer/RenderDataManager.h"
 #include "Renderer/Renderer.h"
@@ -106,12 +107,15 @@ namespace OpenGLRenderer {
             if (!shader) return;
 
             shader->Bind();
+            shader->SetFloat("u_brushSize", Editor::GetHeightMapBrushSize());
+            shader->SetBool("u_heightMapEditor", (Editor::GetEditorMode() == EditorMode::HEIGHTMAP_EDITOR) && Editor::IsOpen());
             glBindImageTexture(0, gBuffer->GetColorAttachmentHandleByName("FinalLighting"), 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F);
 
             glBindTextureUnit(1, gBuffer->GetColorAttachmentHandleByName("BaseColor"));
             glBindTextureUnit(2, gBuffer->GetColorAttachmentHandleByName("Normal"));
             glBindTextureUnit(3, gBuffer->GetColorAttachmentHandleByName("RMA"));
-            glBindTextureUnit(4, finalImageFBO->GetColorAttachmentHandleByName("ViewportIndex"));
+            glBindTextureUnit(4, gBuffer->GetColorAttachmentHandleByName("WorldPosition"));
+            glBindTextureUnit(5, finalImageFBO->GetColorAttachmentHandleByName("ViewportIndex"));
 
             glDispatchCompute(gBuffer->GetWidth() / TILE_SIZE, gBuffer->GetHeight() / TILE_SIZE, 1);
         }

@@ -133,7 +133,8 @@ namespace World {
     Piano* GetPianoByMeshNodeObjectId(uint64_t objectId);
     PianoKey* GetPianoKeyByObjectId(uint64_t objectId);
     PickUp* GetPickUpByObjectId(uint64_t objectID);
-    Plane* GetPlaneByObjectId(uint64_t objectID);
+    Plane* GetPlaneByObjectId(uint64_t objectID); 
+    Tree* GetTreeByObjectId(uint64_t objectId);
     Wall* GetWallByObjectId(uint64_t objectID);
     Wall* GetWallByWallSegmentObjectId(uint64_t objectID);
     Window* GetWindowByObjectId(uint64_t objectId);

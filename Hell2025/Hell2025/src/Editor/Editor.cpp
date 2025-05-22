@@ -182,12 +182,18 @@ namespace Editor {
         g_isOpen = false;
 
         // HACK FIX ME
-        if (GetEditorMode() == EditorMode::HEIGHTMAP_EDITOR) {
-            std::string sectorName = "TestSector";
-            SectorCreateInfo* sectorCreateInfo = SectorManager::GetSectorCreateInfoByName(sectorName);
-            if (sectorCreateInfo) {
-                World::LoadSingleSector(sectorCreateInfo);
-            }
+        if (GetEditorMode() == EditorMode::HEIGHTMAP_EDITOR ||
+            GetEditorMode() == EditorMode::SECTOR_EDITOR) {
+            std::string filename = "TestSector";
+            SectorManager::UpdateSectorFromDisk(filename);
+            SectorCreateInfo* sectorCreateInfo = SectorManager::GetSectorCreateInfoByName(filename);
+            World::LoadSingleSector(sectorCreateInfo);
+
+            //std::string sectorName = "TestSector";
+            //SectorCreateInfo* sectorCreateInfo = SectorManager::GetSectorCreateInfoByName(sectorName);
+            //if (sectorCreateInfo) {
+            //    World::LoadSingleSector(sectorCreateInfo);
+            //}
         }
     }
 

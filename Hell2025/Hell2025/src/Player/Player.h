@@ -96,6 +96,7 @@ struct Player {
     bool StoppedSwimming();
     bool StartingWading();
     bool StoppedWading();
+    float GetFeetDistanceBeneathWater();
 
     // Piano
     uint64_t m_pianoId = 0;

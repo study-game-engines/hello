@@ -399,3 +399,9 @@ bool Player::StartingWading() {
 bool Player::StoppedWading() {
     return m_waterState.wadingPrevious && !m_waterState.wading;
 }
+
+float Player::GetFeetDistanceBeneathWater() {
+    float waterHeight = Ocean::GetWaterHeightAtPlayer(m_viewportIndex);
+    float feetHeight = GetFootPosition().y;
+    return waterHeight - feetHeight;
+}

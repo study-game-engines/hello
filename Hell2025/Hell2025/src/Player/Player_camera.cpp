@@ -11,7 +11,7 @@ void Player::UpdateHeadBob(float deltaTime) {
   
     bool pressingMoveKey = PressingWalkLeft() || PressingWalkRight() || PressingWalkForward() || PressingWalkBackward();
 
-    if (!CameraIsUnderwater() && !FeetBelowWater() && pressingMoveKey) {
+    if (!CameraIsUnderwater() && !IsWading() && pressingMoveKey) {
 
         m_headBobTime += deltaTime;
 
