@@ -12,9 +12,12 @@ struct Player {
     void Init(glm::vec3 position, glm::vec3 rotation, int32_t viewportIndex);
     void BeginFrame();
     void Update(float deltaTime);
+    void UpdateCharacterModelHacks();
     void Respawn();
     void EnableControl();
     void DisableControl();
+    void InitRagdoll();
+    void InitCharacterModel();
     void CreateCharacterController(glm::vec3 position);
     void MoveCharacterController(glm::vec3 displacement);
     const bool IsAwaitingSpawn();
@@ -35,6 +38,11 @@ struct Player {
     AnimatedGameObject* GetViewWeaponAnimatedGameObject();
     Camera& GetCamera();
 
+    glm::vec3 GetViewportColorTint();
+    float GetViewportContrast();
+    float m_timeSinceDeath = 0.0f;
+    bool RespawnAllowed();
+
     void UpdateCursorRays();
     void UpdateInteract();
     void UpdateCamera(float deltaTime);
@@ -50,6 +58,21 @@ struct Player {
     void UpdateAnimatedGameObjects(float deltaTime);
     void UpdatePlayingPiano(float deltaTime);
     void UpdateWeaponSlide();
+
+    // Remove me when you can
+    void HideKnifeMesh();
+    void HideGlockMesh();
+    void HideShotgunMesh();
+    void HideAKS74UMesh();
+    // Remove me when you can
+
+    void Kill();
+    Ragdoll* GetRagdoll();
+    uint64_t GetRadollId();
+    uint64_t m_playerId = 0;
+    glm::mat4 m_deathCamViewMatrix = glm::mat4(1.0f);
+
+    uint64_t GetPlayerId() { return m_playerId; }
 
     // Weapon shit
     int GetCurrentWeaponMagAmmo();
@@ -107,7 +130,6 @@ struct Player {
     bool IsMoving();
     bool IsGrounded();
     bool IsCrouching();
-    bool IsDead();
     //bool IsAlive();
     //bool IsOverlappingLadder();
     //bool IsAtShop();
@@ -236,8 +258,6 @@ private:
     float m_mouseSensitivity = 0.002f;
     float m_cameraZoom = 1.0f; 
     float m_accuracyModifer = 0;
-    //int32_t m_characterModelAnimatedGameObjectIndex = 0;
-    //int32_t m_viewWeaponAnimatedGameObjectIndex = 0;
     int32_t m_viewportIndex = 0;
     Camera m_camera;
     InputType m_inputType = KEYBOARD_AND_MOUSE;
@@ -350,6 +370,7 @@ private:
         //bool m_underWater = false;
 
     private:
+        bool m_alive = true;
 
         AnimatedGameObject m_viewWeaponAnimatedGameObject;
         AnimatedGameObject m_characterModelAnimatedGameObject;
@@ -363,10 +384,13 @@ private:
         void UpdateSwimmingMovement(float deltaTime);
 
     public:
-        const std::vector<SpriteSheetRenderItem>& GetSpriteSheetRenderItems() { return m_spriteSheetRenderItems; }
-        const glm::vec3 GetFlashlightPosition()                               { return m_flashlightPosition; }
-        const glm::vec3 GetFlashlightDirection()                              { return m_flashlightDirection; };
-        const glm::mat4 GetFlashlightProjectionView()                         { return m_flashlightProjectionView; };
-        const float GetFlashLightModifer()                                    { return m_flashLightModifier; }
-        const AABB& GetCharacterControllerAABB()                              { return m_characterControllerAABB; }
+        const uint64_t GetRagdollId()                                           { return m_characterModelAnimatedGameObject.GetRagdollId(); }
+        const bool IsAlive()                                                    { return m_alive; }
+        const bool IsDead()                                                     { return !m_alive; }
+        const std::vector<SpriteSheetRenderItem>& GetSpriteSheetRenderItems()   { return m_spriteSheetRenderItems; }
+        const glm::vec3 GetFlashlightPosition()                                 { return m_flashlightPosition; }
+        const glm::vec3 GetFlashlightDirection()                                { return m_flashlightDirection; };
+        const glm::mat4 GetFlashlightProjectionView()                           { return m_flashlightProjectionView; };
+        const float GetFlashLightModifer()                                      { return m_flashLightModifier; }
+        const AABB& GetCharacterControllerAABB()                                { return m_characterControllerAABB; }
 };

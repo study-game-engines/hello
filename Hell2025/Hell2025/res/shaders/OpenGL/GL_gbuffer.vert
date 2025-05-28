@@ -76,4 +76,8 @@ void main() {
     vec4 camRelativeWorldPos = vec4(WorldPos.xyz - ViewPos, 1.0);
 
     gl_Position = projection * mat4(mat3(view)) * camRelativeWorldPos;
+
+    // Old
+    gl_Position = projection * view * WorldPos;
+
 }

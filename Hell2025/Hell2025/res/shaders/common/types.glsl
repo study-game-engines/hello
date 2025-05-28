@@ -30,6 +30,11 @@ struct ViewportData {
     float fov;
     vec4 viewPos;
     vec4 cameraForward;
+    vec4 colorTint;
+    float colorContrast;
+    float padding0;
+    float padding1;
+    float padding2;
 };
 
 struct RendererData {

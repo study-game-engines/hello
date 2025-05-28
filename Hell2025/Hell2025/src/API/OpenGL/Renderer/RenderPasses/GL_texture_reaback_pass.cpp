@@ -3,6 +3,7 @@
 #include "API/OpenGL/Types/GL_texture_readback.h"
 #include "BackEnd/BackEnd.h"
 #include "Core/Game.h"
+#include "Editor/Editor.h"
 #include "Input/Input.h"
 #include "Tools/ImageTools.h"
 #include "Util/Util.h"
@@ -18,6 +19,8 @@ namespace OpenGLRenderer {
     glm::vec3 g_playerRayWorldPosition[4];
 
     void TextureReadBackPass() {
+        if (Editor::IsClosed() && Editor::GetEditorMode() != EditorMode::HEIGHTMAP_EDITOR) return;
+
         // Get mouse hit position
         if (!g_mouseRayReadBack.IsRequestInProgress()) {
             OpenGLFrameBuffer* gBuffer = GetFrameBuffer("GBuffer");
@@ -41,32 +44,32 @@ namespace OpenGLRenderer {
         }
 
         // Get player crosshair ray hit position
-        for (int i = 0; i < Game::GetLocalPlayerCount(); i++) {
-            if (!g_playerRayReadBack[i].IsRequestInProgress()) {
-                OpenGLFrameBuffer* gBuffer = GetFrameBuffer("GBuffer");
-                GLuint fboHandle = gBuffer->GetHandle();
-                GLuint attachment = gBuffer->GetColorAttachmentSlotByName("WorldPosition");
-
-                Player* player = Game::GetLocalPlayerByIndex(i);
-                glm::ivec2 coords = player->GetViewportCenter();
-
-                //std::cout << i << ": " << coords.x << ", " << coords.y << "\n";
-
-                int xOffset = coords.x;
-                int yOffset = coords.y;
-                int width = 1;
-                int height = 1;
-                g_playerRayReadBack[i].IssueDataRequest(fboHandle, attachment, xOffset, yOffset, width, height, GL_RGBA32F);
-            }
-            if (g_playerRayReadBack[i].IsRequestInProgress()) {
-                g_playerRayReadBack[i].Update();
-            }
-            if (g_playerRayReadBack[i].IsResultReady()) {
-                g_playerRayWorldPosition[i] = g_playerRayReadBack[i].GetFloatPixel(0);
-                g_playerRayWorldPositionReadBackReady[i] = true;
-                g_playerRayReadBack[i].Reset();
-            }
-        }
+        //for (int i = 0; i < Game::GetLocalPlayerCount(); i++) {
+        //    if (!g_playerRayReadBack[i].IsRequestInProgress()) {
+        //        OpenGLFrameBuffer* gBuffer = GetFrameBuffer("GBuffer");
+        //        GLuint fboHandle = gBuffer->GetHandle();
+        //        GLuint attachment = gBuffer->GetColorAttachmentSlotByName("WorldPosition");
+        //
+        //        Player* player = Game::GetLocalPlayerByIndex(i);
+        //        glm::ivec2 coords = player->GetViewportCenter();
+        //
+        //        //std::cout << i << ": " << coords.x << ", " << coords.y << "\n";
+        //
+        //        int xOffset = coords.x;
+        //        int yOffset = coords.y;
+        //        int width = 1;
+        //        int height = 1;
+        //        g_playerRayReadBack[i].IssueDataRequest(fboHandle, attachment, xOffset, yOffset, width, height, GL_RGBA32F);
+        //    }
+        //    if (g_playerRayReadBack[i].IsRequestInProgress()) {
+        //        g_playerRayReadBack[i].Update();
+        //    }
+        //    if (g_playerRayReadBack[i].IsResultReady()) {
+        //        g_playerRayWorldPosition[i] = g_playerRayReadBack[i].GetFloatPixel(0);
+        //        g_playerRayWorldPositionReadBackReady[i] = true;
+        //        g_playerRayReadBack[i].Reset();
+        //    }
+        //}
     }
 
     //void SaveHeightMap() {

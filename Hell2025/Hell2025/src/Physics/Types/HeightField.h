@@ -15,13 +15,13 @@ struct HeightField {
     void DisablePhsyics();
     void MarkForRemoval();
 
-    bool HasActivePhysics()             { return m_activePhysics; }
-    bool IsMarkedForRemoval()           { return m_markedForRemoval; }
-    vecXZ GetWorldSpaceOffset()         { return m_worldSpaceOffset; }
-    PxHeightField* GetPxHeightField()   { return m_pxHeightField; }
-    PxRigidStatic* GetPxRigidStatic()   { return m_pxRigidStatic; }
-    PxShape* GetPxShape()               { return m_pxShape; }
-    const AABB& GetAABB()               { return m_aabb; }
+    const bool HasActivePhysics() const     { return m_activePhysics; }
+    const bool IsMarkedForRemoval() const   { return m_markedForRemoval; }
+    vecXZ GetWorldSpaceOffset()             { return m_worldSpaceOffset; }
+    PxHeightField* GetPxHeightField()       { return m_pxHeightField; }
+    PxRigidStatic* GetPxRigidStatic()       { return m_pxRigidStatic; }
+    PxShape* GetPxShape()                   { return m_pxShape; }
+    const AABB& GetAABB()                   { return m_aabb; }
 
 private:
     vecXZ m_worldSpaceOffset;

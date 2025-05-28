@@ -1,4 +1,5 @@
 #include "Physics.h"
+#include "Util.h"
 
 namespace Physics {
 
@@ -38,7 +39,7 @@ namespace Physics {
         return matrix;
     }
 
-    PhysXRayResult CastPhysXRay(glm::vec3 rayOrigin, glm::vec3 rayDirection, float rayLength, PxU32 collisionFlags, bool cullBackFacing) {
+    PhysXRayResult CastPhysXRay(glm::vec3 rayOrigin, glm::vec3 rayDirection, float rayLength, bool cullBackFacing, RaycastIgnoreFlags ignoreFlags, std::vector<PxRigidActor*> ignoredActors) {
         PxScene* scene = Physics::GetPxScene();
         PxVec3 origin = PxVec3(rayOrigin.x, rayOrigin.y, rayOrigin.z);
         PxVec3 unitDir = PxVec3(rayDirection.x, rayDirection.y, rayDirection.z);
@@ -49,23 +50,27 @@ namespace Physics {
             outputFlags = PxHitFlag::ePOSITION | PxHitFlag::eNORMAL;
         }
 
-        // Only ray cast against objects with the GROUP_RAYCAST flag
         PxQueryFilterData filterData = PxQueryFilterData();
-        filterData.data.word0 = collisionFlags;
+        filterData.flags = PxQueryFlag::eSTATIC | PxQueryFlag::eDYNAMIC | PxQueryFlag::ePREFILTER;
 
         // Defaults
         PhysXRayResult result;
         result.hitObjectName = "NO_USERDATA";
         result.hitPosition = glm::vec3(0, 0, 0);
-        result.surfaceNormal = glm::vec3(0, 0, 0);
+        result.hitNormal = glm::vec3(0, 0, 0);
         result.rayDirection = rayDirection;
         result.userData = PhysicsUserData();
-        result.hitFound = scene->raycast(origin, unitDir, maxDistance, hit, outputFlags, filterData);
+
+        RaycastFilterCallback callback;
+        callback.m_ignoredActors = GetIgnoreList(ignoreFlags);
+        callback.m_ignoredActors.insert(callback.m_ignoredActors.end(), ignoredActors.begin(), ignoredActors.end());
+                
+        result.hitFound = scene->raycast(origin, unitDir, maxDistance, hit, outputFlags, filterData, &callback);
 
         // On hit
         if (result.hitFound) {
             result.hitPosition = glm::vec3(hit.block.position.x, hit.block.position.y, hit.block.position.z);
-            result.surfaceNormal = glm::vec3(hit.block.normal.x, hit.block.normal.y, hit.block.normal.z);
+            result.hitNormal = glm::vec3(hit.block.normal.x, hit.block.normal.y, hit.block.normal.z);
             result.hitFound = true;
             PhysicsUserData* userData = (PhysicsUserData*)hit.block.actor->userData;
             if (userData) {
@@ -130,6 +135,56 @@ namespace Physics {
             }
         }
         return overlapReport;
+    }
+
+    float ComputeShapeVolume(PxShape* pxShape) {
+        if (!pxShape) {
+            std::cout << "Physics::ComputeShapeDenisty() failed: pxShape was nullptr\n";
+            return 0.0f;
+        }
+
+        const PxGeometry& pxGeometry = pxShape->getGeometry();
+        const PxGeometryHolder pxGeometryHolder = pxShape->getGeometry();
+        const PxGeometryType::Enum pxGeometryType = pxGeometry.getType();
+
+        if (pxGeometryType == PxGeometryType::Enum::eBOX) {
+            const PxBoxGeometry& box = pxGeometryHolder.box();
+            return Util::GetCubeVolume(box.halfExtents.x, box.halfExtents.y, box.halfExtents.z);
+        }
+        else if (pxGeometryType == PxGeometryType::Enum::eSPHERE) {
+            const PxSphereGeometry& sphere = pxGeometryHolder.sphere();
+            return Util::GetSphereVolume(sphere.radius);
+        }
+        else if (pxGeometryType == PxGeometryType::Enum::eCAPSULE) {
+            const PxCapsuleGeometry& capsule = pxGeometryHolder.capsule();
+            return Util::GetCapsuleVolume(capsule.radius, capsule.halfHeight);
+        }
+        else {
+            std::cout << "Physics::ComputeShapeVolume() failed: pxShape was not cube, sphere, or capsule\n";
+            return 0.0f;
+        }
+    }
+
+    std::string GetPxShapeTypeAsString(PxShape* pxShape) {
+        if (!pxShape) {
+            std::cout << "Physics::ComputeShapeDenisty() failed: pxShape was nullptr\n";
+            return "Invalid shape";
+        }
+
+        const PxGeometry& pxGeometry = pxShape->getGeometry();
+        const PxGeometryHolder pxGeometryHolder = pxShape->getGeometry();
+        const PxGeometryType::Enum pxGeometryType = pxGeometry.getType();
+
+        switch (pxGeometryType) {
+            case physx::PxGeometryType::Enum::eBOX:             return "Box";
+            case physx::PxGeometryType::Enum::eSPHERE:          return "Sphere";
+            case physx::PxGeometryType::Enum::eCAPSULE:         return "Capsule";
+            case physx::PxGeometryType::Enum::ePLANE:           return "Plane";
+            case physx::PxGeometryType::Enum::eCONVEXMESH:      return "ConvexMesh";
+            case physx::PxGeometryType::Enum::eTRIANGLEMESH:    return "TriangleMesh";
+            case physx::PxGeometryType::Enum::eHEIGHTFIELD:     return "HeightField";
+            default:                                            return "Unknown shape type";
+        }
     }
 }
 

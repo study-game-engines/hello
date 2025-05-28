@@ -36,9 +36,14 @@ namespace AssetManager {
         // Success
         m_pAnimationScene = new aiScene(*tempAnimScene);
         if (m_pAnimationScene) {
-            animation->m_duration = (float)m_pAnimationScene->mAnimations[0]->mDuration;
-            animation->m_ticksPerSecond = (float)m_pAnimationScene->mAnimations[0]->mTicksPerSecond;
-            //std::cout << "Loaded animation: " << Filename << "\n";
+            if (m_pAnimationScene->mNumAnimations == 0) {
+                std::cout << "ATTENTION! " << animation->GetName() << " has zero animations\n";
+            }
+            else {
+                animation->m_duration = (float)m_pAnimationScene->mAnimations[0]->mDuration;
+                animation->m_ticksPerSecond = (float)m_pAnimationScene->mAnimations[0]->mTicksPerSecond;
+                //std::cout << "Loaded animation: " << Filename << "\n";
+            }
         }
         // Some other error possibility
         else {

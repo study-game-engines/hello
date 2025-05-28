@@ -136,6 +136,15 @@ namespace Game {
         }
     }
 
+    Player* GetPlayerByPlayerId(uint64_t playerId) {
+        for (Player& player : g_localPlayers) {
+            if (player.GetPlayerId() == playerId) {
+                return &player;
+            }
+        }
+        return nullptr;
+    }
+
     Player* GetLocalPlayerByIndex(uint32_t index) {
         if (index >= 0 && index < g_localPlayers.size()) {
             return &g_localPlayers[index];

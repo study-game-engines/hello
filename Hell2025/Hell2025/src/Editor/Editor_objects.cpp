@@ -20,10 +20,9 @@ namespace Editor {
 
         // Cast physx ray
         float maxRayDistance = 2000;
-        uint32_t rayFlags = RaycastGroup::RAYCAST_ENABLED;
         glm::vec3 rayOrigin = GetMouseRayOriginByViewportIndex(GetHoveredViewportIndex());
         glm::vec3 rayDir = GetMouseRayDirectionByViewportIndex(GetHoveredViewportIndex());
-        PhysXRayResult physxRayResult = Physics::CastPhysXRay(rayOrigin, rayDir, maxRayDistance, rayFlags, true);
+        PhysXRayResult physxRayResult = Physics::CastPhysXRay(rayOrigin, rayDir, maxRayDistance, true);
         if (physxRayResult.hitFound) {
             SetHoveredObjectType(physxRayResult.userData.objectType);
             SetHoveredObjectId(physxRayResult.userData.objectId);
@@ -43,7 +42,7 @@ namespace Editor {
 
         //std::cout << "Hover: "<< Util::ObjectTypeToString(hovererdType) << "\n";
 
-        // Find parents if neccessary
+        // Find parents if necessary
         if (GetHoveredObjectType() == ObjectType::DOOR_FRAME) {
             Door* door = World::GetDoorByDoorFrameObjectId(GetHoveredObjectId());
             if (door) {
@@ -87,30 +86,42 @@ namespace Editor {
                     Gizmo::SetPosition(door->GetPosition());
                 }
             }
+
             if (GetSelectedObjectType() == ObjectType::PIANO) {
                 Piano* piano = World::GetPianoByObjectId(GetSelectedObjectId());
                 if (piano) {
                     Gizmo::SetPosition(piano->GetPosition());
                 }
             }
+
             if (GetSelectedObjectType() == ObjectType::PLANE) {
                 Plane* plane = World::GetPlaneByObjectId(GetSelectedObjectId());
                 if (plane) {
                     Gizmo::SetPosition(plane->GetWorldSpaceCenter());
                 }
             }
+
+            if (GetSelectedObjectType() == ObjectType::PICTURE_FRAME) {
+                PictureFrame* pictureFrame = World::GetPictureFrameByObjectId(GetSelectedObjectId());
+                if (pictureFrame) {
+                    Gizmo::SetPosition(pictureFrame->GetPosition());
+                }
+            }
+
             if (GetSelectedObjectType() == ObjectType::WALL) {
                 Wall* wall = World::GetWallByObjectId(GetSelectedObjectId());
                 if (wall) {
                     Gizmo::SetPosition(wall->GetWorldSpaceCenter());
                 }
             }
+
             if (GetSelectedObjectType() == ObjectType::WINDOW) {
                 Window* window = World::GetWindowByObjectId(GetSelectedObjectId());
                 if (window) {
                     Gizmo::SetPosition(window->GetPosition());
                 }
             }
+
             if (GetSelectedObjectType() == ObjectType::TREE) {
                 Tree* tree = World::GetTreeByObjectId(GetSelectedObjectId());
                 if (tree) {

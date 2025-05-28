@@ -49,11 +49,10 @@ namespace Physics {
         return shape;
     }
 
-    PxRigidDynamic* CreateRigidDynamic(Transform transform, PhysicsFilterData physicsFilterData, PxShape* shape, Transform shapeOffset) {
-
-        PxQuat quat = GlmQuatToPxQuat(glm::quat(transform.rotation));
-        PxTransform trans = PxTransform(PxVec3(transform.position.x, transform.position.y, transform.position.z), quat);
-        PxRigidDynamic* body = Physics::GetPxPhysics()->createRigidDynamic(trans);
+    PxRigidDynamic* CreateRigidDynamic(Transform worldTransform, PhysicsFilterData physicsFilterData, PxShape* shape, Transform shapeOffset) {
+        PxQuat quat = GlmQuatToPxQuat(glm::quat(worldTransform.rotation));
+        PxTransform pxTransform = PxTransform(PxVec3(worldTransform.position.x, worldTransform.position.y, worldTransform.position.z), quat);
+        PxRigidDynamic* body = Physics::GetPxPhysics()->createRigidDynamic(pxTransform);
 
         // You are passing in a PxShape pointer and any shape offset will affects that actually object, wherever the fuck it is up the function chain.
         // Maybe look into this when you can be fucked, possibly you can just set the isExclusive bool to true, where and whenever the fuck that is and happens.
@@ -64,6 +63,32 @@ namespace Physics {
         shape->setQueryFilterData(filterData);       // ray casts
         shape->setSimulationFilterData(filterData);  // collisions
         PxMat44 localShapeMatrix = GlmMat4ToPxMat44(shapeOffset.to_mat4());
+        PxTransform localShapeTransform(localShapeMatrix);
+        shape->setLocalPose(localShapeTransform);
+
+        body->attachShape(*shape);
+        PxRigidBodyExt::updateMassAndInertia(*body, 10.0f);
+        Physics::GetPxScene()->addActor(*body);
+        return body;
+    }
+
+    PxRigidDynamic* CreateRigidDynamic(PxShape* shape, glm::mat4 worldMatrix, glm::mat4 shapeOffsetMatrix, PhysicsFilterData filterData) {
+        // Warning, you haven't vetted if this world matrix stuff is identical to the transform version above!!!
+        // Warning, you haven't vetted if this world matrix stuff is identical to the transform version above!!!
+        // Warning, you haven't vetted if this world matrix stuff is identical to the transform version above!!!
+
+        PxTransform pxTransfrom = PxTransform(GlmMat4ToPxMat44(worldMatrix));
+        PxRigidDynamic* body = Physics::GetPxPhysics()->createRigidDynamic(pxTransfrom);
+
+        // You are passing in a PxShape pointer and any shape offset will affects that actually object, wherever the fuck it is up the function chain.
+        // Maybe look into this when you can be fucked, possibly you can just set the isExclusive bool to true, where and whenever the fuck that is and happens.
+        PxFilterData pxFilterData;
+        pxFilterData.word0 = (PxU32)filterData.raycastGroup;
+        pxFilterData.word1 = (PxU32)filterData.collisionGroup;
+        pxFilterData.word2 = (PxU32)filterData.collidesWith;
+        shape->setQueryFilterData(pxFilterData);       // ray casts
+        shape->setSimulationFilterData(pxFilterData);  // collisions
+        PxMat44 localShapeMatrix = GlmMat4ToPxMat44(shapeOffsetMatrix);
         PxTransform localShapeTransform(localShapeMatrix);
         shape->setLocalPose(localShapeTransform);
 

@@ -8,7 +8,6 @@
 
 #include "Util.h"
 #include "HellDefines.h"
-#include "FFTSolver.h"
 
 namespace Ocean {
 
@@ -29,8 +28,6 @@ namespace Ocean {
 
     float g_dispScale = 1.0f;    // Controls the choppiness of the ocean waves
     float g_heightScale = 0.5f;   // Controls the height of the ocean waves
-
-    FFTSolver g_FFTSolver;
 
     float PhillipsSpectrum(const glm::vec2& k, FFTBand& fftBand);
     glm::vec2 KVector(int x, int z, glm::uvec2 fftResolution, glm::vec2 patchSimSize);
@@ -73,29 +70,6 @@ namespace Ocean {
         g_fftBands[0].h0 = ComputeH0(g_fftBands[0], 1337);
         g_fftBands[1].h0 = ComputeH0(g_fftBands[1], 42);
     }
-
-    void ComputeInverseFFT2D(unsigned int fftResolution, unsigned int inputHandle, unsigned int outputHandle) {
-        g_FFTSolver.fftInv2D(inputHandle, outputHandle, fftResolution, fftResolution);
-    }
-
-    //void SetWindDir(glm::vec2 windDir) {
-    // //   if (glm::length(windDir) == 0.0f) {
-    // //       std::cout << "Ocean::SetWindDir() failed because wind direction vector has zero length\n";
-    // //   }
-    // //   g_mWindDir = glm::normalize(windDir);
-    //}
-    //
-    //void SetWindSpeed(float windSpeed) {
-    //    g_windSpeed = windSpeed;
-    //}
-    //
-    //void SetCrossWindDampingCoefficient(float crossWindDampingCoefficient) {
-    //    g_crossWindDampingCoefficient = crossWindDampingCoefficient;
-    //}
-    //
-    //void SetSmallWavesDampingCoefficient(float smallWavesDampingCoefficient) {
-    //    g_smallWavesDampingCoefficient = smallWavesDampingCoefficient;
-    //}
 
     glm::vec2 KVector(int x, int z, glm::uvec2 fftResolution, glm::vec2 patchSimSize) {
         return glm::vec2((x - fftResolution.x / 2.0f) * (2.0f * HELL_PI / patchSimSize.x), (z - fftResolution.y / 2.0f) * (2.0f * HELL_PI / patchSimSize.y));

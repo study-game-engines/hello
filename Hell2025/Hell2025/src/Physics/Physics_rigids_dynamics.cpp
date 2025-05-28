@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <vector>
 #include "Util.h"
+#include "Timer.hpp"
 
 namespace Physics {
 
@@ -22,7 +23,9 @@ namespace Physics {
         }
     }
 
-    void UpdateAllRigidDynamics(float deltaTime) {        
+    void UpdateAllRigidDynamics(float deltaTime) {
+        //Timer timer("UpdateAllRigidDynamics");
+        //std::cout << "g_rigidDynamics.size(): " << g_rigidDynamics.size() << "\n";
         for (auto it = g_rigidDynamics.begin(); it != g_rigidDynamics.end(); ) {
             RigidDynamic& rigidDynamic = it->second;
             rigidDynamic.Update(deltaTime);
@@ -93,7 +96,7 @@ namespace Physics {
         PxVec3 torque = PxVec3(initialTorque.x, initialTorque.y, initialTorque.z);
         pxRigidDynamic->addTorque(torque);
 
-        // Create DynamicBox
+        // Create RigidDynamic
         uint64_t physicsID = UniqueID::GetNext();
         RigidDynamic& rigidDynamic = g_rigidDynamics[physicsID];
 
@@ -151,6 +154,32 @@ namespace Physics {
 
         return physicsID;
     }
+
+    uint64_t CreateRigidDynamicFromPxShape(PxShape* pxShape, glm::mat4 initialPose, glm::mat4 shapeOffsetMatrix) {
+        PxPhysics* pxPhysics = Physics::GetPxPhysics();
+        PxScene* pxScene = Physics::GetPxScene();
+
+        // Create rigid dynamic
+        PxTransform pxTransform = PxTransform(GlmMat4ToPxMat44(initialPose));
+
+        PxRigidDynamic* pxRigidDynamic = pxPhysics->createRigidDynamic(pxTransform);
+        pxRigidDynamic->attachShape(*pxShape);
+        pxScene->addActor(*pxRigidDynamic);
+
+        // Create RigidDynamic
+        uint64_t physicsID = UniqueID::GetNext();
+        RigidDynamic& rigidDynamic = g_rigidDynamics[physicsID];
+
+        PxMat44 localShapeMatrix = GlmMat4ToPxMat44(shapeOffsetMatrix);
+        PxTransform localShapeTransform(localShapeMatrix);
+        pxShape->setLocalPose(localShapeTransform);
+
+        // Update its pointers
+        rigidDynamic.SetPxRigidDynamic(pxRigidDynamic);
+        rigidDynamic.SetPxShape(pxShape);
+
+        return physicsID;
+    }
        
     bool RigidDynamicExists(uint64_t rigidDynamicId) {
         return (g_rigidDynamics.find(rigidDynamicId) != g_rigidDynamics.end());
@@ -181,6 +210,19 @@ namespace Physics {
             PxVec3 pxForce = Physics::GlmVec3toPxVec3(force);
             pxRigidDynamic->setRigidBodyFlag(PxRigidBodyFlag::eKINEMATIC, false);
             pxRigidDynamic->addForce(pxForce);
+        }
+    }
+
+    void SetRigidDynamicGlobalPose(uint64_t rigidDynamicId, glm::mat4 globalPoseMatrix) {
+        if (RigidDynamicExists(rigidDynamicId)) {
+            RigidDynamic& rigidDynamic = g_rigidDynamics[rigidDynamicId];
+            PxRigidDynamic* pxRigidDynamic = rigidDynamic.GetPxRigidDynamic();
+            PxMat44 pxMatrix = GlmMat4ToPxMat44(globalPoseMatrix);
+            PxTransform pxTransform = PxTransform(pxMatrix);
+            pxRigidDynamic->setGlobalPose(pxTransform);
+        }
+        else {
+            std::cout << "Phyics::SetRigidDynamicGlobalPose() failed to set global pose: id " << rigidDynamicId << " not found\n";
         }
     }
 
@@ -256,23 +298,23 @@ namespace Physics {
         }
     }
 
-    void ActivateRigidDynamicPhysics(uint64_t m_physicsId) {
-        if (RigidDynamicExists(m_physicsId)) {
-            RigidDynamic& rigidDynamic = g_rigidDynamics[m_physicsId];
+    void ActivateRigidDynamicPhysics(uint64_t rigidDynamicId) {
+        if (RigidDynamicExists(rigidDynamicId)) {
+            RigidDynamic& rigidDynamic = g_rigidDynamics[rigidDynamicId];
             rigidDynamic.ActivatePhsyics();
         }
     }
 
-    void DeactivateRigidDynamicPhysics(uint64_t m_physicsId) {
-        if (RigidDynamicExists(m_physicsId)) {
-            RigidDynamic& rigidDynamic = g_rigidDynamics[m_physicsId];
+    void DeactivateRigidDynamicPhysics(uint64_t rigidDynamicId) {
+        if (RigidDynamicExists(rigidDynamicId)) {
+            RigidDynamic& rigidDynamic = g_rigidDynamics[rigidDynamicId];
             rigidDynamic.DeactivatePhysics();
         }
     }    
 
-    void SetRigidDynamicUserData(uint64_t m_physicsId, PhysicsUserData physicsUserData) {
-        if (RigidDynamicExists(m_physicsId)) {
-            RigidDynamic& rigidDynamic = g_rigidDynamics[m_physicsId];
+    void SetRigidDynamicUserData(uint64_t rigidDynamicId, PhysicsUserData physicsUserData) {
+        if (RigidDynamicExists(rigidDynamicId)) {
+            RigidDynamic& rigidDynamic = g_rigidDynamics[rigidDynamicId];
             PxRigidDynamic* pxRigidDynamic = rigidDynamic.GetPxRigidDynamic();
             pxRigidDynamic->userData = new PhysicsUserData(physicsUserData);
         }
@@ -280,5 +322,30 @@ namespace Physics {
 
     const std::vector<AABB>& GetActiveRididDynamicAABBs() {
         return g_activeRigidDynamicAABBs;
+    }
+
+    RigidDynamic* GetRigidDynamicById(uint64_t rigidDynamicId) {
+        if (RigidDynamicExists(rigidDynamicId)) {
+            return &g_rigidDynamics[rigidDynamicId];
+        }
+        else {
+            return nullptr;
+        }
+    }
+
+    void PrintSceneRigidInfo() {
+        std::cout << " Rigid Dynamics\n\n";
+
+        for (auto it = g_rigidDynamics.begin(); it != g_rigidDynamics.end(); ) {
+            uint64_t id = it->first;
+            RigidDynamic& rigidDynamic = it->second;
+
+            std::cout << " " << id << " - ";
+            std::cout << "[" << GetPxShapeTypeAsString(rigidDynamic.GetPxShape()) << "] ";
+            //std::cout << "position: " << rigidDynamic.GetCurrentPosition() << " ";
+            std::cout << "\n";
+
+            it++;
+        }
     }
 }

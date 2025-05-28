@@ -64,14 +64,11 @@ namespace OpenGLRenderer {
 
                 for (const RenderItem& renderItem : bunny.GetRenderItems()) {
 
-
                     uint32_t meshIndex = renderItem.meshIndex;
                     glm::mat4 modelMatrix = renderItem.modelMatrix;
                     glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(modelMatrix)));
 
                     Mesh* mesh = AssetManager::GetMeshByIndex(meshIndex);
-
-                    //if (mesh->GetName() != "Body_Low") continue;
 
                     shader->SetMat4("u_model", modelMatrix);
                     shader->SetMat3("u_normalMatrix", normalMatrix);
@@ -94,56 +91,56 @@ namespace OpenGLRenderer {
         }
 
         // Skinned models
-        glBindVertexArray(OpenGLBackEnd::GetSkinnedVertexDataVAO());
-        glBindBuffer(GL_ARRAY_BUFFER, OpenGLBackEnd::GetSkinnedVertexDataVBO());
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, OpenGLBackEnd::GetWeightedVertexDataEBO());
-
-        glActiveTexture(GL_TEXTURE3);
-        glBindTexture(GL_TEXTURE_2D, AssetManager::GetTextureByName("WaterNormals")->GetGLTexture().GetHandle());
-        glActiveTexture(GL_TEXTURE4);
-        glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, hiResShadowMaps->GetDepthTexture());
-        glBindTextureUnit(5, AssetManager::GetTextureByName("Flashlight2")->GetGLTexture().GetHandle());
-        glBindTextureUnit(6, flashLightShadowMapsFBO->GetDepthTextureHandle());
-
-        if (false)
-        for (int i = 0; i < 4; i++) {
-            Viewport* viewport = ViewportManager::GetViewportByIndex(i);
-            if (viewport->IsVisible()) {
-                OpenGLRenderer::SetViewport(gBuffer, viewport);
-
-                std::vector<AnimatedGameObject*> animatedgameObjects = RenderDataManager::GetAnimatedGameObjectToSkin();
-
-                for (AnimatedGameObject* animatedGameObject : animatedgameObjects) {
-
-                    std::vector<RenderItem>& renderItems = animatedGameObject->GetRenderItems();
-
-                    for (const RenderItem& renderItem : renderItems) {
-
-                        if (renderItem.furLength == 0) continue;
-
-                        uint32_t meshIndex = renderItem.meshIndex;
-                        glm::mat4 modelMatrix = renderItem.modelMatrix;
-                        glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(modelMatrix)));
-
-                        SkinnedMesh* mesh = AssetManager::GetSkinnedMeshByIndex(meshIndex);
-
-                        shader->SetMat4("u_model", modelMatrix);
-                        shader->SetMat3("u_normalMatrix", normalMatrix);
-                        shader->SetInt("u_viewportIndex", i);
-                        shader->SetInt("u_hairLayerCount", hairLayerCount);
-
-                        glActiveTexture(GL_TEXTURE0);
-                        glBindTexture(GL_TEXTURE_2D, AssetManager::GetTextureByIndex(renderItem.baseColorTextureIndex)->GetGLTexture().GetHandle());
-                        glActiveTexture(GL_TEXTURE1);
-                        glBindTexture(GL_TEXTURE_2D, AssetManager::GetTextureByIndex(renderItem.normalMapTextureIndex)->GetGLTexture().GetHandle());
-                        glActiveTexture(GL_TEXTURE2);
-                        glBindTexture(GL_TEXTURE_2D, AssetManager::GetTextureByIndex(renderItem.rmaTextureIndex)->GetGLTexture().GetHandle());
-
-                        glDrawElementsInstancedBaseVertex(GL_TRIANGLES, mesh->indexCount, GL_UNSIGNED_INT, (GLvoid*)(mesh->baseIndex * sizeof(GLuint)), hairLayerCount, renderItem.baseSkinnedVertex);
-                    }
-                }
-            }
-        }
+        //glBindVertexArray(OpenGLBackEnd::GetSkinnedVertexDataVAO());
+        //glBindBuffer(GL_ARRAY_BUFFER, OpenGLBackEnd::GetSkinnedVertexDataVBO());
+        //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, OpenGLBackEnd::GetWeightedVertexDataEBO());
+        //
+        //glActiveTexture(GL_TEXTURE3);
+        //glBindTexture(GL_TEXTURE_2D, AssetManager::GetTextureByName("WaterNormals")->GetGLTexture().GetHandle());
+        //glActiveTexture(GL_TEXTURE4);
+        //glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, hiResShadowMaps->GetDepthTexture());
+        //glBindTextureUnit(5, AssetManager::GetTextureByName("Flashlight2")->GetGLTexture().GetHandle());
+        //glBindTextureUnit(6, flashLightShadowMapsFBO->GetDepthTextureHandle());
+        //
+        //if (false)
+        //for (int i = 0; i < 4; i++) {
+        //    Viewport* viewport = ViewportManager::GetViewportByIndex(i);
+        //    if (viewport->IsVisible()) {
+        //        OpenGLRenderer::SetViewport(gBuffer, viewport);
+        //
+        //        std::vector<AnimatedGameObject*> animatedgameObjects = RenderDataManager::GetAnimatedGameObjectToSkin();
+        //
+        //        for (AnimatedGameObject* animatedGameObject : animatedgameObjects) {
+        //
+        //            std::vector<RenderItem>& renderItems = animatedGameObject->GetRenderItems();
+        //
+        //            for (const RenderItem& renderItem : renderItems) {
+        //
+        //                if (renderItem.furLength == 0) continue;
+        //
+        //                uint32_t meshIndex = renderItem.meshIndex;
+        //                glm::mat4 modelMatrix = renderItem.modelMatrix;
+        //                glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(modelMatrix)));
+        //
+        //                SkinnedMesh* mesh = AssetManager::GetSkinnedMeshByIndex(meshIndex);
+        //
+        //                shader->SetMat4("u_model", modelMatrix);
+        //                shader->SetMat3("u_normalMatrix", normalMatrix);
+        //                shader->SetInt("u_viewportIndex", i);
+        //                shader->SetInt("u_hairLayerCount", hairLayerCount);
+        //
+        //                glActiveTexture(GL_TEXTURE0);
+        //                glBindTexture(GL_TEXTURE_2D, AssetManager::GetTextureByIndex(renderItem.baseColorTextureIndex)->GetGLTexture().GetHandle());
+        //                glActiveTexture(GL_TEXTURE1);
+        //                glBindTexture(GL_TEXTURE_2D, AssetManager::GetTextureByIndex(renderItem.normalMapTextureIndex)->GetGLTexture().GetHandle());
+        //                glActiveTexture(GL_TEXTURE2);
+        //                glBindTexture(GL_TEXTURE_2D, AssetManager::GetTextureByIndex(renderItem.rmaTextureIndex)->GetGLTexture().GetHandle());
+        //
+        //                glDrawElementsInstancedBaseVertex(GL_TRIANGLES, mesh->indexCount, GL_UNSIGNED_INT, (GLvoid*)(mesh->baseIndex * sizeof(GLuint)), hairLayerCount, renderItem.baseSkinnedVertex);
+        //            }
+        //        }
+        //    }
+        //}
 
         glDisable(GL_BLEND);
     }

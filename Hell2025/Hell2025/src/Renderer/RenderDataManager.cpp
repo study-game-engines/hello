@@ -53,8 +53,8 @@ namespace RenderDataManager {
     //void CreateDrawCommands(DrawCommands& drawCommands, std::vector<RenderItem>& renderItems);
     void CreateDrawCommands(std::vector<DrawIndexedIndirectCommand>& drawCommands, std::vector<RenderItem>& renderItems, Frustum& frustum, int viewportIndex);
     void CreateDrawCommandsSkinned(DrawCommands& drawCommands, std::vector<RenderItem>& renderItems);
-    void CreateMultiDrawIndirectCommands(std::vector<DrawIndexedIndirectCommand>& commands, std::span<RenderItem> renderItems, int playerIndex, int instanceOffset);
-    void CreateMultiDrawIndirectCommandsSkinned(std::vector<DrawIndexedIndirectCommand>& commands, std::span<RenderItem> renderItems, int playerIndex, int instanceOffset);
+    void CreateMultiDrawIndirectCommands(std::vector<DrawIndexedIndirectCommand>& commands, std::span<RenderItem> renderItems, int viewportIndex, int instanceOffset);
+    void CreateMultiDrawIndirectCommandsSkinned(std::vector<DrawIndexedIndirectCommand>& commands, std::span<RenderItem> renderItems, int viewportIndex, int instanceOffset);
     void CreateShadowCubeMapMultiDrawIndirectCommands(std::vector<DrawIndexedIndirectCommand>& commands, uint32_t faceIndex, GPULight& gpuLight);
 
     int EncodeBaseInstance(int playerIndex, int instanceOffset);
@@ -91,6 +91,8 @@ namespace RenderDataManager {
             Viewport* viewport = ViewportManager::GetViewportByIndex(i);
             if (!viewport->IsVisible()) continue;
 
+            g_viewportData[i].colorTint = WHITE;
+            g_viewportData[i].colorContrast = 1.0f;
 
             glm::mat4 viewMatrix = glm::mat4(1);
             if (Editor::IsOpen()) {
@@ -104,6 +106,13 @@ namespace RenderDataManager {
                 g_viewportData[i].orthoSize = 0.0f;
                 g_viewportData[i].isOrtho = false;
                 g_viewportData[i].fov = Game::GetLocalPlayerFovByIndex(i);
+
+                Player* player = Game::GetLocalPlayerByIndex(i);
+                if (player && player->IsDead()) {
+                    viewMatrix = player->m_deathCamViewMatrix;
+                    g_viewportData[i].colorTint = glm::vec4(player->GetViewportColorTint(), 1.0f);
+                    g_viewportData[i].colorContrast = player->GetViewportContrast();
+                }
             }
 
             g_viewportData[i].projection = viewport->GetProjectionMatrix();
@@ -159,40 +168,6 @@ namespace RenderDataManager {
         }
     }
 
-    //void UpdateGPULightData() {
-    //    int maxLights = 10;
-    //
-    //    g_gpuLightData.clear();
-    //    g_gpuLightData.resize(maxLights);
-    //
-    //    // Wipe any old light data
-    //    for (int i = 0; i < g_gpuLightData.size(); i++) {
-    //        GPULight& gpuLight = g_gpuLightData[i];
-    //        gpuLight.posX = 0.0f;
-    //        gpuLight.posY = 0.0f;
-    //        gpuLight.posZ = 0.0f;
-    //        gpuLight.colorR = 0.0f;
-    //        gpuLight.colorG = 0.0f;
-    //        gpuLight.colorB = 0.0f;
-    //        gpuLight.radius = 0.0f;
-    //        gpuLight.strength = 0.0f;
-    //    }
-    //
-    //    // Populate with new light data
-    //    for (int i = 0; i < World::GetLights().size() && i < maxLights; i++) {
-    //        Light& light = World::GetLights()[i];
-    //        GPULight& gpuLight = g_gpuLightData[i];
-    //        gpuLight.posX = light.GetPosition().x;
-    //        gpuLight.posY = light.GetPosition().y;
-    //        gpuLight.posZ = light.GetPosition().z;
-    //        gpuLight.colorR = light.GetColor().r;
-    //        gpuLight.colorG = light.GetColor().g;
-    //        gpuLight.colorB = light.GetColor().b;
-    //        gpuLight.radius = light.GetRadius();
-    //        gpuLight.strength = light.GetStrength();
-    //    }
-    //}
-
     void UpdateRendererData() {
         const RendererSettings& rendererSettings = Renderer::GetCurrentRendererSettings();
         const Resolutions& resolutions = Config::GetResolutions();
@@ -218,44 +193,8 @@ namespace RenderDataManager {
     }
 
     void UpdateDrawCommandsSet() {
-
-        /*
-        if (Input::KeyDown(HELL_KEY_T)) {
-
-            int iterations = 100;
-
-            {
-                Timer("UpdateRenderItemAABB yours)");
-                for (int i = 0; i < iterations; i++) {
-                    for (RenderItem& renderItem : g_renderItems) {
-                        Util::UpdateRenderItemAABBFastB(renderItem);
-                    }
-                }
-            }
-            {
-                Timer("UpdateRenderItemAABB mine vec4()");
-                for (int i = 0; i < iterations; i++) {
-                    for (RenderItem& renderItem : g_renderItems) {
-                        Util::UpdateRenderItemAABBFastA(renderItem);
-                    }
-                }
-            }
-            {
-                Timer("UpdateRenderItemAABB mine vec3()");
-                for (int i = 0; i < iterations; i++) {
-                    for (RenderItem& renderItem : g_renderItems) {
-                        Util::UpdateRenderItemAABB(renderItem);
-                    }
-                }
-            }
-        }*/
-
         g_instanceData.clear();
         auto& set = g_drawCommandsSet;
-
-        //std::vector<RenderItem> renderItems;
-        //renderItems.insert(renderItems.end(), g_renderItems.begin(), g_renderItems.end());
-        //renderItems.insert(renderItems.end(), World::GetRenderItems().begin(), World::GetRenderItems().end());
 
         // Clear any commands from last frame
         for (int i = 0; i < 4; i++) {
@@ -420,7 +359,7 @@ namespace RenderDataManager {
         CreateMultiDrawIndirectCommands(drawCommands, instanceView, -1, instanceStart);
     }
 
-    void CreateMultiDrawIndirectCommands(std::vector<DrawIndexedIndirectCommand>& commands, std::span<RenderItem> renderItems, int playerIndex, int instanceOffset) {
+    void CreateMultiDrawIndirectCommands(std::vector<DrawIndexedIndirectCommand>& commands, std::span<RenderItem> renderItems, int viewportIndex, int instanceOffset) {
         std::unordered_map<int, std::size_t> commandMap;
         commands.reserve(renderItems.size());
 
@@ -440,7 +379,7 @@ namespace RenderDataManager {
                 cmd.indexCount = mesh->indexCount;
                 cmd.firstIndex = mesh->baseIndex;
                 cmd.baseVertex = mesh->baseVertex;
-                cmd.baseInstance = EncodeBaseInstance(playerIndex, instanceOffset);
+                cmd.baseInstance = EncodeBaseInstance(viewportIndex, instanceOffset);
                 cmd.instanceCount = 1;
 
                 commandMap[meshIndex] = index;
@@ -449,11 +388,14 @@ namespace RenderDataManager {
         }
     }
 
-    void CreateMultiDrawIndirectCommandsSkinned(std::vector<DrawIndexedIndirectCommand>& commands, std::span<RenderItem> renderItems, int playerIndex, int instanceOffset) {
+    void CreateMultiDrawIndirectCommandsSkinned(std::vector<DrawIndexedIndirectCommand>& commands, std::span<RenderItem> renderItems, int viewportIndex, int instanceOffset) {
         std::unordered_map<int, std::size_t> commandMap;
         commands.reserve(renderItems.size());
 
         for (const RenderItem& renderItem : renderItems) {
+            if (renderItem.ignoredViewportIndex != -1 && renderItem.ignoredViewportIndex == viewportIndex) continue;
+            if (renderItem.exclusiveViewportIndex != -1 && renderItem.exclusiveViewportIndex != viewportIndex) continue;
+
             int meshIndex = renderItem.meshIndex;
             SkinnedMesh* mesh = AssetManager::GetSkinnedMeshByIndex(meshIndex);
 
@@ -469,7 +411,7 @@ namespace RenderDataManager {
                 cmd.indexCount = mesh->indexCount;
                 cmd.firstIndex = mesh->baseIndex;
                 cmd.baseVertex = renderItem.baseSkinnedVertex;
-                cmd.baseInstance = EncodeBaseInstance(playerIndex, instanceOffset);
+                cmd.baseInstance = EncodeBaseInstance(viewportIndex, instanceOffset);
                 cmd.instanceCount = 1;
 
                 commandMap[meshIndex] = index;

@@ -23,6 +23,9 @@ namespace World {
         for (PianoCreateInfo& createInfo : houseCreateInfo.pianos) {
             AddPiano(createInfo, spawnOffset);
         }
+        for (PictureFrameCreateInfo& createInfo : houseCreateInfo.pictureFrames) {
+            AddPictureFrame(createInfo, spawnOffset);
+        }
         for (WindowCreateInfo& createInfo : houseCreateInfo.windows) {
             AddWindow(createInfo, spawnOffset);
         }
@@ -53,8 +56,11 @@ namespace World {
         for (Piano& piano : GetPianos()) {
             houseCreateInfo.pianos.emplace_back(piano.GetCreateInfo());
         }
-        for (Plane& plane: GetPlanes()) {
+        for (Plane& plane : GetPlanes()) {
             houseCreateInfo.planes.emplace_back(plane.GetCreateInfo());
+        }
+        for (PictureFrame& pictureFrame : GetPictureFrames()) {
+            houseCreateInfo.pictureFrames.emplace_back(pictureFrame.GetCreateInfo());
         }
         for (Window& window : GetWindows()) {
             houseCreateInfo.windows.emplace_back(window.GetCreateInfo());
@@ -104,9 +110,10 @@ namespace World {
 
         g_weatherBoardMeshBuffer.GetGLMeshBuffer().ReleaseBuffers();
         g_weatherBoardMeshBuffer.GetGLMeshBuffer().UpdateBuffers(vertices, indices);
+    }
 
-
-
+    void ResetWeatherboardMeshBuffer() {
+        g_weatherBoardMeshBuffer.Reset();
     }
 
     MeshBuffer& GetHouseMeshBuffer() {

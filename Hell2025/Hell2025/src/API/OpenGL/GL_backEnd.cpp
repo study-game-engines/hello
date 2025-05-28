@@ -14,6 +14,7 @@
 #include "Renderer/Renderer.h"
 
 namespace OpenGLBackEnd {
+    float g_depthClearValue = 1.0f;
 
     // PBO texture loading
     const size_t MAX_TEXTURE_WIDTH = 4096;
@@ -363,6 +364,13 @@ namespace OpenGLBackEnd {
         g_bindlessTextureIDs.reserve(AssetManager::GetTextureCount());
         for (int i = 0; i < AssetManager::GetTextureCount(); i++) {
             g_bindlessTextureIDs.push_back(AssetManager::GetTextureByIndex(i)->GetGLTexture().GetBindlessID());
+        }
+    }
+
+    void SetDepthClearValue(float value) {
+        if (g_depthClearValue != value) {
+            g_depthClearValue = value;
+            glClearDepth(g_depthClearValue);
         }
     }
 

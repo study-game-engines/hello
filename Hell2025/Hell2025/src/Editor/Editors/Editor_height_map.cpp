@@ -4,7 +4,6 @@
 #include "Core/JSON.h"
 #include "Editor/Gizmo.h"
 #include "Input/Input.h"
-#include "ImGui/EditorImgui.h"
 #include "Renderer/Renderer.h"
 #include "World/MapManager.h"
 #include "World/SectorManager.h"
@@ -235,12 +234,8 @@ namespace Editor {
         std::string sectorName = "TestSector";
         SectorCreateInfo* sectorCreateInfo = SectorManager::GetSectorCreateInfoByName(sectorName);
         if (sectorCreateInfo) {
-            World::LoadSingleSector(sectorCreateInfo);
+            World::LoadSingleSector(sectorCreateInfo, true);
         }
-
-        //World::LoadSingleSector(sectorCreateInfo);
-        //MapCreateInfo* mapCreateInfo = MapManager::GetHeightMapEditorMapCreateInfo();
-        //World::LoadMap(mapCreateInfo);
 
         ReconfigureHeightMapEditorImGuiElements();
     }

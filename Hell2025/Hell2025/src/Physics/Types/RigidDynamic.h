@@ -1,4 +1,5 @@
 #pragma once
+#include "HellTypes.h"
 #include "Math/AABB.h"
 #include "PhysX/include/PxShape.h"
 #include "PhysX/include/PxRigidDynamic.h"
@@ -11,7 +12,10 @@ struct RigidDynamic {
     void DeactivatePhysics();
     void SetPxRigidDynamic(PxRigidDynamic* rigidDynamic);
     void SetPxShape(PxShape* shape);
+    void SetFilterData(PhysicsFilterData filterData);
     void MarkForRemoval();
+    void UpdateMassAndInertia(float density);
+    float GetVolume();
 
     bool HasActivePhysics()                 { return m_activePhysics; }
     bool IsMarkedForRemoval()               { return m_markedForRemoval; }

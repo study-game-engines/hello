@@ -13,6 +13,7 @@ namespace Game {
     float GetTotalTime();
     void RespawnPlayers();
 
+    Player* GetPlayerByPlayerId(uint64_t playerId);
     Player* GetLocalPlayerByIndex(uint32_t index);
     void SetPlayerKeyboardAndMouseIndex(int playerIndex, int keyboardIndex, int mouseIndex);
     void NextSplitScreenMode();

@@ -80,6 +80,5 @@ void main() {
     NormalOut = vec4(normal, 1.0);   
     RMAOut = vec4(rma, 1.0);
     WorldPositionOut = vec4(WorldPos.rgb, 1.0);
-
     EmissiveOut = vec4(EmissiveColor, 0);
 }

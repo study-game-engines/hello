@@ -107,7 +107,7 @@ namespace EditorUI {
         bool GetState();
 
     private:
-        std::string m_text;
+        std::string m_text = "";
         uint32_t m_selectionState = 0;
     };
 
@@ -118,8 +118,8 @@ namespace EditorUI {
         glm::vec3 GetValue();
 
     private:
-        std::string m_text;
-        glm::vec3 m_value;
+        std::string m_text = "";
+        glm::vec3 m_value = glm::vec3(0.0f);
     };
 
     struct IntegerInput {
@@ -130,7 +130,7 @@ namespace EditorUI {
         int32_t GetValue();
 
     private:
-        std::string m_text;
+        std::string m_text = "";
         int32_t m_value = 0;
         int32_t m_min = 0;
         int32_t m_max = 1;

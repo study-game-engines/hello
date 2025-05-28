@@ -9,12 +9,15 @@
 #include "Input/Input.h"
 #include "Viewport/ViewportManager.h"
 #include "Ocean/Ocean.h"
+#include "UniqueID.h"
 
 // Get me out of here
 #include "World/World.h"
 // Get me out of here
 
 void Player::Init(glm::vec3 position, glm::vec3 rotation, int32_t viewportIndex) {
+    m_playerId = UniqueID::GetNext();
+
     m_position = position;
     m_camera.SetPosition(m_position + glm::vec3(0.0f, m_viewHeightStanding, 0.0f));
     m_camera.SetEulerRotation(rotation);
@@ -31,8 +34,10 @@ void Player::Init(glm::vec3 position, glm::vec3 rotation, int32_t viewportIndex)
     createInfo.billboard = true;
     createInfo.renderingEnabled = false;
     m_muzzleFlash.Init(createInfo);
-    
+
     CreateCharacterController(m_position);
+    InitCharacterModel();
+    InitRagdoll();
 }
 
 void Player::BeginFrame() {
@@ -98,12 +103,21 @@ void Player::Update(float deltaTime) {
     UpdateFlashlightFrustum();
     UpdatePlayingPiano(deltaTime);
 
+    UpdateCharacterModelHacks();
+
     if (m_infoTextTimer > 0) {
         m_infoTextTimer -= deltaTime;
     }
     else {
         m_infoTextTimer = 0;
         m_infoText = "";
+    }
+
+    if (IsAlive()) {
+        m_timeSinceDeath = 0.0f;
+    }
+    else {
+        m_timeSinceDeath += deltaTime;
     }
 }
 
@@ -116,9 +130,15 @@ void Player::Respawn() {
     //viewWeapon->SetSkinnedModel("Knife");
     //viewWeapon->PlayAndLoopAnimation("Knife_Idle");
 
+    m_alive = true;
 
     if (m_viewportIndex == 0) {
-        SetFootPosition(glm::vec3(17.0f, 30.25f, 41.5f));
+        SetFootPosition(glm::vec3(17.0f, 30.6f, 41.5f));
+        SetFootPosition(glm::vec3(27.0f, 30.6f, 36.5f));
+    }
+    if (m_viewportIndex == 1) {
+        SetFootPosition(glm::vec3(12.5f, 30.6f, 45.5f));
+        m_camera.SetEulerRotation(glm::vec3(0, 0, 0));
     }
 
     m_weaponStates.clear();
@@ -227,16 +247,10 @@ Camera& Player::GetCamera() {
 
 AnimatedGameObject* Player::GetCharacterModelAnimatedGameObject() {
     return &m_characterModelAnimatedGameObject;
-    //return World::GetAnimatedGameObjectByIndex(m_characterModelAnimatedGameObjectIndex);
 }
 
 AnimatedGameObject* Player::GetViewWeaponAnimatedGameObject() {
     return &m_viewWeaponAnimatedGameObject;
-    //return World::GetAnimatedGameObjectByIndex(m_viewWeaponAnimatedGameObjectIndex);
-}
-
-bool Player::IsDead() {
-    return false;
 }
 
 bool Player::ViewportIsVisible() {
@@ -283,9 +297,62 @@ void Player::DisplayInfoText(const std::string& text) {
 void Player::UpdateAnimatedGameObjects(float deltaTime) {
     m_viewWeaponAnimatedGameObject.Update(deltaTime);
     m_characterModelAnimatedGameObject.Update(deltaTime);
+
+    m_viewWeaponAnimatedGameObject.m_exclusiveViewportIndex = m_viewportIndex;
+    m_characterModelAnimatedGameObject.m_ignoredViewportIndex = m_viewportIndex;
 }
 
 const float Player::GetFov() {
     return m_cameraZoom;
+}
+
+void Player::Kill() {
+    m_alive = false;
+    m_characterModelAnimatedGameObject.SetAnimationModeToRagdoll();
+    Audio::PlayAudio("Death0.wav", 1.0f);
+}
+
+glm::vec3 Player::GetViewportColorTint() {
+    glm::vec3 color = glm::vec3(1, 1, 1);
+
+    if (IsDead()) {
+        color.r = 2.0;
+        color.g = 0.2f;
+        color.b = 0.2f;
+
+        float waitTime = 3;
+        if (m_timeSinceDeath > waitTime) {
+            float val = (m_timeSinceDeath - waitTime) * 10;
+            color.r -= val;
+        }
+    }
+
+    if (m_viewportIndex == 0) {
+        std::cout << color << "\n";
+    }
+
+    return color;
+}
+
+bool Player::RespawnAllowed() {
+    return IsDead() && m_timeSinceDeath > 3.25f;
+}
+
+
+float Player::GetViewportContrast() {
+    if (IsAlive()) {
+        return 1.0f;
+    }
+    else {
+        return 1.1f;
+    }
+}
+
+Ragdoll* Player::GetRagdoll() {
+    return Physics::GetRagdollById(m_characterModelAnimatedGameObject.GetRagdollId());
+}
+
+uint64_t Player::GetRadollId() {
+    return m_characterModelAnimatedGameObject.GetRagdollId();
 }
 

@@ -1,6 +1,7 @@
 #include "Shark.h"
 #include "Renderer/Renderer.h"
 #include "Input/Input.h"
+#include "Math/LineMath.hpp"
 #include "World/World.h"
 
 std::vector<glm::vec3> GetCirclePoints(const glm::vec3& center, int segments, float radius) {
@@ -21,9 +22,9 @@ std::vector<glm::vec3> GetCirclePoints(const glm::vec3& center, int segments, fl
 
 void Shark::Init() {
     //glm::vec3 initialPosition = glm::vec3(38.0f, 11.48f, 24.0f);
-    glm::vec3 initialPosition = glm::vec3(27.0f, 9.05f, 22.0f);
+    glm::vec3 initialPosition = glm::vec3(5.0f, 29.05f, 40.0f);
 
-    g_animatedGameObjectObjectId = World:: CreateAnimatedGameObject();
+    g_animatedGameObjectObjectId = World::CreateAnimatedGameObject();
 
     AnimatedGameObject* animatedGameObject = GetAnimatedGameObject();
     animatedGameObject->SetSkinnedModel("Shark");
@@ -31,6 +32,8 @@ void Shark::Init() {
     animatedGameObject->SetAllMeshMaterials("Shark");
     animatedGameObject->PlayAndLoopAnimation("Shark_Swim", 1.0f);
     animatedGameObject->SetScale(0.01);
+    animatedGameObject->SetPosition(glm::vec3(0, 0, 0));
+    animatedGameObject->SetRagdoll("Shark", 1500.0f);
 
     SkinnedModel* skinnedModel = animatedGameObject->m_skinnedModel;
     std::vector<Node>& nodes = skinnedModel->m_nodes;
@@ -119,43 +122,50 @@ void Shark::Init() {
 
     SetPosition(initialPosition);
 
+
+    //Ragdoll* ragdoll = Physics::GetRagdollById(m_ragdollId);
+    //if (ragdoll) {
+    //    GetAnimatedGameObject()->PrintBoneNames();
+    //    ragdoll->PrintCorrespondingBoneNames();
+    //}
+
 }
 
 void Shark::Update(float deltaTime) {
 
-    if (false) {
-    // Shark path test
-        glm::vec3 center(23.0f, 10.0f, 31.0f);
-        float radius = 4.0f;
-        int segments = 20;
-        auto sharkPath = GetCirclePoints(center, segments, radius);
-        for (glm::vec3 point : sharkPath) {
-            Renderer::DrawPoint(point, RED);
+    if (Input::KeyPressed(HELL_KEY_SLASH)) {
+        if (m_movementState == SharkMovementState::FOLLOWING_PATH) {
+            m_movementState = SharkMovementState::ARROW_KEYS;
         }
-        Renderer::DrawPoint(center, WHITE);
-        // Shark path test
+        else {
+            m_movementState = SharkMovementState::FOLLOWING_PATH;
+            m_nextPathPointIndex = 0;
+        }
     }
 
+    if (true) {
+        // Shark path test
+        glm::vec3 center(10.0f, 30.0f, 57.0f);
+        float radius = 9;
+        int segments = 9;
 
-
-
-
-
+        m_path = GetCirclePoints(center, segments, radius);
+        float i = 0;
+        for (glm::vec3 point : m_path) {
+            float r = i / m_path.size();
+            //Renderer::DrawPoint(point, glm::vec3(r, 0, 0));
+            i++;
+        }
+        //Renderer::DrawPoint(center, WHITE);
+    }
 
     // Put these somewhere better!
     m_right = glm::cross(m_forward, glm::vec3(0, 1, 0));
     m_left = -m_right;
 
-
-
-    // Move this somewhere
-    //animatedGameObject->SetPosition(initialPosition);
-
     glm::mat4 rootTranslationMatrix = glm::translate(glm::mat4(1), m_spinePositions[3]);
-    //glm::mat4 rootRotationMatrix = Util::GetRotationMat4FromForwardVector(m_forward);
 
-
-      // Root to the end of the spine
+    // Root to the end of the spine
     float rot0 = Util::YRotationBetweenTwoPoints(m_spinePositions[3], m_spinePositions[2]) + HELL_PI * 0.5f;
     float rot1 = Util::YRotationBetweenTwoPoints(m_spinePositions[4], m_spinePositions[3]) + HELL_PI * 0.5f;
     float rot2 = Util::YRotationBetweenTwoPoints(m_spinePositions[5], m_spinePositions[4]) + HELL_PI * 0.5f;
@@ -190,7 +200,6 @@ void Shark::Update(float deltaTime) {
     additiveBoneTransforms["BN_Neck_01"] = glm::rotate(glm::mat4(1.0f), rot9 - rot8, glm::vec3(0, 1, 0));
     additiveBoneTransforms["BN_Head_00"] = glm::rotate(glm::mat4(1.0f), rot10 - rot9, glm::vec3(0, 1, 0));
 
-
     // Update animation
     AnimatedGameObject* animatedGameObject = GetAnimatedGameObject();
     if (animatedGameObject) {
@@ -198,9 +207,20 @@ void Shark::Update(float deltaTime) {
         animatedGameObject->UpdateRenderItems();
     }
 
-    if (Input::KeyDown(HELL_KEY_UP)) {
-        CalculateForwardVectorFromArrowKeys(deltaTime);
-        std::cout << "Shark forward: " << m_forward << "\n";
+    // Arrow key movement
+    if (m_movementState == SharkMovementState::ARROW_KEYS) {
+        if (Input::KeyDown(HELL_KEY_UP)) {
+            CalculateForwardVectorFromArrowKeys(deltaTime);
+
+            for (int i = 0; i < m_logicSubStepCount; i++) {
+                MoveShark(deltaTime);
+            }
+        }
+    }
+    // Path following
+    else if (m_movementState == SharkMovementState::FOLLOWING_PATH) {
+        CalculateForwardVectorFromTarget(deltaTime);
+        CalculateTargetFromPath();
 
         for (int i = 0; i < m_logicSubStepCount; i++) {
             MoveShark(deltaTime);
@@ -223,6 +243,24 @@ void Shark::SetPosition(glm::vec3 position) {
     m_forward = glm::vec3(0, 0, 1);
 }
 
+void Shark::CalculateTargetFromPath() {
+    AnimatedGameObject* animatedGameObject = GetAnimatedGameObject();
+    if (m_nextPathPointIndex >= m_path.size()) {
+        m_nextPathPointIndex = 0;
+    }
+    glm::vec3 nextPathPoint = m_path[m_nextPathPointIndex];
+    // Are you actually at the next point?
+    float nextPointThreshold = 1.0f;
+    if (GetDistanceToTarget2D() < nextPointThreshold) {
+        m_nextPathPointIndex++;
+        nextPathPoint = m_path[m_nextPathPointIndex];
+    }
+    glm::vec3 dirToNextPathPoint = glm::normalize(GetHeadPosition2D() - nextPathPoint);
+    m_targetPosition = nextPathPoint;
+
+    //std::cout << "m_nextPathPointIndex: " << m_nextPathPointIndex << "\n";
+    //std::cout << "m_path.size(): " << m_path.size() << "\n";
+}
 
 void Shark::MoveShark(float deltaTime) {
 
@@ -238,6 +276,28 @@ void Shark::MoveShark(float deltaTime) {
     }
 }
 
+void Shark::CalculateForwardVectorFromTarget(float deltaTime) {
+    // Calculate angular difference from forward to target
+    glm::vec3 directionToTarget = glm::normalize(GetTargetPosition2D() - GetHeadPosition2D());
+    float dotProduct = glm::clamp(glm::dot(m_forward, directionToTarget), -1.0f, 1.0f);
+    float angleDifference = glm::degrees(std::acos(dotProduct));
+    if (m_forward.x * directionToTarget.z - m_forward.z * directionToTarget.x < 0.0f) {
+        angleDifference = -angleDifference;
+    }
+    // Clamp it to a max of 4.5 degrees rotation
+    float maxRotation = 4.5f;
+    angleDifference = glm::clamp(angleDifference, -maxRotation, maxRotation);
+    // Calculate new forward vector based on that angle
+    if (TargetIsOnLeft(m_targetPosition)) {
+        float blendFactor = glm::clamp(glm::abs(-angleDifference) / 90.0f, 0.0f, 1.0f);
+        m_forward = glm::normalize(glm::mix(m_forward, m_left, blendFactor));
+    }
+    else {
+        float blendFactor = glm::clamp(glm::abs(angleDifference) / 90.0f, 0.0f, 1.0f);
+        m_forward = glm::normalize(glm::mix(m_forward, m_right, blendFactor));
+    }
+}
+
 void Shark::CalculateForwardVectorFromArrowKeys(float deltaTime) {
     float maxRotation = 5.0f;
     if (Input::KeyDown(HELL_KEY_LEFT)) {
@@ -250,6 +310,43 @@ void Shark::CalculateForwardVectorFromArrowKeys(float deltaTime) {
         m_forward = glm::normalize(glm::mix(m_forward, m_right, blendFactor));
         std::cout << "PRESSED RIGHT\n";
     }
+}
+
+glm::vec3 Shark::GetForwardVector() {
+    return m_forward;
+}
+
+glm::vec3 Shark::GetTargetPosition2D() {
+    return m_targetPosition * glm::vec3(1.0f, 0.0f, 1.0f);
+}
+
+glm::vec3 Shark::GetHeadPosition2D() {
+    return m_spinePositions[0] * glm::vec3(1.0f, 0.0f, 1.0f);
+}
+
+glm::vec3 Shark::GetCollisionLineEnd() {
+    return GetCollisionSphereFrontPosition() + (GetForwardVector() * GetTurningRadius());
+}
+
+glm::vec3 Shark::GetCollisionSphereFrontPosition() {
+    return GetHeadPosition2D() + GetForwardVector() * glm::vec3(COLLISION_SPHERE_RADIUS);
+}
+
+float Shark::GetTurningRadius() const {
+    float turningRadius = m_swimSpeed / m_rotationSpeed;
+    return turningRadius;
+}
+
+bool Shark::TargetIsOnLeft(glm::vec3 targetPosition) {
+    glm::vec3 lineStart = GetHeadPosition2D();
+    glm::vec3 lineEnd = GetCollisionLineEnd();
+    glm::vec3 lineNormal = LineMath::GetLineNormal(lineStart, lineEnd);
+    glm::vec3 midPoint = LineMath::GetLineMidPoint(lineStart, lineEnd);
+    return LineMath::IsPointOnOtherSideOfLine(lineStart, lineEnd, lineNormal, targetPosition);
+}
+
+float Shark::GetDistanceToTarget2D() {
+    return glm::distance(GetHeadPosition2D() * glm::vec3(1, 0, 1), m_targetPosition * glm::vec3(1, 0, 1));
 }
 
 /*

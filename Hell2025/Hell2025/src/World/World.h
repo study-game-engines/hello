@@ -10,6 +10,7 @@
 #include "Types/Game/GameObject.h"
 #include "Types/Game/Light.h"
 #include "Types/Game/PickUp.h"
+#include "Types/Effects/VolumetricBloodSplatter.h"
 #include "Types/House/Door.h"
 #include "Types/House/Plane.h"
 #include "Types/House/Wall.h"
@@ -35,6 +36,7 @@ namespace World {
 
     void Init();
     void BeginFrame();
+    void EndFrame();
     void Update(float deltaTime);
 
     void SubmitRenderItems();
@@ -42,12 +44,10 @@ namespace World {
     void LoadMap(const std::string& mapName);
     void LoadMap(MapCreateInfo* mapCreateInfo);
 
-    void LoadSingleSector(SectorCreateInfo* sectorCreateInfo);
+    void LoadSingleSector(SectorCreateInfo* sectorCreateInfo, bool loadHouses);
     void LoadSingleHouse(HouseCreateInfo* houseCreateInfo);
     
     void LoadDeathMatchMap();
-
-    void SetObjectsToInitalState(); // currently empty
 
     void ResetWorld();
     void LoadEmptyWorld();
@@ -61,7 +61,6 @@ namespace World {
 
     void AddBullet(BulletCreateInfo createInfo);
     void AddDoor(DoorCreateInfo createInfo, SpawnOffset spawnOffset = SpawnOffset());
-    void AddDoorBasic(BasicDoorCreateInfo createInfo);
     void AddBulletCasing(BulletCasingCreateInfo createInfo, SpawnOffset spawnOffset = SpawnOffset());
     void AddDecal(const DecalCreateInfo& createInfo);
     void AddHousePlane(PlaneCreateInfo createInfo, SpawnOffset spawnOffset);
@@ -73,6 +72,7 @@ namespace World {
     void AddPictureFrame(PictureFrameCreateInfo createInfo, SpawnOffset spawnOffset = SpawnOffset());
     void AddTree(TreeCreateInfo createInfo, SpawnOffset spawnOffset = SpawnOffset());
     uint64_t AddWall(WallCreateInfo createInfo, SpawnOffset spawnOffset = SpawnOffset());
+    void AddVolumetricBlood(glm::vec3 position, glm::vec3 front);
     void AddWindow(WindowCreateInfo createInfo, SpawnOffset spawnOffset);
 
     void AddHouse(HouseCreateInfo houseCreateInfo, SpawnOffset spawnOffset);
@@ -81,17 +81,20 @@ namespace World {
     void DisableOcean();
     bool HasOcean();
 
+    // Logic
+    void ProcessBullets();
+
+    // Saving
+    SectorCreateInfo CreateSectorInfoFromWorldObjects();
+    void SaveSector(SectorCreateInfo sectorCreateInfo);
+
     // Creation
     void CreateGameObject();
     uint64_t CreateAnimatedGameObject();
 
-
-    // Getters
-
     // Removal
     void SetObjectPosition(uint64_t objectID, glm::vec3 position);
     void RemoveObject(uint64_t objectID);
-    //void RemoveAnyObjectMarkedForRemoval();
     
     // BVH
     void UpdatePlayerBvhs();
@@ -108,6 +111,7 @@ namespace World {
     void PrintMapCreateInfoDebugInfo();
 
     void UpdateDoorAndWindowCubeTransforms();
+    void ResetWeatherboardMeshBuffer();
 
     // Util
     bool ObjectTypeIsInteractable(ObjectType objectType, uint64_t objectId, glm::vec3 playerCameraPosition, glm::vec3 rayHitPosition);
@@ -133,17 +137,16 @@ namespace World {
     Piano* GetPianoByMeshNodeObjectId(uint64_t objectId);
     PianoKey* GetPianoKeyByObjectId(uint64_t objectId);
     PickUp* GetPickUpByObjectId(uint64_t objectID);
+    PictureFrame* GetPictureFrameByObjectId(uint64_t objectId);
     Plane* GetPlaneByObjectId(uint64_t objectID); 
     Tree* GetTreeByObjectId(uint64_t objectId);
     Wall* GetWallByObjectId(uint64_t objectID);
     Wall* GetWallByWallSegmentObjectId(uint64_t objectID);
     Window* GetWindowByObjectId(uint64_t objectId);
-
     GameObject* GetGameObjectByIndex(int32_t index);
     GameObject* GetGameObjectByName(const std::string& name);
     Light* GetLightByIndex(int32_t index);
     PickUp* GetPickUpByIndex(int32_t index);
-    //Piano* GetPianos(int32_t index);
     Tree* GetTreeByIndex(int32_t index);
 
     size_t GetLightCount();
@@ -166,6 +169,7 @@ namespace World {
     std::vector<Shark>& GetSharks();
     std::vector<Tree>& GetTrees();
     std::vector<Wall>& GetWalls();
+    std::vector<VolumetricBloodSplatter>& GetVolumetricBloodSplatters();
     std::vector<Window>& GetWindows();
 
     //std::vector<RenderItem>& GetRenderItems();

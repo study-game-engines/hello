@@ -12,6 +12,7 @@ struct Door {
     void SubmitRenderItems();
     void Interact();
 
+    const bool MovedThisFrame() const                       { return m_movedThisFrame; }
     const uint64_t GetObjectId() const                      { return m_objectId; }
     const uint64_t GetFrameObjectId() const                 { return m_frameObjectId; }
     const glm::vec3& GetPosition() const                    { return m_position; }
@@ -27,6 +28,8 @@ struct Door {
 
 private:
     DoorCreateInfo m_createInfo;
+    bool m_movedThisFrame = true;
+    uint64_t m_lifeTime = 0;
     uint64_t m_objectId = 0;
     uint64_t m_frameObjectId = 0;
     uint64_t m_physicsId = 0;

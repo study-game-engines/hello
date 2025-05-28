@@ -21,6 +21,20 @@ struct JointWorldMatrix {
     glm::mat4 worldMatrix;
 };
 
+struct AnimatedTransforms {
+    std::vector<glm::mat4> local;
+    std::vector<glm::mat4> worldspace;
+
+    void Resize(int size) {
+        local.resize(size);
+        worldspace.resize(size);
+    }
+
+    const size_t GetSize() {
+        return local.size();
+    }
+};
+
 struct AnimatedGameObject {
 
     enum class AnimationMode { BINDPOSE, ANIMATION, RAGDOLL };
@@ -30,9 +44,6 @@ private:
 
 public:
     void Init();
-
-
-
 
     std::unordered_map<std::string, unsigned int> m_boneMapping;
 
@@ -64,6 +75,7 @@ public:
     void PlayAndLoopAnimation(const std::string& animationName, float speed);
 	void PlayAndLoopAnimation(const std::string& animationName, const AnimationPlaybackParams& playbackParams = AnimationPlaybackParams());
     void SetAnimationModeToBindPose();
+    void SetAnimationModeToRagdoll();
     void SetMeshMaterialByMeshName(const std::string& meshName, const std::string& materialName);
     void SetMeshMaterialByMeshIndex(int meshIndex, const std::string& materialName);
     void SetMeshToRenderAsGlassByMeshIndex(const std::string& materialName);
@@ -75,6 +87,10 @@ public:
     void SetMeshEmissiveColorTextureByMeshName(const std::string& meshName, const std::string& textureName);
 	void SetAllMeshMaterials(const std::string& materialName);
 
+    // Ragdoll
+    void SetRagdoll(const std::string& ragdollName, float ragdollTotalWeight);
+
+    void CleanUp();
 
 	std::string GetName();
 	const glm::mat4 GetModelMatrix();
@@ -124,12 +140,16 @@ public:
     int GetBaseTransfromIndex() {
         return baseTransformIndex;
     }
-
-    const uint64_t& GetObjectId() const { return m_objectId; };
+    ;
+    const uint64_t& GetObjectId() const     { return m_objectId; };
+    const uint64_t& GetRagdollId() const    { return m_ragdollId; }
 
 private:
 
     uint64_t m_objectId = 0;
+    uint64_t m_ragdollId = 0;
+
+    void UpdateBoneTransformsFromRagdoll();
 
     float GetBlendFactor();
 

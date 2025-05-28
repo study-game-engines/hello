@@ -24,16 +24,16 @@ void Player::CreateCharacterController(glm::vec3 position) {
     m_characterController->getActor()->getShapes(&shape, 1);
 
     PxFilterData filterData;
-    filterData.word0 = RaycastGroup::RAYCAST_DISABLED;
+    filterData.word0 = RaycastGroup::RAYCAST_ENABLED;
     filterData.word1 = CollisionGroup::PLAYER;
-    filterData.word2 = CollisionGroup(ITEM_PICK_UP | ENVIROMENT_OBSTACLE | SHARK);
+    filterData.word2 = CollisionGroup(ITEM_PICK_UP | ENVIROMENT_OBSTACLE | RAGDOLL_ENEMY);
     shape->setQueryFilterData(filterData);
 }
 
 void Player::MoveCharacterController(glm::vec3 displacement) {
     PxFilterData filterData;
     filterData.word0 = 0;
-    filterData.word1 = CollisionGroup::ENVIROMENT_OBSTACLE | CollisionGroup::ENVIROMENT_OBSTACLE_NO_DOG | CollisionGroup::SHARK;	// Things to collide with
+    filterData.word1 = CollisionGroup::ENVIROMENT_OBSTACLE | CollisionGroup::ENVIROMENT_OBSTACLE_NO_DOG | CollisionGroup::RAGDOLL_ENEMY;	// Things to collide with
     PxControllerFilters data;
     data.mFilterData = &filterData;
     PxF32 minDist = 0.001f;

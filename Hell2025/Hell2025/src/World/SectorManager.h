@@ -3,7 +3,7 @@
 
 namespace SectorManager {
 
-    void Init();
+    void LoadSectorsFromDisk();
     void NewSector(const std::string& name);
     void UpdateSectorFromDisk(const std::string& filename);
     //void LoadSector();

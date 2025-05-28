@@ -1,6 +1,7 @@
 #include "Player.h"
 #include "Audio/Audio.h"
 #include "Config/Config.h"
+#include "Renderer/RenderDataManager.h"
 #include "Viewport/ViewportManager.h"
 #include "Util.h"
 
@@ -67,12 +68,19 @@ void Player::UpdateFlashlight(float deltaTime) {
 
     m_flashlightPosition = flashlightPositionTarget;
 
+    float aspectRatio = 1.0f;
+    //if (RenderDataManager::GetViewportData().size()) {
+    //    float viewportWidth = RenderDataManager::GetViewportData()[m_viewportIndex].width;
+    //    float viewportHeight = RenderDataManager::GetViewportData()[m_viewportIndex].height;
+    //    aspectRatio = viewportWidth / viewportHeight;
+    //}
+
     // Projection view matrix
-    float lightRadius = 50.0f;
+    float lightRadius = 20.0f;
     float outerAngle = glm::radians(30.0f);
     glm::vec3 flashlightTargetPosition = m_flashlightPosition + m_flashlightDirection;
     glm::mat4 flashlightViewMatrix = glm::lookAt(m_flashlightPosition, flashlightTargetPosition, GetCameraUp());
-    glm::mat4 spotlightProjection = glm::perspectiveZO(outerAngle * 2, 1.0f, 0.05f, lightRadius);
+    glm::mat4 spotlightProjection = glm::perspective(outerAngle * 2, aspectRatio, 0.05f, lightRadius);
     m_flashlightProjectionView = spotlightProjection * flashlightViewMatrix;
 
     // Prevent NAN bugs

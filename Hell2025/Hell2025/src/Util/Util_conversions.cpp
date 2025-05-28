@@ -95,6 +95,8 @@ namespace Util {
             case ObjectType::PIANO_SHEET_MUSIC_REST:        return "PIANO_SHEET_MUSIC_REST";
             case ObjectType::PIANO_SHEET_SUSTAIN_PEDAL:     return "PIANO_SHEET_SUSTAIN_PEDAL";
             case ObjectType::PICTURE_FRAME:                 return "PICTURE_FRAME";
+            case ObjectType::RAGDOLL_ENEMY:                 return "RAGDOLL_ENEMY";
+            case ObjectType::RAGDOLL_PLAYER:                return "RAGDOLL_PLAYER";
             case ObjectType::TREE:                          return "TREE";
             case ObjectType::UNDEFINED:                     return "UNDEFINED";
             case ObjectType::WALL:                          return "WALL";
@@ -116,13 +118,14 @@ namespace Util {
 
     std::string PhysicsTypeToString(PhysicsType type) {
         switch (type) {
-            case PhysicsType::NONE:             return "NONE";
-            case PhysicsType::RIGID_DYNAMIC:    return "RIGID_DYNAMIC";
-            case PhysicsType::RIGID_STATIC:     return "RIGID_STATIC";
-            case PhysicsType::HEIGHT_FIELD:     return "HEIGHT_FIELD";
-            case PhysicsType::GROUND_PLANE:     return "GROUND_PLANE";
-            case PhysicsType::UNDEFINED:        return "UNDEFINED";
-            default:                            return "UNKNOWN";
+            case PhysicsType::NONE:                     return "NONE";
+            case PhysicsType::CHARACTER_CONTROLLER:     return "CHARACTER_CONTROLLER";
+            case PhysicsType::RIGID_DYNAMIC:            return "RIGID_DYNAMIC";
+            case PhysicsType::RIGID_STATIC:             return "RIGID_STATIC";
+            case PhysicsType::HEIGHT_FIELD:             return "HEIGHT_FIELD";
+            case PhysicsType::GROUND_PLANE:             return "GROUND_PLANE";
+            case PhysicsType::UNDEFINED:                return "UNDEFINED";
+            default:                                    return "UNKNOWN";
         }
     }
 
@@ -210,6 +213,7 @@ namespace Util {
             case RAYTRACE_LAND:                                         return "RAYTRACE_LAND";
             case PHYSX_EDITOR:                                          return "PHYSX_EDITOR";
             case BOUNDING_BOXES:                                        return "BOUNDING_BOXES";
+            case RAGDOLLS:                                              return "RAGDOLLS";
             case RTX_LAND_AABBS:                                        return "RTX_LAND_AABBS";
             case RTX_LAND_TRIS:                                         return "RTX_LAND_TRIS";
             case RTX_LAND_TOP_LEVEL_ACCELERATION_STRUCTURE:             return "RTX_LAND_TOP_LEVEL_ACCELERATION_STRUCTURE";
@@ -249,17 +253,23 @@ namespace Util {
 
     std::string EditorStateToString(const EditorState& editorState) {
         switch (editorState) {
-            case EditorState::IDLE:                             return "IDLE";
-            case EditorState::RESIZING_HORIZONTAL:              return "RESIZING_HORIZONTAL";
-            case EditorState::RESIZING_VERTICAL:                return "RESIZING_VERTICAL";
-            case EditorState::RESIZING_HORIZONTAL_VERTICAL:     return "RESIZING_HORIZONTAL_VERTICAL";
-            case EditorState::GIZMO_TRANSLATING:                return "GIZMO_TRANSLATING";
-            case EditorState::GIZMO_SCALING:                    return "GIZMO_SCALING";
-            case EditorState::GIZMO_ROTATING:                   return "GIZMO_ROTATING";
-            case EditorState::DRAGGING_SELECT_RECT:             return "DRAGGING_SELECT_RECT";
-            default:                                            return "UNDEFINED";
+            case EditorState::IDLE:                         return "IDLE";
+            case EditorState::RESIZING_HORIZONTAL:          return "RESIZING_HORIZONTAL";
+            case EditorState::RESIZING_VERTICAL:            return "RESIZING_VERTICAL";
+            case EditorState::RESIZING_HORIZONTAL_VERTICAL: return "RESIZING_HORIZONTAL_VERTICAL";
+            case EditorState::GIZMO_TRANSLATING:            return "GIZMO_TRANSLATING";
+            case EditorState::GIZMO_SCALING:                return "GIZMO_SCALING";
+            case EditorState::GIZMO_ROTATING:               return "GIZMO_ROTATING";
+            case EditorState::DRAGGING_SELECT_RECT:         return "DRAGGING_SELECT_RECT";
+            case EditorState::DOOR_PLACEMENT:               return "DOOR_PLACEMENT";
+            case EditorState::PICTURE_FRAME_PLACEMENT:      return "PICTURE_FRAME_PLACEMENT";
+            case EditorState::TREE_PLACEMENT:               return "TREE_PLACEMENT";
+            case EditorState::WALL_PLACEMENT:               return "WALL_PLACEMENT";
+            case EditorState::WINDOW_PLACEMENT:             return "WINDOW_PLACEMENT";
+            default:                                        return "UNDEFINED";
         }
     }
+
 
     ObjectType IntToEnum(int value) {
         return static_cast<ObjectType>(value);

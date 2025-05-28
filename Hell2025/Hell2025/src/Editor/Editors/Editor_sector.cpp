@@ -5,7 +5,6 @@
 #include "Audio/Audio.h"
 #include "Core/JSON.h"
 #include "Editor/Gizmo.h"
-#include "ImGui/EditorImgui.h"
 #include "Renderer/Renderer.h"
 #include "World/HeightMapManager.h"
 #include "World/SectorManager.h"
@@ -35,9 +34,6 @@ namespace Editor {
         EditorUI::OpenFileWindow openFileWindow;
     } g_sectorEditorImguiElements;
 
-
-    std::string g_sectorName = "TestSector";
-
     void InitSectorEditorFileMenu();
     void InitSectorEditorPropertiesElements();
     void ReconfigureSectorEditorImGuiElements();
@@ -53,7 +49,7 @@ namespace Editor {
         EditorUI::FileMenuNode& file = elements.fileMenu.AddMenuNode("File", nullptr);
         file.AddChild("New", []() { ShowNewSectorWindow(); }, "F2");
         file.AddChild("Open", []() { ShowOpenSectorWindow(); }, "F3");
-        file.AddChild("Save", []() { Callbacks::SaveEditorSector(); }, "Ctrl+S");
+        file.AddChild("Save", []() { Callbacks::SaveSector(); }, "Ctrl+S");
         file.AddChild("Revert", nullptr);
         file.AddChild("Delete", nullptr);
         file.AddChild("Duplicate", nullptr);
@@ -70,7 +66,7 @@ namespace Editor {
         insert.AddChild("Reinsert last", []() { nullptr; }, "Ctrl T");
 
         EditorUI::FileMenuNode& nature = insert.AddChild("Nature", nullptr);
-        nature.AddChild("Tree", nullptr);
+        nature.AddChild("Tree", Callbacks::BeginAddingTree);
 
         EditorUI::FileMenuNode& pickups = insert.AddChild("Pick Ups", nullptr);
 
@@ -126,7 +122,9 @@ namespace Editor {
         elements.fileMenu.CreateImguiElements();
         elements.leftPanel.BeginImGuiElement();
 
-        SectorCreateInfo* sectorCreateInfo = SectorManager::GetSectorCreateInfoByName(g_sectorName);
+        const std::string& sectorName = GetSectorName();
+        SectorCreateInfo* sectorCreateInfo = SectorManager::GetSectorCreateInfoByName(sectorName);
+
         if (!sectorCreateInfo) return;
 
         // Renderer settings
@@ -147,7 +145,7 @@ namespace Editor {
             elements.sectorNameInput.CreateImGuiElement();
             if (elements.heightMapDropDown.CreateImGuiElements()) {
                 sectorCreateInfo->heightMapName = elements.heightMapDropDown.GetSelectedOptionText();
-                World::LoadSingleSector(sectorCreateInfo);
+                World::LoadSingleSector(sectorCreateInfo, false);
                 Renderer::RecalculateAllHeightMapData();
             }
             ImGui::Dummy(ImVec2(0.0f, 20.0f));
@@ -190,7 +188,9 @@ namespace Editor {
         RendererSettings& renderSettings = Renderer::GetCurrentRendererSettings();
         elements.drawGrass.SetState(renderSettings.drawGrass);
 
-        SectorCreateInfo* sectorCreateInfo = SectorManager::GetSectorCreateInfoByName(g_sectorName);
+        const std::string& sectorName = GetSectorName();
+        SectorCreateInfo* sectorCreateInfo = SectorManager::GetSectorCreateInfoByName(sectorName);
+
         if (!sectorCreateInfo) return;
 
         // Sector name
@@ -239,10 +239,12 @@ namespace Editor {
         }
 
         // Attempt to load last sector
-        SectorCreateInfo* sectorCreateInfo = SectorManager::GetSectorCreateInfoByName(g_sectorName);
+        const std::string& sectorName = GetSectorName();
+        SectorCreateInfo* sectorCreateInfo = SectorManager::GetSectorCreateInfoByName(sectorName);
+
+        // Load it into the world
         if (sectorCreateInfo) {
-            // Load it into the world
-            World::LoadSingleSector(sectorCreateInfo);
+            LoadSectorFromDisk(sectorName);
         }
         // If it failed, open the "Open Sector" window
         else {
@@ -253,38 +255,7 @@ namespace Editor {
         ReconfigureSectorEditorImGuiElements();
     }
 
-    // WARNING! this code is fucked and broken add duplicates everything from the world into the sector!
-    // WARNING! this code is fucked and broken add duplicates everything from the world into the sector!
-    // WARNING! this code is fucked and broken add duplicates everything from the world into the sector!
-    // WARNING! this code is fucked and broken add duplicates everything from the world into the sector!
     void UpdateSectorEditor() {
-        // Update the current SectorCreateInfo with the actual state of the objects in the world (for saving)
-        SectorCreateInfo* sectorCreateInfo = SectorManager::GetSectorCreateInfoByName(g_sectorName);
-        if (!sectorCreateInfo) return;
-
-        sectorCreateInfo->gameObjects.clear();
-        sectorCreateInfo->lights.clear();
-        sectorCreateInfo->pickUps.clear();
-        sectorCreateInfo->trees.clear();
-
-        sectorCreateInfo->gameObjects.reserve(World::GetGameObjects().size());
-        sectorCreateInfo->lights.reserve(World::GetLights().size());
-        sectorCreateInfo->pickUps.reserve(World::GetPickUps().size());
-        sectorCreateInfo->trees.reserve(World::GetTrees().size());
-
-        //for (GameObject& gameObject : World::GetGameObjects()) {
-        //    sectorCreateInfo->gameObjects.emplace_back(gameObject.GetCreateInfo());
-        //}
-        //for (Light& light : World::GetLights()) {
-        //    sectorCreateInfo->lights.emplace_back(light.GetCreateInfo());
-        //}
-        //for (PickUp& pickUp : World::GetPickUps()) {
-        //    sectorCreateInfo->pickUps.emplace_back(pickUp.GetCreateInfo());
-        //}
-        //for (Tree& tree : World::GetTrees()) {
-        //    sectorCreateInfo->trees.emplace_back(tree.GetCreateInfo());
-        //}
-
         // Draw sector perimeter
         glm::vec3 p0 = glm::vec3(0.0f, 0.0f, 0.0f);
         glm::vec3 p1 = glm::vec3(64.0f, 0.0f, 0.0f);
@@ -295,34 +266,5 @@ namespace Editor {
         Renderer::DrawLine(p2, p3, GRID_COLOR, true);
         Renderer::DrawLine(p1, p3, GRID_COLOR, true);
     }
-
-    void LoadEditorSector(const std::string& sectorName) {
-        SectorCreateInfo* sectorCreateInfo = SectorManager::GetSectorCreateInfoByName(sectorName);
-        if (!sectorCreateInfo) {
-            std::cout << "Editor::LoadEditorSector() failed, sector name '" << sectorName << "' was not found\n";
-            return;
-        }
-        g_sectorName = sectorName;
-        World::LoadSingleSector(sectorCreateInfo);
-    }
-
-    void SaveEditorSector() {
-        SectorCreateInfo* sectorCreateInfo = SectorManager::GetSectorCreateInfoByName(g_sectorName);
-        if (sectorCreateInfo) {
-            std::string filePath = "res/sectors/" + sectorCreateInfo->sectorName + ".json";
-            JSON::SaveSector(filePath, *sectorCreateInfo);
-        } 
-        else {
-            std::cout << "Editor::SaveEditorSector() failed because g_sectorName '" << g_sectorName << "' was not found\n";
-        }
-    }
-
-    const std::string& GetEditorSectorName() {
-        return g_sectorName;
-    }
-
-    SectorCreateInfo* GetEditorSectorCreateInfo() {
-        return SectorManager::GetSectorCreateInfoByName(g_sectorName);
-    }   
 }
 

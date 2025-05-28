@@ -7,7 +7,6 @@
 #include "Config/Config.h"
 #include "Audio/Audio.h"
 #include "Core/Debug.h"
-#include "Imgui/EditorImgui.h"
 #include "Imgui/ImguiBackEnd.h"
 #include "Input/Input.h"
 #include "Renderer/Renderer.h"
@@ -35,9 +34,9 @@ namespace Editor {
     ShadingMode g_shadingModes[4];
     EditorViewportSplitMode g_editorViewportSplitMode = EditorViewportSplitMode::SINGLE;
     Axis g_axisConstraint = Axis::NONE;
-
-    std::string g_currentHeightMapName = "";
-    std::string g_currentSectorName = "";
+    
+    std::string g_sectorName = "TestSector";
+    std::string g_heightMapName = "";
 
     float g_orthoCameraDistances[4];
     EditorState g_editorState;
@@ -138,6 +137,13 @@ namespace Editor {
         UpdateCameraInterpolation(deltaTime);
         Gizmo::Update();
 
+        if (GetEditorMode() == EditorMode::HOUSE_EDITOR || GetEditorMode() == EditorMode::SECTOR_EDITOR) {
+            UpdateObjectPlacement();
+        }
+        if (GetEditorState() == EditorState::IDLE) {
+            ExitObjectPlacement();
+        }
+
         switch (GetEditorMode()) {
             case EditorMode::HEIGHTMAP_EDITOR:   UpdateHeightMapEditor();   break;
             case EditorMode::HOUSE_EDITOR:       UpdateHouseEditor();   break;
@@ -187,13 +193,7 @@ namespace Editor {
             std::string filename = "TestSector";
             SectorManager::UpdateSectorFromDisk(filename);
             SectorCreateInfo* sectorCreateInfo = SectorManager::GetSectorCreateInfoByName(filename);
-            World::LoadSingleSector(sectorCreateInfo);
-
-            //std::string sectorName = "TestSector";
-            //SectorCreateInfo* sectorCreateInfo = SectorManager::GetSectorCreateInfoByName(sectorName);
-            //if (sectorCreateInfo) {
-            //    World::LoadSingleSector(sectorCreateInfo);
-            //}
+            World::LoadSingleSector(sectorCreateInfo, true);
         }
     }
 
@@ -426,12 +426,29 @@ namespace Editor {
         CloseAllSectorEditorWindows();
     }
 
-    std::string GetCurrentHeightMapName() {
-        return g_currentHeightMapName;
+    const std::string& GetSectorName() {
+        return g_sectorName;
     }
 
-    //const std::string& GetCurrentMapName() {
-    //    return g_currentMapName;
-    //}
+    const std::string& GetHeightMapName() {
+        return g_heightMapName;
+    }
 
+    void SaveSector() {
+        SectorCreateInfo createInfo = World::CreateSectorInfoFromWorldObjects();
+        createInfo.sectorName = GetSectorName();
+        createInfo.heightMapName = GetHeightMapName();
+        World::SaveSector(createInfo);
+    }
+
+    void LoadSectorFromDisk(const std::string& sectorName) {
+        SectorManager::LoadSectorsFromDisk();
+        SectorCreateInfo* sectorCreateInfo = SectorManager::GetSectorCreateInfoByName(sectorName);
+
+        if (sectorCreateInfo) {
+            g_sectorName = sectorCreateInfo->sectorName;
+            g_heightMapName = sectorCreateInfo->heightMapName;
+            World::LoadSingleSector(sectorCreateInfo, false);
+        }
+    }
 }

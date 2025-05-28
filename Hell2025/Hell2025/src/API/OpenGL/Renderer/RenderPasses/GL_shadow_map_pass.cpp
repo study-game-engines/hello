@@ -105,14 +105,28 @@ namespace OpenGLRenderer {
         shader->Bind();
         shader->SetBool("u_useInstanceData", true);
 
-        GLuint shadowMapTextureID = hiResShadowMaps->GetDepthTexture();
-        if (shadowMapTextureID != 0) {
-            float clearDepthValue = 1.0f;
-            glClearTexImage(shadowMapTextureID, 0, GL_DEPTH_COMPONENT, GL_FLOAT, &clearDepthValue);
+        //hiResShadowMaps->ClearDepthLayers(1.0f);
+
+        const std::vector<GPULight>& gpuLightsHighRes = RenderDataManager::GetGPULightsHighRes();
+
+        // Clear any shadow map that needs redrawing
+        for (int i = 0; i < gpuLightsHighRes.size(); i++) {
+            const GPULight& gpuLight = gpuLightsHighRes[i];
+            Light* light = World::GetLightByIndex(gpuLight.lightIndex);
+
+            if (light->IsDirty()) {
+                hiResShadowMaps->ClearDepthLayer(i, 1.0f);
+            }
         }
-        else {
-            std::cout << "Error: Invalid shadow map texture handle for clearing.\n";
-        }
+
+        //GLuint shadowMapTextureID = hiResShadowMaps->GetDepthTexture();
+        //if (shadowMapTextureID != 0) {
+        //    float clearDepthValue = 1.0f;
+        //    glClearTexImage(shadowMapTextureID, 0, GL_DEPTH_COMPONENT, GL_FLOAT, &clearDepthValue);
+        //}
+        //else {
+        //    std::cout << "Error: Invalid shadow map texture handle for clearing.\n";
+        //}
 
         glDepthMask(true);
         glDisable(GL_BLEND);
@@ -124,13 +138,13 @@ namespace OpenGLRenderer {
         glCullFace(GL_FRONT);
         glBindVertexArray(OpenGLBackEnd::GetVertexDataVAO());
 
-        const std::vector<GPULight>& gpuLightsHighRes = RenderDataManager::GetGPULightsHighRes();
+ //     const std::vector<GPULight>& gpuLightsHighRes = RenderDataManager::GetGPULightsHighRes();
 
         for (int i = 0; i < gpuLightsHighRes.size(); i++) {
             const GPULight& gpuLight = gpuLightsHighRes[i];
 
             Light* light = World::GetLightByIndex(gpuLight.lightIndex);
-            if (!light) continue;
+            if (!light || !light->IsDirty()) continue;
 
             shader->SetFloat("farPlane", light->GetRadius());
             shader->SetVec3("lightPosition", light->GetPosition());
@@ -160,7 +174,7 @@ namespace OpenGLRenderer {
             const GPULight& gpuLight = gpuLightsHighRes[i];
 
             Light* light = World::GetLightByIndex(gpuLight.lightIndex);
-            if (!light) continue;
+            if (!light || !light->IsDirty()) continue;
 
             shader->SetFloat("farPlane", light->GetRadius());
             shader->SetVec3("lightPosition", light->GetPosition());

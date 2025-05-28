@@ -16,12 +16,12 @@ void main() {
     vec2 noiseUV = WorldPos.xz * 0.25;
     float noiseValue = texture(NoiseTexture, noiseUV).r;
     
-    float noiseSq = noiseValue * noiseValue;
+    float noiseSq = noiseValue * noiseValue * 2.5;
 
     vec3 grassColor1 = vec3(0.22, 0.33, 0.18);  // Slightly desaturated green
     vec3 grassColor2 = vec3(0.45, 0.40, 0.12);  // More yellowish, dry grass
-    vec3 color = mix(grassColor1, grassColor2, noiseValue);
-    color = mix(color, vec3(noiseSq), 0.35);
+    vec3 color = mix(grassColor2, grassColor1, noiseValue);
+    color = mix(color, vec3(noiseSq), 0.3);
     
     BaseColorOut = vec4(color, 1.0);
     RMAOut = vec4(0.8, 0.5, 1.0, 0.0);

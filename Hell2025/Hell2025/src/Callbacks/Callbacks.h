@@ -24,11 +24,15 @@ namespace Callbacks {
     void OpenSectorEditor();
     void OpenWeaponsEditor();
 
-    void SaveEditorSector();
+    void SaveSector();
     void RevertEditorSector();
 
     void QuitProgram();
 
     // House editor
+    void BeginAddingDoor();
+    void BeginAddingPictureFrame();
+    void BeginAddingTree();
     void BeginAddingWall();
+    void BeginAddingWindow();
 }

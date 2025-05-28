@@ -232,7 +232,7 @@ void main() {
         directLighting += sssColor * lightAttenuation * shadow;
     }
 
-    for (int i = 0; i < 4; i++) {    
+    for (int i = 0; i < 1; i++) {    
         if (fragDistance < 0.1) {
             continue;
         }
@@ -249,7 +249,7 @@ void main() {
 		    vec3 spotLightDir = flashlightDir.xyz;
             vec3 spotLightColor = vec3(0.9, 0.95, 1.1);
             float fresnelReflect = 0.9;
-            float spotLightRadius = 50.0;
+            float spotLightRadius = 20.0;
             float spotLightStregth = 4.5;
             
             if (worldSpacePosition.y < 10) {
@@ -257,15 +257,36 @@ void main() {
             }
 
             float innerAngle = cos(radians(5.0 * flashlightModifer));
-            float outerAngle = cos(radians(30.0));         
+            float outerAngle = cos(radians(25.0));         
             mat4 lightProjectionView = flashlightProjectionView;
-            vec3 cookie = ApplyCookie(lightProjectionView, worldSpacePosition.xyz, spotLightPos, spotLightColor, 10, FlashlightCookieTexture);
             vec3 spotLighting = GetSpotlightLighting(spotLightPos, spotLightDir, spotLightColor, spotLightRadius, spotLightStregth, innerAngle, outerAngle, normal.xyz, worldSpacePosition.xyz, gammaBaseColor.rgb, roughness, metallic, flashlightViewPos, lightProjectionView);
             vec4 FragPosLightSpace = lightProjectionView * vec4(worldSpacePosition.xyz, 1.0);
             float shadow = SpotlightShadowCalculation(FragPosLightSpace, normal.xyz, spotLightDir, worldSpacePosition.xyz, spotLightPos, flashlightViewPos, FlashlighShadowMapArrayTexture, layerIndex);  
 
+            // Cookie corretion
+            //cookie *= 10;
+            
+            vec3 cookie = ApplyCookie(lightProjectionView, worldSpacePosition.xyz, spotLightPos, spotLightColor, spotLightRadius, FlashlightCookieTexture);
+
+            float cookieStartDistance = 1.0;
+            float cookieEndDistance = 10.0;
+            float cookieDistanceExponent = 2;
+            float cookieMinValue = 0.5;
+            float cookieMaxValue = 5.0;
+            float cookieDistScale;
+            if(fragDistance <= cookieStartDistance) {
+                cookieDistScale = cookieMinValue;
+            } else if(fragDistance >= cookieEndDistance) {
+                cookieDistScale = cookieMaxValue;
+            } else {
+                float t = (fragDistance - cookieStartDistance) / (cookieEndDistance - cookieStartDistance);
+                cookieDistScale = mix(cookieMinValue, cookieMaxValue, pow(t, cookieDistanceExponent));
+            }
+            spotLighting *= cookieDistScale;
+            //spotLighting *= spotLightColor;
+
             spotLighting *= vec3(1 - shadow);
-            spotLighting *= cookie *  spotLightColor;
+            spotLighting *= cookie * spotLightColor;
             directLighting += vec3(spotLighting) * flashlightModifer;
         }
     }
@@ -274,7 +295,7 @@ void main() {
     vec3 moonColor = vec3(1.0, 0.9, 0.9);
     moonColor = vec3(1, 0.7799999713897705, 0.5289999842643738);
     vec3 moonLightDir = normalize(vec3(0.0, 0.2 , 0.5));
-    float moonLightStrength = 0.25;
+    float moonLightStrength = 0.025;
        
     //float shadow = ShadowCalculation(lightIndex, lightPosition, lightRadius, worldSpacePosition.xyz, viewPos, normal.xyz, shadowMapArray);
     vec3 moonLighting = GetDirectionalLighting(moonLightDir, moonColor, moonLightStrength, normal.xyz, worldSpacePosition.xyz, gammaBaseColor.rgb, roughness, metallic, viewPos);
@@ -288,7 +309,7 @@ void main() {
     float NdotL = max(dot(normal.xyz, L), 0.0);
     vec3 sss = 0.2 * exp(-3.0 * abs(NdotL) / (radius + 0.001)); 
     vec3 sssColor = subColor * radius * sss;
-    moonLighting += sssColor * csmShadow * 0.1;
+    moonLighting += sssColor * csmShadow * 0.05;
 
     // Self light hack (RE7 style) 
     //if (viewportData[viewportIndex].flashlightModifer > 0.1) { 
@@ -321,9 +342,10 @@ void main() {
         vec3 spotLightColor = vec3(0.9, 0.95, 1.1);
 
         spotLightColor - vec3(1.00, 0.7799999713897705, 0.5289999842643738);
-
-        float spotLightRadius = 0.0765;
-        float spotLightStregth = 30.0;        
+        
+        //float spotLightRadius = 0.0765;
+        float spotLightRadius = 0.165;
+        float spotLightStregth = 10.0;        
         float innerAngle = cos(radians(00.0 * viewportData[viewportIndex].flashlightModifer));
         float outerAngle = cos(radians(40.0));   
 
@@ -332,12 +354,10 @@ void main() {
         vec4 flashlightPosition = viewportData[viewportIndex].flashlightPosition;
         vec3 flashlightViewPos = viewportData[viewportIndex].inverseView[3].xyz;
 
-
         vec3 re7Lighting = GetSpotlightLighting(spotLightPos, spotLightDir, spotLightColor, spotLightRadius, spotLightStregth, innerAngle, outerAngle, normal.xyz, worldSpacePosition.xyz, gammaBaseColor.rgb, roughness, metallic, flashlightViewPos, lightProjectionView);
         directLighting += re7Lighting;
     }
     
-
     // Ambient light
     vec3 amibentLightColor = vec3(1, 0.98, 0.94);
     float ambientIntensity = 0.0005;
@@ -358,8 +378,6 @@ void main() {
     // Ambient occlusion
     finalColor *= rma.b;
 
-    //finalColor = moonLight;
-
     // Emissive
     vec3 emssiveColor = texture(EmissiveTexture, uv_screenspace).rgb;
     //finalColor += emssiveColor;
@@ -367,57 +385,6 @@ void main() {
     finalColor.rgb = finalColor.rgb * finalAlpha;    
     vec4 outputColor = vec4(finalColor, finalAlpha);
     
-
-    
-  //  if (false) {
-  //      if (viewportIndex == 0) {
-  //          outputColor.rgb = vec3(1.0) - outputColor.rgb;
-  //      }
-  //      if (viewportIndex == 1) {
-  //          outputColor.rgb *= vec3(1, 0, 0);
-  //      }
-  //      if (viewportIndex == 2) {
-  //          outputColor.rgb *= vec3(0, 1, 0);
-  //      }
-  //      if (viewportIndex == 3) {
-  //          outputColor.rgb *= vec3(0, 0, 1);
-  //      }
-  //  }
-    
-
-    
-    // Hack to render height map brush
-    vec2 mouseUV = vec2(rendererData.normalizedMouseX, 1 - rendererData.normalizedMouseY);
-    vec3 mouseWorldPos = texture(WorldPositionTexture, mouseUV).rgb;
-    int u_brushSize = 16;
-    float brushSizeWorld = u_brushSize * 0.25;
-    float dist = distance(mouseWorldPos * vec3(1,0,1), worldSpacePosition.xyz * vec3(1,0,1));
-    float innerRadius = brushSizeWorld * 0.7; // fade starts
-    float outerRadius = brushSizeWorld * 1.0; // fade ends
-    float falloff = smoothstep(innerRadius, outerRadius, dist);
-    float alpha = 1.0 - falloff;
-    //outputColor.rgb += vec3(0, 0.5, 1) * alpha * 0.25;
-
-
     // Output
     imageStore(outputImage, pixelCoords, outputColor);
-
-        
-    // vec2 viewportPos = vec2(viewportData[viewportIndex].posX, viewportData[viewportIndex].posY);
-    // vec2 viewportSize = vec2(viewportData[viewportIndex].sizeX, viewportData[viewportIndex].sizeY);
-    // vec2 screenUV = WorldToScreen(worldSpacePosition.rgb, viewportData[viewportIndex].projectionView, viewportPos, viewportSize);
-    // imageStore(outputImage, pixelCoords, vec4(screenUV, 0, 1));
-    // imageStore(outputImage, pixelCoords, vec4(normal.rgb, 1.0));    
-    // imageStore(outputImage, pixelCoords, vec4(baseColor.rgb, 1.0));
-    // imageStore(outputImage, pixelCoords, vec4(rma.rgb, 1.0));
-    // imageStore(outputImage, pixelCoords, vec4(worldSpacePosition.rgb, 1.0)); 
-    // imageStore(outputImage, ivec2(gl_GlobalInvocationID.xy), vec4(screenUV, 0.0, 1.0));
-    // vec3 sceneWorldPos = texture(WorldPositionTexture, screenUV).rgb;
-    // imageStore(outputImage, ivec2(gl_GlobalInvocationID.xy), vec4(sceneWorldPos, 1.0));
-    // imageStore(outputImage, pixelCoords, vec4(worldSpacePosition.rgb * 0.1, 1.0));
-    // imageStore(outputImage, pixelCoords, vec4(color.rgb, 1.0));     
-
-    
-    //float heightmap = texture(HeightMapTestTexture, uv_screenspace).r;
-    //imageStore(outputImage, pixelCoords, vec4(heightmap, 0, 0, 1));
 }

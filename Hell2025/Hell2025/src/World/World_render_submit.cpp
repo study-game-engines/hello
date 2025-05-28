@@ -49,6 +49,9 @@ namespace World {
 
         for (PictureFrame& pictureFrame : GetPictureFrames()) {
             RenderDataManager::SubmitRenderItems(pictureFrame.GetRenderItems());
+            if (Editor::GetSelectedObjectId() == pictureFrame.GetObjectId()) {
+                RenderDataManager::SubmitOutlineRenderItems(pictureFrame.GetRenderItems());
+            }
         }
 
         for (Mermaid& mermaid: GetMermaids()) {
@@ -88,8 +91,6 @@ namespace World {
         // Trees
         for (Tree& tree : trees) {
             RenderDataManager::SubmitRenderItems(tree.GetRenderItems());
-
-            // Selected outline?
             if (Editor::GetSelectedObjectId() == tree.GetObjectId()) {
                 RenderDataManager::SubmitOutlineRenderItems(tree.GetRenderItems());
             }

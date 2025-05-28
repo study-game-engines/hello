@@ -24,7 +24,7 @@ void Door::Init(DoorCreateInfo createInfo) {
     PhysicsFilterData filterData;
     filterData.raycastGroup = RAYCAST_ENABLED;
     filterData.collisionGroup = CollisionGroup::ENVIROMENT_OBSTACLE;
-    filterData.collidesWith = (CollisionGroup)(GENERIC_BOUNCEABLE | BULLET_CASING | RAGDOLL);
+    filterData.collidesWith = (CollisionGroup)(GENERIC_BOUNCEABLE | BULLET_CASING | RAGDOLL_PLAYER | RAGDOLL_ENEMY);
 
     Transform doorFrameTransform;
     doorFrameTransform.position = m_position;
@@ -43,6 +43,8 @@ void Door::Init(DoorCreateInfo createInfo) {
     userData.physicsType = PhysicsType::RIGID_STATIC;
     userData.objectType = ObjectType::DOOR;
     Physics::SetRigidStaticUserData(m_physicsId, userData);
+
+    m_lifeTime = 0;
 }
 
 void Door::CleanUp() {
@@ -50,6 +52,24 @@ void Door::CleanUp() {
 }
 
 void Door::Update(float deltaTime) {
+    m_movedThisFrame = (m_lifeTime == 0 || m_openingState == OpeningState::OPENING || m_openingState == OpeningState::CLOSING);
+    m_lifeTime++;
+
+    float openSpeed = 5.208f;
+    if (m_openingState == OpeningState::OPENING) {
+        m_currentOpenRotation -= openSpeed * deltaTime;
+        if (m_currentOpenRotation < -m_maxOpenRotation) {
+            m_currentOpenRotation = -m_maxOpenRotation;
+            m_openingState = OpeningState::OPEN;
+        }
+    }
+    if (m_openingState == OpeningState::CLOSING) {
+        m_currentOpenRotation += openSpeed * deltaTime;
+        if (m_currentOpenRotation > 0) {
+            m_currentOpenRotation = 0;
+            m_openingState = OpeningState::CLOSED;
+        }
+    }
 
     Transform doorFrameTransform;
     doorFrameTransform.position = m_position;
@@ -68,22 +88,6 @@ void Door::Update(float deltaTime) {
     physxOffsetTransform.position.x = DOOR_DEPTH * -0.5f;
     glm::mat4 globalPoseMatrix = m_doorModelMatrix * physxOffsetTransform.to_mat4();
     Physics::SetRigidStaticGlobalPose(m_physicsId, globalPoseMatrix);
-
-    float openSpeed = 5.208f;
-    if (m_openingState == OpeningState::OPENING) {
-        m_currentOpenRotation -= openSpeed * deltaTime;
-        if (m_currentOpenRotation < -m_maxOpenRotation) {
-            m_currentOpenRotation = -m_maxOpenRotation;
-            m_openingState = OpeningState::OPEN;
-        }
-    }
-    if (m_openingState == OpeningState::CLOSING) {
-        m_currentOpenRotation += openSpeed * deltaTime;
-        if (m_currentOpenRotation > 0) {
-            m_currentOpenRotation = 0;
-            m_openingState = OpeningState::CLOSED;
-        }
-    }
 
     // Calculate interact position
     glm::mat4 interactOffset = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, DOOR_HEIGHT / 2, -DOOR_WIDTH / 2));

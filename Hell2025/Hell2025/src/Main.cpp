@@ -18,6 +18,7 @@
 #include "Renderer/Renderer.h"
 #include "UI/UIBackEnd.h"
 #include <iostream>
+#include "Timer.hpp"
 
 #include "API/Vulkan/vk_backend.h"
 
@@ -55,6 +56,7 @@ int main() {
         }
         // Update/render game
         else {
+            //Timer timer("GameLoop");
             Renderer::PreGameLogicComputePasses();
             BackEnd::UpdateGame();
             Renderer::RenderGame();

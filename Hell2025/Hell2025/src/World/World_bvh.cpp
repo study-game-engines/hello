@@ -73,6 +73,13 @@ namespace World {
                 }
             }
 
+            for (PictureFrame& pictureFrame : GetPictureFrames()) {
+                const std::vector<RenderItem>& renderItems = pictureFrame.GetRenderItems();
+                for (const RenderItem& renderItem : renderItems) {
+                    CreateObjectInstanceDataFromRenderItem(renderItem, frustum, viewportBvhData.instances);
+                }
+            }
+
             for (PickUp& pickUp : GetPickUps()) {
                 const std::vector<RenderItem>& renderItems = pickUp.GetRenderItems();
                 for (const RenderItem& renderItem : renderItems) {
@@ -87,12 +94,14 @@ namespace World {
                 }
             }
 
-            for (Tree& tree : GetTrees()) {
-                const std::vector<RenderItem>& renderItems = tree.GetRenderItems();
-                for (const RenderItem& renderItem : renderItems) {
-                    CreateObjectInstanceDataFromRenderItem(renderItem, frustum, viewportBvhData.instances);
+            if (Editor::IsOpen()) {
+                for (Tree& tree : GetTrees()) {
+                    const std::vector<RenderItem>& renderItems = tree.GetRenderItems();
+                    for (const RenderItem& renderItem : renderItems) {
+                        CreateObjectInstanceDataFromRenderItem(renderItem, frustum, viewportBvhData.instances);
+                    }
                 }
-            }           
+            }
             
             for (Window& window : GetWindows()) {
                 const std::vector<RenderItem>& renderItems = window.GetRenderItems();

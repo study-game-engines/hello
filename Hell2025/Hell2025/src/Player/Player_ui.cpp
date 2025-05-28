@@ -40,123 +40,150 @@ void Player::UpdateUI() {
     UIBackEnd::BlitText(m_infoText, "StandardFont", infoTextX, infoTextY, Alignment::TOP_LEFT, 2.0f);
     UIBackEnd::BlitTexture(crosshairTexture, glm::ivec2(centerX, centerY), Alignment::CENTERED, WHITE, glm::ivec2(128, 128));
 
-    if (!Debug::IsDebugTextVisible()) {
-        std::string text = "";
-        text += "Cam Pos: " + Util::Vec3ToString(GetCameraPosition()) + "\n";
-        text += "Cam Euler: " + Util::Vec3ToString(GetCameraRotation()) + "\n";
-     // text += "Weapon Action: " + Util::WeaponActionToString(GetCurrentWeaponAction()) + "\n";
-     // text += "Interact object: " + Util::ObjectTypeToString(m_interactObjectType) + " " + std::to_string(m_interactObjectId) + "\n";
-     // text += "BVH ray: " + Util::ObjectTypeToString(m_bvhRayResult.objectType) + " " + std::to_string(m_bvhRayResult.objectId) + "\n";
-     // text += "PhysX ray: " + Util::ObjectTypeToString(m_physXRayResult.userData.objectType) + " " + std::to_string(m_physXRayResult.userData.objectId) + " " + Util::PhysicsTypeToString(m_physXRayResult.userData.physicsType) + " " + std::to_string(m_physXRayResult.userData.physicsId) + "\n";
-     //
-     //
-     // text += "Ray hit found: " + Util::BoolToString(m_rayHitFound) + " " + Util::ObjectTypeToString(m_rayHitObjectType) + " " + std::to_string(m_rayhitObjectId) + "\n";
+    if (Debug::IsDebugTextVisible()) {
+        return;
+    }
 
+    std::string text = "";
+    text += "Cam Pos: " + Util::Vec3ToString(GetCameraPosition()) + "\n";
+    text += "Cam Euler: " + Util::Vec3ToString(GetCameraRotation()) + "\n";
+
+    // Weapons
+    if (false) {
+        text += "Weapon Action: " + Util::WeaponActionToString(GetCurrentWeaponAction()) + "\n";
+    }
+
+    // Interact
+    if (false) {
+        text += "Interact object: " + Util::ObjectTypeToString(m_interactObjectType) + " " + std::to_string(m_interactObjectId) + "\n";
+    }
+
+    // Rays
+    if (false) {
+        text += "BVH ray: " + Util::ObjectTypeToString(m_bvhRayResult.objectType) + " " + std::to_string(m_bvhRayResult.objectId) + "\n";
+        text += "PhysX ray: " + Util::ObjectTypeToString(m_physXRayResult.userData.objectType) + " " + std::to_string(m_physXRayResult.userData.objectId) + " " + Util::PhysicsTypeToString(m_physXRayResult.userData.physicsType) + " " + std::to_string(m_physXRayResult.userData.physicsId) + "\n";
+        text += "Ray hit found: " + Util::BoolToString(m_rayHitFound) + " " + Util::ObjectTypeToString(m_rayHitObjectType) + " " + std::to_string(m_rayhitObjectId) + "\n";
+    }
+
+    // Movement
+    if (true) {
         text += "Movement Dir: " + Util::Vec3ToString(m_movementDirection) + "\n";
         text += "Acceleration: " + std::to_string(m_acceleration) + "\n";
         text += "Y Velocity: " + std::to_string(m_yVelocity) + "\n";
+    }
 
-        glm::vec3 rayOrigin = GetCameraPosition();
-        glm::vec3 rayDir = GetCameraForward();
-        float maxRayDistance = 100.0f;
+    // Lights
+    if (false) {
+        for (Light& Light : World::GetLights()) {
+            text += "Light: " + Util::BoolToString(Light.IsDirty()) + "\n";
+        }
+    }
 
-        BvhRayResult result = World::ClosestHit(rayOrigin, rayDir, maxRayDistance, m_viewportIndex);
-        if (result.hitFound) {
-            if (result.objectType == ObjectType::PIANO_KEY) {
-                for (Piano& piano : World::GetPianos()) {
-                    if (piano.PianoKeyExists(result.objectId)) {
-                        PianoKey* pianoKey = piano.GetPianoKey(result.objectId);
-                        if (pianoKey) {
-                            text += "Key code: " + std::to_string(pianoKey->m_note) + "\n";
-                        }
+    glm::vec3 rayOrigin = GetCameraPosition();
+    glm::vec3 rayDir = GetCameraForward();
+    float maxRayDistance = 100.0f;
+
+    BvhRayResult result = World::ClosestHit(rayOrigin, rayDir, maxRayDistance, m_viewportIndex);
+    if (result.hitFound) {
+        if (result.objectType == ObjectType::PIANO_KEY) {
+            for (Piano& piano : World::GetPianos()) {
+                if (piano.PianoKeyExists(result.objectId)) {
+                    PianoKey* pianoKey = piano.GetPianoKey(result.objectId);
+                    if (pianoKey) {
+                        text += "Key code: " + std::to_string(pianoKey->m_note) + "\n";
                     }
                 }
             }
         }
+    }
 
 
 
-        //text += "CanReloadShotgun: " + Util::BoolToString(CanReloadShotgun()) + "\n";
-       // text += "ShellInChamber: " + Util::BoolToString(IsShellInShotgunChamber()) + "\n";
-       // text += "CanFireShotgun: " + Util::BoolToString(CanFireShotgun()) + "\n";
-       //
-       // WeaponState* weaponState = GetCurrentWeaponState();
-       // AmmoState* ammoState = GetCurrentAmmoState();
-       // text += "AwaitingPumpAudio: " + Util::BoolToString(weaponState->shotgunAwaitingPumpAudio) + "\n";
-       // text += "ShotgunInAuto: " + Util::BoolToString(weaponState->shotgunInAutoMode) + "\n";
-       //
-       //
-       // text += "\n";
-       // text += "Grounded: " + Util::BoolToString(m_grounded) + "\n";
-        //text += "Grounded: " + Util::BoolToString(m_grounded) +  "\n";
-        //text += "GroundedLastFrame: " + Util::BoolToString(m_groundedLastFrame) + "\n";
+    //text += "CanReloadShotgun: " + Util::BoolToString(CanReloadShotgun()) + "\n";
+    // text += "ShellInChamber: " + Util::BoolToString(IsShellInShotgunChamber()) + "\n";
+    // text += "CanFireShotgun: " + Util::BoolToString(CanFireShotgun()) + "\n";
+    //
+    // WeaponState* weaponState = GetCurrentWeaponState();
+    // AmmoState* ammoState = GetCurrentAmmoState();
+    // text += "AwaitingPumpAudio: " + Util::BoolToString(weaponState->shotgunAwaitingPumpAudio) + "\n";
+    // text += "ShotgunInAuto: " + Util::BoolToString(weaponState->shotgunInAutoMode) + "\n";
+    //
+    //
+    // text += "\n";
+    // text += "Grounded: " + Util::BoolToString(m_grounded) + "\n";
+    //text += "Grounded: " + Util::BoolToString(m_grounded) +  "\n";
+    //text += "GroundedLastFrame: " + Util::BoolToString(m_groundedLastFrame) + "\n";
         
-        
-         
-        UIBackEnd::BlitText(text, "StandardFont", xLeft, yTop, Alignment::TOP_LEFT, 2.0f);
+    UIBackEnd::BlitText(text, "StandardFont", xLeft, yTop, Alignment::TOP_LEFT, 2.0f);
 
-        // Ammo
-        if (GetCurrentWeaponType() != WeaponType::MELEE) {
-            float scale = 1.3f;
-            float smallScale = scale * 0.8f;
+    // Ammo
+    if (GetCurrentWeaponType() != WeaponType::MELEE) {
+        float scale = 1.3f;
+        float smallScale = scale * 0.8f;
 
-            int slashPadding = 10;
-            std::string clipText = std::to_string(GetCurrentWeaponMagAmmo());
-            std::string totalText = std::to_string(GetCurrentWeaponTotalAmmo());
+        int slashPadding = 10;
+        std::string clipText = std::to_string(GetCurrentWeaponMagAmmo());
+        std::string totalText = std::to_string(GetCurrentWeaponTotalAmmo());
 
-            // Mag ammo color
-            if (GetCurrentWeaponMagAmmo() == 0) {
-                clipText = "[COL=0.8,0.05,0.05,1]" + clipText;
-            }
-            else {
-                clipText = "[COL=0.16,0.78,0.23,1]" + clipText;
-            }
-
-            UIBackEnd::BlitText(clipText, "AmmoFont", ammoX - slashPadding, ammoY, Alignment::TOP_RIGHT, scale, TextureFilter::LINEAR);
-            UIBackEnd::BlitText("/", "AmmoFont", ammoX, ammoY, Alignment::CENTERED_HORIZONTAL, scale, TextureFilter::LINEAR);
-            UIBackEnd::BlitText(totalText, "AmmoFont", ammoX + slashPadding, ammoY, Alignment::TOP_LEFT, smallScale, TextureFilter::LINEAR);
-
-            // SPAS AUTO
-            WeaponState* weaponState = GetCurrentWeaponState();
-            WeaponInfo* weaponInfo = GetCurrentWeaponInfo();
-            if (weaponInfo->hasAutoSwitch) {
-                Texture* texture = AssetManager::GetTextureByName("Weapon_Auto");
-                if (GetCurrentWeaponType() == WeaponType::SHOTGUN && texture) {
-                    int modifierPadding = 29;
-                    int modifierX = TextBlitter::GetBlitTextSize(totalText, "AmmoFont", smallScale).x + modifierPadding;
-                    int gridSize = 10;
-                    modifierX = (modifierX / 10) * 10;
-                    int modifierScaleX = texture->GetWidth(0) * smallScale;
-                    int modifierScaleY = texture->GetHeight(0) * smallScale;
-                    glm::vec4 unselectedColor = glm::vec4(0.541, 0.51, 0.392, 0.5f);
-                    glm::vec4 colorAuto = weaponState->shotgunInAutoMode ? WHITE : unselectedColor;
-                    glm::vec4 colorPump = weaponState->shotgunInAutoMode ? unselectedColor : WHITE;
-                    float padding = 4;
-                    float autoY = ammoY;
-                    float pumpY = autoY + ((texture->GetHeight(0) + padding) * smallScale);
-
-                    int negHack = -9 + 9;
-                    int hack = 7 + 9;
-
-                    std::string shellTextureName = "ShotgunShellRed";
-                    WeaponState* weaponState = GetCurrentWeaponState();
-                    if (weaponState->shotgunSlug) {
-                        shellTextureName = "ShotgunShellGreen";
-                    }
-                    Texture* texture = AssetManager::GetTextureByName(shellTextureName);
-                    int shellScaleX = texture->GetWidth(0) * smallScale;
-                    int shellScaleY = texture->GetHeight(0) * smallScale * 1.1f;
-
-                    UIBackEnd::BlitTexture(shellTextureName, glm::ivec2(ammoX + modifierX + negHack, autoY), Alignment::TOP_LEFT, WHITE, glm::ivec2(shellScaleX, shellScaleY), TextureFilter::LINEAR);
-                    UIBackEnd::BlitTexture("Weapon_Auto", glm::ivec2(ammoX + modifierX + hack, autoY), Alignment::TOP_LEFT, colorAuto, glm::ivec2(modifierScaleX, modifierScaleY), TextureFilter::LINEAR);
-                    UIBackEnd::BlitTexture("Weapon_Pump", glm::ivec2(ammoX + modifierX + hack, pumpY), Alignment::TOP_LEFT, colorPump, glm::ivec2(modifierScaleX, modifierScaleY), TextureFilter::LINEAR);
-
-                    //modifierX += 40;
-                    //UIBackEnd::BlitText("AUTO", "StandardFont", ammoX + modifierX, autoY, Alignment::TOP_RIGHT, 1.0, TextureFilter::NEAREST);
-                    //UIBackEnd::BlitText("PUMP", "StandardFont", ammoX + modifierX, pumpY, Alignment::TOP_RIGHT, 1.0, TextureFilter::NEAREST);
-                }
-            }
+        // Mag ammo color
+        if (GetCurrentWeaponMagAmmo() == 0) {
+            clipText = "[COL=0.8,0.05,0.05,1]" + clipText;
+        }
+        else {
+            clipText = "[COL=0.16,0.78,0.23,1]" + clipText;
         }
 
+        UIBackEnd::BlitText(clipText, "AmmoFont", ammoX - slashPadding, ammoY, Alignment::TOP_RIGHT, scale, TextureFilter::LINEAR);
+        UIBackEnd::BlitText("/", "AmmoFont", ammoX, ammoY, Alignment::CENTERED_HORIZONTAL, scale, TextureFilter::LINEAR);
+        UIBackEnd::BlitText(totalText, "AmmoFont", ammoX + slashPadding, ammoY, Alignment::TOP_LEFT, smallScale, TextureFilter::LINEAR);
+
+        // SPAS AUTO
+        WeaponState* weaponState = GetCurrentWeaponState();
+        WeaponInfo* weaponInfo = GetCurrentWeaponInfo();
+        if (weaponInfo->hasAutoSwitch) {
+            Texture* texture = AssetManager::GetTextureByName("Weapon_Auto");
+            if (GetCurrentWeaponType() == WeaponType::SHOTGUN && texture) {
+                int modifierPadding = 29;
+                int modifierX = TextBlitter::GetBlitTextSize(totalText, "AmmoFont", smallScale).x + modifierPadding;
+                int gridSize = 10;
+                modifierX = (modifierX / 10) * 10;
+                int modifierScaleX = texture->GetWidth(0) * smallScale;
+                int modifierScaleY = texture->GetHeight(0) * smallScale;
+                glm::vec4 unselectedColor = glm::vec4(0.541, 0.51, 0.392, 0.5f);
+                glm::vec4 colorAuto = weaponState->shotgunInAutoMode ? WHITE : unselectedColor;
+                glm::vec4 colorPump = weaponState->shotgunInAutoMode ? unselectedColor : WHITE;
+                float padding = 4;
+                float autoY = ammoY;
+                float pumpY = autoY + ((texture->GetHeight(0) + padding) * smallScale);
+
+                int negHack = -9 + 9;
+                int hack = 7 + 9;
+
+                std::string shellTextureName = "ShotgunShellRed";
+                WeaponState* weaponState = GetCurrentWeaponState();
+                if (weaponState->shotgunSlug) {
+                    shellTextureName = "ShotgunShellGreen";
+                }
+                Texture* texture = AssetManager::GetTextureByName(shellTextureName);
+                int shellScaleX = texture->GetWidth(0) * smallScale;
+                int shellScaleY = texture->GetHeight(0) * smallScale * 1.1f;
+
+                UIBackEnd::BlitTexture(shellTextureName, glm::ivec2(ammoX + modifierX + negHack, autoY), Alignment::TOP_LEFT, WHITE, glm::ivec2(shellScaleX, shellScaleY), TextureFilter::LINEAR);
+                UIBackEnd::BlitTexture("Weapon_Auto", glm::ivec2(ammoX + modifierX + hack, autoY), Alignment::TOP_LEFT, colorAuto, glm::ivec2(modifierScaleX, modifierScaleY), TextureFilter::LINEAR);
+                UIBackEnd::BlitTexture("Weapon_Pump", glm::ivec2(ammoX + modifierX + hack, pumpY), Alignment::TOP_LEFT, colorPump, glm::ivec2(modifierScaleX, modifierScaleY), TextureFilter::LINEAR);
+            }
+        }
+    }
+
+    // Press Start
+    if (RespawnAllowed()) {
+        static Texture* texture = AssetManager::GetTextureByName("PressStart");
+        if (texture) {
+            static int width = texture->GetWidth(0) * 2;
+            static int height = texture->GetHeight(0) * 2;
+            glm::ivec2 location = glm::ivec2(centerX, centerY);
+            glm::ivec2 size = glm::ivec2(width, height);
+            UIBackEnd::BlitTexture("PressStart", location, Alignment::CENTERED, WHITE, size, TextureFilter::LINEAR);
+        }
     }
 }

@@ -5,6 +5,7 @@
 
 namespace OpenGLRenderer {
 
+    void ComputeInverseFFT2D(GLuint handleA, GLuint handleB);
     float g_globalTime = 50.0f;
 
     void ComputeOceanFFTPass() {
@@ -19,7 +20,7 @@ namespace OpenGLRenderer {
         OpenGLSSBO* fftH0SSBO_band1 = GetSSBO("ffth0Band1");
         OpenGLSSBO* fftSpectrumInSSBO = GetSSBO("fftSpectrumInSSBO");
         OpenGLSSBO* fftSpectrumOutSSBO = GetSSBO("fftSpectrumOutSSBO");
-        OpenGLSSBO* fftDispInXSSBO = GetSSBO("fftDispInXSSBO");
+        OpenGLSSBO* fftDispXInSSBO = GetSSBO("fftDispInXSSBO");
         OpenGLSSBO* fftDispZInSSBO = GetSSBO("fftDispZInSSBO");
         OpenGLSSBO* fftGradXInSSBO = GetSSBO("fftGradXInSSBO");
         OpenGLSSBO* fftGradZInSSBO = GetSSBO("fftGradZInSSBO");
@@ -34,7 +35,7 @@ namespace OpenGLRenderer {
         if (!fftH0SSBO_band1) return;
         if (!fftSpectrumInSSBO) return;
         if (!fftSpectrumOutSSBO) return;
-        if (!fftDispInXSSBO) return;
+        if (!fftDispXInSSBO) return;
         if (!fftDispZInSSBO) return;
         if (!fftGradXInSSBO) return;
         if (!fftGradZInSSBO) return;
@@ -66,7 +67,6 @@ namespace OpenGLRenderer {
 
         int bandCount = 2;
 
-      
         const float gravity = Ocean::GetGravity();
 
         for (int i = 0; i < bandCount; i++) {
@@ -94,7 +94,7 @@ namespace OpenGLRenderer {
             }
 
             glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, fftSpectrumInSSBO->GetHandle());
-            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, fftDispInXSSBO->GetHandle());
+            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, fftDispXInSSBO->GetHandle());
             glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, fftDispZInSSBO->GetHandle());
             glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, fftGradXInSSBO->GetHandle());
             glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, fftGradZInSSBO->GetHandle());
@@ -108,11 +108,11 @@ namespace OpenGLRenderer {
             glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
             // Perform FFT
-            Ocean::ComputeInverseFFT2D(fftResolution.x, fftSpectrumInSSBO->GetHandle(), fftSpectrumOutSSBO->GetHandle());
-            Ocean::ComputeInverseFFT2D(fftResolution.x, fftDispInXSSBO->GetHandle(), fftDispXOutSSBO->GetHandle());
-            Ocean::ComputeInverseFFT2D(fftResolution.x, fftDispZInSSBO->GetHandle(), fftDispZOutSSBO->GetHandle());
-            Ocean::ComputeInverseFFT2D(fftResolution.x, fftGradXInSSBO->GetHandle(), fftGradXOutSSBO->GetHandle());
-            Ocean::ComputeInverseFFT2D(fftResolution.x, fftGradZInSSBO->GetHandle(), fftGradZOutSSBO->GetHandle());
+            ComputeInverseFFT2D(fftSpectrumInSSBO->GetHandle(), fftSpectrumOutSSBO->GetHandle());
+            ComputeInverseFFT2D(fftDispXInSSBO->GetHandle(), fftDispXOutSSBO->GetHandle());
+            ComputeInverseFFT2D(fftDispZInSSBO->GetHandle(), fftDispZOutSSBO->GetHandle());
+            ComputeInverseFFT2D(fftGradXInSSBO->GetHandle(), fftGradXOutSSBO->GetHandle());
+            ComputeInverseFFT2D(fftGradZInSSBO->GetHandle(), fftGradZOutSSBO->GetHandle());
 
             // Update mesh position
             if (i == 0) {
@@ -124,12 +124,12 @@ namespace OpenGLRenderer {
                 glBindImageTexture(1, fftFrameBuffer_band1->GetColorAttachmentHandleByName("Normals"), 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
             }
 
-            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, fftSpectrumOutSSBO->GetHandle());
-            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, fftDispXOutSSBO->GetHandle());
-            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, fftDispZOutSSBO->GetHandle());
-            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, fftGradXOutSSBO->GetHandle());
-            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, fftGradZOutSSBO->GetHandle());
-
+            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, fftSpectrumInSSBO->GetHandle());
+            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, fftDispXInSSBO->GetHandle());
+            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, fftDispZInSSBO->GetHandle());
+            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, fftGradXInSSBO->GetHandle());
+            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, fftGradZInSSBO->GetHandle());
+          
             oceanUpdateTexturesShader->Bind();
             oceanUpdateTexturesShader->SetUvec2("u_fftGridSize", fftResolution);
             oceanUpdateTexturesShader->SetFloat("u_dispScale", Ocean::GetDisplacementScale());
@@ -138,5 +138,41 @@ namespace OpenGLRenderer {
             glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
             glDispatchCompute(blockSizeX, blockSizeY, 1);
         }
+    }
+
+    void ComputeInverseFFT2D(GLuint handleA, GLuint handleB) {
+        OpenGLShader* radix64Vert = GetShader("FttRadix64Vertical");
+        OpenGLShader* radix8Vert = GetShader("FttRadix8Vertical");
+        OpenGLShader* radix64Hori = GetShader("FttRadix64Horizontal");
+        OpenGLShader* radix8Hori = GetShader("FttRadix8Horizontal");
+
+        if (!radix64Vert) return;
+        if (!radix8Vert) return;
+        if (!radix64Hori) return;
+        if (!radix8Hori) return;
+
+        radix64Vert->Bind();
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, handleA);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, handleB);
+        glDispatchCompute(32, 8, 1);
+        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+
+        radix8Vert->Bind();
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, handleB);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, handleA);
+        glDispatchCompute(32, 8, 1);
+        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+
+        radix64Hori->Bind();
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, handleA);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, handleB);
+        glDispatchCompute(1, 512, 1);
+        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+
+        radix8Hori->Bind();
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, handleB);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, handleA);
+        glDispatchCompute(1, 256, 1);
+        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
     }
 }

@@ -112,10 +112,25 @@ void Player::UpdateCamera(float deltaTime) {
     m_viewWeaponCameraMatrix = inverse(cameraBindMatrix) * cameraMatrix;
 
     // Build CSM view matrix
-    glm::vec3 csmViewPosition = m_position + glm::vec3(0, m_currentViewHeight + viewHeightModifer, 0);
-    glm::quat orient = glm::quat(m_camera.GetQuaternionRotation());
-    glm::mat4 rot = glm::mat4_cast(glm::conjugate(orient)); // inverse rotation
-    glm::mat4 trans = glm::translate(glm::mat4(1.0f), -m_position);
-    glm::mat4 baseViewMatrix = rot * trans;
-    m_csmViewMatrix = m_viewWeaponCameraMatrix * baseViewMatrix;
+    //glm::vec3 csmViewPosition = m_position + glm::vec3(0, m_currentViewHeight + viewHeightModifer, 0);
+    //glm::quat orient = glm::quat(m_camera.GetQuaternionRotation());
+    //glm::mat4 rot = glm::mat4_cast(glm::conjugate(orient)); // inverse rotation
+    //glm::mat4 trans = glm::translate(glm::mat4(1.0f), -m_position);
+    //glm::mat4 baseViewMatrix = rot * trans;
+    //m_csmViewMatrix = m_viewWeaponCameraMatrix * baseViewMatrix;
+
+    if (Input::MiddleMousePressed()) {
+        Kill();
+    }
+
+    if (!IsAlive()) {
+        Ragdoll* ragdoll = GetRagdoll();
+
+        if (ragdoll) {
+            m_characterModelAnimatedGameObject.SetAnimationModeToRagdoll();
+            ragdoll->ActivatePhysics();
+            glm::mat4 headMatrix = ragdoll->GetRigidWorlTransform("CC_Base_Head");
+            m_deathCamViewMatrix = glm::inverse(headMatrix);
+        }
+    }
 }

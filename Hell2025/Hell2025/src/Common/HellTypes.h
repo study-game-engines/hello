@@ -283,6 +283,12 @@ struct ViewportData {
 
     glm::vec4 viewPos;
     glm::vec4 cameraForward;
+
+    glm::vec4 colorTint;
+    float colorContrast;
+    float padding0;
+    float padding1;
+    float padding2;
 };
 
 struct RendererData {
@@ -537,7 +543,7 @@ struct PhysXRayResult {
     PhysicsUserData userData;
     std::string hitObjectName;
     glm::vec3 hitPosition;
-    glm::vec3 surfaceNormal;
+    glm::vec3 hitNormal;
     glm::vec3 rayDirection;
     bool hitFound;
 };

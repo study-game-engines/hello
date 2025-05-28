@@ -125,7 +125,8 @@ namespace Debug {
     }
 
     void UpdateDebugPointsAndLines() {
-        if (g_debugRenderMode == DebugRenderMode::BONES) {
+        if (g_debugRenderMode == DebugRenderMode::BONES ||
+            g_debugRenderMode == DebugRenderMode::RAGDOLLS) {
             for (AnimatedGameObject& animatedGameObject : World::GetAnimatedGameObjects()) {
                 animatedGameObject.DrawBones();
             }
@@ -133,6 +134,7 @@ namespace Debug {
                 Player* player = Game::GetLocalPlayerByIndex(i);
                 //player->GetCharacterModelAnimatedGameObject()->DrawBones(RED, i);
                 player->GetViewWeaponAnimatedGameObject()->DrawBones(i);
+                player->GetCharacterModelAnimatedGameObject()->DrawBones();
             }
         }
         if (g_debugRenderMode == DebugRenderMode::BONE_TANGENTS) {
@@ -143,6 +145,7 @@ namespace Debug {
                 Player* player = Game::GetLocalPlayerByIndex(i);
                 //player->GetCharacterModelAnimatedGameObject()->DrawBoneTangentVectors(0.001f, i);
                 player->GetViewWeaponAnimatedGameObject()->DrawBoneTangentVectors(0.001f, i);
+                player->GetCharacterModelAnimatedGameObject()->DrawBoneTangentVectors(0.001f, i);
             }
         }
         if (g_debugRenderMode == DebugRenderMode::CLIPPING_CUBES) {
@@ -159,6 +162,7 @@ namespace Debug {
         }
         if (g_debugRenderMode == DebugRenderMode::PHYSX_ALL ||
             g_debugRenderMode == DebugRenderMode::PHYSX_COLLISION ||
+            g_debugRenderMode == DebugRenderMode::RAGDOLLS ||
             g_debugRenderMode == DebugRenderMode::PHYSX_RAYCAST) {
             Physics::SubmitDebugLinesToRenderer(g_debugRenderMode);
         }
@@ -188,6 +192,7 @@ namespace Debug {
         std::vector<DebugRenderMode> allowedDebugRenderModes = {
             NONE,
             PHYSX_ALL,
+            RAGDOLLS,
             CLIPPING_CUBES,
             HOUSE_GEOMETRY,
             DECALS,

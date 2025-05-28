@@ -31,6 +31,15 @@ namespace Physics {
                         actor->setActorFlag(PxActorFlag::eVISUALIZATION, false);
                     }
                 }
+                else if (debugRenderMode == DebugRenderMode::RAGDOLLS) {
+                    PxRigidDynamic* pxRigidDynamic = static_cast<PxRigidDynamic*>(actor);
+                    if (PxRigidDynamicBelongsToRagdoll(pxRigidDynamic)) {
+                        actor->setActorFlag(PxActorFlag::eVISUALIZATION, true);
+                    }
+                    else {
+                        actor->setActorFlag(PxActorFlag::eVISUALIZATION, false);
+                    }
+                }
             }
         }
         const PxRenderBuffer& renderBuffer = pxScene->getRenderBuffer();
@@ -47,6 +56,7 @@ namespace Physics {
             switch (debugRenderMode) {
                 case DebugRenderMode::PHYSX_ALL:        color = GREEN;      break;
                 case DebugRenderMode::PHYSX_COLLISION:  color = LIGHT_BLUE; break;
+                case DebugRenderMode::RAGDOLLS:         color = LIGHT_BLUE; break;
                 case DebugRenderMode::PHYSX_RAYCAST:    color = RED;        break;
                 default: color = WHITE; break;
             }

@@ -1,5 +1,6 @@
 #include "Player.h"
 #include "Audio/Audio.h"
+#include "Core/Game.h"
 #include "Physics/Physics.h"
 #include "Util/Util.h"
 #include "World/World.h"
@@ -18,10 +19,9 @@ void Player::UpdateCursorRays() {
     float maxRayDistance = 1000.0f;
 
     // PhysX Ray
-    uint32_t cameraRayFlags = RaycastGroup::RAYCAST_ENABLED;
     glm::vec3 cameraRayOrigin = GetCameraPosition();
     glm::vec3 cameraRayDirection = GetCameraForward();
-    m_physXRayResult = Physics::CastPhysXRay(cameraRayOrigin, cameraRayDirection, maxRayDistance, cameraRayFlags);
+    m_physXRayResult = Physics::CastPhysXRay(cameraRayOrigin, cameraRayDirection, maxRayDistance, false, RaycastIgnoreFlags::PLAYER_CHARACTER_CONTROLLERS | RaycastIgnoreFlags::PLAYER_RAGDOLLS);
 
     // Bvh Ray result
     glm::vec3 rayOrigin = GetCameraPosition();
@@ -82,9 +82,14 @@ void Player::UpdateInteract() {
         m_interactObjectId = m_rayhitObjectId;
     }
 
+
+    // you broke the test below adding ragdolls, you are probably hitting it, find a way to omit the ragdoll from overlap test, although looks like you are
+    // you broke the test below adding ragdolls, you are probably hitting it, find a way to omit the ragdoll from overlap test, although looks like you are
+    // you broke the test below adding ragdolls, you are probably hitting it, find a way to omit the ragdoll from overlap test, although looks like you are
+
     // Overwrite with PhysX overlap test if an overlap with interact object is found
     if (m_rayHitObjectType != ObjectType::NONE) {
-
+    
         glm::vec3 spherePosition = m_rayHitPosition;
         float sphereRadius = 0.15f;
         PxCapsuleGeometry overlapSphereShape = PxCapsuleGeometry(sphereRadius, 0);

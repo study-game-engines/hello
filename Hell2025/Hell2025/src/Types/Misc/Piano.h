@@ -1,7 +1,6 @@
 #pragma once
 #include "HellTypes.h"
 #include "Handlers/OpenHandler.h"
-#include "Types/Game/BasicDoor.h"
 #include "Types/Renderer/MeshNodes.h"
 #include "Types/Renderer/Model.h"
 #include <unordered_map>

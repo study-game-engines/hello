@@ -25,9 +25,20 @@ struct Shark {
     float m_spineSegmentLengths[SHARK_SPINE_SEGMENT_COUNT - 1];
 
 private:
+    void CalculateTargetFromPath();
     void CalculateForwardVectorFromTarget(float deltaTime);
     void CalculateForwardVectorFromArrowKeys(float deltaTime);
     void MoveShark(float deltaTime);
+
+    // Util
+    float GetDistanceToTarget2D();
+    float GetTurningRadius() const;
+    glm::vec3 GetForwardVector();
+    glm::vec3 GetTargetPosition2D();
+    glm::vec3 GetHeadPosition2D();
+    glm::vec3 GetCollisionLineEnd();
+    glm::vec3 GetCollisionSphereFrontPosition();
+    bool TargetIsOnLeft(glm::vec3 targetPosition);
 
     uint64_t g_animatedGameObjectObjectId = 0;
     glm::vec3 m_forward = glm::vec3(0);
@@ -36,6 +47,14 @@ private:
     float m_swimSpeed = 8.0f;
     float m_rotationSpeed = 2.5f;
     int m_logicSubStepCount = 8;
+
+    SharkMovementState m_movementState = SharkMovementState::FOLLOWING_PATH;
+
+    int32_t m_nextPathPointIndex = 0;
+    glm::vec3 m_targetPosition = glm::vec3(0);
+    std::vector<glm::vec3> m_path;
+
+    //glm::vec3 m_lastKnownTargetPosition = glm::vec3(0);
 
    // RigidComponent* m_rigidComponents[SHARK_SPINE_SEGMENT_COUNT];
 
@@ -109,7 +128,7 @@ private:
   //
   // void HuntClosestPlayerInLineOfSight();
   //
-  // SharkMovementState m_movementState;
+  //
   // SharkHuntingState m_huntingState;
   //
   // bool m_hasBitPlayer = false;
@@ -129,10 +148,10 @@ private:
   //
   // std::vector<PxShape*> m_collisionPxShapes;
   //
-  // int m_nextPathPointIndex = -1;
+  // 
   //
-  // glm::vec3 m_lastKnownTargetPosition = glm::vec3(0);
-  // glm::vec3 m_targetPosition = glm::vec3(0);
+  // 
+  // 
   //
   // 
   // 

@@ -33,7 +33,6 @@ void RigidDynamic::Update(float deltaTime) {
     }
 }
 
-
 void RigidDynamic::ActivatePhsyics() {
     if (!m_activePhysics) {
         PxScene* pxScene = Physics::GetPxScene();
@@ -64,4 +63,22 @@ void RigidDynamic::SetPxRigidDynamic(PxRigidDynamic* rigidDynamic) {
 
 void RigidDynamic::SetPxShape(PxShape* shape) {
     m_pxShape = shape; 
+}
+
+
+void RigidDynamic::SetFilterData(PhysicsFilterData filterData) {
+    PxFilterData pxFilterData;
+    pxFilterData.word0 = (PxU32)filterData.raycastGroup;
+    pxFilterData.word1 = (PxU32)filterData.collisionGroup;
+    pxFilterData.word2 = (PxU32)filterData.collidesWith;
+    m_pxShape->setQueryFilterData(pxFilterData);       // ray casts
+    m_pxShape->setSimulationFilterData(pxFilterData);  // collisions
+}
+
+float RigidDynamic::GetVolume() {
+    return Physics::ComputeShapeVolume(m_pxShape);
+}
+
+void RigidDynamic::UpdateMassAndInertia(float density) {
+    PxRigidBodyExt::updateMassAndInertia(*m_pxRigidDynamic, density);
 }

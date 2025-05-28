@@ -25,7 +25,11 @@ namespace Editor {
         else if (GetEditorState() == EditorState::RESIZING_VERTICAL) {
             BackEnd::SetCursor(HELL_CURSOR_VRESIZE);
         }
-        else if (GetEditorState() == EditorState::WALL_PLACEMENT) {
+        else if (GetEditorState() == EditorState::DOOR_PLACEMENT ||
+                 GetEditorState() == EditorState::PICTURE_FRAME_PLACEMENT ||
+                 GetEditorState() == EditorState::TREE_PLACEMENT ||
+                 GetEditorState() == EditorState::WALL_PLACEMENT ||
+                 GetEditorState() == EditorState::WINDOW_PLACEMENT) {
             BackEnd::SetCursor(HELL_CURSOR_CROSSHAIR);
         }
         // Nothing? Then the arrow

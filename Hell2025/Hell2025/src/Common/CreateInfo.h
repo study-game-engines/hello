@@ -73,6 +73,7 @@ struct BulletCreateInfo {
     glm::vec3 direction = glm::vec3(0);
     int32_t weaponIndex = 0;
     uint32_t damage = 0;
+    uint32_t ownerObjectId = 0;
 };
 
 struct BasicDoorCreateInfo {
@@ -91,7 +92,7 @@ struct PictureFrameCreateInfo {
     glm::vec3 position = glm::vec3(0.0f);
     glm::vec3 rotation = glm::vec3(0.0f);
     glm::vec3 scale = glm::vec3(1.0f);
-    PictureFrameType type = PictureFrameType::REGULAR_LANDSCAPE;
+    PictureFrameType type = PictureFrameType::BIG_LANDSCAPE;
 };
 
 struct SpriteSheetObjectCreateInfo {

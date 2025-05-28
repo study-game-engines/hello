@@ -3,7 +3,8 @@
 struct OpenGLShadowCubeMapArray {
     void Init(unsigned int numberOfCubemaps, int size);
     void CleanUp();
-    void ClearDepth();
+    void ClearDepthLayers(float clearValue = 1.0f);
+    void ClearDepthLayer(int layerIndex, float clearValue = 1.0f);
     unsigned int GetHandle()        const { return m_handle; }
     unsigned int GetSize()          const { return m_size; }
     unsigned int GetDepthTexture()  const { return m_depthTexture; }

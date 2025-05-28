@@ -2,7 +2,6 @@
 #include "BackEnd/GLFWIntegration.h"
 #include "BackEnd/BackEnd.h"
 #include "Config/Config.h"
-#include "Imgui/EditorImgui.h"
 #include "Input/Input.h"
 #include "Util.h"
 

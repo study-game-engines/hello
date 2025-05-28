@@ -21,7 +21,7 @@ namespace OpenGLRenderer {
 
         gBuffer->Bind();
         gBuffer->DrawBuffer("FinalLighting");
-;
+
         glBindVertexArray(OpenGLBackEnd::GetVertexDataVAO());
 
         for (int i = 0; i < 4; i++) {

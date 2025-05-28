@@ -7,6 +7,7 @@
 #include "World/World.h"
 
 #include "API/OpenGL/Types/GL_debug_mesh.hpp"
+#include "API/OpenGL/Types/GL_mesh_buffer.h"
 
 namespace OpenGLRenderer {
 
@@ -15,8 +16,83 @@ namespace OpenGLRenderer {
     OpenGLDebugMesh g_debugMeshDepthAwarePoints;
     OpenGLDebugMesh g_debugMeshDepthAwareLines;
 
-    void DebugPass() {
+    OpenGLMeshBuffer g_debugGrid;
 
+    void InitDebugGrid() {
+
+
+        int width = 10;
+        int height = 10;
+
+        int n = width;
+        int m = height;
+
+        std::vector<Vertex> vertices;
+        std::vector<unsigned int> indices;
+
+        vertices.resize(static_cast<size_t>(width) * height);
+
+        // Positions
+        float N_half = (static_cast<float>(n) - 1.0f) * 0.5f;
+        float M_half = (static_cast<float>(m) - 1.0f) * 0.5f;
+
+        for (int i = 0; i < m; ++i) {
+            for (int j = 0; j < n; ++j) {
+                vertices[i * n + j].position = glm::vec3(
+                    static_cast<float>(j) - N_half,
+                    0.0f,
+                    static_cast<float>(i) - M_half
+                );
+                // Default normals
+                vertices[i * n + j].normal = glm::vec3(0.0f, 1.0f, 0.0f);
+            }
+        }
+
+
+        // Reserve an upper bound (approx)
+        indices.reserve((n * (m - 1) * 2) + 2 * (m - 2));
+
+        for (int i = 0; i < m - 1; ++i) {
+            bool even = (i % 2) == 0;
+
+            // build the vertical ladder for this row
+            if (even) {
+                for (int j = 0; j < n; ++j) {
+                    indices.push_back(i * n + j);
+                    indices.push_back((i + 1) * n + j);
+                }
+            }
+            else {
+                for (int j = n - 1; j >= 0; --j) {
+                    indices.push_back((i + 1) * n + j);
+                    indices.push_back(i * n + j);
+                }
+            }
+
+            // insert two degenerates to restart without flipping
+            if (i < m - 2) {
+
+                // last vertex of this strip
+                unsigned int last = indices.back();
+
+                // first vertex of next strip
+                unsigned int nextFirst = even
+                    ? ((i + 1) * n + (n - 1))   // even ended at bottom right
+                    : ((i + 1) * n + 0);        // odd  ended at top   left
+
+                indices.push_back(last);
+                indices.push_back(nextFirst);
+            }
+        }
+        //indexCount = 2 * n * (m - 1) + 2 * (m - 2);
+        //std::vector<glm::vec3>;
+        //for (int i = 0;
+        //g_debugGrid
+
+        g_debugGrid.UpdateBuffers(vertices, indices);
+    }
+
+    void DebugPass() {
         OpenGLShader* shader = GetShader("DebugVertex");
         OpenGLFrameBuffer* gBuffer = GetFrameBuffer("GBuffer");
 
@@ -35,6 +111,7 @@ namespace OpenGLRenderer {
       
         shader->Bind();
 
+        //InitDebugGrid();
         UpdateDebugMesh();
 
         for (int i = 0; i < 4; i++) {

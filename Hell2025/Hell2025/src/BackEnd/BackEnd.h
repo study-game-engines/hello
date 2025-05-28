@@ -5,9 +5,9 @@ namespace BackEnd {
     // Core
     bool Init(API api, WindowedMode windowMode);
     void BeginFrame();
+    void EndFrame();
     void UpdateGame();
     void UpdateSubSystems();
-    void EndFrame();
     void CleanUp(); 
     void ToggleBindlessTextures();
     bool RenderDocFound();

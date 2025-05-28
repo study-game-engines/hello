@@ -1,6 +1,7 @@
 #include "Light.h"
 #include "AssetManagement/AssetManager.h"
 #include "Physics/Physics.h"
+#include "World/World.h"
 #include "Util.h"
 #include "UniqueID.h"
 
@@ -41,10 +42,28 @@ Light::Light(LightCreateInfo createInfo) {
     m_objectId = UniqueID::GetNext();
 }
 
-
 void Light::Update(float deltaTime) {
     UpdateRenderItems();
     UpdateMatricesAndFrustum();
+    UpdateDirtyState();
+}
+
+
+void Light::UpdateDirtyState() {
+    m_dirty = false;
+
+    // Doors
+    for (Door& door : World::GetDoors()) {
+        if (door.MovedThisFrame()) {
+            for (const RenderItem& renderItem : door.GetRenderItems()) {
+                AABB aabb(renderItem.aabbMin, renderItem.aabbMax);
+                if (aabb.IntersectsSphere(GetPosition(), GetRadius())) {
+                    m_dirty = true;
+                    return;
+                }
+            }
+        }
+    }
 }
 
 void Light::UpdateRenderItems() {

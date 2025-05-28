@@ -4,7 +4,6 @@
 #include "BackEnd/BackEnd.h"
 #include "Config/Config.h"
 #include "Core/Game.h"
-#include "ImGui/EditorImgui.h"
 #include "ImGui/Types/Types.h"
 #include "Input/Input.h"
 #include "Renderer/Renderer.h"
@@ -61,8 +60,11 @@ namespace Editor {
         editor.AddChild("Map", &Callbacks::OpenMapEditor, "F7");
         editor.AddChild("Weapons", &Callbacks::OpenWeaponsEditor, "F8");
 
-        EditorUI::FileMenuNode& add = elements.fileMenu.AddMenuNode("Add");
-        add.AddChild("Wall", &Callbacks::BeginAddingWall, "");
+        EditorUI::FileMenuNode& insert = elements.fileMenu.AddMenuNode("Insert");
+        insert.AddChild("Door", &Callbacks::BeginAddingDoor, "");
+        insert.AddChild("Picture Frame", &Callbacks::BeginAddingPictureFrame, "");
+        insert.AddChild("Wall", &Callbacks::BeginAddingWall, "");
+        insert.AddChild("Window", &Callbacks::BeginAddingWindow, "");
     }
 
     void InitHouseEditorPropertiesElements() {
@@ -141,7 +143,6 @@ namespace Editor {
             g_currentFilename = "TestHouse";
             HouseCreateInfo* houseCreateInfo = HouseManager::GetHouseCreateInfoByFilename(g_currentFilename);
             World::LoadSingleHouse(houseCreateInfo);
-            World::SetObjectsToInitalState();
 
             // Move player somewhere reasonable
             Player* player = Game::GetLocalPlayerByIndex(0);
@@ -215,20 +216,6 @@ namespace Editor {
             }
         }
 
-        if (GetEditorState() == EditorState::IDLE) {
-            CancelWallPlacement();
-        }
-
-
-        // Hotkey to add new wall
-        //if (Input::KeyPressed(HELL_KEY_W) && GetEditorState() == EditorState::IDLE) { // you need to make this only happen when imgui does NOT have control
-        //    EnterWallPlacementState();
-        //    BeginWall();
-        //}
-
-        if (GetEditorState() == EditorState::WALL_PLACEMENT) {
-            UpdateWallPlacement();
-        }
 
 
         // Render selected wall/plane lines and vertices

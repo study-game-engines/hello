@@ -24,8 +24,6 @@ namespace Editor {
     void ToggleEditorOpenState();
     void SetEditorMode(EditorMode editorMode);
     void SetActiveViewportIndex(int index);
-    //void SetSelectedObjectIndex(int index);
-    //void SetHoveredObjectIndex(int index);
     void SetSelectedObjectType(ObjectType editorObjectType);
     void SetHoveredObjectType(ObjectType editorObjectType);
     void SetSplitX(float value);
@@ -33,11 +31,8 @@ namespace Editor {
     void SetViewportView(uint32_t viewportIndex, glm::vec3 viewportOrigin, CameraView targetView);
     void SetEditorState(EditorState editorState);
     void SetViewportOrthographicState(uint32_t viewportIndex, bool state);
-    //void SetCameraView(uint32_t cameraViewIndex, CameraView cameraView);
     void SetViewportOrthoSize(uint32_t viewportIndex, float size);
     void SetEditorViewportSplitMode(EditorViewportSplitMode mode);
-    //void UpdateObjectSelection();
-
 
     void UpdateGizmoInteract();
 
@@ -89,7 +84,6 @@ namespace Editor {
     void ShowOpenHouseWindow();
     void CloseAllHouseEditorWindows();
     void CreateHouseEditorImGuiElements();
-    void EnterWallPlacementState();
 
     // Map Editor
     void InitMapEditor();
@@ -104,29 +98,30 @@ namespace Editor {
     void InitSectorEditor();
     void OpenSectorEditor();
     void UpdateSectorEditor();
-    void LoadEditorSector(const std::string& sectorName);
-    void SaveEditorSector();
     void CreateSectorEditorImGuiElements();
     void ShowNewSectorWindow();
     void ShowOpenSectorWindow();
     void CloseAllSectorEditorWindows();
-    SectorCreateInfo* GetEditorSectorCreateInfo();
-    const std::string& GetEditorSectorName();
 
     void CloseAllEditorWindows();
 
-    //EditorUI::NewFileWindow& CreateNewFileWindow(const std::string& name, const std::string& title, NewFileCallback callback);
-    //EditorUI::NewFileWindow* GetNewFileWindow(const std::string& name);
-    //EditorUI::OpenFileWindow& CreateOpenFileWindow(const std::string& name, const std::string& title, const std::string filepath, OpenFileCallback callback);
-    //EditorUI::OpenFileWindow* GetOpenFileWindow(const std::string& name);
+    // Object placement
+    void UpdateDoorPlacement();
+    void UpdatePictureFramePlacement();
+    void UpdateTreePlacement();
+    void UpdateWallPlacement();
+    void UpdateWindowPlacement();
+    void UpdateObjectPlacement();
+    void ExitObjectPlacement();
+    void SetPlacementObjectId(uint64_t objectId);
+    uint64_t GetPlacementObjectId();
 
-    //void SetCurrentMapName(const std::string& filename);
-    //const std::string& GetCurrentMapName();
+    // Ray intersections
+    glm::vec3 GetMouseRayPlaneIntersectionPoint(glm::vec3 planeOrigin, glm::vec3 planeNormal);
+    PhysXRayResult GetEditorPhysXMouseRayHit();
 
     int GetActiveViewportIndex();
     int GetHoveredViewportIndex();
-    //int GetSelectedObjectIndex();
-    //int GetHoveredObjectIndex();
     bool IsOpen();
     bool IsClosed();
     bool IsViewportOrthographic(uint32_t viewportIndex);
@@ -141,15 +136,18 @@ namespace Editor {
     Viewport* GetActiveViewport();
     ShadingMode GetViewportModeByIndex(uint32_t index);
     CameraView GetCameraViewByIndex(uint32_t index);
-    //ObjectType GetSelectedObjectType();
-    //ObjectType GetHoveredObjectType();
     EditorState GetEditorState();
     EditorViewportSplitMode GetEditorViewportSplitMode();
     SelectionRectangleState& GetSelectionRectangleState();
     EditorMode& GetEditorMode();
     Axis GetAxisConstraint();
 
-    std::string GetCurrentHeightMapName();
+    const std::string& GetSectorName();
+    const std::string& GetHeightMapName();
+
+    // Saving/Loading
+    void SaveSector();
+    void LoadSectorFromDisk(const std::string& sectorName);
 
     // Dividers
     bool IsVerticalDividerHovered();

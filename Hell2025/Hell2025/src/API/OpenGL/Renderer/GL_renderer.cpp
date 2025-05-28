@@ -253,6 +253,10 @@ namespace OpenGLRenderer {
         g_shaders["DecalPaintMask"] = OpenGLShader({ "gl_decal_paint_mask.comp" });
         g_shaders["Decals"] = OpenGLShader({ "GL_decals.vert", "GL_decals.frag" });
         g_shaders["EditorMesh"] = OpenGLShader({ "GL_editor_mesh.vert", "GL_editor_mesh.frag" });
+        g_shaders["FttRadix64Vertical"] = OpenGLShader({ "GL_ftt_radix_64_vertical.comp" });
+        g_shaders["FttRadix8Vertical"] = OpenGLShader({ "GL_ftt_radix_8_vertical.comp" });
+        g_shaders["FttRadix64Horizontal"] = OpenGLShader({ "GL_ftt_radix_64_horizontal.comp" });
+        g_shaders["FttRadix8Horizontal"] = OpenGLShader({ "GL_ftt_radix_8_horizontal.comp" });
         g_shaders["Fur"] = OpenGLShader({ "GL_fur.vert", "GL_fur.frag" });
         g_shaders["FurComposite"] = OpenGLShader({ "GL_fur_composite.comp" });
         g_shaders["EmissiveComposite"] = OpenGLShader({ "GL_emissive_composite.comp" });
@@ -274,10 +278,7 @@ namespace OpenGLRenderer {
         g_shaders["HeightMapPaint"] = OpenGLShader({ "GL_heightmap_paint.comp" });
         g_shaders["LightCulling"] = OpenGLShader({ "GL_light_culling.comp" });
         g_shaders["Lighting"] = OpenGLShader({ "GL_lighting.comp" });
-
-
         g_shaders["CSMLighting"] = OpenGLShader({ "GL_lighting.vert", "GL_lighting.frag"});
-
         g_shaders["OceanSurfaceComposite"] = OpenGLShader({ "GL_ocean_surface_composite.comp" });
         g_shaders["OceanGeometry"] = OpenGLShader({ "GL_ocean_geometry.vert", "GL_ocean_geometry.frag", "GL_ocean_geometry.tesc", "GL_ocean_geometry.tese" });
         g_shaders["OceanCalculateSpectrum"] = OpenGLShader({ "GL_ocean_calculate_spectrum.comp" });
@@ -286,7 +287,6 @@ namespace OpenGLRenderer {
         g_shaders["OceanUnderwaterMaskPreProcess"] = OpenGLShader({ "GL_ocean_underwater_mask_preprocess.comp" });
         g_shaders["OceanPositionReadback"] = OpenGLShader({ "GL_ocean_position_readback.comp" });
         g_shaders["GaussianBlur"] = OpenGLShader({ "GL_gaussian_blur.comp" });
-
         g_shaders["Outline"] = OpenGLShader({ "GL_outline.vert", "GL_outline.frag" });
         g_shaders["OutlineComposite"] = OpenGLShader({ "GL_outline_composite.comp" });
         g_shaders["OutlineMask"] = OpenGLShader({ "GL_outline_mask.vert", "GL_outline_mask.frag" });
@@ -300,6 +300,7 @@ namespace OpenGLRenderer {
         g_shaders["Winston"] = OpenGLShader({ "GL_winston.vert", "GL_winston.frag" });
         g_shaders["CSMDepth"] = OpenGLShader({ "GL_csm_depth.vert", "GL_csm_depth.frag", "GL_csm_depth.geom" });
         g_shaders["ZeroOut"] = OpenGLShader({ "GL_zero_out.comp" });
+        g_shaders["VatBlood"] = OpenGLShader({ "GL_vat_blood.vert", "GL_vat_blood.frag" });
     }
 
     void UpdateSSBOS() {
@@ -349,6 +350,7 @@ namespace OpenGLRenderer {
         GrassPass();
         GeometryPass();
         WeatherBoardsPass();
+        VatBloodPass();
         TextureReadBackPass();
         LightCullingPass();
         LightingPass();
@@ -606,7 +608,7 @@ namespace OpenGLRenderer {
             }
         }
     }
-    
+
     void CreateSSBO(const std::string& name, float size, GLbitfield flags) {
         g_ssbos[name] = OpenGLSSBO(size, flags);
     }

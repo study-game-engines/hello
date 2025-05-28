@@ -25,8 +25,6 @@ namespace Ocean {
 
     const std::vector<std::complex<float>>& GetH0(int bandIndex);
 
-    void ComputeInverseFFT2D(unsigned int fftResolution, unsigned int inputHandle, unsigned int outputHandle);
-
     const float GetDisplacementScale();
     const float GetHeightScale();
 

@@ -5,6 +5,10 @@
       <Configuration>Debug</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Profiling|x64">
+      <Configuration>Profiling</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Release|x64">
       <Configuration>Release</Configuration>
       <Platform>x64</Platform>
@@ -33,6 +37,14 @@
     <CharacterSet>Unicode</CharacterSet>
     <EnableASAN>false</EnableASAN>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profiling|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+    <EnableASAN>false</EnableASAN>
+  </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
@@ -42,6 +54,9 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Profiling|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
@@ -54,6 +69,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)\$(ProjectName)\Build\Release\</OutDir>
     <IntDir>$(SolutionDir)\$(ProjectName)\Build\Intermediate\Release\</IntDir>
+    <CopyLocalDeploymentContent>false</CopyLocalDeploymentContent>
+    <TargetName>Hell2025</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profiling|x64'">
+    <OutDir>$(SolutionDir)\$(ProjectName)\Build\Profiling\</OutDir>
+    <IntDir>$(SolutionDir)\$(ProjectName)\Build\Intermediate\Profiling\</IntDir>
     <CopyLocalDeploymentContent>false</CopyLocalDeploymentContent>
     <TargetName>Hell2025</TargetName>
   </PropertyGroup>
@@ -75,6 +96,7 @@
       <AdditionalLibraryDirectories>vendor\assimp\lib;vendor\GLFW\lib\Release;vendor\compressonator\lib;vendor\fmod\lib;vendor\Vulkan;vendor\physx\lib\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>glfw3.lib;fmod_vc.lib;assimp-vc143-mt.lib;Compressonator_MD_DLL.lib;PhysX_64.lib;PhysXCommon_64.lib;PhysXCooking_64.lib;PhysXExtensions_static_64.lib;PhysXFoundation_64.lib;PhysXTask_static_64.lib;PhysXPvdSDK_static_64.lib;PVDRuntime_64.lib;PhysXCharacterKinematic_static_64.lib;vulkan-1.lib;shaderc_combinedd.lib;liblz4_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <TreatLinkerWarningAsErrors>false</TreatLinkerWarningAsErrors>
+      <AdditionalOptions>/PROFILE %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
       <Command>copy /Y "$(ProjectDir)vendor\dll\fmod.dll" "$(TargetDir)fmod.dll"
@@ -119,6 +141,50 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
       <AdditionalDependencies>glfw3.lib;Compressonator_MD.lib;CMP_Framework_MD.lib;assimp-vc143-mt.lib;fmod_vc.lib;vulkan-1.lib;PhysX_64.lib;PhysXCommon_64.lib;PhysXCooking_64.lib;PhysXFoundation_64.lib;PhysXTask_static_64.lib;PhysXPvdSDK_static_64.lib;PVDRuntime_64.lib;PhysXExtensions_static_64.lib;PhysXCharacterKinematic_static_64.lib;fluidsynth-3.lib;dinput8.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <TreatLinkerWarningAsErrors>false</TreatLinkerWarningAsErrors>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
+      <Profile>false</Profile>
+    </Link>
+    <PostBuildEvent>
+      <Command>copy /Y "$(ProjectDir)vendor\DLLs\fmod.dll" "$(TargetDir)fmod.dll"
+copy /Y "$(ProjectDir)vendor\DLLs\assimp-vc143-mt.dll" "$(TargetDir)assimp-vc143-mt.dll"
+xcopy "$(ProjectDir)res\shaders" "$(TargetDir)res\shaders" /e /y /i /r
+
+copy /Y "$(ProjectDir)vendor\DLLs\PhysX_64.dll" "$(TargetDir)PhysX_64.dll"
+copy /Y "$(ProjectDir)vendor\DLLs\PhysXCommon_64.dll" "$(TargetDir)PhysXCommon_64.dll"
+copy /Y "$(ProjectDir)vendor\DLLs\PhysXCooking_64.dll" "$(TargetDir)PhysXCooking_64.dll"
+copy /Y "$(ProjectDir)vendor\DLLs\PhysXFoundation_64.dll" "$(TargetDir)PhysXFoundation_64.dll"
+copy /Y "$(ProjectDir)vendor\DLLs\PVDRuntime_64.dll" "$(TargetDir)PVDRuntime_64.dll"
+xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
+</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profiling|x64'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;TRACY_ENABLE;GLM_FORCE_DEPTH_ZERO_TO_ONE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>vendor\earcut\include;vendor\clipper\include;src;vendor\compressonator\include\;vendor\gli\include;src\Util;src\Common;vendor\glad\include;vendor\GLFW\include;vendor\glm;vendor\stb_image;vendor\assimp\include;vendor;vendor\fmod\include;vendor\tinyexr;vendor\VkBootstrap;vendor\Vulkan\include;vendor\VulkanMemoryAllocator\include;vendor\physx\include;vendor\nlohmann_json\include;vendor\imgui\include;vendor\lodepng\include;vendor\bvh\include;vendor\fluidsynth\include;vendor\midifile\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <Optimization>MaxSpeed</Optimization>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>false</EnableCOMDATFolding>
+      <OptimizeReferences>false</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>vendor\assimp\lib;vendor\GLFW\lib\Release;vendor\compressonator\lib;vendor\fmod\lib;vendor\Vulkan;vendor\physx\lib\release;vendor\fluidsynth\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;Compressonator_MD.lib;CMP_Framework_MD.lib;assimp-vc143-mt.lib;fmod_vc.lib;vulkan-1.lib;PhysX_64.lib;PhysXCommon_64.lib;PhysXCooking_64.lib;PhysXFoundation_64.lib;PhysXTask_static_64.lib;PhysXPvdSDK_static_64.lib;PVDRuntime_64.lib;PhysXExtensions_static_64.lib;PhysXCharacterKinematic_static_64.lib;fluidsynth-3.lib;dinput8.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <TreatLinkerWarningAsErrors>false</TreatLinkerWarningAsErrors>
+      <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
+      <Profile>true</Profile>
     </Link>
     <PostBuildEvent>
       <Command>copy /Y "$(ProjectDir)vendor\DLLs\fmod.dll" "$(TargetDir)fmod.dll"
@@ -147,6 +213,7 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <ClCompile Include="src\API\OpenGL\Renderer\RenderPasses\GL_glass_pass.cpp" />
     <ClCompile Include="src\API\OpenGL\Renderer\RenderPasses\GL_ocean_passes.cpp" />
     <ClCompile Include="src\API\OpenGL\Renderer\RenderPasses\GL_post_processing.cpp" />
+    <ClCompile Include="src\API\OpenGL\Renderer\RenderPasses\GL_vat_blood_pass.cpp" />
     <ClCompile Include="src\API\OpenGL\Renderer\RenderPasses\GL_weatherboards_pass.cpp" />
     <ClCompile Include="src\API\OpenGL\Renderer\RenderPasses\GL_winston_pass.cpp" />
     <ClCompile Include="src\API\OpenGL\Renderer\Utility\GL_height_map_utility.cpp" />
@@ -205,6 +272,7 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <ClCompile Include="src\Audio\MidiFile.cpp" />
     <ClCompile Include="src\Audio\MidiFileManager.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profiling|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="src\Audio\Synth.cpp" />
@@ -220,8 +288,19 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <ClCompile Include="src\Editor\Editors\Editor_house.cpp" />
     <ClCompile Include="src\Editor\Editors\Editor_map.cpp" />
     <ClCompile Include="src\Editor\Editors\Editor_sector.cpp" />
-    <ClCompile Include="src\Editor\Editors\House\Editor_wall_placement.cpp" />
+    <ClCompile Include="src\Editor\Editor_rays_intersections.cpp" />
+    <ClCompile Include="src\Editor\ObjectPlacement\Editor_door_placement.cpp" />
+    <ClCompile Include="src\Editor\ObjectPlacement\Editor_picture_frame_placement.cpp" />
+    <ClCompile Include="src\Editor\ObjectPlacement\Editor_tree_placement.cpp" />
+    <ClCompile Include="src\Editor\ObjectPlacement\Editor_wall_placement.cpp" />
     <ClCompile Include="src\Editor\Editor_objects.cpp" />
+    <ClCompile Include="src\Editor\ObjectPlacement\Editor_object_placement.cpp" />
+    <ClCompile Include="src\Editor\ObjectPlacement\Editor_window_placement.cpp" />
+    <ClCompile Include="src\Physics\Physics_callbacks.cpp" />
+    <ClCompile Include="src\Physics\Physics_ignore_lists.cpp" />
+    <ClCompile Include="src\Player\Player_character_model.cpp" />
+    <ClCompile Include="src\Player\Player_ragdoll.cpp" />
+    <ClCompile Include="src\Types\Effects\VolumetricBloodSplatter.cpp" />
     <ClCompile Include="src\Game\Allies\Mermaid\Mermaid.cpp" />
     <ClCompile Include="src\Game\Enemies\Shark\Shark.cpp" />
     <ClCompile Include="src\File\File_debug.cpp" />
@@ -237,17 +316,15 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <ClCompile Include="src\Modelling\Unused\Modelling.cpp" />
     <ClCompile Include="src\Imgui\ImguiBackEnd.cpp" />
     <ClCompile Include="src\Core\JSON.cpp" />
-    <ClCompile Include="src\Imgui\EditorImgui.cpp" />
     <ClCompile Include="src\Imgui\Types\Types.cpp" />
     <ClCompile Include="src\File\File_height_map.cpp" />
     <ClCompile Include="src\Math\AABB.cpp" />
-    <ClCompile Include="src\Ocean\FFTSolver.cpp" />
-    <ClCompile Include="src\Ocean\GLFFT\glfft.cpp" />
-    <ClCompile Include="src\Ocean\GLFFT\glfft_gl_interface.cpp" />
-    <ClCompile Include="src\Ocean\GLFFT\glfft_wisdom.cpp" />
     <ClCompile Include="src\Ocean\Ocean.cpp" />
+    <ClCompile Include="src\Physics\Physics_d6_joints.cpp" />
+    <ClCompile Include="src\Physics\Physics_ragdolls.cpp" />
+    <ClCompile Include="src\Physics\Types\D6Joint.cpp" />
     <ClCompile Include="src\Player\Player_piano.cpp" />
-    <ClCompile Include="src\Types\Game\BasicDoor.cpp" />
+    <ClCompile Include="src\Physics\Types\Ragdoll.cpp" />
     <ClCompile Include="src\Types\House\WeatherBoards.cpp" />
     <ClCompile Include="src\Types\Misc\Piano.cpp" />
     <ClCompile Include="src\Types\Misc\PictureFrame.cpp" />
@@ -350,7 +427,9 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <ClCompile Include="src\World\World.cpp" />
     <ClCompile Include="src\World\World_bvh.cpp" />
     <ClCompile Include="src\World\World_house.cpp" />
+    <ClCompile Include="src\World\World_process_bullets.cpp" />
     <ClCompile Include="src\World\World_render_submit.cpp" />
+    <ClCompile Include="src\World\World_saving.cpp" />
     <ClCompile Include="src\World\World_update.cpp" />
     <ClCompile Include="src\World\World_util.cpp" />
     <ClCompile Include="vendor\clipper\src\clipper.engine.cpp" />
@@ -450,6 +529,8 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <None Include="res\shaders\OpenGL\GL_ui.frag" />
     <None Include="res\shaders\OpenGL\GL_ui.vert" />
     <None Include="res\shaders\common\pbr_functions.glsl" />
+    <None Include="res\shaders\OpenGL\GL_vat_blood.frag" />
+    <None Include="res\shaders\OpenGL\GL_vat_blood.vert" />
     <None Include="res\shaders\OpenGL\GL_zero_out.comp" />
     <None Include="res\shaders\terrain.frag" />
     <None Include="res\shaders\terrain.vert" />
@@ -511,28 +592,23 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <ClInclude Include="src\Callbacks\Callbacks.h" />
     <ClInclude Include="src\Common\UniqueID.h" />
     <ClInclude Include="src\Bvh\Bvh.h" />
+    <ClInclude Include="src\Types\Effects\VolumetricBloodSplatter.h" />
     <ClInclude Include="src\Game\Allies\Mermaid\Mermaid.h" />
     <ClInclude Include="src\Game\Enemies\Shark\Shark.h" />
     <ClInclude Include="src\Handlers\OpenHandler.h" />
+    <ClInclude Include="src\Math\LineMath.hpp" />
     <ClInclude Include="src\Modelling\Clipping.h" />
     <ClInclude Include="src\Modelling\Types\ClippingCube.h" />
     <ClInclude Include="src\Modelling\Unused\EditableMesh.h" />
     <ClInclude Include="src\Modelling\Unused\Modelling.h" />
     <ClInclude Include="src\Imgui\ImguiBackEnd.h" />
     <ClInclude Include="src\Core\JSON.h" />
-    <ClInclude Include="src\Imgui\EditorImgui.h" />
     <ClInclude Include="src\Imgui\Types\Types.h" />
     <ClInclude Include="src\Math\AABB.h" />
-    <ClInclude Include="src\Ocean\FFTSolver.h" />
-    <ClInclude Include="src\Ocean\GLFFT\glfft.hpp" />
-    <ClInclude Include="src\Ocean\GLFFT\glfft_common.hpp" />
-    <ClInclude Include="src\Ocean\GLFFT\glfft_gl_api_headers.hpp" />
-    <ClInclude Include="src\Ocean\GLFFT\glfft_gl_interface.hpp" />
-    <ClInclude Include="src\Ocean\GLFFT\glfft_interface.hpp" />
-    <ClInclude Include="src\Ocean\GLFFT\glfft_wisdom.hpp" />
     <ClInclude Include="src\Ocean\Ocean.h" />
     <ClInclude Include="src\Physics\CollisionReports.h" />
-    <ClInclude Include="src\Types\Game\BasicDoor.h" />
+    <ClInclude Include="src\Physics\Types\D6Joint.h" />
+    <ClInclude Include="src\Physics\Types\Ragdoll.h" />
     <ClInclude Include="src\Types\House\WeatherBoards.h" />
     <ClInclude Include="src\Types\Misc\Piano.h" />
     <ClInclude Include="src\Types\Misc\PictureFrame.h" />

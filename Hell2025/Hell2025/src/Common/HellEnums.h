@@ -78,16 +78,18 @@ enum class ObjectType {
     PICK_UP,
     TREE,
     UNDEFINED,
-    PICTURE_FRAME,
-    WALL,
-    WALL_SEGMENT,
-    WINDOW,
     PIANO,
     PIANO_KEY,
     PIANO_KEYBOARD_COVER,
     PIANO_TOP_COVER,
     PIANO_SHEET_MUSIC_REST,
     PIANO_SHEET_SUSTAIN_PEDAL,
+    PICTURE_FRAME,
+    RAGDOLL_ENEMY,
+    RAGDOLL_PLAYER,
+    WALL,
+    WALL_SEGMENT,
+    WINDOW
 };
 
 enum class Axis {
@@ -132,7 +134,13 @@ enum struct EditorState {
     GIZMO_SCALING,
     GIZMO_ROTATING,
     DRAGGING_SELECT_RECT,
-    WALL_PLACEMENT
+
+    // Object placement
+    DOOR_PLACEMENT,
+    PICTURE_FRAME_PLACEMENT,
+    TREE_PLACEMENT,
+    WALL_PLACEMENT,
+    WINDOW_PLACEMENT
 };
 
 enum WeaponAction {
@@ -179,12 +187,13 @@ enum CollisionGroup : uint64_t {
     ENVIROMENT_OBSTACLE = 4,
     GENERIC_BOUNCEABLE = 8,
     ITEM_PICK_UP = 16,
-    RAGDOLL = 32,
+    RAGDOLL_PLAYER = 32,
     DOG_CHARACTER_CONTROLLER = 64,
     GENERTIC_INTERACTBLE = 128,
     ENVIROMENT_OBSTACLE_NO_DOG = 256,
     SHARK = 512,
-    LADDER = 1024
+    LADDER = 1024,
+    RAGDOLL_ENEMY = 2048
 };
 
 // Re-evaluate how this works, coz it alway fucks you up, 
@@ -192,16 +201,13 @@ enum CollisionGroup : uint64_t {
 enum RaycastGroup {
     RAYCAST_DISABLED = 0,
     RAYCAST_ENABLED = 1,
-    PLAYER_1_RAGDOLL = 2,
-    PLAYER_2_RAGDOLL = 4,
-    PLAYER_3_RAGDOLL = 8,
-    PLAYER_4_RAGDOLL = 16,
     DOBERMAN = 32
 };
 
 enum DebugRenderMode {
     NONE = 0,
     DECALS,
+    RAGDOLLS,
     PATHFINDING_RECAST,
     PHYSX_ALL,
     PHYSX_RAYCAST,
@@ -253,6 +259,7 @@ enum struct PhysicsType {
     RIGID_STATIC,
     HEIGHT_FIELD,
     GROUND_PLANE,
+    CHARACTER_CONTROLLER,
     UNDEFINED
 };
 
@@ -310,4 +317,23 @@ enum class PictureFrameType {
     REGULAR_PORTRAIT,
     REGULAR_LANDSCAPE,
     UNDEFINED
+}; 
+
+enum class RaycastIgnoreFlags : uint32_t {
+    NONE = 0,
+    PLAYER_CHARACTER_CONTROLLERS = 1 << 0,
+    PLAYER_RAGDOLLS = 1 << 1,
 };
+
+inline RaycastIgnoreFlags operator|(RaycastIgnoreFlags a, RaycastIgnoreFlags b) {
+    return static_cast<RaycastIgnoreFlags>(static_cast<uint32_t>(a) | static_cast<uint32_t>(b));
+}
+
+inline RaycastIgnoreFlags operator&(RaycastIgnoreFlags a, RaycastIgnoreFlags b) {
+    return static_cast<RaycastIgnoreFlags>(static_cast<uint32_t>(a) & static_cast<uint32_t>(b));
+}
+
+inline RaycastIgnoreFlags& operator|=(RaycastIgnoreFlags& a, RaycastIgnoreFlags b) {
+    a = a | b;
+    return a;
+}

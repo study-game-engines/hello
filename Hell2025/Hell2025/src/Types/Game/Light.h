@@ -17,6 +17,7 @@ struct Light {
     const glm::mat4 GetProjectionView(int index) const      { return m_projectionTransforms[index]; }
     const float GetRadius() const                           { return m_radius; }
     const float GetStrength() const                         { return m_strength; }
+    const bool IsDirty() const                              { return m_dirty; }
     const glm::vec3& GetPosition() const                    { return m_position; }
     const glm::vec3& GetColor() const                       { return m_color; }
     const uint64_t GetObjectId() const                      { return m_objectId; }
@@ -25,7 +26,9 @@ struct Light {
 
 private:
     void UpdateRenderItems();
+    void UpdateDirtyState();
 
+    bool m_dirty = true;
     uint64_t m_objectId = 0;
     glm::vec3 m_position = glm::vec3(0.0f, 0.0f, 0.0f);
     glm::vec3 m_color = glm::vec3(1, 0.7799999713897705, 0.5289999842643738);

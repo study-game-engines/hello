@@ -4,6 +4,13 @@ void MeshBuffer::Reset() {
     m_meshes.clear();
     m_vertices.clear();
     m_indices.clear();
+
+    if (BackEnd::GetAPI() == API::OPENGL) {
+        m_opengMeshBuffer.ReleaseBuffers();
+    }
+    if (BackEnd::GetAPI() == API::VULKAN) {
+        //m_vkMeshBuffer.ReleaseBuffers();
+    }
 }
 
 uint32_t MeshBuffer::AddMesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const std::string& name) {

@@ -68,6 +68,7 @@ namespace OpenGLRenderer {
     void SpriteSheetPass();
     void TextureReadBackPass();
     void UIPass();
+    void VatBloodPass();
     void WeatherBoardsPass();
 
     // Utility passes

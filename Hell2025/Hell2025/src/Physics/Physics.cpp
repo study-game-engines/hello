@@ -98,6 +98,14 @@ namespace Physics {
         userData.physicsType = PhysicsType::GROUND_PLANE;
         userData.objectType = ObjectType::NONE;
         groundPlane->userData = new PhysicsUserData(userData);
+
+        // This might not work!
+        PxScene* pxScene = GetPxScene();
+        pxScene->setVisualizationParameter(PxVisualizationParameter::eJOINT_LOCAL_FRAMES, 1.0f);
+        pxScene->setVisualizationParameter(PxVisualizationParameter::eJOINT_LIMITS, 1.0f);
+        // This may not work!
+
+        LoadRagdollsFromDisk();
     }
 
     void BeginFrame() {
@@ -161,6 +169,20 @@ namespace Physics {
 
     PxControllerManager* GetCharacterControllerManager() {
         return g_characterControllerManager;
+    }
+
+    void PrintSceneInfo() {
+        std::cout << "\n";
+        std::cout << " **************************\n";
+        std::cout << " *                        *\n";
+        std::cout << " *    PhysX Scene Info    *\n";
+        std::cout << " *                        *\n";
+        std::cout << " **************************\n";
+        std::cout << "\n";
+
+        PrintSceneRigidInfo();
+        PrintSceneD6JointInfo();
+        PrintSceneRagdollInfo();
     }
 }
 

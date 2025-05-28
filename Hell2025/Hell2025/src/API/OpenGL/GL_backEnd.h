@@ -26,8 +26,9 @@ namespace OpenGLBackEnd {
     void UploadWeightedVertexData(std::vector<WeightedVertex>& vertices, std::vector<uint32_t>& indices);
     void AllocateSkinnedVertexBufferSpace(int vertexCount);
 
+    void SetDepthClearValue(float value);
+
     OpenGLHeightMapMesh& GetHeightMapMesh();
-    void ReadBackHeightmapMeshData();
 
     GLuint GetVertexDataVAO();
     GLuint GetVertexDataVBO();

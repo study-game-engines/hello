@@ -13,29 +13,15 @@ namespace SectorManager {
         heightMapEditorSectorCreateInfo.sectorName = name;
     }
 
-    void Init() {
+    void LoadSectorsFromDisk() {
         g_sectorCreateInfoSet.clear();
-
-        // These are empty sectors used by the heightmap editor
-        CreateHeightMapEditorSector("HeightMapEditor_NE");
-        CreateHeightMapEditorSector("HeightMapEditor_N");
-        CreateHeightMapEditorSector("HeightMapEditor_NW");
-        CreateHeightMapEditorSector("HeightMapEditor_E");
-        CreateHeightMapEditorSector("HeightMapEditor_Center");
-        CreateHeightMapEditorSector("HeightMapEditor_W");
-        CreateHeightMapEditorSector("HeightMapEditor_SE");
-        CreateHeightMapEditorSector("HeightMapEditor_S");
-        CreateHeightMapEditorSector("HeightMapEditor_SW");
-
-        SectorCreateInfo* test = GetSectorCreateInfoByName("HeightMapEditor_Center");
-        test->heightMapName = "Center";
 
         // Load sectors from disk
         std::vector<FileInfo> files = Util::IterateDirectory("res/sectors");
         for (FileInfo& file : files) {
             SectorCreateInfo sectorCreateInfo = JSON::LoadSector(file.path);
             g_sectorCreateInfoSet.emplace_back(sectorCreateInfo);
-            std::cout << "Loaded sector: '" << file.path << "' with height map: '" << sectorCreateInfo.heightMapName << "'\n";
+            //std::cout << "Loaded sector: '" << file.path << "' with height map: '" << sectorCreateInfo.heightMapName << "'\n";
         }
     }
 

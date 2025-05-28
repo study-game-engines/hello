@@ -44,7 +44,7 @@ void HeightField::Create(vecXZ& worldSpaceOffset, const float* heightValues) {
     PhysicsFilterData filterData;
     filterData.raycastGroup = RAYCAST_ENABLED;
     filterData.collisionGroup = ENVIROMENT_OBSTACLE;
-    filterData.collidesWith = (CollisionGroup)(GENERIC_BOUNCEABLE | BULLET_CASING | PLAYER | RAGDOLL | ITEM_PICK_UP);
+    filterData.collidesWith = (CollisionGroup)(GENERIC_BOUNCEABLE | BULLET_CASING | PLAYER | RAGDOLL_PLAYER | RAGDOLL_ENEMY | ITEM_PICK_UP);
 
     // Create shape
     PxMaterial* material = Physics::GetGrassMaterial();

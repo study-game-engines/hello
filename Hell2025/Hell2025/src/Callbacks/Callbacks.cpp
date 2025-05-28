@@ -23,7 +23,7 @@ namespace Callbacks {
 
     void NewSector(const std::string& filename) {
         SectorManager::NewSector(filename);
-        Editor::LoadEditorSector(filename);
+        Editor::LoadSectorFromDisk(filename);
     }
 
     void OpenHeightMap(const std::string& filename) {
@@ -48,9 +48,7 @@ namespace Callbacks {
 
     void OpenSector(const std::string& filename) {
         SectorManager::UpdateSectorFromDisk(filename);
-        Editor::LoadEditorSector(filename);        
-        SectorCreateInfo* sectorCreateInfo = SectorManager::GetSectorCreateInfoByName(filename);
-        World::LoadSingleSector(sectorCreateInfo);
+        Editor::LoadSectorFromDisk(filename);
         Editor::OpenSectorEditor();
     }
 
@@ -58,8 +56,8 @@ namespace Callbacks {
         OpenGLRenderer::SaveHeightMaps(); // Move out of the renderer
     }
 
-    void SaveEditorSector() {
-        Editor::SaveEditorSector();
+    void SaveSector() {
+        Editor::SaveSector();
     }
 
     void RevertEditorSector() {
@@ -91,8 +89,24 @@ namespace Callbacks {
         }
     }
 
+    void BeginAddingDoor() {
+        Editor::SetEditorState(EditorState::DOOR_PLACEMENT);
+    }
+
+    void BeginAddingPictureFrame() {
+        Editor::SetEditorState(EditorState::PICTURE_FRAME_PLACEMENT);
+    }
+
+    void BeginAddingTree() {
+        Editor::SetEditorState(EditorState::TREE_PLACEMENT);
+    }
+
     void BeginAddingWall() {
-        Editor::EnterWallPlacementState();
+        Editor::SetEditorState(EditorState::WALL_PLACEMENT);
+    }
+
+    void BeginAddingWindow() {
+        Editor::SetEditorState(EditorState::WINDOW_PLACEMENT);
     }
 
     void QuitProgram() {

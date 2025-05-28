@@ -9,16 +9,19 @@ struct Bullet {
         m_direction = bulletCreateInfo.direction;
         m_weaponIndex = bulletCreateInfo.weaponIndex;
         m_damage = bulletCreateInfo.damage;
+        m_ownerObjectId = bulletCreateInfo.ownerObjectId;
     }
 
     glm::vec3 GetOrigin()       { return m_origin; }
     glm::vec3 GetDirection()    { return m_direction; }
     int32_t GetWeaponIndex()    { return m_weaponIndex; }
     uint32_t GetDamage()        { return m_damage; }
+    uint64_t GetOwnerObjectId() { return m_ownerObjectId; }
 
 private:
     glm::vec3 m_origin = glm::vec3(0);
     glm::vec3 m_direction = glm::vec3(0);
     int32_t m_weaponIndex = 0;
     uint32_t m_damage = 0;
+    uint64_t m_ownerObjectId = 0;
 };

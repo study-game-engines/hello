@@ -29,7 +29,7 @@ void Window::Init(WindowCreateInfo createInfo) {
     filterData.collidesWith = CollisionGroup::NO_COLLISION;
 
     filterData.collisionGroup = CollisionGroup::ENVIROMENT_OBSTACLE;
-    filterData.collidesWith = (CollisionGroup)(GENERIC_BOUNCEABLE | BULLET_CASING | RAGDOLL);
+    filterData.collidesWith = (CollisionGroup)(GENERIC_BOUNCEABLE | BULLET_CASING | RAGDOLL_PLAYER | RAGDOLL_ENEMY);
 
     m_physicsId = Physics::CreateRigidStaticTriangleMeshFromModel(transform, "WindowGlassPhysX", filterData);
     m_objectId = UniqueID::GetNext();

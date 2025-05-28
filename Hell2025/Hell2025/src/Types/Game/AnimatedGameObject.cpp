@@ -2,6 +2,7 @@
 #include "AssetManagement/AssetManager.h"
 #include "Core/Game.h"
 #include "Input/Input.h"
+#include "Physics/Physics.h"
 #include "Renderer/Renderer.h"
 #include "Renderer/RenderDataManager.h"
 #include "UniqueID.h"
@@ -9,6 +10,10 @@
 
 void AnimatedGameObject::Init() {
     m_objectId = UniqueID::GetNext();
+}
+
+void AnimatedGameObject::SetRagdoll(const std::string& ragdollName, float ragdollTotalWeight) {
+    m_ragdollId = Physics::CreateRagdollByName(ragdollName, ragdollTotalWeight);
 }
 
 const size_t AnimatedGameObject::GetAnimatedTransformCount() {
@@ -63,21 +68,57 @@ float AnimatedGameObject::GetBlendFactor() {
     return m_blendFactor;
 }
 
+void AnimatedGameObject::UpdateBoneTransformsFromRagdoll() {
+    Ragdoll* ragdoll = Physics::GetRagdollById(m_ragdollId);
+    if (!ragdoll) return;
+    if (!m_skinnedModel) return;
+
+    int nodeCount = m_skinnedModel->m_nodes.size();
+    m_globalBlendedNodeTransforms.resize(nodeCount);
+
+    SkinnedModel* skinnedModel = AssetManager::GetSkinnedModelByIndex(m_skinnedModelIndex);
+
+    for (int i = 0; i < skinnedModel->m_nodes.size(); i++) {
+        std::string NodeName = skinnedModel->m_nodes[i].name;
+        glm::mat4 nodeTransformation = glm::mat4(1);
+        nodeTransformation = skinnedModel->m_nodes[i].inverseBindTransform;
+        unsigned int parentIndex = skinnedModel->m_nodes[i].parentIndex;
+        glm::mat4 ParentTransformation = (parentIndex == -1) ? glm::mat4(1) : m_globalBlendedNodeTransforms[parentIndex];
+        glm::mat4 GlobalTransformation = ParentTransformation * nodeTransformation;
+
+        for (int j = 0; j < ragdoll->m_correspondingBoneNames.size(); j++) {
+            if (ragdoll->m_correspondingBoneNames[j] == NodeName) {
+                RigidDynamic* rigidDynamic = Physics::GetRigidDynamicById(ragdoll->m_rigidDynamicIds[j]);
+                PxRigidDynamic* pxRigidDynamic = rigidDynamic->GetPxRigidDynamic();
+                GlobalTransformation = Physics::PxMat44ToGlmMat4(pxRigidDynamic->getGlobalPose());
+            }
+        }
+
+        m_animationLayer.m_globalBlendedNodeTransforms[i] = GlobalTransformation;             // one of these is overwritten by the other later, forget which atm
+        m_globalBlendedNodeTransforms[i] = AnimatedTransform(GlobalTransformation).to_mat4(); // one of these is overwritten by the other later, forget which atm
+    }
+}
+
 void AnimatedGameObject::Update(float deltaTime, std::unordered_map<std::string, glm::mat4> additiveBoneTransforms) {
     if (!m_skinnedModel) return;
 
-    if (m_animationMode == AnimationMode::BINDPOSE && m_skinnedModel) {
-        m_animationLayer.ClearAllAnimationStates();
+    if (m_animationMode == AnimationMode::RAGDOLL) {
+        UpdateBoneTransformsFromRagdoll();
+    }
+    else {
+        if (m_animationMode == AnimationMode::BINDPOSE) {
+            m_animationLayer.ClearAllAnimationStates();
+        }
+
+        m_animationLayer.Update(deltaTime, additiveBoneTransforms);
     }
 
-    m_animationLayer.Update(deltaTime, additiveBoneTransforms);
-
     // Blending
-    m_accumulatedBlendingTime += deltaTime;
-    float remainingTime = m_totalBlendDuration - m_accumulatedBlendingTime;
-    m_blendFactor = remainingTime / m_totalBlendDuration;
-    m_blendFactor = glm::clamp(m_blendFactor, 0.0f, 1.0f);
-    m_blendFactor = Util::SmoothStep(m_blendFactor);
+    //m_accumulatedBlendingTime += deltaTime;
+    //float remainingTime = m_totalBlendDuration - m_accumulatedBlendingTime;
+    //m_blendFactor = remainingTime / m_totalBlendDuration;
+    //m_blendFactor = glm::clamp(m_blendFactor, 0.0f, 1.0f);
+    //m_blendFactor = Util::SmoothStep(m_blendFactor);
 
     m_LocalBlendedBoneTransforms.clear();
     m_globalBlendedNodeTransforms.clear();
@@ -104,6 +145,18 @@ void AnimatedGameObject::Update(float deltaTime, std::unordered_map<std::string,
             }
         }
     }
+
+    // If it has a ragdoll
+    if (m_animationMode != AnimationMode::RAGDOLL) {
+        Ragdoll* ragdoll = Physics::GetRagdollById(m_ragdollId);
+        if (ragdoll) {
+            ragdoll->SetRigidGlobalPosesFromAnimatedGameObject(this);
+        }
+    }
+}
+
+void AnimatedGameObject::CleanUp() {
+    Physics::RemoveRagdoll(m_ragdollId);
 }
 
 void AnimatedGameObject::SetMeshMaterialByMeshName(const std::string& meshName, const std::string& materialName) {
@@ -212,6 +265,17 @@ glm::mat4 AnimatedGameObject::GetBindPoseByBoneName(const std::string& name) {
 void AnimatedGameObject::SetAnimationModeToBindPose() {
     m_animationMode = AnimationMode::BINDPOSE;
     m_animationLayer.ClearAllAnimationStates();
+}
+
+void AnimatedGameObject::SetAnimationModeToRagdoll() {
+    Ragdoll* ragdoll = Physics::GetRagdollById(m_ragdollId);
+    if (!ragdoll) return;
+
+    if (m_animationMode != AnimationMode::RAGDOLL) {
+        m_animationMode = AnimationMode::RAGDOLL;
+        m_animationLayer.ClearAllAnimationStates();
+        ragdoll->ActivatePhysics();
+    }
 }
 
 void AnimatedGameObject::PlayAnimation(const std::string& animationName, float speed) {

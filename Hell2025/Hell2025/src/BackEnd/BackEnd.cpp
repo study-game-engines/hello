@@ -15,7 +15,6 @@
 #include "Core/Game.h"
 #include "Editor/Editor.h"
 #include "Editor/Gizmo.h"
-#include "ImGui/EditorImgui.h"
 #include "ImGui/ImGuiBackend.h"
 #include "Input/Input.h"
 #include "Input/InputMulti.h"
@@ -136,6 +135,7 @@ namespace BackEnd {
         GLFWIntegration::EndFrame(g_api);
         UIBackEnd::EndFrame();
         Debug::EndFrame();
+        World::EndFrame();
         InputMulti::ResetMouseOffsets();
     }
 

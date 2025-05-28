@@ -6,6 +6,14 @@
 
 namespace Util {
 
+    glm::vec3 EulerRotationFromNormal(glm::vec3 normal, glm::vec3 forward) {
+        normal = glm::normalize(normal);
+        glm::quat q = glm::rotation(forward, normal);
+        glm::vec3 e = glm::eulerAngles(q);
+        e.z = 0.0f;
+        return e;
+    }
+
     float YRotationBetweenTwoPoints(glm::vec3 a, glm::vec3 b) {
         float delta_x = b.x - a.x;
         float delta_y = b.z - a.z;
@@ -320,6 +328,17 @@ namespace Util {
 
     float GetCubeVolume(const float& halfWidth, const float& halfHeight, const float& halfDepth) {
         return GetCubeVolume(glm::vec3(halfWidth, halfHeight, halfDepth));
+    }
+
+    float GetSphereVolume(float radius) {
+        return (4.0f / 3.0f) * HELL_PI * radius * radius * radius;
+    }
+
+    float GetCapsuleVolume(float radius, float halfHeight) {
+        float cylHeight = halfHeight * 2.0f;
+        float cylVol = HELL_PI * radius * radius * cylHeight;
+        float sphVol = (4.0f / 3.0f) * HELL_PI * radius * radius * radius;
+        return cylVol + sphVol;
     }
 
     float GetConvexHullVolume(const std::span<Vertex>& vertices, const std::span<unsigned int>& indices) {

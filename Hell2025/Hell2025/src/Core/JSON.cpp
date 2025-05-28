@@ -197,6 +197,21 @@ namespace nlohmann {
             mapData[key] = sectorName;
         }
     }
+
+    void from_json(const json& j, glm::mat4& m) {
+        std::array<float, 16> a = j.get<std::array<float, 16>>();
+        m = glm::make_mat4(a.data());
+    }
+
+    void from_json(const json& j, glm::quat& q) {
+        if (j.is_array() && j.size() == 4) {
+            auto a = j.get<std::array<float, 4>>();
+            q = glm::quat{ a[3], a[0], a[1], a[2] };
+        }
+        else {
+            q = glm::quat{ 1.0f, 0.0f, 0.0f, 0.0f };
+        }
+    }
 }
 
 namespace JSON {
@@ -357,6 +372,7 @@ namespace JSON {
         houseCreateInfo.lights = json.value("Lights", std::vector<LightCreateInfo>{});
         houseCreateInfo.planes = json.value("Planes", std::vector<PlaneCreateInfo>{});
         houseCreateInfo.pianos = json.value("Pianos", std::vector<PianoCreateInfo>{});
+        houseCreateInfo.pictureFrames = json.value("PictureFrames", std::vector<PictureFrameCreateInfo>{});
         houseCreateInfo.walls = json.value("Walls", std::vector<WallCreateInfo>{});
         houseCreateInfo.windows = json.value("Windows", std::vector<WindowCreateInfo>{});
         return houseCreateInfo;
@@ -368,6 +384,7 @@ namespace JSON {
         json["Lights"] = houseCreateInfo.lights;
         json["Planes"] = houseCreateInfo.planes;
         json["Pianos"] = houseCreateInfo.pianos;
+        json["PictureFrames"] = houseCreateInfo.pictureFrames;
         json["Walls"] = houseCreateInfo.walls;
         json["Windows"] = houseCreateInfo.windows;
         JSON::SaveToFile(json, filepath);

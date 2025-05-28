@@ -11,9 +11,12 @@
 #include "Input/Input.h"
 #include "Renderer/Renderer.h"
 #include "Renderer/RenderDataManager.h"
+#include "Physics/Physics.h"
 #include "World/HouseManager.h"
 #include "World/MapManager.h"
 #include "World/SectorManager.h"
+
+#include "Physics/Types/Ragdoll.h"
 
 namespace World {
 
@@ -23,7 +26,6 @@ namespace World {
     std::vector<BulletCasing> g_bulletCasings;
     std::vector<ClippingCube> g_clippingCubes;
     std::vector<Door> g_doors;
-    std::vector<BasicDoor> g_doorBasics;
     std::vector<Decal> g_decals;
     std::vector<GameObject> g_gameObjects;
     std::vector<HeightMapChunk> g_heightMapChunks;
@@ -32,92 +34,45 @@ namespace World {
     std::vector<PickUp> g_pickUps;
     std::vector<PictureFrame> g_pictureFrames;
     std::vector<Piano> g_pianos;
+    std::vector<Shark> g_sharks;
     std::vector<Transform> g_doorAndWindowCubeTransforms;
     std::vector<Tree> g_trees;
     std::vector<Wall> g_walls;
+    std::vector<VolumetricBloodSplatter> g_volumetricBloodSplatters;
     std::vector<Window> g_windows;
-    std::vector<Shark> g_sharks;
 
     std::vector<GPULight> g_gpuLightsLowRes;
     std::vector<GPULight> g_gpuLightsMidRes;
     std::vector<GPULight> g_gpuLightsHighRes;
 
     std::map<ivecXZ, int> g_validChunks;
+    
+    uint32_t g_volumetricBloodSplattersSpawnedThisFrame = 0;
 
     std::string g_mapName = "";
     uint32_t g_mapWidth = 0;
     uint32_t g_mapDepth = 0;
     std::string g_sectorNames[MAX_MAP_WIDTH][MAX_MAP_DEPTH];
     std::string g_heightMapNames[MAX_MAP_WIDTH][MAX_MAP_DEPTH];
-    
+
     struct WorldState {
         bool oceanEnabled = true;
     } g_worldState;
 
     void RecreateHieghtMapChunks();
-    void AddSectorAtLocation(SectorCreateInfo& sectorCreateInfo, SpawnOffset spawnOffset);
-    void ProcessBullets();
-
-    uint64_t g_rooAnimatedGameObject = 0;
-
-    AnimatedGameObject* GetRooTest() {
-        return GetAnimatedGameObjectByObjectId(g_rooAnimatedGameObject);
-    }
+    void AddSectorAtLocation(SectorCreateInfo& sectorCreateInfo, SpawnOffset spawnOffset, bool loadHouses);
 
     void Init() {
-
-
-        // Create test roo
-        if (g_rooAnimatedGameObject == 0) {
-            g_rooAnimatedGameObject = CreateAnimatedGameObject();
-            AnimatedGameObject* roo = GetAnimatedGameObjectByObjectId(g_rooAnimatedGameObject);
-            roo->SetSkinnedModel("Kangaroo");
-            roo->SetPosition(glm::vec3(36, 30.4f, 36));
-            roo->SetRotationY(HELL_PI);
-            roo->SetAnimationModeToBindPose();
-            roo->SetName("Roo");
-            roo->SetAllMeshMaterials("CheckerBoard");
-            roo->SetAllMeshMaterials("Leopard");
-            roo->SetScale(0.9f);
-            roo->PrintMeshNames();
-            roo->PlayAndLoopAnimation("Kangaroo_Hop");
-
-
-
-        //createInfo.position = glm::vec3(36, 10.3f, 25);
-        //createInfo.scale = glm::vec3(0.9);
-        //createInfo.scale = glm::vec3(0.8f);
-        ////createInfo.scale = glm::vec3(0.5f);
-        //createInfo.rotation.y = -HELL_PI;
-        
-            std::vector<std::string> meshNames;
-            meshNames.push_back("Mesh.001");
-            meshNames.push_back("Mesh.002");
-            meshNames.push_back("Mesh.003");
-            meshNames.push_back("Mesh.004");
-            meshNames.push_back("Mesh");
-            for (const std::string& meshName : meshNames) {
-                roo->SetMeshFurLength(meshName, 10);
-                roo->SetMeshFurShellDistanceAttenuation(meshName, 10);
-                roo->SetMeshFurUVScale(meshName, 30);
-            }
-        }
-
-
-        //LoadMap("TestMap");
-        //LoadSingleSector()
-
         std::string sectorName = "TestSector";
         SectorCreateInfo* sectorCreateInfo = SectorManager::GetSectorCreateInfoByName(sectorName);
         if (sectorCreateInfo) {
-            // Load it into the world
-            World::LoadSingleSector(sectorCreateInfo);
+            World::LoadSingleSector(sectorCreateInfo, true);
         }
-
-        //World::LoadMap("TestMap");
     }
 
     void BeginFrame() {
+        g_volumetricBloodSplattersSpawnedThisFrame = 0;
+
         //RemoveAnyObjectMarkedForRemoval();
 
         for (GameObject& gameObject : g_gameObjects) {
@@ -126,24 +81,12 @@ namespace World {
         for (Tree& tree : g_trees) {
             tree.BeginFrame();
         }
-
-        AnimatedGameObject* roo = GetAnimatedGameObjectByObjectId(g_rooAnimatedGameObject);
-        if (roo) {
-            roo->SetPosition(glm::vec3(31, 30.4f, 36));
-            roo->SetRotationY(HELL_PI * -0.5);
-
-
-            //roo->SetPosition(glm::vec3(29, 30.4f, 39));
-            //roo->SetRotationY(HELL_PI * -0.85);
-            roo->SetName("Roo");
-            roo->SetAllMeshMaterials("Kangaroo");
-            roo->SetMeshMaterialByMeshName("LeftEye_Iris", "KangarooIris");
-            roo->SetMeshMaterialByMeshName("RightEye_Iris", "KangarooIris");
-            roo->DisableDrawingForMeshByMeshName("LeftEye_Sclera");
-            roo->DisableDrawingForMeshByMeshName("RightEye_Sclera");
-            roo->SetScale(1.0f);
-        }
     }
+
+    void EndFrame() {
+        // Nothing as of yet
+    }
+
 
     void CreateGameObject() {
         g_gameObjects.emplace_back();
@@ -285,7 +228,7 @@ namespace World {
                     SpawnOffset spawnOffset;
                     spawnOffset.translation.x = x * SECTOR_SIZE_WORLD_SPACE;
                     spawnOffset.translation.z = z * SECTOR_SIZE_WORLD_SPACE;
-                    AddSectorAtLocation(*sectorCreateInfo, spawnOffset);
+                    AddSectorAtLocation(*sectorCreateInfo, spawnOffset, true);
                     //std::cout << " - [" << sectorLocation.x << "][" << sectorLocation.z << "] " << sectorName << "\n";
                 }
             }
@@ -315,7 +258,7 @@ namespace World {
         std::cout << "Loaded empty world\n";
     }
 
-    void LoadSingleSector(SectorCreateInfo* sectorCreateInfo) {
+    void LoadSingleSector(SectorCreateInfo* sectorCreateInfo, bool loadHouses) {
         if (!sectorCreateInfo) return;
 
         ResetWorld();
@@ -326,7 +269,7 @@ namespace World {
         g_mapWidth = 1;
         g_mapDepth = 1;
 
-        AddSectorAtLocation(*sectorCreateInfo, SpawnOffset());
+        AddSectorAtLocation(*sectorCreateInfo, SpawnOffset(), loadHouses);
         RecreateHieghtMapChunks();
 
         std::cout << "Loaded Single Sector: '" << g_sectorNames[0][0] << "' with height map '" << g_heightMapNames[0][0] << "'\n";
@@ -342,34 +285,6 @@ namespace World {
         g_gameObjects[0].m_meshNodes.m_materialIndices[0] = AssetManager::GetMaterialIndexByName("Leopard");
         g_gameObjects[0].m_meshNodes.m_materialIndices[1] = AssetManager::GetMaterialIndexByName("Leopard");
 
-
-
-        //GameObjectCreateInfo createInfo;
-        //createInfo.position = glm::vec3(32, 10.3f, 28);
-        ////createInfo.position = glm::vec3(37, 10.3f, 26);
-        //createInfo.position = glm::vec3(36, 10.3f, 25);
-        //createInfo.scale = glm::vec3(0.9);
-        //createInfo.scale = glm::vec3(0.8f);
-        ////createInfo.scale = glm::vec3(0.5f);
-        //createInfo.rotation.y = -HELL_PI;
-        //createInfo.modelName = "Kangaroo";
-        //AddGameObject(createInfo);
-        //g_gameObjects[0].m_meshNodes.m_materialIndices[0] = AssetManager::GetMaterialIndexByName("Kangaroo");
-        //g_gameObjects[0].m_meshNodes.m_materialIndices[1] = AssetManager::GetMaterialIndexByName("Kangaroo");
-        //g_gameObjects[0].m_meshNodes.m_materialIndices[2] = AssetManager::GetMaterialIndexByName("Kangaroo");
-        //g_gameObjects[0].m_meshNodes.m_materialIndices[3] = AssetManager::GetMaterialIndexByName("Kangaroo");
-        //g_gameObjects[0].m_meshNodes.m_materialIndices[4] = AssetManager::GetMaterialIndexByName("Kangaroo");
-        //
-        //g_gameObjects[0].SetMeshMaterial("Body_Low", "Kangaroo");
-        //g_gameObjects[0].SetMeshMaterial("Nails_Low", "Kangaroo");
-        //g_gameObjects[0].SetMeshMaterial("Teeth_Low", "Kangaroo");
-        //g_gameObjects[0].SetMeshMaterial("Tongue_Low", "Kangaroo");
-        //g_gameObjects[0].SetMeshMaterial("LeftEye_Iris", "KangarooIris");
-        //g_gameObjects[0].SetMeshMaterial("RightEye_Iris", "KangarooIris");
-        //g_gameObjects[0].SetMeshMaterial("Eyes_Low", "CheckerBoard"); 
-        //g_gameObjects[0].SetMeshBlendingMode("LeftEye_Sclera", BlendingMode::BLENDED);
-        //g_gameObjects[0].SetMeshBlendingMode("RightEye_Sclera", BlendingMode::BLENDED);
-        //g_gameObjects[0].PrintMeshNames();
     }
 
     void LoadSingleHouse(HouseCreateInfo* houseCreateInfo) {
@@ -388,25 +303,7 @@ namespace World {
         AddHouse(*houseCreateInfo, SpawnOffset());
     }
 
-    void SetObjectsToInitalState() {
-        // Nothing as of yet. 
-        // Pickups will need this
-        // Plus anything with phsycis really
-
-        //for (Piano& piano : GetPianos()) {
-        //    piano.SetToInitialState();
-        //}
-    }
-
-    //void DeleteObjectById(uint64_t objectId) {
-    //    for (Piano& piano : GetPianos()) {
-    //        if (piano.GetObjectId() == objectId) {
-    //            RemovePiano()
-    //        }
-    //    }
-    //}
-
-    void AddSectorAtLocation(SectorCreateInfo& sectorCreateInfo, SpawnOffset spawnOffset) {
+    void AddSectorAtLocation(SectorCreateInfo& sectorCreateInfo, SpawnOffset spawnOffset, bool loadHouses) {
         for (LightCreateInfo& createInfo : sectorCreateInfo.lights) {
             AddLight(createInfo, spawnOffset);
         }
@@ -419,18 +316,19 @@ namespace World {
         for (TreeCreateInfo& createInfo : sectorCreateInfo.trees) {
             AddTree(createInfo, spawnOffset);
         }
-            
-        std::cout << "scetor trees: " << sectorCreateInfo.trees.size() << "\n";
-        std::cout << "trees: " << g_trees.size() << "\n";
 
-        glm::vec3 houseLocation = glm::vec3(15.0f, 30.5f, 40.0f);
+        if (loadHouses) {
+            HouseManager::LoadAllHouseFilesFromDisk();
 
-        SpawnOffset houseSpawnOffset = spawnOffset;
-        houseSpawnOffset.translation += houseLocation;
+            glm::vec3 houseLocation = glm::vec3(15.0f, 30.5f, 40.0f);
 
-        HouseCreateInfo* houseCreateInfo = HouseManager::GetHouseCreateInfoByFilename("TestHouse");
-        if (houseCreateInfo) {
-            AddHouse(*houseCreateInfo, houseSpawnOffset);
+            SpawnOffset houseSpawnOffset = spawnOffset;
+            houseSpawnOffset.translation += houseLocation;
+
+            HouseCreateInfo* houseCreateInfo = HouseManager::GetHouseCreateInfoByFilename("TestHouse");
+            if (houseCreateInfo) {
+                AddHouse(*houseCreateInfo, houseSpawnOffset);
+            }
         }
     }
 
@@ -477,6 +375,15 @@ namespace World {
         for (Piano& piano : World::GetPianos()) {
             if (piano.PianoKeyExists(objectId)) {
                 return piano.GetPianoKey(objectId);
+            }
+        }
+        return nullptr;
+    }
+
+    PictureFrame* GetPictureFrameByObjectId(uint64_t objectId) {
+        for (PictureFrame& pictureFrame : World::GetPictureFrames()) {
+            if (pictureFrame.GetObjectId() == objectId) {
+                return &pictureFrame;
             }
         }
         return nullptr;
@@ -534,17 +441,30 @@ namespace World {
             UpdateWeatherBoardMeshBuffer();
             Physics::ForceZeroStepUpdate();
         }
+
         Piano* piano = World::GetPianoByObjectId(objectId);
         if (piano) {
             piano->SetPosition(position);
             Physics::ForceZeroStepUpdate();
         }
+
         Plane* plane = World::GetPlaneByObjectId(objectId);
         if (plane) {
             plane->UpdateWorldSpaceCenter(position);
             UpdateHouseMeshBuffer();
             UpdateWeatherBoardMeshBuffer();
         }
+
+        PictureFrame* pictureFrame = World::GetPictureFrameByObjectId(objectId);
+        if (pictureFrame) {
+            pictureFrame->SetPosition(position);
+        }
+
+        Tree* tree = World::GetTreeByObjectId(objectId);
+        if (tree) {
+            tree->SetPosition(position);
+        }
+
         Wall* wall = World::GetWallByObjectId(objectId);
         if (wall) {
             wall->UpdateWorldSpaceCenter(position);
@@ -552,6 +472,7 @@ namespace World {
             UpdateHouseMeshBuffer();
             UpdateWeatherBoardMeshBuffer();
         }
+
         Window* window = World::GetWindowByObjectId(objectId);
         if (window) {
             window->SetPosition(position);
@@ -609,6 +530,7 @@ namespace World {
 
         for (int i = 0; i < g_animatedGameObjects.size(); i++) {
             if (g_animatedGameObjects[i].GetObjectId() == objectID) {
+                g_animatedGameObjects[i].CleanUp();
                 g_animatedGameObjects.erase(g_animatedGameObjects.begin() + i);
                 i--;
             }
@@ -628,7 +550,13 @@ namespace World {
         g_validChunks.clear();
         // TODO: probably clear heightmap data
 
+        ResetWeatherboardMeshBuffer();
+
         // Cleanup all objects
+
+        for (BulletCasing& bulletCasing : g_bulletCasings) {
+            bulletCasing.CleanUp();
+        }
         for (Door& door : g_doors) {
             door.CleanUp();
         }
@@ -676,12 +604,6 @@ namespace World {
 
         std::cout << "Reset world\n";
 
-        PictureFrameCreateInfo createInfo;
-        createInfo.position = glm::vec3(38.4f, 31.9f, 25.0f);
-        createInfo.rotation.y = HELL_PI * -0.5f;
-        createInfo.type = PictureFrameType::BIG_LANDSCAPE;
-        AddPictureFrame(createInfo);
-
         MermaidCreateInfo mermaidCreateInfo;
         mermaidCreateInfo.position = glm::vec3(40.0f, 29.5f, 49.0f);
         //mermaidCreateInfo.position = glm::vec3(32.0f, 9.5f, 35.3f);
@@ -721,10 +643,6 @@ namespace World {
         for (Wall& wall : GetWalls()) {
             wall.UpdateSegmentsAndVertexData();
         }
-    }
-
-    void AddDoorBasic(BasicDoorCreateInfo createInfo) {
-        g_doorBasics.push_back(BasicDoor(createInfo));
     }
 
     void AddBullet(BulletCreateInfo createInfo) {
@@ -796,6 +714,14 @@ namespace World {
     void AddTree(TreeCreateInfo createInfo, SpawnOffset spawnOffset) {
         createInfo.position += spawnOffset.translation;
         g_trees.push_back(Tree(createInfo));
+    }
+
+    void AddVolumetricBlood(glm::vec3 position, glm::vec3 front) {
+        int maxPerFrame = 4;
+        if (g_volumetricBloodSplattersSpawnedThisFrame < maxPerFrame) {
+            g_volumetricBloodSplatters.push_back(VolumetricBloodSplatter(position, front));
+        }
+        g_volumetricBloodSplattersSpawnedThisFrame++;
     }
 
     uint64_t AddWall(WallCreateInfo createInfo, SpawnOffset spawnOffset) {
@@ -940,26 +866,27 @@ namespace World {
         return nullptr;
     }
 
-    size_t GetLightCount()                                      { return g_lights.size(); }
+    size_t GetLightCount()                                              { return g_lights.size(); }
 
-    std::vector<AnimatedGameObject>& GetAnimatedGameObjects()   { return g_animatedGameObjects; }
-    std::vector<Bullet>& GetBullets()                           { return g_bullets; };
-    std::vector<BulletCasing>& GetBulletCasings()               { return g_bulletCasings; };
-    std::vector<ClippingCube>& GetClippingCubes()               { return g_clippingCubes; }
-    std::vector<Decal>& GetDecals()                             { return g_decals; }
-    std::vector<Door>& GetDoors()                               { return g_doors; }
-    std::vector<GameObject>& GetGameObjects()                   { return g_gameObjects; }
-    std::vector<Plane>& GetPlanes()                             { return g_planes; }
-    std::vector<Light>& GetLights()                             { return g_lights; };
-    std::vector<Mermaid>& GetMermaids()                         { return g_mermaids; }
-    std::vector<Piano>& GetPianos()                             { return g_pianos; };
-    std::vector<PickUp>& GetPickUps()                           { return g_pickUps; };
-    std::vector<PictureFrame>& GetPictureFrames()               { return g_pictureFrames; };
-    std::vector<Transform>& GetDoorAndWindowCubeTransforms()    { return g_doorAndWindowCubeTransforms; }
-    std::vector<Shark>& GetSharks()                             { return g_sharks; }
-    std::vector<Tree>& GetTrees()                               { return g_trees; };
-    std::vector<Wall>& GetWalls()                               { return g_walls; }
-    std::vector<Window>& GetWindows()                           { return g_windows; }
+    std::vector<AnimatedGameObject>& GetAnimatedGameObjects()           { return g_animatedGameObjects; }
+    std::vector<Bullet>& GetBullets()                                   { return g_bullets; };
+    std::vector<BulletCasing>& GetBulletCasings()                       { return g_bulletCasings; };
+    std::vector<ClippingCube>& GetClippingCubes()                       { return g_clippingCubes; }
+    std::vector<Decal>& GetDecals()                                     { return g_decals; }
+    std::vector<Door>& GetDoors()                                       { return g_doors; }
+    std::vector<GameObject>& GetGameObjects()                           { return g_gameObjects; }
+    std::vector<Plane>& GetPlanes()                                     { return g_planes; }
+    std::vector<Light>& GetLights()                                     { return g_lights; };
+    std::vector<Mermaid>& GetMermaids()                                 { return g_mermaids; }
+    std::vector<Piano>& GetPianos()                                     { return g_pianos; };
+    std::vector<PickUp>& GetPickUps()                                   { return g_pickUps; };
+    std::vector<PictureFrame>& GetPictureFrames()                       { return g_pictureFrames; };
+    std::vector<Transform>& GetDoorAndWindowCubeTransforms()            { return g_doorAndWindowCubeTransforms; }
+    std::vector<Shark>& GetSharks()                                     { return g_sharks; }
+    std::vector<Tree>& GetTrees()                                       { return g_trees; };
+    std::vector<Wall>& GetWalls()                                       { return g_walls; }
+    std::vector<VolumetricBloodSplatter>& GetVolumetricBloodSplatters() { return g_volumetricBloodSplatters; }
+    std::vector<Window>& GetWindows()                                   { return g_windows; }
 
     std::vector<GPULight>& GetGPULightsLowRes()                 { return g_gpuLightsLowRes; }
     std::vector<GPULight>& GetGPULightsMidRes()                 { return g_gpuLightsMidRes; }

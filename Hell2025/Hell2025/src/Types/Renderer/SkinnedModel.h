@@ -5,20 +5,6 @@
 #include <map>
 #include <vector>
 
-struct AnimatedTransforms {
-    std::vector<glm::mat4> local;
-    std::vector<glm::mat4> worldspace;
-
-    void Resize(int size) {
-        local.resize(size);
-        worldspace.resize(size);
-    }
-
-    const size_t GetSize() {
-        return local.size();
-    }
-};
-
 struct SkinnedModel {
     SkinnedModel() = default;
 

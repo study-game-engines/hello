@@ -150,6 +150,7 @@ namespace OpenGLRenderer {
         glBindTextureUnit(0, worldFramebuffer->GetColorAttachmentHandleByName("HeightMap"));
         glBindTextureUnit(1, wipBuffer->GetColorAttachmentHandleByName("WorldPosition"));
         glBindTextureUnit(2, AssetManager::GetTextureByName("Perlin")->GetGLTexture().GetHandle());
+        glBindTextureUnit(3, AssetManager::GetTextureByName("RoadMask")->GetGLTexture().GetHandle());
 
         // GL State
         SetRasterizerState("GeometryPass_NonBlended");

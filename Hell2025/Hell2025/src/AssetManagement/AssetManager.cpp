@@ -135,7 +135,7 @@ namespace AssetManager {
             HeightMapManager::Init();
             HouseManager::Init();
             MapManager::Init();
-            SectorManager::Init();
+            SectorManager::LoadSectorsFromDisk();
             World::Init();
 
             if (BackEnd::GetAPI() == API::OPENGL) {
@@ -213,7 +213,7 @@ namespace AssetManager {
             texture.SetImageDataType(ImageDataType::EXR);
             texture.SetTextureWrapMode(TextureWrapMode::CLAMP_TO_EDGE);
             texture.SetMinFilter(TextureFilter::LINEAR);
-            texture.SetMagFilter(TextureFilter::LINEAR);
+            texture.SetMagFilter(TextureFilter::NEAREST);
         }
         for (FileInfo& fileInfo : Util::IterateDirectory("res/textures/spritesheets", { "png", "jpg", "tga" })) {
             Texture& texture = g_textures.emplace_back();

@@ -16,6 +16,7 @@ namespace Util {
     void UnpackUint64(uint32_t xValue, uint32_t yValue, uint64_t& out);
 
     // Math
+    glm::vec3 EulerRotationFromNormal(glm::vec3 normal, glm::vec3 forward = glm::vec3(0.0f, 0.0f, 1.0f));
     float YRotationBetweenTwoPoints(glm::vec3 a, glm::vec3 b);
     glm::mat4 GetRotationMat4FromForwardVector(glm::vec3 forward);
     glm::vec3 GetMidPoint(const glm::vec3& a, const glm::vec3 b);
@@ -48,6 +49,8 @@ namespace Util {
     float GetConvexHullVolume(const std::span<Vertex>& vertices, const std::span<unsigned int>& indices);
     float GetCubeVolume(const glm::vec3& halfExtents);
     float GetCubeVolume(const float& halfWidth, const float& halfHeight, const float& halfDepth);
+    float GetSphereVolume(float radius);
+    float GetCapsuleVolume(float radius, float halfHeight);
     AABB GetAABBFromPoints(std::vector<glm::vec3>& points);
 
     // Raycasting
@@ -136,12 +139,14 @@ namespace Util {
     std::string PickUpTypeToString(PickUpType type);
     std::string BlendingModeToString(BlendingMode mode);
     std::string ObjectTypeToString(ObjectType type);
+    std::string PictureFrameTypeToString(PictureFrameType type);
     std::string PhysicsTypeToString(PhysicsType type);
     std::string TrimTypeToString(TrimType type);
     std::string WallTypeToString(WallType type);
     BlendingMode StringToBlendingMode(const std::string& str);
     LightType StringToLightType(const std::string& str);
     PickUpType StringToPickUpType(const std::string& str);
+    PictureFrameType StringToPictureFrameType(const std::string& str);
     TrimType StringToTrimType(const std::string& str);
     WallType StringToWallType(const std::string& str);
     ObjectType IntToEnum(int value);

@@ -6,11 +6,9 @@
 #include "Editor/Editor.h"
 #include "Util/Util.h"
 
-
 #include "Renderer/Renderer.h"
 
 namespace Physics {
-
     std::vector<HeightField> g_HeightFields;
 
     void UpdateHeightFields() {
@@ -49,9 +47,13 @@ namespace Physics {
                     }
                 }
             }
-
-            if (intersectionFound) {
+            // Activate physics so ray casts work in the sector editor
+            if (Editor::IsOpen() && Editor::GetEditorMode() == EditorMode::SECTOR_EDITOR) {
                 heightfield.ActivatePhsyics();
+            }
+            // Regular check
+            else if (intersectionFound) {
+                    heightfield.ActivatePhsyics();
             }
             else {
                 heightfield.DisablePhsyics();
@@ -118,5 +120,9 @@ namespace Physics {
     void CreateHeightField(vecXZ& worldSpaceOffset, const float* heightValues) {
         HeightField& g_heightFields = g_HeightFields.emplace_back();
         g_heightFields.Create(worldSpaceOffset, heightValues);
+    }
+
+    const std::vector<HeightField>& GetHeightFields() {
+        return g_HeightFields;
     }
 }

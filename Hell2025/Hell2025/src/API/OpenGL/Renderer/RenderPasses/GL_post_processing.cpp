@@ -5,15 +5,18 @@
 namespace OpenGLRenderer {
 
     void PostProcessingPass() {
+        OpenGLFrameBuffer* finalImageFBO = GetFrameBuffer("FinalImage");
         OpenGLFrameBuffer* gBuffer = GetFrameBuffer("GBuffer");
         OpenGLShader* shader = GetShader("PostProcessing");
 
+        if (!finalImageFBO) return;
         if (!gBuffer) return;
         if (!shader) return;
 
         shader->Bind();
         glBindImageTexture(0, gBuffer->GetColorAttachmentHandleByName("FinalLighting"), 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F);
         glBindImageTexture(1, gBuffer->GetColorAttachmentHandleByName("Normal"), 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA16F);
+        glBindTextureUnit(2, finalImageFBO->GetColorAttachmentHandleByName("ViewportIndex"));
 
         glDispatchCompute(gBuffer->GetWidth() / 8, gBuffer->GetHeight() / 8, 1);
     }

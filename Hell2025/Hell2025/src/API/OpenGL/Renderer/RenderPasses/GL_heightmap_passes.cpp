@@ -304,7 +304,7 @@ namespace OpenGLRenderer {
         glm::mat4 inverseModelMatrix = glm::inverse(modelMatrix);
 
         gBuffer->Bind();
-        gBuffer->DrawBuffers({ "BaseColor", "Normal", "RMA", "WorldPosition" });
+        gBuffer->DrawBuffers({ "BaseColor", "Normal", "RMA", "WorldPosition", "Emissive" });
 
         shader->Bind();
         shader->SetMat4("modelMatrix", modelMatrix);
@@ -316,6 +316,8 @@ namespace OpenGLRenderer {
         Material* material = AssetManager::GetDefaultMaterial();
         int materialIndex = AssetManager::GetMaterialIndexByName("Ground_MudVeg");
         material = AssetManager::GetMaterialByIndex(materialIndex);
+
+        Material* dirtRoadMaterial = AssetManager::GetMaterialByName("DirtRoad");
 
         if (Editor::IsOpen() && Editor::GetEditorMode() == EditorMode::HEIGHTMAP_EDITOR) {
             material = AssetManager::GetDefaultMaterial();
@@ -329,6 +331,13 @@ namespace OpenGLRenderer {
         glBindTexture(GL_TEXTURE_2D, AssetManager::GetTextureByIndex(material->m_normal)->GetGLTexture().GetHandle());
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, AssetManager::GetTextureByIndex(material->m_rma)->GetGLTexture().GetHandle());
+        glActiveTexture(GL_TEXTURE3);
+        glBindTexture(GL_TEXTURE_2D, AssetManager::GetTextureByIndex(dirtRoadMaterial->m_basecolor)->GetGLTexture().GetHandle());
+        glActiveTexture(GL_TEXTURE4);
+        glBindTexture(GL_TEXTURE_2D, AssetManager::GetTextureByIndex(dirtRoadMaterial->m_normal)->GetGLTexture().GetHandle());
+        glActiveTexture(GL_TEXTURE5);
+        glBindTexture(GL_TEXTURE_2D, AssetManager::GetTextureByIndex(dirtRoadMaterial->m_rma)->GetGLTexture().GetHandle());
+        glBindTextureUnit(6, AssetManager::GetTextureByName("RoadMask")->GetGLTexture().GetHandle());
 
         //int indexCount = (HEIGHT_MAP_SIZE - 1) * (HEIGHT_MAP_SIZE - 1) * 6;
         //int vertexCount = HEIGHT_MAP_SIZE * HEIGHT_MAP_SIZE;

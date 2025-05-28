@@ -5,10 +5,7 @@
 #include "Input/Input.h"
 #include "Input/InputMulti.h"
 #include "Util.h"
-
-// GET ME OUT OF HERE
 #include "World/World.h"
-// GET ME OUT OF HERE
 
 void Player::UpdateWeaponLogic(float deltaTime) {
     if (!HasControl()) return;
@@ -311,6 +308,7 @@ void Player::SpawnBullet(float variance) {
     createInfo.direction = bulletDirection;
     createInfo.damage = weaponInfo->damage;
     createInfo.weaponIndex = WeaponManager::GetWeaponIndexFromWeaponName(weaponInfo->name);
+    createInfo.ownerObjectId = m_playerId;
 
     World::AddBullet(createInfo);
 }
