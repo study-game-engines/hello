@@ -88,6 +88,9 @@ void HeightField::Create(vecXZ& worldSpaceOffset, const float* heightValues) {
     glm::vec3 aabbMin(bounds.minimum.x, bounds.minimum.y, bounds.minimum.z);
     glm::vec3 aabbMax(bounds.maximum.x, bounds.maximum.y, bounds.maximum.z);
     m_aabb = AABB(aabbMin, aabbMax);
+
+    //pxScene->addActor(*m_pxRigidStatic);
+    ActivatePhsyics();
 }
 
 void HeightField::ActivatePhsyics() {

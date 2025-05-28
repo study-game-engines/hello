@@ -296,6 +296,7 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <ClCompile Include="src\Editor\Editor_objects.cpp" />
     <ClCompile Include="src\Editor\ObjectPlacement\Editor_object_placement.cpp" />
     <ClCompile Include="src\Editor\ObjectPlacement\Editor_window_placement.cpp" />
+    <ClCompile Include="src\Game\AStarMap.cpp" />
     <ClCompile Include="src\Physics\Physics_callbacks.cpp" />
     <ClCompile Include="src\Physics\Physics_ignore_lists.cpp" />
     <ClCompile Include="src\Player\Player_character_model.cpp" />
@@ -464,6 +465,8 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <None Include="res\shaders\OpenGL\GL_blur.frag" />
     <None Include="res\shaders\OpenGL\GL_blur_horizontal.vert" />
     <None Include="res\shaders\OpenGL\GL_blur_vertical.vert" />
+    <None Include="res\shaders\OpenGL\GL_debug_solid_color.frag" />
+    <None Include="res\shaders\OpenGL\GL_debug_solid_color.vert" />
     <None Include="res\shaders\OpenGL\GL_debug_textured.frag" />
     <None Include="res\shaders\OpenGL\GL_debug_textured.vert" />
     <None Include="res\shaders\OpenGL\GL_debug_tile_view.comp" />
@@ -592,6 +595,7 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <ClInclude Include="src\Callbacks\Callbacks.h" />
     <ClInclude Include="src\Common\UniqueID.h" />
     <ClInclude Include="src\Bvh\Bvh.h" />
+    <ClInclude Include="src\Game\AStarMap.h" />
     <ClInclude Include="src\Types\Effects\VolumetricBloodSplatter.h" />
     <ClInclude Include="src\Game\Allies\Mermaid\Mermaid.h" />
     <ClInclude Include="src\Game\Enemies\Shark\Shark.h" />

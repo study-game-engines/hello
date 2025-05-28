@@ -37,32 +37,10 @@ void OpenGLMeshBuffer::UpdateBuffers(std::vector<Vertex>& vertices, std::vector<
         glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, uv));
         glEnableVertexAttribArray(3);
         glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, tangent));
-
-        glBindVertexArray(0);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
     // If the buffer does exist
-
-
-    // The code below is fucked!
-    // The code below is fucked!
-    // The code below is fucked!
-    // The code below is fucked!
-    // The code below is fucked!
-    // The code below is fucked!
-    // The code below is fucked!
-    // The code below is fucked!
-    // The code below is fucked!
-    // The code below is fucked!
-    // The code below is fucked!
-    // The code below is fucked!
-    // The code below is fucked!
-    // The code below is fucked!
-    // The code below is fucked!
-
-
     else {
+        glBindVertexArray(0);
 
         // Vertices
         glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
@@ -73,7 +51,6 @@ void OpenGLMeshBuffer::UpdateBuffers(std::vector<Vertex>& vertices, std::vector<
         else {
             glBufferSubData(GL_ARRAY_BUFFER, 0, newVertexCount * sizeof(Vertex), vertices.data());
         }
-
         // Indices
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO);
         if (newIndexCount > m_allocatedIndexCount) {
@@ -83,13 +60,14 @@ void OpenGLMeshBuffer::UpdateBuffers(std::vector<Vertex>& vertices, std::vector<
         else {
             glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, newIndexCount * sizeof(uint32_t), indices.data());
         }
-
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 
     m_vertexCount = newVertexCount;
     m_indexCount = newIndexCount;
+
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 void OpenGLMeshBuffer::AllocateBuffers(size_t vertexCount, size_t indexCount) {

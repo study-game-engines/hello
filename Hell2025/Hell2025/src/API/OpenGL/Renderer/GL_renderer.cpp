@@ -145,7 +145,7 @@ namespace OpenGLRenderer {
         g_frameBuffers["FFT_band1"].CreateAttachment("Displacement", GL_RGBA32F, GL_LINEAR, GL_LINEAR, GL_REPEAT, true);
         g_frameBuffers["FFT_band1"].CreateAttachment("Normals", GL_RGBA32F, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, true);
 
-        g_shadowMaps["FlashlightShadowMaps"] = OpenGLShadowMap("FlashlightShadowMaps", 1024, 1024, 4);
+        g_shadowMaps["FlashlightShadowMaps"] = OpenGLShadowMap("FlashlightShadowMaps", FLASHLIGHT_SHADOWMAP_SIZE, FLASHLIGHT_SHADOWMAP_SIZE, 4);
 
         GLbitfield staticFlags = GL_MAP_READ_BIT | GL_MAP_WRITE_BIT;
         GLbitfield dynamicFlags = GL_DYNAMIC_STORAGE_BIT | GL_MAP_READ_BIT | GL_MAP_WRITE_BIT;
@@ -201,7 +201,7 @@ namespace OpenGLRenderer {
         g_shadowCubeMapArrays["HiRes"].Init(SHADOWMAP_HI_RES_COUNT, SHADOW_MAP_HI_RES_SIZE);
 
         // Moon light shadow maps
-        float depthMapResolution = 2048; 
+        float depthMapResolution = SHADOW_MAP_CSM_SIZE; 
         int layerCount = g_shadowCascadeLevels.size() + 1;
         g_shadowMapArrays["MoonlightPlayer1"] = OpenGLShadowMapArray();
         g_shadowMapArrays["MoonlightPlayer1"].Init(layerCount, depthMapResolution, GL_DEPTH_COMPONENT32F);
@@ -245,6 +245,7 @@ namespace OpenGLRenderer {
         g_shaders["BlurHorizontal"] = OpenGLShader({ "GL_blur_horizontal.vert", "GL_blur.frag" });
         g_shaders["BlurVertical"] = OpenGLShader({ "GL_blur_vertical.vert", "GL_blur.frag" });
         g_shaders["ComputeSkinning"] = OpenGLShader({ "GL_compute_skinning.comp" });
+        g_shaders["DebugSolidColor"] = OpenGLShader({ "GL_debug_solid_color.vert", "GL_debug_solid_color.frag" });
         g_shaders["DebugTextured"] = OpenGLShader({ "GL_debug_textured.vert", "GL_debug_textured.frag" });
         g_shaders["DebugView"] = OpenGLShader({ "GL_debug_view.comp" });
         g_shaders["DebugTileView"] = OpenGLShader({ "GL_debug_tile_view.comp" });

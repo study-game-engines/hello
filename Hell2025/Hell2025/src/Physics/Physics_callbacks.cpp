@@ -28,3 +28,16 @@ void RaycastFilterCallback::AddIgnoredActors(std::vector<PxRigidDynamic*> pxRigi
         if (pxRigidDynamic) m_ignoredActors.push_back(pxRigidDynamic);
     }
 }
+
+PxQueryHitType::Enum RaycastHeightFieldFilterCallback::preFilter(const PxFilterData& filterData, const PxShape* shape, const PxRigidActor* actor, PxHitFlags& queryFlags) {
+    const PxGeometryHolder geomHolder = shape->getGeometry();
+    if (geomHolder.getType() != PxGeometryType::eHEIGHTFIELD) {
+        return PxQueryHitType::eNONE;
+    }
+    return PxQueryHitType::eBLOCK;
+}
+
+PxQueryHitType::Enum RaycastHeightFieldFilterCallback::postFilter(const PxFilterData& filterData, const PxQueryHit& hit, const PxShape* shape, const PxRigidActor* actor) {
+    return PxQueryHitType::eBLOCK;
+}
+

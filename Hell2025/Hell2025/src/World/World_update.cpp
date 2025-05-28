@@ -1,6 +1,7 @@
 #include "World.h"
 #include "Audio/Audio.h"
 #include "Core/Game.h"
+#include "Game/AStarMap.h"
 #include "Input/Input.h"
 #include "Renderer/RenderDataManager.h"
 #include "Renderer/Renderer.h"
@@ -19,7 +20,6 @@ namespace World {
     // 
 
     void Update(float deltaTime) {
-
         if (g_rooAnimatedGameObject == 0) {
             g_rooAnimatedGameObject = CreateAnimatedGameObject();
             AnimatedGameObject* roo = GetAnimatedGameObjectByObjectId(g_rooAnimatedGameObject);
@@ -29,7 +29,6 @@ namespace World {
             roo->SetName("Roo");
             roo->SetAllMeshMaterials("CheckerBoard");
             roo->SetAllMeshMaterials("Leopard");
-            roo->SetScale(0.9f);
             roo->PrintMeshNames();
             roo->SetRagdoll("Kangaroo", 1500.0f);
 
@@ -140,7 +139,6 @@ namespace World {
             roo->SetMeshMaterialByMeshName("RightEye_Iris", "KangarooIris");
             roo->DisableDrawingForMeshByMeshName("LeftEye_Sclera");
             roo->DisableDrawingForMeshByMeshName("RightEye_Sclera");
-            roo->SetScale(1.0f);
             roo->SetScale(1.0f);
         }
 

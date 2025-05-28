@@ -125,4 +125,10 @@ namespace Physics {
     const std::vector<HeightField>& GetHeightFields() {
         return g_HeightFields;
     }
+
+    void ActivateAllHeightFields() {
+        for (HeightField& heightField : g_HeightFields) {
+            heightField.ActivatePhsyics();
+        }
+    }
 }

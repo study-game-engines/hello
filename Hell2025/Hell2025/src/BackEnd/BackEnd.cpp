@@ -15,6 +15,7 @@
 #include "Core/Game.h"
 #include "Editor/Editor.h"
 #include "Editor/Gizmo.h"
+#include "Game/AStarMap.h"
 #include "ImGui/ImGuiBackend.h"
 #include "Input/Input.h"
 #include "Input/InputMulti.h"
@@ -116,6 +117,7 @@ namespace BackEnd {
 
         ViewportManager::Update();
         Editor::Update(deltaTime);
+        AStarMap::Update();
         Game::Update();
 
         Physics::UpdateAllRigidDynamics(deltaTime);
@@ -128,7 +130,6 @@ namespace BackEnd {
         UIBackEnd::Update();
         RenderDataManager::Update();
         ImGuiBackEnd::Update();
-
     }
 
     void EndFrame() {
