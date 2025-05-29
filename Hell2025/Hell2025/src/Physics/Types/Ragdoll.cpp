@@ -80,7 +80,7 @@ void Ragdoll::SetRigidGlobalPosesFromAnimatedGameObject(AnimatedGameObject* anim
 
                     if (pxRigidDynamic) {
                         glm::mat4 objectMatrixWorld = animatedGameObject->GetModelMatrix();
-                        glm::mat4 boneMatrixLocal = animatedGameObject->GetAnimatedTransformByBoneName(boneName.c_str());
+                        glm::mat4 boneMatrixLocal = animatedGameObject->GetAnimatedTransformByBoneName(boneName);
                         glm::mat4 boneMatrixWorld = objectMatrixWorld * boneMatrixLocal;
 
                         PxTransform pxTransform = PxTransform(Physics::GlmMat4ToPxMat44(boneMatrixWorld));

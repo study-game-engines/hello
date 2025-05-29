@@ -47,7 +47,7 @@ public:
 
     std::unordered_map<std::string, unsigned int> m_boneMapping;
 
-    glm::mat4 GetAnimatedTransformByBoneName(const char* name);
+    glm::mat4 GetAnimatedTransformByBoneName(const std::string& name);
 
     AnimatedTransforms m_animatedTransforms;
 

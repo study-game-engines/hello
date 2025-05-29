@@ -67,6 +67,25 @@ namespace Util {
         }
     }
 
+    TreeType StringToTreeType(const std::string& str) {
+        if (str == "TREE_LARGE_0")   return TreeType::TREE_LARGE_0;
+        if (str == "TREE_LARGE_1")   return TreeType::TREE_LARGE_1;
+        if (str == "TREE_LARGE_2")   return TreeType::TREE_LARGE_2;
+        if (str == "BLACK_BERRIES")  return TreeType::BLACK_BERRIES;
+        return TreeType::UNDEFINED;
+    }
+
+    std::string TreeTypeToString(TreeType type) {
+        switch (type) {
+            case TreeType::TREE_LARGE_0:  return "TREE_LARGE_0";
+            case TreeType::TREE_LARGE_1:  return "TREE_LARGE_1";
+            case TreeType::TREE_LARGE_2:  return "TREE_LARGE_2";
+            case TreeType::BLACK_BERRIES: return "BLACK_BERRIES";
+            case TreeType::UNDEFINED:     return "UNDEFINED";
+            default:                      return "UNKNOWN";
+        }
+    }
+
     std::string OpenStateToString(OpenState mode) {
         switch (mode) {
             case OpenState::OPEN:               return "OPEN";
@@ -81,6 +100,7 @@ namespace Util {
         switch (type) {
             case ObjectType::NONE:                          return "NONE";
             case ObjectType::DECAL:                         return "DECAL";
+            case ObjectType::CHARACTER_CONTROLLER:          return "CHARACTER_CONTROLLER";
             case ObjectType::DOOR:                          return "DOOR";
             case ObjectType::DOOR_FRAME:                    return "DOOR_FRAME";
             case ObjectType::GAME_OBJECT:                   return "GAME_OBJECT";
@@ -205,6 +225,7 @@ namespace Util {
     std::string DebugRenderModeToString(const DebugRenderMode& mode) {
         switch (mode) {
             case NONE:                                                  return "NONE";
+            case ASTAR_MAP:                                             return "ASTAR_MAP";
             case DECALS:                                                return "DECALS";
             case PATHFINDING_RECAST:                                    return "PATHFINDING_RECAST";
             case PHYSX_ALL:                                             return "PHYSX_ALL";

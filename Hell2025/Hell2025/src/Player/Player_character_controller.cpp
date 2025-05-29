@@ -28,6 +28,13 @@ void Player::CreateCharacterController(glm::vec3 position) {
     filterData.word1 = CollisionGroup::PLAYER;
     filterData.word2 = CollisionGroup(ITEM_PICK_UP | ENVIROMENT_OBSTACLE | RAGDOLL_ENEMY);
     shape->setQueryFilterData(filterData);
+
+    PhysicsUserData physicsUserData;
+    physicsUserData.objectId = m_playerId;
+    physicsUserData.objectType = ObjectType::CHARACTER_CONTROLLER;
+    physicsUserData.physicsId = 0;
+    physicsUserData.physicsType = PhysicsType::CHARACTER_CONTROLLER;
+    m_characterController->getActor()->userData = new PhysicsUserData(physicsUserData);
 }
 
 void Player::MoveCharacterController(glm::vec3 displacement) {

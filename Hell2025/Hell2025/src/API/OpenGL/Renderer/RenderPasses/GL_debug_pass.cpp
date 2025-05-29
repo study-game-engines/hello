@@ -20,6 +20,8 @@ namespace OpenGLRenderer {
     OpenGLDebugMesh g_debugMeshDepthAwarePoints;
     OpenGLDebugMesh g_debugMeshDepthAwareLines;
 
+    inline int Index1D(int x, int y, int mapWidth) { return y * mapWidth + x; }
+
     void RenderAStarDebugMesh();
 
     void DebugPass() {
@@ -74,7 +76,9 @@ namespace OpenGLRenderer {
 
         }
 
-        RenderAStarDebugMesh();
+        if (Debug::GetDebugRenderMode() == DebugRenderMode::ASTAR_MAP) {
+            RenderAStarDebugMesh();
+        }
     }
 
     void RenderAStarDebugMesh() {
@@ -103,12 +107,19 @@ namespace OpenGLRenderer {
             }
         }
 
+        int mapWidth = AStarMap::GetMapWidth();
+        int mapHeight = AStarMap::GetMapHeight();
+
+        std::vector<glm::ivec2> walls;
+        walls.push_back({ 0, 0 });
+        walls.push_back({ 1, 1 });
+        walls.push_back({ 9, 9 });
+        walls.push_back({ 55, 55 });
+
+
         // Solid mesh
         if (debugSolidMesh.GetIndexCount() > 0) {
             //glEnable(GL_DEPTH_TEST);
-            Transform transform;
-            transform.position.x = 11.0f;
-            solidColorShader->SetMat4("u_model", transform.to_mat4());
             glBindVertexArray(debugSolidMesh.GetVAO());
 
             for (int i = 0; i < 4; i++) {
@@ -117,7 +128,17 @@ namespace OpenGLRenderer {
 
                 solidColorShader->SetMat4("u_projectionView", viewportData[i].projectionView);
                 //glDrawElements(GL_TRIANGLES, debugSolidMesh.GetIndexCount(), GL_UNSIGNED_INT, 0);
-                glDrawElements(GL_POINTS, debugSolidMesh.GetIndexCount(), GL_UNSIGNED_INT, 0);
+                //glDrawElements(GL_POINTS, debugSolidMesh.GetIndexCount(), GL_UNSIGNED_INT, 0);
+
+                for (glm::ivec2& wall : walls) {
+                    int cellX = wall.x;
+                    int cellY = wall.y;
+                    int baseVertex = Index1D(cellX, cellY, mapWidth + 1);
+                    int cellID = cellY * mapWidth + cellX;
+                    int baseIndex = cellID * 6;
+                    void* offset = (void*)(baseIndex * sizeof(uint32_t));
+                    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, offset); 
+                }
             }
         }
     }

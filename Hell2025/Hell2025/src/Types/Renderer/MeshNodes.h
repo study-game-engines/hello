@@ -25,6 +25,8 @@ struct MeshNodes {
     void SetTransformByMeshName(const std::string& meshName, Transform transform);
     void SetMaterialByMeshName(const std::string& meshName, const std::string& materialName);
     void SetBlendingModeByMeshName(const std::string& meshName, BlendingMode blendingMode);
+    void SetObjectTypes(ObjectType objectType);
+    void SetObjectIds(uint64_t objectId);
     void PrintMeshNames();
 
     bool HasNodeWithObjectId(uint64_t objectId) const;

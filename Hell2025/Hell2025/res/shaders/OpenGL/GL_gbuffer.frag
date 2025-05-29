@@ -36,6 +36,7 @@ in vec4 WorldPos;
 in vec3 ViewPos;
 in vec3 EmissiveColor;
 
+uniform bool u_alphaDiscard;
 
 layout (binding = 6) uniform sampler2D woundMaskTexture;
 layout (binding = 7) uniform sampler2D woundBaseColorTexture;
@@ -53,7 +54,11 @@ void main() {
     vec3 rma = texture2D(rmaTexture, TexCoord).rgb;
 #endif
 
-
+    if (u_alphaDiscard) {
+        if (baseColor.a < 0.5) {
+            discard;
+        }    
+    }
     float woundMask = texture2D(woundMaskTexture, TexCoord).r;
 
     vec4 woundBaseColor = texture2D(woundBaseColorTexture, TexCoord);

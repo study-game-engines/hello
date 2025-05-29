@@ -133,8 +133,8 @@ void Player::Respawn() {
     m_alive = true;
 
     if (m_viewportIndex == 0) {
-        SetFootPosition(glm::vec3(17.0f, 30.6f, 41.5f));
-        SetFootPosition(glm::vec3(27.0f, 30.6f, 36.5f));
+        SetFootPosition(glm::vec3(17.0f, 30.7f, 41.5f));
+        SetFootPosition(glm::vec3(27.0f, 32.7f, 36.5f)); // roo
     }
     if (m_viewportIndex == 1) {
         SetFootPosition(glm::vec3(12.5f, 30.6f, 45.5f));
@@ -230,7 +230,7 @@ const int32_t Player::GetViewportIndex() const {
     return m_viewportIndex;
 }
 
-const glm::vec3& Player::GetFootPosition() const {
+const glm::vec3 Player::GetFootPosition() const {
     PxExtendedVec3 pxPos = m_characterController->getFootPosition();
     return glm::vec3(
         static_cast<float>(pxPos.x),

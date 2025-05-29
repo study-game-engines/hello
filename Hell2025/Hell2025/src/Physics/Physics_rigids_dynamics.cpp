@@ -177,6 +177,115 @@ namespace Physics {
         // Update its pointers
         rigidDynamic.SetPxRigidDynamic(pxRigidDynamic);
         rigidDynamic.SetPxShape(pxShape);
+/*
+        std::cout << " - created " << Physics::GetPxShapeTypeAsString(pxShape) << "\n";
+
+        if (pxShape == nullptr) {
+            std::cerr << "ERROR: PxPhysics::createShape returned NULL!" << std::endl;
+            // The shape was not created by PhysX, possibly due to invalid geometry params
+            // or other issues that didn't trigger the error callback but resulted in failure.
+        }
+
+
+
+        if (pxShape) {
+            physx::PxTransform localPose = pxShape->getLocalPose();
+            if (!localPose.isValid()) { // Checks for finite q and p, and normalized q
+                std::cerr << "WARNING: Shape " << pxShape << " has an invalid local pose!" << std::endl;
+                std::cerr << "  Pose P: (" << localPose.p.x << "," << localPose.p.y << "," << localPose.p.z << ")" << std::endl;
+                std::cerr << "  Pose Q: (" << localPose.q.x << "," << localPose.q.y << "," << localPose.q.z << "," << localPose.q.w << ")" << std::endl;
+            }
+        }
+        physx::PxRigidActor* actor = nullptr;
+        if (pxShape) {
+            actor = pxShape->getActor();
+            if (actor == nullptr) {
+                std::cout << "INFO: Shape " << pxShape << " is not attached to any PxRigidActor." << std::endl;
+                // This means it cannot be in a scene.
+                // This might happen if you create a shape but haven't attached it to an actor yet,
+                // or if the actor it was attached to has been released and the shape detached.
+            }
+        }
+        else {
+         // Shape itself is null, so it can't be in a scene.
+        }
+        if (actor) {
+            physx::PxScene* scenesActorIsIn = actor->getScene();
+            if (scenesActorIsIn != nullptr) {
+                // The actor (and thus its shape) is in a scene.
+                // You can compare it to your expected scene instance:
+                if (scenesActorIsIn == pxScene) { // gMyExpectedPxScene is your PxScene*
+                    std::cout << "INFO: Shape " << pxShape << " (actor " << actor << ") IS in the expected scene." << std::endl;
+                }
+                else {
+                    std::cerr << "WARNING: Shape " << pxShape << " (actor " << actor << ") IS in a scene, but NOT the expected one. Scene ptr: " << scenesActorIsIn << std::endl;
+                }
+            }
+            else {
+                std::cout << "INFO: Shape " << pxShape << "'s actor (" << actor << ") is NOT currently in any PxScene." << std::endl;
+                // This means pxScene->addActor(*actor) was either not called, failed implicitly,
+                // or pxScene->removeActor(*actor) was called.
+            }
+        }
+
+        if (pxShape) { // Ensure pxShape is not null first
+            physx::PxGeometryHolder geomHolder = pxShape->getGeometry(); // Get the geometry holder
+            physx::PxGeometryType::Enum geomType = geomHolder.getType(); // Get the actual type
+
+            // You can specifically exclude types you don't want to check, like eHEIGHTFIELD
+            if (geomType == physx::PxGeometryType::eHEIGHTFIELD) {
+                // std::cout << "INFO: Shape " << pxShape << " is a HeightField, skipping detailed geometry param check." << std::endl;
+            }
+            else {
+             // Proceed with checks for other types
+                switch (geomType) {
+                    case physx::PxGeometryType::eSPHERE: {
+                        const physx::PxSphereGeometry& sphereGeom = geomHolder.sphere(); // Access the sphere geometry
+                        if (sphereGeom.radius <= 0.0f || !physx::PxIsFinite(sphereGeom.radius)) {
+                            std::cerr << "WARNING: Shape " << pxShape << " (Sphere) has invalid radius: " << sphereGeom.radius << std::endl;
+                        }
+                        break;
+                    }
+                    case physx::PxGeometryType::eCAPSULE: {
+                        const physx::PxCapsuleGeometry& capsuleGeom = geomHolder.capsule(); // Access the capsule geometry
+                        if (capsuleGeom.radius <= 0.0f || !physx::PxIsFinite(capsuleGeom.radius) ||
+                            capsuleGeom.halfHeight <= 0.0f || !physx::PxIsFinite(capsuleGeom.halfHeight)) {
+                            std::cerr << "WARNING: Shape " << pxShape << " (Capsule) has invalid dimensions. Radius: " << capsuleGeom.radius << ", HalfHeight: " << capsuleGeom.halfHeight << std::endl;
+                        }
+                        break;
+                    }
+                    case physx::PxGeometryType::eBOX: {
+                        const physx::PxBoxGeometry& boxGeom = geomHolder.box(); // Access the box geometry
+                        if (boxGeom.halfExtents.x <= 0.0f || !physx::PxIsFinite(boxGeom.halfExtents.x) ||
+                            boxGeom.halfExtents.y <= 0.0f || !physx::PxIsFinite(boxGeom.halfExtents.y) ||
+                            boxGeom.halfExtents.z <= 0.0f || !physx::PxIsFinite(boxGeom.halfExtents.z)) {
+                            std::cerr << "WARNING: Shape " << pxShape << " (Box) has invalid extents: (" << boxGeom.halfExtents.x << ", " << boxGeom.halfExtents.y << ", " << boxGeom.halfExtents.z << ")" << std::endl;
+                        }
+                        break;
+                    }
+                    case physx::PxGeometryType::eCONVEXMESH:
+                        // For PxConvexMeshGeometry, you might check if its PxConvexMesh* is null
+                        // or if its scale is valid. The mesh itself is created separately.
+                        // const physx::PxConvexMeshGeometry& convexGeom = geomHolder.convexMesh();
+                        // if (convexGeom.convexMesh == nullptr) std::cerr << "WARNING: Shape " << pxShape << " (ConvexMesh) has null mesh pointer." << std::endl;
+                        // if (!convexGeom.scale.isValid() || !convexGeom.scale.isFinite())  std::cerr << "WARNING: Shape " << pxShape << " (ConvexMesh) has invalid scale." << std::endl;
+                    break;
+                    case physx::PxGeometryType::eTRIANGLEMESH:
+                        // Similar checks for PxTriangleMeshGeometry
+                        // const physx::PxTriangleMeshGeometry& triGeom = geomHolder.triangleMesh();
+                        // if (triGeom.triangleMesh == nullptr) std::cerr << "WARNING: Shape " << pxShape << " (TriangleMesh) has null mesh pointer." << std::endl;
+                        // if (!triGeom.scale.isValid() || !triGeom.scale.isFinite())  std::cerr << "WARNING: Shape " << pxShape << " (TriangleMesh) has invalid scale." << std::endl;
+                    break;
+                    case physx::PxGeometryType::ePLANE:
+                        // PxPlaneGeometry doesn't have dimensions like radius/extents to validate in this context,
+                        // it's defined by a normal and distance, implicitly infinite.
+                    break;
+                    default:
+                    std::cout << "INFO: Shape " << pxShape << " has unhandled geometry type " << geomType << std::endl;
+                    break;
+                }
+            }
+        }*/
 
         return physicsID;
     }

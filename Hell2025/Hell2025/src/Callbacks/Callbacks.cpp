@@ -98,6 +98,12 @@ namespace Callbacks {
     }
 
     void BeginAddingTree() {
+        Editor::SetPlantType(TreeType::TREE_LARGE_0);
+        Editor::SetEditorState(EditorState::TREE_PLACEMENT);
+    }
+
+    void BeginAddingBlackBerries() {
+        Editor::SetPlantType(TreeType::BLACK_BERRIES);
         Editor::SetEditorState(EditorState::TREE_PLACEMENT);
     }
 

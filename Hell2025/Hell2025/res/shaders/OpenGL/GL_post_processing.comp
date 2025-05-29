@@ -29,8 +29,9 @@ void main() {
     
     vec3 finalColor = lighting;
 
-    vec3 colorTint = vec3(1,0,0);
-    colorTint = viewportData[viewportIndex].colorTint.rgb;
+    vec3 colorTint = viewportData[viewportIndex].colorTint.rgb;
+    //colorTint *= vec3(2,1,1);
+    colorTint *= vec3(1, 0.925, 0.925);
 
     // Tone mapping
     finalColor = Tonemap_ACES(lighting);   

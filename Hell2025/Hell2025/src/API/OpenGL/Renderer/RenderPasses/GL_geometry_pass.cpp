@@ -95,6 +95,7 @@ namespace OpenGLRenderer {
         //glActiveTexture(GL_TEXTURE9);
         //glBindTexture(GL_TEXTURE_2D, AssetManager::GetTextureByName("KangarooFlesh_RMA")->GetGLTexture().GetHandle());
 
+        // Non blended
         for (int i = 0; i < 4; i++) {
             Viewport* viewport = ViewportManager::GetViewportByIndex(i);
             if (viewport->IsVisible()) {
@@ -107,6 +108,21 @@ namespace OpenGLRenderer {
                 }
             }
         }
+        // Alpha discard
+        shader->SetBool("u_alphaDiscard", true);
+        for (int i = 0; i < 4; i++) {
+            Viewport* viewport = ViewportManager::GetViewportByIndex(i);
+            if (viewport->IsVisible()) {
+                OpenGLRenderer::SetViewport(gBuffer, viewport);
+                if (BackEnd::RenderDocFound()) {
+                    SplitMultiDrawIndirect(shader, drawInfoSet.geometryAlphaDiscarded[i]);
+                }
+                else {
+                    MultiDrawIndirect(drawInfoSet.geometryAlphaDiscarded[i]);
+                }
+            }
+        }
+        shader->SetBool("u_alphaDiscard", false);
 
         gBuffer->DrawBuffers({ "BaseColor" });
         SetRasterizerState("GeometryPass_Blended");

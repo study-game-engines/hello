@@ -125,8 +125,7 @@ namespace Debug {
     }
 
     void UpdateDebugPointsAndLines() {
-        if (g_debugRenderMode == DebugRenderMode::BONES ||
-            g_debugRenderMode == DebugRenderMode::RAGDOLLS) {
+        if (g_debugRenderMode == DebugRenderMode::BONES) {
             for (AnimatedGameObject& animatedGameObject : World::GetAnimatedGameObjects()) {
                 animatedGameObject.DrawBones();
             }
@@ -164,6 +163,7 @@ namespace Debug {
             g_debugRenderMode == DebugRenderMode::PHYSX_COLLISION ||
             g_debugRenderMode == DebugRenderMode::RAGDOLLS ||
             g_debugRenderMode == DebugRenderMode::PHYSX_RAYCAST) {
+            Physics::ForceZeroStepUpdate();
             Physics::SubmitDebugLinesToRenderer(g_debugRenderMode);
         }
     }
@@ -191,13 +191,14 @@ namespace Debug {
     void NextDebugRenderMode() {
         std::vector<DebugRenderMode> allowedDebugRenderModes = {
             NONE,
-            PHYSX_ALL,
+            //PHYSX_ALL,
             RAGDOLLS,
-            CLIPPING_CUBES,
-            HOUSE_GEOMETRY,
+            //CLIPPING_CUBES,
+            //HOUSE_GEOMETRY,
             DECALS,
             BONES,
             BONE_TANGENTS,
+            ASTAR_MAP,
             //PATHFINDING,
             //PHYSX_COLLISION,
             //PATHFINDING_RECAST,

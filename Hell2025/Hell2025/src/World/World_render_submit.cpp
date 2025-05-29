@@ -91,6 +91,10 @@ namespace World {
         // Trees
         for (Tree& tree : trees) {
             RenderDataManager::SubmitRenderItems(tree.GetRenderItems());
+            RenderDataManager::SubmitRenderItemsBlended(tree.GetRenderItemsBlended());
+            RenderDataManager::SubmitRenderItemsAlphaDiscard(tree.GetRenderItemsAlphaDiscarded());
+            RenderDataManager::SubmitRenderItemsAlphaHairTopLayer(tree.GetRenderItemsHairTopLayer());
+            RenderDataManager::SubmitRenderItemsAlphaHairBottomLayer(tree.GetRenderItemsHairBottomLayer());
             if (Editor::GetSelectedObjectId() == tree.GetObjectId()) {
                 RenderDataManager::SubmitOutlineRenderItems(tree.GetRenderItems());
             }

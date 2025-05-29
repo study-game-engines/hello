@@ -141,12 +141,14 @@ namespace Util {
     std::string ObjectTypeToString(ObjectType type);
     std::string PictureFrameTypeToString(PictureFrameType type);
     std::string PhysicsTypeToString(PhysicsType type);
+    std::string TreeTypeToString(TreeType type);
     std::string TrimTypeToString(TrimType type);
     std::string WallTypeToString(WallType type);
     BlendingMode StringToBlendingMode(const std::string& str);
     LightType StringToLightType(const std::string& str);
     PickUpType StringToPickUpType(const std::string& str);
     PictureFrameType StringToPictureFrameType(const std::string& str);
+    TreeType StringToTreeType(const std::string& str);
     TrimType StringToTrimType(const std::string& str);
     WallType StringToWallType(const std::string& str);
     ObjectType IntToEnum(int value);

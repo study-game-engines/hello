@@ -295,7 +295,7 @@ namespace JSON {
             createInfo.position = jsonObject["position"];
             createInfo.rotation = jsonObject["rotation"];
             createInfo.scale = jsonObject["scale"];
-            createInfo.type = jsonObject["type"];
+            createInfo.type = Util::StringToTreeType(jsonObject.value<std::string>("type", std::string("TREE_LARGE_0")));
         }
 
         return sectorCreateInfo;
@@ -346,7 +346,7 @@ namespace JSON {
                 { "position", createInfo.position },
                 { "rotation", createInfo.rotation },
                 { "scale", createInfo.scale },
-                { "type", (int)createInfo.type }
+                { "type", Util::TreeTypeToString(createInfo.type) }
             });
         }
 

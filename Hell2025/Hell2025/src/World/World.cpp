@@ -605,7 +605,7 @@ namespace World {
         std::cout << "Reset world\n";
 
         MermaidCreateInfo mermaidCreateInfo;
-        mermaidCreateInfo.position = glm::vec3(40.0f, 29.5f, 49.0f);
+        mermaidCreateInfo.position = glm::vec3(29.0f, 29.5f, 52.5f);
         //mermaidCreateInfo.position = glm::vec3(32.0f, 9.5f, 35.3f);
         mermaidCreateInfo.rotation.y = 0.25f;
         AddMermaid(mermaidCreateInfo);

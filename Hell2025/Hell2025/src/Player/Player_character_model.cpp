@@ -1,4 +1,5 @@
 #include "Player.h"
+#include "Input/Input.h"
 
 void Player::InitCharacterModel() {
     m_characterModelAnimatedGameObject.SetSkinnedModel("UniSexGuyScaled");
@@ -89,6 +90,17 @@ void Player::UpdateCharacterModelHacks() {
                 m_characterModelAnimatedGameObject.PlayAndLoopAnimation("UnisexGuy_Shotgun_Crouch", 1.0f);
             }
         }
+
+        if (Input::KeyPressed(HELL_KEY_SPACE)) {
+            if (m_viewportIndex == 0) {
+                std::cout << "\n";
+                std::cout << "GetFootPosition(): " << GetFootPosition() << "\n";
+                std::cout << "m_camera.GetEulerRotation(): " << m_camera.GetEulerRotation() << "\n";
+                std::cout << "\n";
+
+            }
+        }
+
         m_characterModelAnimatedGameObject.SetPosition(GetFootPosition());
         m_characterModelAnimatedGameObject.SetRotationY(m_camera.GetEulerRotation().y + HELL_PI);
     }

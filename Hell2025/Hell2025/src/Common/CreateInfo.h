@@ -127,7 +127,7 @@ struct TreeCreateInfo {
     glm::vec3 position = glm::vec3(0.0f);
     glm::vec3 rotation = glm::vec3(0.0f);
     glm::vec3 scale = glm::vec3(1.0f);
-    int type = 0;
+    TreeType type = TreeType::TREE_LARGE_0;
 };
 
 struct SectorCreateInfo {

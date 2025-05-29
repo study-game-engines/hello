@@ -1,5 +1,6 @@
 #include "Physics.h"
 
+
 PxQueryHitType::Enum RaycastFilterCallback::preFilter(const PxFilterData& filterData, const PxShape* shape, const PxRigidActor* actor, PxHitFlags& queryFlags) {
     const PxFilterData sf = shape->getQueryFilterData();
     //if (!((filterData.word0 & sf.word1) && (filterData.word1 & sf.word0))) {

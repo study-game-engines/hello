@@ -66,6 +66,7 @@ namespace Editor {
         insert.AddChild("Reinsert last", []() { nullptr; }, "Ctrl T");
 
         EditorUI::FileMenuNode& nature = insert.AddChild("Nature", nullptr);
+        nature.AddChild("BlackBerries", Callbacks::BeginAddingBlackBerries);
         nature.AddChild("Tree", Callbacks::BeginAddingTree);
 
         EditorUI::FileMenuNode& pickups = insert.AddChild("Pick Ups", nullptr);

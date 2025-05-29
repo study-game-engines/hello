@@ -192,7 +192,7 @@ namespace Physics {
 
                 PxMaterial* material = Physics::GetDefaultMaterial();
                 PxCapsuleGeometry geom = PxCapsuleGeometry(radius, halfExtent);
-                PxShape* pxShape = Physics::GetPxPhysics()->createShape(geom, *material);
+                PxShape* pxShape = Physics::GetPxPhysics()->createShape(geom, *material, true);
 
                 uint64_t rigidDynmamicId = Physics::CreateRigidDynamicFromPxShape(pxShape, glm::mat4(1.0f), shapeOffsetMatrix);
                 ragdoll.m_rigidDynamicIds.push_back(rigidDynmamicId);
@@ -209,7 +209,7 @@ namespace Physics {
 
                 PxMaterial* material = Physics::GetDefaultMaterial();
                 PxBoxGeometry geom = PxBoxGeometry(rigidComponent.boxExtents.x * 0.5f, rigidComponent.boxExtents.y * 0.5f, rigidComponent.boxExtents.z * 0.5f);
-                PxShape* pxShape = Physics::GetPxPhysics()->createShape(geom, *material);
+                PxShape* pxShape = Physics::GetPxPhysics()->createShape(geom, *material, true);
 
                 uint64_t rigidDynmamicId = Physics::CreateRigidDynamicFromPxShape(pxShape, glm::mat4(1.0f), shapeOffsetMatrix);
                 ragdoll.m_rigidDynamicIds.push_back(rigidDynmamicId);
@@ -223,7 +223,7 @@ namespace Physics {
 
                 PxMaterial* material = Physics::GetDefaultMaterial();
                 PxSphereGeometry geom = PxSphereGeometry(radius);
-                PxShape* pxShape = Physics::GetPxPhysics()->createShape(geom, *material);
+                PxShape* pxShape = Physics::GetPxPhysics()->createShape(geom, *material, true);
 
                 uint64_t rigidDynmamicId = Physics::CreateRigidDynamicFromPxShape(pxShape, glm::mat4(1.0f), shapeOffsetMatrix);
                 ragdoll.m_rigidDynamicIds.push_back(rigidDynmamicId);

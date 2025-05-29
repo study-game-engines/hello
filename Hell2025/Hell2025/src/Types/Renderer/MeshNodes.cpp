@@ -53,6 +53,19 @@ void MeshNodes::InitFromModel(Model* model) {
     }
 }
 
+
+void MeshNodes::SetObjectTypes(ObjectType type) {
+    for (ObjectType& objectType : m_objectTypes) {
+        objectType = type;
+    }
+}
+
+void MeshNodes::SetObjectIds(uint64_t id) {
+    for (uint64_t& objectId : m_objectIds) {
+        objectId = id;
+    }
+}
+
 void MeshNodes::PrintMeshNames() {
     std::cout << m_modelName << "\n";
     for (uint32_t meshIndex : m_globalMeshIndices) {

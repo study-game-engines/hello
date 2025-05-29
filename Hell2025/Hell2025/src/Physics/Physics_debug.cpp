@@ -7,6 +7,10 @@ namespace Physics {
         PxScene* pxScene = GetPxScene();
         std::vector<PxRigidActor*> ignoreList;
 
+        // Ignore player ragdolls
+        auto playerRagdolls = Physics::GetIgnoreList(RaycastIgnoreFlags::PLAYER_RAGDOLLS);
+        ignoreList.insert(ignoreList.end(), playerRagdolls.begin(), playerRagdolls.end());
+
         // Prepare
         PxU32 nbActors = pxScene->getNbActors(PxActorTypeFlag::eRIGID_DYNAMIC | PxActorTypeFlag::eRIGID_STATIC);
         if (nbActors) {
@@ -16,11 +20,6 @@ namespace Physics {
                 PxShape* shape;
                 actor->getShapes(&shape, 1);
                 actor->setActorFlag(PxActorFlag::eVISUALIZATION, true);
-                for (PxRigidActor* ignoredActor : ignoreList) {
-                    if (ignoredActor == actor) {
-                        actor->setActorFlag(PxActorFlag::eVISUALIZATION, false);
-                    }
-                }
                 if (debugRenderMode == DebugRenderMode::PHYSX_RAYCAST) {
                     if (shape->getQueryFilterData().word0 == RaycastGroup::RAYCAST_DISABLED) {
                         actor->setActorFlag(PxActorFlag::eVISUALIZATION, false);
@@ -37,6 +36,11 @@ namespace Physics {
                         actor->setActorFlag(PxActorFlag::eVISUALIZATION, true);
                     }
                     else {
+                        actor->setActorFlag(PxActorFlag::eVISUALIZATION, false);
+                    }
+                }
+                for (PxRigidActor* ignoredActor : ignoreList) {
+                    if (ignoredActor == actor) {
                         actor->setActorFlag(PxActorFlag::eVISUALIZATION, false);
                     }
                 }

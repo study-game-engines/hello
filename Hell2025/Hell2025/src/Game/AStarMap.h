@@ -5,6 +5,8 @@ namespace AStarMap {
     void Update();
     void UpdateDebugMeshesFromHeightField();
 
+    int GetMapWidth();
+    int GetMapHeight();
     MeshBuffer& GetDebugGridMeshBuffer(); 
     MeshBuffer& GetDebugSolidMeshBuffer();
 }

@@ -34,6 +34,8 @@ namespace Editor {
     void SetViewportOrthoSize(uint32_t viewportIndex, float size);
     void SetEditorViewportSplitMode(EditorViewportSplitMode mode);
 
+    void SetPlantType(TreeType treeType);
+
     void UpdateGizmoInteract();
 
     // Object hover

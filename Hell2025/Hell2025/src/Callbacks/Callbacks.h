@@ -32,7 +32,8 @@ namespace Callbacks {
     // House editor
     void BeginAddingDoor();
     void BeginAddingPictureFrame();
-    void BeginAddingTree();
+    void BeginAddingTree(); 
+    void BeginAddingBlackBerries();
     void BeginAddingWall();
     void BeginAddingWindow();
 }

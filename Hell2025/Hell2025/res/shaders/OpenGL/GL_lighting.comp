@@ -204,6 +204,8 @@ void main() {
     // Tile params
     uint tileIndex = gl_WorkGroupID.y * u_tileXCount + gl_WorkGroupID.x;
 	uint lightCount = tileData[tileIndex].lightCount;
+    
+    float sssStrength = 0.03;
 
     // Direct light
     vec3 directLighting = vec3(0); 
@@ -227,7 +229,7 @@ void main() {
         vec3 L = normalize(lightPosition - worldSpacePosition.xyz);
         float NdotL = max(dot(normal.xyz, L), 0.0);
         vec3 sss = 0.2 * exp(-3.0 * abs(NdotL) / (radius + 0.001)); 
-        vec3 sssColor = subColor * radius * sss;
+        vec3 sssColor = subColor * radius * sss * sssStrength;
         float lightAttenuation = smoothstep(lightRadius, 0, length(lightPosition - worldSpacePosition.xyz));
         directLighting += sssColor * lightAttenuation * shadow;
     }
@@ -263,6 +265,18 @@ void main() {
             vec4 FragPosLightSpace = lightProjectionView * vec4(worldSpacePosition.xyz, 1.0);
             float shadow = SpotlightShadowCalculation(FragPosLightSpace, normal.xyz, spotLightDir, worldSpacePosition.xyz, spotLightPos, flashlightViewPos, FlashlighShadowMapArrayTexture, layerIndex);  
 
+            
+            // Subsurface scattering
+
+            vec3 radius = vec3(sssRadius);
+            vec3 subColor = Saturate(baseColor.rgb, 1.5);
+            vec3 L = spotLightDir;
+            float NdotL = max(dot(normal.xyz, L), 0.0);
+            vec3 sss = 0.2 * exp(-3.0 * abs(NdotL) / (radius + 0.001)); 
+            vec3 sssColor = subColor * radius * sss * sssStrength;
+            float lightAttenuation = smoothstep(spotLightRadius, 0.0, fragDistance) * spotLightStregth;
+            spotLighting += sssColor * lightAttenuation * (1 - shadow);
+      
             // Cookie corretion
             //cookie *= 10;
             
@@ -288,6 +302,8 @@ void main() {
             spotLighting *= vec3(1 - shadow);
             spotLighting *= cookie * spotLightColor;
             directLighting += vec3(spotLighting) * flashlightModifer;
+
+
         }
     }
 
@@ -308,7 +324,7 @@ void main() {
     vec3 L = moonLightDir;
     float NdotL = max(dot(normal.xyz, L), 0.0);
     vec3 sss = 0.2 * exp(-3.0 * abs(NdotL) / (radius + 0.001)); 
-    vec3 sssColor = subColor * radius * sss;
+    vec3 sssColor = subColor * radius * sss * sssStrength;
     moonLighting += sssColor * csmShadow * 0.05;
 
     // Self light hack (RE7 style) 

@@ -379,7 +379,7 @@ void AnimatedGameObject::SetSkinnedModel(std::string name) {
     }
 }
 
-glm::mat4 AnimatedGameObject::GetAnimatedTransformByBoneName(const char* name) {
+glm::mat4 AnimatedGameObject::GetAnimatedTransformByBoneName(const std::string& name) {
     int index = m_boneMapping[name];
     if (index >= 0 && index < m_animationLayer.m_globalBlendedNodeTransforms.size()) {
         return m_animationLayer.m_globalBlendedNodeTransforms[index];

@@ -83,11 +83,15 @@ namespace Physics {
         PxReal maxDistance = rayLength;
         PxRaycastBuffer hit;
         PxHitFlags outputFlags = PxHitFlag::ePOSITION | PxHitFlag::eNORMAL | PxHitFlag::eMESH_BOTH_SIDES;
-        if (cullBackFacing) {
-            outputFlags = PxHitFlag::ePOSITION | PxHitFlag::eNORMAL;
+        if (!cullBackFacing) {
+            outputFlags |= PxHitFlag::eMESH_BOTH_SIDES;
         }
 
+
         PxQueryFilterData filterData = PxQueryFilterData();
+        filterData.data.word0 = 0xFFFFFFFF; // Or a specific bit for "ray"
+        filterData.data.word1 = 0xFFFFFFFF; // Collide with all layers/types defined in your shape's word0
+        filterData.data.word2 = 0;
         filterData.flags = PxQueryFlag::eSTATIC | PxQueryFlag::eDYNAMIC | PxQueryFlag::ePREFILTER;
 
         // Defaults
@@ -101,8 +105,9 @@ namespace Physics {
         RaycastFilterCallback callback;
         callback.m_ignoredActors = GetIgnoreList(ignoreFlags);
         callback.m_ignoredActors.insert(callback.m_ignoredActors.end(), ignoredActors.begin(), ignoredActors.end());
-                
+
         result.hitFound = scene->raycast(origin, unitDir, maxDistance, hit, outputFlags, filterData, &callback);
+        //std::cout << "hit found: " << result.hitFound << "\n";
 
         // On hit
         if (result.hitFound) {

@@ -7,6 +7,12 @@
 #include "Util/Util.h"
 
 namespace Editor {
+    TreeType g_treeType = TreeType::TREE_LARGE_0;
+
+    void SetPlantType(TreeType treeType) {
+        g_treeType = treeType;
+    }
+
     void UpdateTreePlacement() {
         if (Input::LeftMousePressed()) {
             Viewport* viewport = ViewportManager::GetViewportByIndex(GetHoveredViewportIndex());
@@ -24,11 +30,17 @@ namespace Editor {
                 TreeCreateInfo createInfo;
                 createInfo.position = rayResult.hitPosition;
                 createInfo.rotation.y = Util::RandomFloat(0.0f, HELL_PI * 2.0f);
+                createInfo.type = g_treeType;
+
+                if (g_treeType == TreeType::BLACK_BERRIES) {
+                    createInfo.scale = glm::vec3(2.0f);
+                }
+
                 World::AddTree(createInfo);
                 ExitObjectPlacement();
             }
             else {
-                std::cout << "Failed to place picture frame. ";
+                std::cout << "Failed to place tree. ";
                 std::cout << "Hit found: " << Util::BoolToString(rayResult.hitFound) << " ";
                 std::cout << "Hit position : " << rayResult.hitPosition << " ";
                 std::cout << "Object type : " << Util::ObjectTypeToString(rayResult.userData.objectType) << " ";

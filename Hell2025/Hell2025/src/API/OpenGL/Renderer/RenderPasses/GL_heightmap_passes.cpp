@@ -21,6 +21,7 @@
 #include "World/World.h"
 
 
+#include "Game/AStarMap.h"
 #include "lodepng/lodepng.h"
 
 #include "Audio/Audio.h"
@@ -42,6 +43,7 @@ namespace OpenGLRenderer {
         //GenerateHeightMapImageData();
         GenerateHeightMapVertexData();
         GeneratePhysXTextures();
+        AStarMap::UpdateDebugMeshesFromHeightField();
     }
 
     void HeightMapPass() {

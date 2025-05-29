@@ -7,19 +7,20 @@ namespace AStarMap {
 
     MeshBuffer g_debugGridMeshBuffer;
     MeshBuffer g_debuGSolidMeshBuffer;
-    glm::vec3 g_gridOffset = glm::vec3(10.0f, 35.0f, 10.0f);
-    int quadCountX = 50;
-    int quadCountY = 50;
-    float spacing = 1.0f;
+    glm::vec3 g_mapWorldSpaceOffset = glm::vec3(10.0f, 30.5f, 10.0f);
+
+    int g_mapWidth = 100;
+    int g_mapHeight = 100;
+    float g_worldSpaceSpacing = 0.5f;
 
     void UpdateDebugGridMesh();
     void UpdateDebugSolidMesh();
     inline int Index1D(int x, int y, int mapWidth) { return y * mapWidth + x; }
 
     void Update() {
-        if (Input::KeyPressed(HELL_KEY_SPACE)) {
-            UpdateDebugMeshesFromHeightField();
-        }
+        //if (Input::KeyPressed(HELL_KEY_SPACE)) {
+        //    UpdateDebugMeshesFromHeightField();
+        //}
     }
 
     void UpdateDebugMeshesFromHeightField() {
@@ -29,41 +30,40 @@ namespace AStarMap {
     }
 
     void UpdateDebugGridMesh() {
-        int m_mapWidth = quadCountX + 1;
-        int m_mapHeight = quadCountY + 1;
-
         std::vector<Vertex> vertices;
-        vertices.reserve(m_mapWidth * m_mapHeight);
-        for (int y = 0; y < m_mapHeight; ++y) {
-            for (int x = 0; x < m_mapWidth; ++x) {
+        vertices.reserve(g_mapWidth + 1 * g_mapHeight + 1);
+        for (int y = 0; y < g_mapHeight + 1; ++y) {
+            for (int x = 0; x < g_mapWidth + 1; ++x) {
                 Vertex vertex;
-                vertex.position = glm::vec3(x * spacing, 0.0f, y * spacing) + g_gridOffset;
-                vertex.uv = glm::vec2(x / float(quadCountX), y / float(quadCountY));
+                vertex.position = glm::vec3(x * g_worldSpaceSpacing, 0.0f, y * g_worldSpaceSpacing) + g_mapWorldSpaceOffset;
+                vertex.uv = glm::vec2(x / float(g_mapWidth), y / float(g_mapHeight));
+                
+                // Raycast down to sample height
                 glm::vec3 rayOrigin = vertex.position + glm::vec3(0, 100, 0);
                 glm::vec3 rayDirection = glm::vec3(0, -1, 0);
                 float rayLength = 1000;
                 PhysXRayResult result = Physics::CastPhysXRayHeightMap(rayOrigin, rayDirection, rayLength);
                 if (result.hitFound) {
-                    //vertex.position = result.hitPosition;
+                    vertex.position = result.hitPosition + glm::vec3(0.0f, 0.02f, 0.0f);
                 }
                 vertices.push_back(vertex);
             }
         }
 
         std::vector<uint32_t> indices;
-        indices.reserve(((quadCountX + 1) * quadCountY + (quadCountY + 1) * quadCountX) * 2);
+        indices.reserve(((g_mapWidth + 1) * g_mapHeight + (g_mapHeight + 1) * g_mapWidth) * 2);
         // Vertical segments
-        for (int x = 0; x <= quadCountX; ++x) {
-            for (int y = 0; y < quadCountY; ++y) {
-                indices.push_back(Index1D(x, y, m_mapWidth));
-                indices.push_back(Index1D(x, y + 1, m_mapWidth));
+        for (int x = 0; x <= g_mapWidth; ++x) {
+            for (int y = 0; y < g_mapHeight; ++y) {
+                indices.push_back(Index1D(x, y, g_mapWidth + 1));
+                indices.push_back(Index1D(x, y + 1, g_mapWidth + 1));
             }
         }
         // Horizontal segments
-        for (int y = 0; y <= quadCountY; ++y) {
-            for (int x = 0; x < quadCountX; ++x) {
-                indices.push_back(Index1D(x, y, m_mapWidth));
-                indices.push_back(Index1D(x + 1, y, m_mapWidth));
+        for (int y = 0; y <= g_mapHeight; ++y) {
+            for (int x = 0; x < g_mapWidth; ++x) {
+                indices.push_back(Index1D(x, y, g_mapWidth + 1));
+                indices.push_back(Index1D(x + 1, y, g_mapWidth + 1));
             }
         }
 
@@ -76,39 +76,34 @@ namespace AStarMap {
     }
 
     void UpdateDebugSolidMesh() {
-
-        int m_mapWidth = quadCountX + 1;
-        int m_mapHeight = quadCountY + 1;
-
         std::vector<Vertex> vertices;
-        vertices.reserve(m_mapWidth * m_mapHeight);
-        for (int y = 0; y < m_mapHeight; ++y) {
-            for (int x = 0; x < m_mapWidth; ++x) {
-                Vertex v;
-                // world position before raycast
-                v.position = glm::vec3(x * spacing, 0.0f, y * spacing) + g_gridOffset;
-                v.uv = glm::vec2(x / float(quadCountX), y / float(quadCountY));
+        vertices.reserve(g_mapWidth + 1 * g_mapHeight + 1);
+        for (int y = 0; y < g_mapHeight + 1; ++y) {
+            for (int x = 0; x < g_mapWidth + 1; ++x) {
+                Vertex vertex;
+                vertex.position = glm::vec3(x * g_worldSpaceSpacing, 0.0f, y * g_worldSpaceSpacing) + g_mapWorldSpaceOffset;
+                vertex.uv = glm::vec2(x / float(g_mapWidth), y / float(g_mapHeight));
 
-                // raycast down to sample height
-                glm::vec3 rayOrigin = v.position + glm::vec3(0, 100, 0);
+                // Raycast down to sample height
+                glm::vec3 rayOrigin = vertex.position + glm::vec3(0, 100, 0);
                 glm::vec3 rayDirection = glm::vec3(0, -1, 0);
-                auto     result = Physics::CastPhysXRayHeightMap(rayOrigin, rayDirection, 1000.0f);
+                PhysXRayResult result = Physics::CastPhysXRayHeightMap(rayOrigin, rayDirection, 1000.0f);
                 if (result.hitFound) {
-                // v.position = result.hitPosition;
+                    vertex.position = result.hitPosition + glm::vec3(0.0f, 0.02f, 0.0f);
                 }
 
-                vertices.push_back(v);
+                vertices.push_back(vertex);
             }
         }
 
         std::vector<uint32_t> indices;
-        indices.reserve(quadCountX * quadCountY * 6);
-        for (int y = 0; y < quadCountY; ++y) {
-            for (int x = 0; x < quadCountX; ++x) {
-                int i0 = Index1D(x, y, m_mapWidth);
-                int i1 = Index1D(x + 1, y, m_mapWidth);
-                int i2 = Index1D(x + 1, y + 1, m_mapWidth);
-                int i3 = Index1D(x, y + 1, m_mapWidth);
+        indices.reserve(g_mapWidth * g_mapHeight * 6);
+        for (int y = 0; y < g_mapHeight; ++y) {
+            for (int x = 0; x < g_mapWidth; ++x) {
+                int i0 = Index1D(x, y, g_mapWidth + 1);
+                int i1 = Index1D(x + 1, y, g_mapWidth + 1);
+                int i2 = Index1D(x + 1, y + 1, g_mapWidth + 1);
+                int i3 = Index1D(x, y + 1, g_mapWidth + 1);
 
                 // triangle #1
                 indices.push_back(i0);
@@ -130,6 +125,8 @@ namespace AStarMap {
         }
     }
 
+    int GetMapWidth()                       { return g_mapWidth; }
+    int GetMapHeight()                      { return g_mapHeight; }
     MeshBuffer& GetDebugGridMeshBuffer()    { return g_debugGridMeshBuffer; }
     MeshBuffer& GetDebugSolidMeshBuffer()   { return g_debuGSolidMeshBuffer; }
 }

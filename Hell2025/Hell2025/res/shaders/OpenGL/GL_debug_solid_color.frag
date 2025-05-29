@@ -8,7 +8,7 @@ in vec2 TexCoords;
 
 void main() {
     if (WorldPos.y < 30) {
-      //  discard;
+        discard;
     }
     
     FragOut.rgb = u_color * 0.5;

@@ -68,6 +68,7 @@ enum class TextureFilter {
 
 enum class ObjectType {
     NONE = 0,
+    CHARACTER_CONTROLLER,
     DECAL,
     DOOR,
     DOOR_FRAME,
@@ -205,7 +206,8 @@ enum RaycastGroup {
 };
 
 enum DebugRenderMode {
-    NONE = 0,
+    NONE = 0, 
+    ASTAR_MAP,
     DECALS,
     RAGDOLLS,
     PATHFINDING_RECAST,
@@ -291,6 +293,7 @@ enum struct TreeType {
     TREE_LARGE_0 = 0,
     TREE_LARGE_1,
     TREE_LARGE_2,
+    BLACK_BERRIES,
     UNDEFINED
 };
 
