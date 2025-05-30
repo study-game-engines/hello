@@ -41,6 +41,9 @@ namespace RenderDataManager {
 
     std::vector<RenderItem> g_instanceData;
     std::vector<ViewportData> g_viewportData;
+
+    std::vector<DecalPaintingInfo> g_decalPaintingInfo;
+
     uint32_t g_baseSkinnedVertex;
 
     std::vector<glm::mat4> g_oceanPatchTransforms;
@@ -59,7 +62,7 @@ namespace RenderDataManager {
 
     int EncodeBaseInstance(int playerIndex, int instanceOffset);
     void DecodeBaseInstance(int baseInstance, int& playerIndex, int& instanceOffset);
-   
+
     void BeginFrame() {
         g_animatedGameObjectsToSkin.clear();
         g_decalRenderItems.clear();
@@ -71,17 +74,16 @@ namespace RenderDataManager {
         g_renderItemsAlphaDiscarded.clear();
         g_renderItemsHairTopLayer.clear();
         g_renderItemsHairBottomLayer.clear();
-
         g_outlineRenderItems.clear();
-
         g_gpuLightsHighRes.clear();
+        g_decalPaintingInfo.clear();
     }
 
     void Update() {
         UpdateViewportData();
         UpdateViewportFrustums();
         UpdateRendererData();
-        UpdateDrawCommandsSet();   
+        UpdateDrawCommandsSet();
     }
 
     void UpdateViewportData() {
@@ -328,7 +330,7 @@ namespace RenderDataManager {
 
         //std::string name = "light " + std::to_string(gpuLight.lightIndex);
         //Timer timer(name);
-        
+
         Light* light = World::GetLightByIndex(gpuLight.lightIndex);
         if (!light) return;
 
@@ -348,7 +350,7 @@ namespace RenderDataManager {
 
             //AABB aabb(renderItem.aabbMin, renderItem.aabbMax);
             //if (frustum->IntersectsAABB(aabb)) {
-            
+
             if (renderItem.castShadows && frustum->IntersectsAABBFast(renderItem)) {
                 g_instanceData.push_back(renderItem);
             }
@@ -471,7 +473,7 @@ namespace RenderDataManager {
 
 
     void SubmitGPULightHighRes(Light& light) {
-        
+
     }
 
     int EncodeBaseInstance(int playerIndex, int instanceOffset) {
@@ -545,9 +547,13 @@ namespace RenderDataManager {
     const std::vector<GPULight>& GetGPULightsHighRes() {
         return g_gpuLightsHighRes;
     }
-    
+
     const std::vector<glm::mat4> GetOceanPatchTransforms() {
         return g_oceanPatchTransforms;
+    }
+
+    const std::vector<DecalPaintingInfo>& GetDecalPaintingInfo() {
+        return g_decalPaintingInfo;
     }
 
     // Submissions
@@ -621,4 +627,12 @@ namespace RenderDataManager {
     void SubmitOutlineRenderItems(const std::vector<HouseRenderItem>& renderItems) {
         g_houseOutlineRenderItems.insert(g_houseOutlineRenderItems.begin(), renderItems.begin(), renderItems.end());
     }
+
+    void SubmitDecalPaintingInfo(DecalPaintingInfo decalPaintingInfo) {
+        g_decalPaintingInfo.push_back(decalPaintingInfo);
+    }
+
+       //void SubmitDecalPaintingInfo(DecalPaintingInfo& decalPaintingInfo)  {
+   //    g_decalPaintingInfo.push_back(decalPaintingInfo);
+   //}
 }

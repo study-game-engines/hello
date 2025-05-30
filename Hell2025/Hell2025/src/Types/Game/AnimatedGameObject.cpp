@@ -12,6 +12,19 @@ void AnimatedGameObject::Init() {
     m_objectId = UniqueID::GetNext();
 }
 
+void AnimatedGameObject::SetMeshWoundMaskTextureIndex(const std::string& meshName, int32_t woundMaskTextureIndex) {
+    std::vector<uint32_t>& meshIndices = m_skinnedModel->GetMeshIndices();
+
+    for (int i = 0; i < meshIndices.size(); i++) {
+        uint32_t meshIndex = meshIndices[i];
+        SkinnedMesh* skinnedMesh = AssetManager::GetSkinnedMeshByIndex(meshIndex);
+        if (skinnedMesh && skinnedMesh->name == meshName) {
+            m_woundMaskTextureIndices[i] = woundMaskTextureIndex;
+            return;
+        }
+    }
+}
+
 void AnimatedGameObject::SetRagdoll(const std::string& ragdollName, float ragdollTotalWeight) {
     m_ragdollId = Physics::CreateRagdollByName(ragdollName, ragdollTotalWeight);
 }
@@ -42,6 +55,7 @@ void AnimatedGameObject::UpdateRenderItems() {
             renderItem.furLength = m_meshRenderingEntries[i].furLength;
             renderItem.furUVScale = m_meshRenderingEntries[i].furUVScale;
             renderItem.furShellDistanceAttenuation = m_meshRenderingEntries[i].furShellDistanceAttenuation;
+            renderItem.woundMaskTexutreIndex = m_woundMaskTextureIndices[i];
 
             if (m_skinnedModel->GetName() == "Kangaroo") {
                 renderItem.customFlag = 1;
@@ -400,6 +414,7 @@ void AnimatedGameObject::SetSkinnedModel(std::string name) {
         m_animationLayer.SetSkinnedModel(name);
         m_skinnedModel = ptr;
         m_meshRenderingEntries.clear();
+        m_woundMaskTextureIndices.resize(m_skinnedModel->GetMeshCount());
 
         int meshCount = m_skinnedModel->GetMeshCount();
 

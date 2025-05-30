@@ -24,7 +24,11 @@ void main() {
     }
     
     float decalValue = texture(DecalTexture, uv_screenspace).r;
-    decalValue *= 0.125;
+   // decalValue *= 0.125;
+
+    decalValue *= 0.5;
+
+    //decalValue *= 1;
 
     // Bail if no decal at this pixel
     if (decalValue == 0) {

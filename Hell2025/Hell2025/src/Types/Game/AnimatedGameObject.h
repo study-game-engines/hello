@@ -45,12 +45,13 @@ private:
 public:
     void Init();
 
+    void SetMeshWoundMaskTextureIndex(const std::string& meshName, int32_t woundMaskTextureIndex);
+    std::vector<int32_t> m_woundMaskTextureIndices;
+
+
     std::unordered_map<std::string, unsigned int> m_boneMapping;
-
     glm::mat4 GetAnimatedTransformByBoneName(const std::string& name);
-
     AnimatedTransforms m_animatedTransforms;
-
     const size_t GetAnimatedTransformCount();
     void UpdateRenderItems();
     std::vector<RenderItem>& GetRenderItems();

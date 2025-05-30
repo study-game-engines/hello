@@ -1,7 +1,14 @@
 #pragma once
 #include "HellTypes.h"
 #include "Types/Game/AnimatedGameObject.h"
+#include "Types/Game/Bullet.h"
 #include <vector>
+
+struct DecalPaintingInfo {
+    glm::vec3 rayOrigin;
+    glm::vec3 rayDirection;
+    int textureArrayIndex = 0;
+};
 
 namespace RenderDataManager {
     void BeginFrame();
@@ -39,9 +46,12 @@ namespace RenderDataManager {
     void SubmitOutlineRenderItem(const HouseRenderItem& renderItem);
     void SubmitOutlineRenderItems(const std::vector<HouseRenderItem>& renderItems);
 
+    void SubmitDecalPaintingInfo(DecalPaintingInfo decalPaintingInfo);
+
     const RendererData& GetRendererData();
     const std::vector<glm::mat4> GetOceanPatchTransforms();
     const std::vector<GPULight>& GetGPULightsHighRes();
+    const std::vector<DecalPaintingInfo>& GetDecalPaintingInfo();
     const std::vector<HouseRenderItem>& GetHouseRenderItems();
     const std::vector<HouseRenderItem>& GetHouseOutlineRenderItems();
     const std::vector<RenderItem>& GetRenderItems();

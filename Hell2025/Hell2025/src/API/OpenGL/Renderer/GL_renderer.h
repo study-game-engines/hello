@@ -9,6 +9,7 @@
 #include "API/OpenGL/Types/GL_shadow_map.h"
 #include "API/OpenGL/Types/GL_shadow_cube_map_array.h"
 #include "API/OpenGL/Types/GL_shadow_map_array.h"
+#include "API/OpenGL/Types/GL_texture_array.h"
 #include "API/OpenGL/Types/GL_ssbo.hpp"
 #include "Viewport/Viewport.h"
 
@@ -64,6 +65,7 @@ namespace OpenGLRenderer {
     void OutlinePass();
     void PostProcessingPass();
     void WinstonPass();
+    void BloodScreenSpaceDecalsPass();
     void SkyBoxPass();
     void SpriteSheetPass();
     void TextureReadBackPass();
@@ -105,6 +107,7 @@ namespace OpenGLRenderer {
     OpenGLShadowMap* GetShadowMap(const std::string& name);
     OpenGLShadowCubeMapArray* GetShadowCubeMapArray(const std::string& name);
     OpenGLShadowMapArray* GetShadowMapArray(const std::string& name);
+    OpenGLTextureArray* GetTextureArray(const std::string& name);
     OpenGLMeshPatch* GetOceanMeshPatch();
 
     std::vector<float>& GetShadowCascadeLevels();

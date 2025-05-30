@@ -38,6 +38,8 @@ uniform int u_viewportIndex;
 uniform int u_globalInstanceIndex;
 #endif
 
+out flat int WoundMaskTextureIndex;
+
 void main() {
 
 #if ENABLE_BINDLESS
@@ -60,6 +62,9 @@ void main() {
 	mat4 projection = viewportData[viewportIndex].projection;    
 	mat4 view = viewportData[viewportIndex].view;
     mat4 normalMatrix = transpose(inverseModelMatrix);
+
+    
+    WoundMaskTextureIndex = renderItem.woundMaskTextureIndex;
 
     Normal = normalize(normalMatrix * vec4(vNormal, 0)).xyz;
     Tangent = normalize(normalMatrix * vec4(vTangent, 0)).xyz;

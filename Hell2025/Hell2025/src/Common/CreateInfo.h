@@ -19,6 +19,11 @@ struct MermaidCreateInfo {
     glm::vec3 rotation;
 };
 
+struct KangarooCreateInfo {
+    glm::vec3 position;
+    glm::vec3 rotation;
+};
+
 struct DoorCreateInfo {
     glm::vec3 position;
     glm::vec3 rotation;

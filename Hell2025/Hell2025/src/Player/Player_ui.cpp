@@ -108,6 +108,11 @@ void Player::UpdateUI() {
         text += "Cam Pos: " + Util::Vec3ToString(GetCameraPosition()) + "\n";
         text += "Cam Euler: " + Util::Vec3ToString(GetCameraRotation()) + "\n";
 
+        if (World::GetKangaroos().size()) {
+            text += "\n";
+            text += "Kangaroo Health: " + std::to_string(World::GetKangaroos()[0].GetHealth()) + "\n";
+        }
+
         // Weapons
         if (false) {
             text += "Weapon Action: " + Util::WeaponActionToString(GetCurrentWeaponAction()) + "\n";

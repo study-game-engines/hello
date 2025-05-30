@@ -28,6 +28,7 @@ namespace World {
     std::vector<Door> g_doors;
     std::vector<Decal> g_decals;
     std::vector<GameObject> g_gameObjects;
+    std::vector<Kangaroo> g_kangaroos;
     std::vector<HeightMapChunk> g_heightMapChunks;
     std::vector<Mermaid> g_mermaids;
     std::vector<Plane> g_planes;
@@ -46,7 +47,7 @@ namespace World {
     std::vector<GPULight> g_gpuLightsHighRes;
 
     std::map<ivecXZ, int> g_validChunks;
-    
+
     uint32_t g_volumetricBloodSplattersSpawnedThisFrame = 0;
 
     std::string g_mapName = "";
@@ -63,6 +64,11 @@ namespace World {
     void AddSectorAtLocation(SectorCreateInfo& sectorCreateInfo, SpawnOffset spawnOffset, bool loadHouses);
 
     void Init() {
+        KangarooCreateInfo kangarooCreateInfo;
+        kangarooCreateInfo.position = glm::vec3(17.1, 30.4f, 41.15);
+        kangarooCreateInfo.rotation.y = HELL_PI;
+        AddKangaroo(kangarooCreateInfo);
+
         NewRun();
     }
 
@@ -79,6 +85,10 @@ namespace World {
         // Add shark
         Shark& shark = g_sharks.emplace_back();
         shark.Init();
+
+        for (Kangaroo& kangaroo : g_kangaroos) {
+            kangaroo.Respawn();
+        }
     }
 
     void BeginFrame() {
@@ -445,7 +455,7 @@ namespace World {
     void SetObjectPosition(uint64_t objectId, glm::vec3 position) {
         Door* door = World::GetDoorByObjectId(objectId);
         if (door) {
-            door->SetPosition(position); 
+            door->SetPosition(position);
             UpdateClippingCubes();
             UpdateAllWallCSG();
             UpdateHouseMeshBuffer();
@@ -574,7 +584,10 @@ namespace World {
         for (GameObject& gameObject : g_gameObjects) {
             gameObject.CleanUp();
         }
-        for (Mermaid& mermaid: g_mermaids) {
+        //for (Kangaroo& kangaroo : g_kangaroos) {
+        //    kangaroo.CleanUp();
+        //}
+        for (Mermaid& mermaid : g_mermaids) {
             mermaid.CleanUp();
         }
         for (Plane& housePlane : g_planes) {
@@ -601,6 +614,7 @@ namespace World {
         g_decals.clear();
         g_doors.clear();
         g_gameObjects.clear();
+        //g_kangaroos.clear();
         g_heightMapChunks.clear();
         g_lights.clear();
         g_mermaids.clear();
@@ -617,7 +631,6 @@ namespace World {
 
         MermaidCreateInfo mermaidCreateInfo;
         mermaidCreateInfo.position = glm::vec3(29.0f, 29.5f, 52.5f);
-        //mermaidCreateInfo.position = glm::vec3(32.0f, 9.5f, 35.3f);
         mermaidCreateInfo.rotation.y = 0.25f;
         AddMermaid(mermaidCreateInfo);
     }
@@ -657,7 +670,7 @@ namespace World {
         g_bullets.push_back(Bullet(createInfo));
     }
 
-    void AddDoor(DoorCreateInfo createInfo, SpawnOffset spawnOffset ) {
+    void AddDoor(DoorCreateInfo createInfo, SpawnOffset spawnOffset) {
         Door& door = g_doors.emplace_back();
         createInfo.position += spawnOffset.translation;
         door.Init(createInfo);
@@ -671,6 +684,11 @@ namespace World {
     void AddDecal(const DecalCreateInfo& createInfo) {
         Decal& decal = g_decals.emplace_back();
         decal.Init(createInfo);
+    }
+
+    void AddKangaroo(const KangarooCreateInfo& createInfo) {
+        Kangaroo& kangaroo = g_kangaroos.emplace_back();
+        kangaroo.Init(createInfo);        
     }
 
     void AddHousePlane(PlaneCreateInfo createInfo, SpawnOffset spawnOffset) {
@@ -895,6 +913,7 @@ namespace World {
     std::vector<GameObject>& GetGameObjects()                           { return g_gameObjects; }
     std::vector<Plane>& GetPlanes()                                     { return g_planes; }
     std::vector<Light>& GetLights()                                     { return g_lights; };
+    std::vector<Kangaroo>& GetKangaroos()                               { return g_kangaroos; }
     std::vector<Mermaid>& GetMermaids()                                 { return g_mermaids; }
     std::vector<Piano>& GetPianos()                                     { return g_pianos; };
     std::vector<PickUp>& GetPickUps()                                   { return g_pickUps; };

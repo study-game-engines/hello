@@ -13,10 +13,10 @@ namespace World {
     void CalculateGPULights();
 
     // REMOVE ME!
-    uint64_t g_rooAnimatedGameObject = 0;
-    AnimatedGameObject* GetRooTest() {
-        return GetAnimatedGameObjectByObjectId(g_rooAnimatedGameObject);
-    }
+   //uint64_t g_rooAnimatedGameObject = 0;
+   //AnimatedGameObject* GetRooTest() {
+   //    return GetAnimatedGameObjectByObjectId(g_rooAnimatedGameObject);
+   //}
     // 
 
 
@@ -51,46 +51,7 @@ namespace World {
             Renderer::DrawLine(origin, origin + rightEdge * length, color);   // right limit
         }*/
 
-        if (g_rooAnimatedGameObject == 0) {
-            g_rooAnimatedGameObject = CreateAnimatedGameObject();
-            AnimatedGameObject* roo = GetAnimatedGameObjectByObjectId(g_rooAnimatedGameObject);
-            roo->SetSkinnedModel("Kangaroo");
-            roo->SetRotationY(HELL_PI);
-            roo->SetAnimationModeToBindPose();
-            roo->SetName("Roo");
-            roo->SetAllMeshMaterials("CheckerBoard");
-            roo->SetAllMeshMaterials("Leopard");
-            roo->PrintMeshNames();
-            roo->SetRagdoll("Kangaroo", 1500.0f);
-
-
-            Ragdoll* ragdoll = Physics::GetRagdollById(roo->GetRagdollId());
-            if (ragdoll) {
-                ragdoll->SetPhysicsData(roo->GetRagdollId(), ObjectType::RAGDOLL_ENEMY);
-            }
-
-            AnimationPlaybackParams params;
-            params.animationSpeed = 1.0f;
-            roo->PlayAndLoopAnimation("Kangaroo_Hop2", params);
-        }
-        if (Input::KeyPressed(HELL_KEY_SLASH)) {
-            AnimatedGameObject* roo = GetAnimatedGameObjectByObjectId(g_rooAnimatedGameObject);
-            roo->SetAnimationModeToRagdoll();
-        }
-        if (Input::KeyPressed(HELL_KEY_COMMA)) {
-            AnimatedGameObject* roo = GetAnimatedGameObjectByObjectId(g_rooAnimatedGameObject);
-            AnimationPlaybackParams params;
-            params.animationSpeed = 1.00f;
-            roo->PlayAndLoopAnimation("Kangaroo_Idle", params);
-        }
-        if (Input::KeyPressed(HELL_KEY_PERIOD)) {
-            AnimatedGameObject* roo = GetAnimatedGameObjectByObjectId(g_rooAnimatedGameObject);
-            AnimationPlaybackParams params;
-            params.animationSpeed = 1.0f;
-            //roo->PlayAndLoopAnimation("Kangaroo_Hop2", params);
-            roo->PlayAndLoopAnimation("Kangaroo_Bite", params);
-        }
-        // REMOVE ME
+        
 
         ProcessBullets();
         LazyDebugSpawns();
@@ -121,6 +82,10 @@ namespace World {
 
         for (GameObject& gameObject : gameObjects) {
             gameObject.Update(deltaTime);
+        }
+
+        for (Kangaroo& kangaroo : GetKangaroos()) {
+            kangaroo.Update(deltaTime);
         }
 
         for (Mermaid& mermaid : GetMermaids()) {
@@ -158,22 +123,6 @@ namespace World {
         }
 
         CalculateGPULights();
-
-        AnimatedGameObject* roo = GetAnimatedGameObjectByObjectId(g_rooAnimatedGameObject);
-        if (roo) {
-            roo->SetPosition(glm::vec3(31, 30.4f, 36));
-            roo->SetPosition(glm::vec3(49.5, 30.4f, 39));
-            roo->SetRotationY(HELL_PI * -0.5);
-            //roo->SetPosition(glm::vec3(29, 30.4f, 39));
-            //roo->SetRotationY(HELL_PI * -0.85);
-            roo->SetName("Roo");
-            roo->SetAllMeshMaterials("Kangaroo");
-            roo->SetMeshMaterialByMeshName("LeftEye_Iris", "KangarooIris");
-            roo->SetMeshMaterialByMeshName("RightEye_Iris", "KangarooIris");
-            roo->DisableDrawingForMeshByMeshName("LeftEye_Sclera");
-            roo->DisableDrawingForMeshByMeshName("RightEye_Sclera");
-            roo->SetScale(1.0f);
-        }
 
         // Volumetric blood
         std::vector<VolumetricBloodSplatter>& volumetricBloodSplatters = GetVolumetricBloodSplatters();

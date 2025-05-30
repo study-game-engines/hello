@@ -2,6 +2,7 @@
 #include "HellTypes.h"
 #include "Core/Debug.h"
 #include "Game/Allies/Mermaid/Mermaid.h"
+#include "Game/Enemies/Kangaroo/Kangaroo.h"
 #include "Game/Enemies/Shark/Shark.h"
 #include "Types/Game/AnimatedGameObject.h"
 #include "Types/Game/Bullet.h"
@@ -65,8 +66,9 @@ namespace World {
     void AddDoor(DoorCreateInfo createInfo, SpawnOffset spawnOffset = SpawnOffset());
     void AddBulletCasing(BulletCasingCreateInfo createInfo, SpawnOffset spawnOffset = SpawnOffset());
     void AddDecal(const DecalCreateInfo& createInfo);
-    void AddHousePlane(PlaneCreateInfo createInfo, SpawnOffset spawnOffset);
     void AddGameObject(GameObjectCreateInfo createInfo, SpawnOffset spawnOffset = SpawnOffset());
+    void AddHousePlane(PlaneCreateInfo createInfo, SpawnOffset spawnOffset);
+    void AddKangaroo(const KangarooCreateInfo& createInfo);
     void AddLight(LightCreateInfo createInfo, SpawnOffset spawnOffset = SpawnOffset());
     void AddMermaid(MermaidCreateInfo createInfo, SpawnOffset spawnOffset = SpawnOffset());
     void AddPiano(PianoCreateInfo createInfo, SpawnOffset spawnOffset);
@@ -164,6 +166,7 @@ namespace World {
     std::vector<HeightMapChunk>& GetHeightMapChunks();
     std::vector<Plane>& GetPlanes();
     std::vector<Light>& GetLights();
+    std::vector<Kangaroo>& GetKangaroos();
     std::vector<Mermaid>& GetMermaids();
     std::vector<Piano>& GetPianos();
     std::vector<PickUp>& GetPickUps();

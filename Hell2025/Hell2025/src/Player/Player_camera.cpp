@@ -119,10 +119,6 @@ void Player::UpdateCamera(float deltaTime) {
     //glm::mat4 baseViewMatrix = rot * trans;
     //m_csmViewMatrix = m_viewWeaponCameraMatrix * baseViewMatrix;
 
-    if (Input::MiddleMousePressed()) {
-        Kill();
-    }
-
     if (!IsAlive()) {
         Ragdoll* ragdoll = GetRagdoll();
 

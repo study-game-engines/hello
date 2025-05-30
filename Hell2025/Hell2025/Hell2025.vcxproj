@@ -207,6 +207,7 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <ClCompile Include="src\API\OpenGL\Renderer\ComputePasses\GL_compute_skinning.cpp" />
     <ClCompile Include="src\API\OpenGL\Renderer\GL_renderer.cpp" />
     <ClCompile Include="src\API\OpenGL\Renderer\GL_renderer_util.cpp" />
+    <ClCompile Include="src\API\OpenGL\Renderer\RenderPasses\GL_blood_screenspace_decals.cpp" />
     <ClCompile Include="src\API\OpenGL\Renderer\RenderPasses\GL_decal_painting_pass.cpp" />
     <ClCompile Include="src\API\OpenGL\Renderer\RenderPasses\GL_decal_pass.cpp" />
     <ClCompile Include="src\API\OpenGL\Renderer\RenderPasses\GL_fur_pass.cpp" />
@@ -297,6 +298,7 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <ClCompile Include="src\Editor\ObjectPlacement\Editor_object_placement.cpp" />
     <ClCompile Include="src\Editor\ObjectPlacement\Editor_window_placement.cpp" />
     <ClCompile Include="src\Game\AStarMap.cpp" />
+    <ClCompile Include="src\Game\Enemies\Kangaroo\Kangaroo.cpp" />
     <ClCompile Include="src\Game\Enemies\Shark\Shark_Update_HuntingPlayer.cpp" />
     <ClCompile Include="src\Game\Enemies\Shark\Shark_util.cpp" />
     <ClCompile Include="src\Physics\Physics_callbacks.cpp" />
@@ -465,6 +467,8 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <None Include="res\shaders\OpenGL\10.shadow_mapping_depth.frag" />
     <None Include="res\shaders\OpenGL\10.shadow_mapping_depth.geom" />
     <None Include="res\shaders\OpenGL\10.shadow_mapping_depth.vert" />
+    <None Include="res\shaders\OpenGL\GL_blood_screenspac_decals.frag" />
+    <None Include="res\shaders\OpenGL\GL_blood_screenspac_decals.vert" />
     <None Include="res\shaders\OpenGL\GL_blur.frag" />
     <None Include="res\shaders\OpenGL\GL_blur_horizontal.vert" />
     <None Include="res\shaders\OpenGL\GL_blur_vertical.vert" />
@@ -599,6 +603,7 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <ClInclude Include="src\Common\UniqueID.h" />
     <ClInclude Include="src\Bvh\Bvh.h" />
     <ClInclude Include="src\Game\AStarMap.h" />
+    <ClInclude Include="src\Game\Enemies\Kangaroo\Kangaroo.h" />
     <ClInclude Include="src\Types\Effects\VolumetricBloodSplatter.h" />
     <ClInclude Include="src\Game\Allies\Mermaid\Mermaid.h" />
     <ClInclude Include="src\Game\Enemies\Shark\Shark.h" />

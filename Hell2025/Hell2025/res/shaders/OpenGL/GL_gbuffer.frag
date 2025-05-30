@@ -35,10 +35,12 @@ in vec3 BiTangent;
 in vec4 WorldPos;
 in vec3 ViewPos;
 in vec3 EmissiveColor;
-
+in flat int WoundMaskTextureIndex;
 uniform bool u_alphaDiscard;
 
+//layout (binding = 6) uniform sampler2DArray woundMaskTextureArray;
 layout (binding = 6) uniform sampler2D woundMaskTexture;
+
 layout (binding = 7) uniform sampler2D woundBaseColorTexture;
 layout (binding = 8) uniform sampler2D woundNormalTexture;
 layout (binding = 9) uniform sampler2D woundRmaTexture;
@@ -59,11 +61,25 @@ void main() {
             discard;
         }    
     }
+
+    //int layerIndex = 0;
+    //float woundMask = texture(woundMaskTextureArray, vec3(TexCoord, layerIndex)).r;
     float woundMask = texture2D(woundMaskTexture, TexCoord).r;
+
 
     vec4 woundBaseColor = texture2D(woundBaseColorTexture, TexCoord);
     vec3 woundNormalMap = texture2D(woundNormalTexture, TexCoord).rgb;
     vec3 woundRma = texture2D(woundRmaTexture, TexCoord).rgb;
+
+
+     woundMask *= 2;
+
+     if (WoundMaskTextureIndex == 0) {
+         woundMask = 0;
+     }
+    
+ 
+  //  woundMask = clamp(woundMask, 0, 1);
 
 //    baseColor += woundMask;
 
@@ -81,9 +97,14 @@ void main() {
    // normal = texture2D(normalTexture, TexCoord).rgb;
   // normal = texture(sampler2D(textureSamplers[NormalTextureIndex]), TexCoord).rgb;  
     
+ //   baseColor.rgb = vec3(woundMask);
+
     BaseColorOut = vec4(baseColor);
     NormalOut = vec4(normal, 1.0);   
     RMAOut = vec4(rma, 1.0);
     WorldPositionOut = vec4(WorldPos.rgb, 1.0);
     EmissiveOut = vec4(EmissiveColor, 0);
+    
+
+
 }

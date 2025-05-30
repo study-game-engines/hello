@@ -39,6 +39,7 @@ namespace OpenGLRenderer {
     std::unordered_map<std::string, OpenGLRasterizerState> g_rasterizerStates;
     std::unordered_map<std::string, OpenGLShadowCubeMapArray> g_shadowCubeMapArrays;
     std::unordered_map<std::string, OpenGLShadowMapArray> g_shadowMapArrays;
+    std::unordered_map<std::string, OpenGLTextureArray> g_textureArrays;
 
     OpenGLMeshPatch g_tesselationPatch;
 
@@ -72,6 +73,9 @@ namespace OpenGLRenderer {
         const Resolutions& resolutions = Config::GetResolutions();
 
         Ocean::Init();
+
+        g_textureArrays["WoundMasks"] = OpenGLTextureArray();
+        g_textureArrays["WoundMasks"].AllocateMemory(WOUND_MASK_TEXTURE_SIZE, WOUND_MASK_TEXTURE_SIZE, GL_RGBA8, 1, 6);
 
         g_frameBuffers["DecalPainting"] = OpenGLFrameBuffer("DecalPainting", 512, 512);
         g_frameBuffers["DecalPainting"].CreateAttachment("UVMap", GL_RGBA8, GL_LINEAR, GL_LINEAR);
@@ -244,6 +248,7 @@ namespace OpenGLRenderer {
     void LoadShaders() {
         g_shaders["BlurHorizontal"] = OpenGLShader({ "GL_blur_horizontal.vert", "GL_blur.frag" });
         g_shaders["BlurVertical"] = OpenGLShader({ "GL_blur_vertical.vert", "GL_blur.frag" });
+        g_shaders["BloodScreenSpaceDecals"] = OpenGLShader({ "GL_blood_screenspac_decals.vert", "GL_blood_screenspac_decals.frag" });
         g_shaders["ComputeSkinning"] = OpenGLShader({ "GL_compute_skinning.comp" });
         g_shaders["DebugSolidColor"] = OpenGLShader({ "GL_debug_solid_color.vert", "GL_debug_solid_color.frag" });
         g_shaders["DebugTextured"] = OpenGLShader({ "GL_debug_textured.vert", "GL_debug_textured.frag" });
@@ -352,6 +357,7 @@ namespace OpenGLRenderer {
         GeometryPass();
         WeatherBoardsPass();
         VatBloodPass();
+        BloodScreenSpaceDecalsPass();
         TextureReadBackPass();
         LightCullingPass();
         LightingPass();
@@ -484,7 +490,7 @@ namespace OpenGLRenderer {
             OpenGLFrameBuffer* decalPaintingFBO = GetFrameBuffer("DecalPainting");
             OpenGLFrameBuffer* decalMasksFBO = GetFrameBuffer("DecalMasks");
 
-            int blitSize = 420;
+            int blitSize = 480;
 
             glBindFramebuffer(GL_READ_FRAMEBUFFER, decalPaintingFBO->GetHandle());
             glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
@@ -643,6 +649,10 @@ namespace OpenGLRenderer {
         return (it != g_shadowMapArrays.end()) ? &it->second : nullptr;
     }
 
+    OpenGLTextureArray* GetTextureArray(const std::string& name) {
+        auto it = g_textureArrays.find(name);
+        return (it != g_textureArrays.end()) ? &it->second : nullptr;
+    }
 
     OpenGLFrameBuffer* GetBlurBuffer(int viewportIndex, int bufferIndex) {
         if (viewportIndex < 0 || viewportIndex >= 4) return nullptr;

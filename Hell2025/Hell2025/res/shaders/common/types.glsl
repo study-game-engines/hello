@@ -65,7 +65,7 @@ struct RenderItem {
     int rmaTextureIndex;
 
     int objectType;
-    int padding0;
+    int woundMaskTextureIndex; 
     int baseSkinnedVertex;
     int ignoredViewportIndex;
 
@@ -82,7 +82,7 @@ struct RenderItem {
     float furLength;
     float furShellDistanceAttenuation;
     float furUVScale;
-    int customFlag;
+    int customFlag; // what does this do?
 };
 
 struct Light {

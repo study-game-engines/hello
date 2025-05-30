@@ -2,6 +2,7 @@
 #include "Core/Game.h"
 #include "Input/Input.h"
 #include "Viewport/ViewportManager.h"
+#include "Renderer/RenderDataManager.h"
 
 namespace World {
     void EvaluatePianoKeyBulletHit(Bullet& bullet);
@@ -59,10 +60,17 @@ namespace World {
                     //std::cout << "Bullet hit RAGDOLL_ENEMY\n";
                     for (AnimatedGameObject& animatedGameObject : GetAnimatedGameObjects()) {
                         if (animatedGameObject.GetRagdollId() == objectId) {
-                            //std::cout << "- enemy ragdoll found\n";
-                            animatedGameObject.SetAnimationModeToRagdoll();
-                            Audio::PlayAudio("Kangaroo_Death.wav", 1.0f);
-                            rooDeath = true;
+
+                            DecalPaintingInfo decalPaintingInfo;
+                            decalPaintingInfo.rayOrigin = bullet.GetOrigin();
+                            decalPaintingInfo.rayDirection = bullet.GetDirection();
+                            RenderDataManager::SubmitDecalPaintingInfo(decalPaintingInfo);
+                            
+                            for (Kangaroo& kangaroo : GetKangaroos()) {
+                                if (kangaroo.GetAnimatedGameObject() == &animatedGameObject) {
+                                    kangaroo.GiveDamage(bullet.GetDamage());
+                                }
+                            }
                         }
                     }
                 }
