@@ -52,6 +52,49 @@ namespace Physics {
         return physicsID;
     }
 
+
+    uint64_t CreateRigidStaticFromCapsule(Transform transform, float radius, float halfHeight, PhysicsFilterData filterData, Transform localOffset) {
+        PxPhysics* pxPhysics = Physics::GetPxPhysics();
+        PxScene* pxScene = Physics::GetPxScene();
+        PxMaterial* material = Physics::GetDefaultMaterial();
+
+        PxFilterData pxFilterData;
+        pxFilterData.word0 = (PxU32)filterData.raycastGroup;
+        pxFilterData.word1 = (PxU32)filterData.collisionGroup;
+        pxFilterData.word2 = (PxU32)filterData.collidesWith;
+
+        PxCapsuleGeometry geo;
+        geo.radius = radius;
+        geo.halfHeight = halfHeight;
+
+        // Create shape
+        PxShape* pxShape = pxPhysics->createShape(geo, *material, true);
+        pxShape->setQueryFilterData(pxFilterData);       // ray casts
+        pxShape->setSimulationFilterData(pxFilterData);  // collisions
+        pxShape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, true);
+        pxShape->setFlag(PxShapeFlag::eSCENE_QUERY_SHAPE, true);
+
+        PxTransform localOffsetTransform = PxTransform(GlmMat4ToPxMat44(localOffset.to_mat4()));
+        pxShape->setLocalPose(localOffsetTransform);
+
+        // Create rigid dynamic
+        PxQuat quat = Physics::GlmQuatToPxQuat(glm::quat(transform.rotation));
+        PxTransform pxTransform = PxTransform(PxVec3(transform.position.x, transform.position.y, transform.position.z), quat);
+        PxRigidStatic* pxRigidStatic = pxPhysics->createRigidStatic(pxTransform);
+        pxRigidStatic->attachShape(*pxShape);
+        pxScene->addActor(*pxRigidStatic);
+
+        // Create DynamicBox
+        uint64_t physicsID = UniqueID::GetNext();
+        RigidStatic& rigidDynamic = g_rigidStatics[physicsID];
+
+        // Update its pointers
+        rigidDynamic.SetPxRigidStatic(pxRigidStatic);
+        rigidDynamic.AddPxShape(pxShape);
+
+        return physicsID;
+    }
+
     uint64_t CreateRigidStaticConvexMeshFromVertices(Transform transform, const std::span<Vertex>& vertices, PhysicsFilterData filterData) {
        PxPhysics* pxPhysics = Physics::GetPxPhysics();
        PxScene* pxScene = Physics::GetPxScene();

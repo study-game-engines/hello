@@ -175,7 +175,7 @@ namespace Debug {
     void NextDebugRenderMode() {
         std::vector<DebugRenderMode> allowedDebugRenderModes = {
             NONE,
-            //PHYSX_ALL,
+            PHYSX_ALL,
             RAGDOLLS,
             //CLIPPING_CUBES,
             //HOUSE_GEOMETRY,

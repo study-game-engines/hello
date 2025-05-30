@@ -21,7 +21,7 @@
 #include "World/World.h"
 
 
-#include "Game/AStarMap.h"
+#include "Pathfinding/AStarMap.h"
 #include "lodepng/lodepng.h"
 
 #include "Audio/Audio.h"

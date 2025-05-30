@@ -9,9 +9,12 @@
 #include "API/OpenGL/Types/GL_debug_mesh.hpp"
 #include "API/OpenGL/Types/GL_mesh_buffer.h"
 
-#include "Game/AStarMap.h"
+#include "Pathfinding/AStarMap.h"
+
+#include "Core/Game.h"
 
 #include "Input/Input.h"
+#include "World/World.h"
 
 namespace OpenGLRenderer {
 
@@ -110,11 +113,24 @@ namespace OpenGLRenderer {
         int mapWidth = AStarMap::GetMapWidth();
         int mapHeight = AStarMap::GetMapHeight();
 
-        std::vector<glm::ivec2> walls;
-        walls.push_back({ 0, 0 });
-        walls.push_back({ 1, 1 });
-        walls.push_back({ 9, 9 });
-        walls.push_back({ 55, 55 });
+        std::vector<glm::ivec2> walls = AStarMap::GetWallCells();
+        std::vector<glm::ivec2> path;
+
+        if (World::GetKangaroos().size()) {
+            Kangaroo& kangaroo = World::GetKangaroos()[0];
+            path = kangaroo.GetPath();
+        }
+
+        // Render player cell
+        //Player* player = Game::GetLocalPlayerByIndex(0);;
+        //glm::vec3 position = player->GetCameraPosition();
+        //glm::ivec2 playerCoords = AStarMap::GetCellCoordsFromWorldSpacePosition(position);
+        //walls.push_back(playerCoords);
+        //
+        //// Render roo cell
+        //Kangaroo& kangaroo = World::GetKangaroos()[0];
+        //walls.push_back(kangaroo.GetGridPosition());
+
 
 
         // Solid mesh
@@ -130,14 +146,27 @@ namespace OpenGLRenderer {
                 //glDrawElements(GL_TRIANGLES, debugSolidMesh.GetIndexCount(), GL_UNSIGNED_INT, 0);
                 //glDrawElements(GL_POINTS, debugSolidMesh.GetIndexCount(), GL_UNSIGNED_INT, 0);
 
-                for (glm::ivec2& wall : walls) {
-                    int cellX = wall.x;
-                    int cellY = wall.y;
+                solidColorShader->SetBool("u_isPath", true);
+
+                for (glm::ivec2& cell : path) {
+                    int cellX = cell.x;
+                    int cellY = cell.y;
                     int baseVertex = Index1D(cellX, cellY, mapWidth + 1);
                     int cellID = cellY * mapWidth + cellX;
                     int baseIndex = cellID * 6;
                     void* offset = (void*)(baseIndex * sizeof(uint32_t));
                     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, offset); 
+                }
+
+                solidColorShader->SetBool("u_isPath", false);
+                for (glm::ivec2& cell : walls) {
+                    int cellX = cell.x;
+                    int cellY = cell.y;
+                    int baseVertex = Index1D(cellX, cellY, mapWidth + 1);
+                    int cellID = cellY * mapWidth + cellX;
+                    int baseIndex = cellID * 6;
+                    void* offset = (void*)(baseIndex * sizeof(uint32_t));
+                    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, offset);
                 }
             }
         }

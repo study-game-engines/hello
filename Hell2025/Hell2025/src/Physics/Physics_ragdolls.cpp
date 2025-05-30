@@ -156,9 +156,9 @@ namespace Physics {
                 }
             }
 
-            std::cout << "Loaded ragdoll: '" << fileInfo.name << ".rag'\n";
-            std::cout << " - rigid count: " << ragdollComponents.rigids.size() << "\n";
-            std::cout << " - joint count: " << ragdollComponents.joints.size() << "\n";
+           // std::cout << "Loaded ragdoll: '" << fileInfo.name << ".rag'\n";
+           // std::cout << " - rigid count: " << ragdollComponents.rigids.size() << "\n";
+           // std::cout << " - joint count: " << ragdollComponents.joints.size() << "\n";
         }
     }
 
@@ -182,12 +182,12 @@ namespace Physics {
         RagdollComponents ragdollComponents = g_ragdollComponents[name];
 
         for (JointComponent& joint : ragdollComponents.joints) {
-            std::cout << joint.name << " " << joint.parentID << " " << joint.childID << "\n";
+            //std::cout << joint.name << " " << joint.parentID << " " << joint.childID << "\n";
             //joint.name = joint.name.substr(8);
             //joint.name = joint.name.substr(0, joint.name.size() - 8);
         }
 
-        std::cout << name << ": " << ragdollComponents.joints.size() << " joints\n";
+        //std::cout << name << ": " << ragdollComponents.joints.size() << " joints\n";
 
         // Temp vector of RigidComponent Ids to lookup
         std::vector <uint32_t> rigidComponentIds;

@@ -16,6 +16,8 @@
 #include "World/MapManager.h"
 #include "World/SectorManager.h"
 
+#include "Pathfinding/AStarMap.h"
+
 #include "Physics/Types/Ragdoll.h"
 
 namespace World {
@@ -64,6 +66,8 @@ namespace World {
     void AddSectorAtLocation(SectorCreateInfo& sectorCreateInfo, SpawnOffset spawnOffset, bool loadHouses);
 
     void Init() {
+       // AStarMap::Init();
+
         KangarooCreateInfo kangarooCreateInfo;
         kangarooCreateInfo.position = glm::vec3(17.1, 30.4f, 41.15);
         kangarooCreateInfo.rotation.y = HELL_PI;
@@ -351,6 +355,8 @@ namespace World {
                 AddHouse(*houseCreateInfo, houseSpawnOffset);
             }
         }
+
+        AStarMap::Init();
     }
 
     AnimatedGameObject* GetAnimatedGameObjectByObjectId(uint64_t objectID) {

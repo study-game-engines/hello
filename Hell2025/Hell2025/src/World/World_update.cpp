@@ -1,7 +1,7 @@
 #include "World.h"
 #include "Audio/Audio.h"
 #include "Core/Game.h"
-#include "Game/AStarMap.h"
+#include "Pathfinding/AStarMap.h"
 #include "Input/Input.h"
 #include "Renderer/RenderDataManager.h"
 #include "Renderer/Renderer.h"

@@ -8,6 +8,7 @@ struct Tree {
     Tree() = default;
     Tree(TreeCreateInfo createInfo);
     TreeCreateInfo GetCreateInfo();
+    void CleanUp();
     void SetPosition(glm::vec3 position);
     void BeginFrame();
     void MarkAsSelected();
@@ -30,6 +31,7 @@ struct Tree {
 private:
     MeshNodes m_meshNodes;
     uint64_t m_objectId = 0;
+    uint64_t m_rigidStaticId = 0;
     Model* m_model = nullptr;
     TreeType m_treeType = TreeType::UNDEFINED;
     Transform m_transform;

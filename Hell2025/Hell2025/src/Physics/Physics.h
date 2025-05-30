@@ -104,6 +104,7 @@ namespace Physics {
     glm::mat4 GetRigidStaticGlobalPose(uint64_t rigidStaticId);
     bool RigidStaticExists(uint64_t rigidStaticId);
     void SetRigidStaticUserData(uint64_t rigidStaticId, PhysicsUserData physicsUserData);
+    uint64_t CreateRigidStaticFromCapsule(Transform transform, float radius, float halfHeight, PhysicsFilterData filterData, Transform localOffset);
     uint64_t CreateRigidStaticBoxFromExtents(Transform transform, glm::vec3 boxExtents, PhysicsFilterData filterData, Transform localOffset = Transform());
     uint64_t CreateRigidStaticConvexMeshFromModel(Transform transform, const std::string& modelName, PhysicsFilterData filterData);
     uint64_t CreateRigidStaticConvexMeshFromVertices(Transform transform, const std::span<Vertex>& vertices, PhysicsFilterData filterData);
