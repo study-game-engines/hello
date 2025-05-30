@@ -142,6 +142,8 @@ struct SpawnPoint {
 
 void Player::Respawn() {
 
+    World::GetKangaroos()[0].Respawn();
+
 
     if (m_viewportIndex == 0) {
 
@@ -383,10 +385,12 @@ const float Player::GetFov() {
 }
 
 void Player::Kill() {
-    m_deathCount++;
-    m_alive = false;
-    m_characterModelAnimatedGameObject.SetAnimationModeToRagdoll();
-    Audio::PlayAudio("Death0.wav", 1.0f);
+    if (m_alive) {
+        m_deathCount++;
+        m_alive = false;
+        m_characterModelAnimatedGameObject.SetAnimationModeToRagdoll();
+        Audio::PlayAudio("Death0.wav", 1.0f);
+    }
 }
 
 glm::vec3 Player::GetViewportColorTint() {

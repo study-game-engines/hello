@@ -9,7 +9,7 @@
 
 void Player::UpdateMovement(float deltaTime) {
     // Hack to move faster when pressing SHIFT
-    m_speedBoost = Input::KeyDown(GLFW_KEY_LEFT_SHIFT) ? 5.0f : 1.0f;
+    m_speedBoost = Input::KeyDown(GLFW_KEY_LEFT_SHIFT) ? 1.5f : 1.0f;
 
     // Hack to control camera height
     float heightSpeed = 3.0f;

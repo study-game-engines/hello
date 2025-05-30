@@ -40,7 +40,7 @@ void Kangaroo::Init(KangarooCreateInfo createInfo) {
 }
 
 void Kangaroo::Respawn() {
-    m_createInfo.position = glm::vec3(51, 30.6, 40);
+    m_createInfo.position = glm::vec3(45, 30.6, 39);
     m_createInfo.rotation = glm::vec3(0, HELL_PI * -0.5f, 0);
 
     m_position = m_createInfo.position;
@@ -48,7 +48,7 @@ void Kangaroo::Respawn() {
     m_alive = true;
     m_health = m_maxHealth;
 
-    m_agroState = KanagarooAgroState::CHILLING_IDLE;
+    m_agroState = KanagarooAgroState::CHILLING;
     m_movementState = KanagarooMovementState::IDLE;
     m_animationState = KanagarooAnimationState::IDLE;
 
@@ -63,40 +63,25 @@ void Kangaroo::Respawn() {
         params.animationSpeed = 1.00f;
         animatedGameObject->PlayAndLoopAnimation("Kangaroo_Idle", params);
     }
+
 }
 
 void Kangaroo::Update(float deltaTime) {
-    //AnimatedGameObject* animatedGameObject = GetAnimatedGameObject();
-    //if (Input::KeyPressed(HELL_KEY_SLASH)) {
-    //    animatedGameObject->SetAnimationModeToRagdoll();
-    //}
-    //if (Input::KeyPressed(HELL_KEY_COMMA)) {
-    //    AnimationPlaybackParams params;
-    //    params.animationSpeed = 1.00f;
-    //    animatedGameObject->PlayAndLoopAnimation("Kangaroo_Idle", params);
-    //    animatedGameObject->PlayAndLoopAnimation("Kangaroo_IdleToHop", params);
-    //}
-    //if (Input::KeyPressed(HELL_KEY_PERIOD)) {
-    //    AnimationPlaybackParams params;
-    //    params.animationSpeed = 1.0f;
-    //    animatedGameObject->PlayAndLoopAnimation("Kangaroo_Bite", params);
-    //    animatedGameObject->PlayAndLoopAnimation("Kangaroo_Hop", params);
-    //}
 
-    // outside spawn
-   //animatedGameObject->SetPosition(glm::vec3(49.5, 30.4f, 39));
-   //animatedGameObject->SetRotationY(HELL_PI * -0.5);
-   //animatedGameObject->SetScale(1.0f);
-   //
-   //// inside room  spawn
-   //animatedGameObject->SetPosition(glm::vec3(17.1, 30.4f, 41.15));
-   //animatedGameObject->SetRotationY(HELL_PI);
-   //animatedGameObject->SetScale(0.85f);
+    if (m_animationState == KanagarooAnimationState::BITE) {
+        m_timeSinceBiteBegan += deltaTime;
+    }
+    else {
+        m_timeSinceBiteBegan = 0.0f;
+    }
+    if (m_animationState == KanagarooAnimationState::IDLE) {
+        m_timeSinceIdleBegan += deltaTime;
+    }
+    else {
+        m_timeSinceIdleBegan = 0.0f;
+    }
 
-    //roo->SetPosition(glm::vec3(29, 30.4f, 39));
-    //roo->SetRotationY(HELL_PI * -0.85);
-
-
+        
     if (Input::KeyPressed(HELL_KEY_COMMA)) {
         //SetMovementState(KanagarooMovementState::HOP);
 
@@ -109,6 +94,9 @@ void Kangaroo::Update(float deltaTime) {
     }
 
     UpdateAnimationStateMachine();
+    UpdateMovementLogic(deltaTime);
+    UpdateAudio();
+    //DebugDraw();
 
 
     if (Input::KeyPressed(HELL_KEY_SLASH) || true || false || true == false) {
@@ -146,13 +134,20 @@ void Kangaroo::Kill() {
         animatedGameObject->SetAnimationModeToRagdoll();
         m_health = 0;
         m_alive = false;
+        m_agroState = KanagarooAgroState::KANGAROO_DEAD;
+        m_animationState = KanagarooAnimationState::RAGDOLL;
+        m_movementState = KanagarooMovementState::KANGAROO_DEAD;
         std::cout << "Killed kangaroo\n";
     }
 }
 
 void Kangaroo::GiveDamage(int damage) {
     m_health -= damage;
-    std::cout << "Kangaroo health: " << m_health << "\n";
+    Player* player = Game::GetLocalPlayerByIndex(0);
+    glm::vec3 playerPosition = player->GetCameraPosition();
+    GoToTarget(playerPosition);
+    PlayFleshAudio();
+    m_agroState = KanagarooAgroState::ANGRY;
 }
 
 void Kangaroo::CleanUp() {

@@ -157,6 +157,15 @@ namespace Audio {
             const AudioHandle& handle = pair.second;
             if (handle.filename == filename && handle.state == AudioHandle::State::LOOPING) {
                 return 0; // Already looping, so do nothing
+
+                // REPLACE THIS 0 RETURN WITH THE ORIGINAL ID OF THE SOUND ALREADY PLAYING
+                // REPLACE THIS 0 RETURN WITH THE ORIGINAL ID OF THE SOUND ALREADY PLAYING
+                // REPLACE THIS 0 RETURN WITH THE ORIGINAL ID OF THE SOUND ALREADY PLAYING
+                // REPLACE THIS 0 RETURN WITH THE ORIGINAL ID OF THE SOUND ALREADY PLAYING
+                // REPLACE THIS 0 RETURN WITH THE ORIGINAL ID OF THE SOUND ALREADY PLAYING
+                // REPLACE THIS 0 RETURN WITH THE ORIGINAL ID OF THE SOUND ALREADY PLAYING
+                // REPLACE THIS 0 RETURN WITH THE ORIGINAL ID OF THE SOUND ALREADY PLAYING
+
             }
         }
 
@@ -181,6 +190,7 @@ namespace Audio {
         g_system->playSound(handle.sound, nullptr, false, &handle.channel);
         handle.channel->setVolume(volume);
 
+        std::cout << "LoopAudio() returned id " << uniqueId << "\n";
         return uniqueId;
     }
 
@@ -224,7 +234,10 @@ namespace Audio {
     }
 
     void SetVolume(uint64_t audioId, float volume) {
-        if (!AudioIsPlaying(audioId)) return;
+        if (!AudioIsPlaying(audioId)) {
+            //std::cout << "Audio::SetVoulme() failed coz " << audioId << " was not found\n";
+            return;
+        }
 
         AudioHandle& handle = g_playingAudio[audioId];
         if (handle.channel) {

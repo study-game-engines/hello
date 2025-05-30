@@ -6,20 +6,24 @@
 #include "Pathfinding/AStar.h"
 
 enum struct KanagarooAgroState {
-    CHILLING_IDLE,
-    ATTACKING
+    CHILLING,
+    ANGRY,
+    KANGAROO_DEAD
 };
 
 enum struct KanagarooAnimationState {
     IDLE,
     HOP_TO_IDLE,
     IDLE_TO_HOP,
-    HOP
+    HOP,
+    BITE,
+    RAGDOLL
 };
 
 enum struct KanagarooMovementState {
     IDLE,
-    HOP
+    HOP,
+    KANGAROO_DEAD
 };
 
 struct Kangaroo {
@@ -45,12 +49,21 @@ struct Kangaroo {
     glm::vec3 GetPosition()     { return m_position; }
 
 private:
-    void UpdateMovement(float deltaTime);
+    void UpdateAudio();
+    void UpdateMovementLogic(float deltaTime);
     void UpdateAnimationStateMachine();
     void PlayAnimation(const std::string& animationName, float speed);
     void PlayAndLoopAnimation(const std::string& animationName, float speed);
     bool AnimationIsComplete();
+    void DebugDraw();
+
+    // Audio wrappers
+    void PlayFleshAudio();
+    void PlayBiteSound();
     
+
+    float m_timeSinceBiteBegan = 0.0f;
+    float m_timeSinceIdleBegan = 0.0f;
 
     AStar m_aStar;
     glm::vec3 m_targetPosition = glm::vec3(0.0f);
@@ -58,11 +71,19 @@ private:
     int m_maxHealth = KANGAROO_MAX_HEALTH;
     int m_health = 500;
     int32_t m_woundMaskIndex = -1;
+
     glm::vec3 m_position;
     glm::vec3 m_rotation;
+
+    glm::vec3 m_forward;
+
+    bool m_awaitingHopStepAudio = false;
+
+    uint64_t m_ambientLoopAudioHandle = 0;
+
     uint64_t m_animatedGameObjectId = 0;
     KangarooCreateInfo m_createInfo;
-    KanagarooAgroState m_agroState = KanagarooAgroState::CHILLING_IDLE;
+    KanagarooAgroState m_agroState = KanagarooAgroState::CHILLING;
     KanagarooMovementState m_movementState = KanagarooMovementState::IDLE;
     KanagarooAnimationState m_animationState = KanagarooAnimationState::IDLE;
 };

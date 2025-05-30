@@ -6,6 +6,7 @@ const std::string Kangaroo::GetAnimationStateAsString() {
         case KanagarooAnimationState::HOP_TO_IDLE:      return "HOP_TO_IDLE";
         case KanagarooAnimationState::IDLE_TO_HOP:      return "IDLE_TO_HOP";
         case KanagarooAnimationState::HOP:              return "HOP";
+        case KanagarooAnimationState::BITE:             return "BITE";
         default: return "UNKNOWN";
     }
 }

@@ -297,8 +297,11 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <ClCompile Include="src\Editor\Editor_objects.cpp" />
     <ClCompile Include="src\Editor\ObjectPlacement\Editor_object_placement.cpp" />
     <ClCompile Include="src\Editor\ObjectPlacement\Editor_window_placement.cpp" />
+    <ClCompile Include="src\Game\Enemies\Kangaroo\Kangaroo_animation_state_machine.cpp" />
+    <ClCompile Include="src\Game\Enemies\Kangaroo\Kangaroo_audio.cpp" />
+    <ClCompile Include="src\Game\Enemies\Kangaroo\Kangaroo_debug_draw.cpp" />
     <ClCompile Include="src\Pathfinding\AStarMap.cpp" />
-    <ClCompile Include="src\Game\Enemies\Kangaroo\Kanagaroo_Movement.cpp" />
+    <ClCompile Include="src\Game\Enemies\Kangaroo\Kanagaroo_movement.cpp" />
     <ClCompile Include="src\Game\Enemies\Kangaroo\Kangaroo.cpp" />
     <ClCompile Include="src\Game\Enemies\Kangaroo\Kangaroo_Util.cpp" />
     <ClCompile Include="src\Game\Enemies\Shark\Shark_Update_HuntingPlayer.cpp" />
