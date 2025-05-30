@@ -35,7 +35,6 @@ Tree::Tree(TreeCreateInfo createInfo) {
         m_meshNodes.SetMaterialByMeshName("Trunk", "TreeLarge_0");
         m_meshNodes.SetMaterialByMeshName("Trunk2", "TreeLarge_0");
     }
-    m_meshNodes.PrintMeshNames();
     m_meshNodes.SetObjectTypes(ObjectType::TREE);
     m_meshNodes.SetObjectIds(m_objectId);
 }
@@ -71,24 +70,5 @@ void Tree::SetPosition(glm::vec3 position) {
 }
 
 void Tree::UpdateRenderItems() {
-    //m_renderItems.clear();
-
     m_meshNodes.UpdateRenderItems(GetModelMatrix());
-    m_renderItems = m_meshNodes.GetRenderItems();
-
-    //for (int i = 0; i < m_model->GetMeshCount(); i++) {
-    //    Mesh* mesh = AssetManager::GetMeshByIndex(m_model->GetMeshIndices()[i]);
-    //    if (mesh) {
-    //        RenderItem& renderItem = m_renderItems.emplace_back();
-    //        renderItem.objectType = (int)ObjectType::TREE;
-    //        renderItem.modelMatrix = GetModelMatrix();
-    //        renderItem.inverseModelMatrix = glm::inverse(renderItem.modelMatrix);
-    //        renderItem.meshIndex = m_model->GetMeshIndices()[i];
-    //        renderItem.baseColorTextureIndex = m_material->m_basecolor;
-    //        renderItem.normalMapTextureIndex = m_material->m_normal;
-    //        renderItem.rmaTextureIndex = m_material->m_rma;
-    //        Util::UpdateRenderItemAABB(renderItem);
-    //        Util::PackUint64(m_objectId, renderItem.objectIdLowerBit, renderItem.objectIdUpperBit);
-    //    }
-    //}
 }

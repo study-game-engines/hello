@@ -27,6 +27,7 @@ namespace Callbacks {
     void SaveSector();
     void RevertEditorSector();
 
+    void NewRun();
     void QuitProgram();
 
     // House editor

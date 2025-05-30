@@ -106,22 +106,6 @@ namespace Debug {
         AddText("Hovered Viewport Index: " + std::to_string(hoveredViewportIndex));
         AddText("Mouse ray origin: " + Util::Vec3ToString(Editor::GetMouseRayOriginByViewportIndex(hoveredViewportIndex)));
         AddText("Mouse ray direction: " + Util::Vec3ToString(Editor::GetMouseRayDirectionByViewportIndex(hoveredViewportIndex)));
-        //AddText("Hovered viewport cam position: " + Util::Vec3ToString(Editor::GetCameraByIndex(hoveredViewportIndex)->GetPosition()));
-
-
-
-        //AddText("Selected Object: " + Editor::EditorObjectTypeToString(Editor::GetSelectedObjectType()));
-        //AddText("");
-
-        //for (int i = 0; i < 4; i++) {
-        //    const std::vector<ViewportData>& viewportData = RenderDataManager::GetViewportData();
-        //    AddText("ProjectionMatrix: \n" + Util::Mat4ToString(viewportData[i].projection) + "\n");
-        //    AddText("ViewMatrix: \n" + Util::Mat4ToString(viewportData[i].view) + "\n");
-        //}
-        //
-        //for (int i = 0; i < 4; i++) {
-        //    AddText(std::to_string(i) + ": " + std::to_string(ViewportManager::GetViewportByIndex(i)->IsVisible()));
-        //}
     }
 
     void UpdateDebugPointsAndLines() {

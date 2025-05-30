@@ -297,6 +297,8 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <ClCompile Include="src\Editor\ObjectPlacement\Editor_object_placement.cpp" />
     <ClCompile Include="src\Editor\ObjectPlacement\Editor_window_placement.cpp" />
     <ClCompile Include="src\Game\AStarMap.cpp" />
+    <ClCompile Include="src\Game\Enemies\Shark\Shark_Update_HuntingPlayer.cpp" />
+    <ClCompile Include="src\Game\Enemies\Shark\Shark_util.cpp" />
     <ClCompile Include="src\Physics\Physics_callbacks.cpp" />
     <ClCompile Include="src\Physics\Physics_ignore_lists.cpp" />
     <ClCompile Include="src\Player\Player_character_model.cpp" />
@@ -354,6 +356,7 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <ClCompile Include="src\Types\House\Window.cpp" />
     <ClCompile Include="src\Util\Util_black_magic.cpp" />
     <ClCompile Include="src\Util\Util_debug_info.cpp" />
+    <ClCompile Include="src\Util\Util_easing.cpp" />
     <ClCompile Include="src\World\HeightMapManager.cpp" />
     <ClCompile Include="src\Physics\Physics.cpp" />
     <ClCompile Include="src\Physics\Physics_create_destroy.cpp" />

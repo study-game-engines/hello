@@ -12,53 +12,6 @@ namespace World {
         bool glassWasHit = false;
         bool rooDeath = false;
 
-        // Debug shit to find out why some bullets miss
-        //static int mode = 0;
-        //if (Input::KeyPressed(HELL_KEY_ENTER)) {
-        //    mode++;
-        //    if (mode == 3) {
-        //        mode = 0;
-        //    }
-        //    std::cout << "debug mode: " << mode << "\n";
-        //}
-        //if (Input::RightMousePressed()) {
-        //    Player* player = Game::GetLocalPlayerByIndex(0);
-        //
-        //    auto actors = Physics::GetRagdollPxRigidActors(player->GetRadollId());
-        //    for (auto* actor : actors) {
-        //        PxTransform t = actor->getGlobalPose();
-        //        PxMat44 m = PxMat44(t);
-        //        glm::mat4 mm = Physics::PxMat44ToGlmMat4(m);
-        //        std::cout << Util::Mat4ToString(mm) << "\n\n";
-        //    }
-        //
-        //    auto rayOrigin = player->GetCameraPosition();
-        //    auto rayDirection = player->GetCameraForward();
-        //    std::vector<PxRigidActor*> ignoredActors;
-        //    PhysXRayResult rayResult;
-        //    
-        //    if (mode == 0) {
-        //        ignoredActors = Physics::GetRagdollPxRigidActors(player->GetRagdollId());
-        //        rayResult = Physics::CastPhysXRay(rayOrigin, rayDirection, 1000, false, RaycastIgnoreFlags::PLAYER_CHARACTER_CONTROLLERS, ignoredActors);
-        //    }
-        //    if (mode == 1) {
-        //        ignoredActors = Physics::GetRagdollPxRigidActors(player->GetRagdollId());
-        //        rayResult = Physics::CastPhysXRay(rayOrigin, rayDirection, 1000, false, RaycastIgnoreFlags::PLAYER_CHARACTER_CONTROLLERS);
-        //    }
-        //    if (mode == 2) {
-        //        rayOrigin += glm::vec3(0, 1, 0);
-        //        rayResult = Physics::CastPhysXRay(rayOrigin, rayDirection, 1000, false, RaycastIgnoreFlags::NONE);
-        //    }
-        //
-        //    if (rayResult.hitFound) {
-        //        PhysicsType& physicsType = rayResult.userData.physicsType;
-        //        ObjectType& objectType = rayResult.userData.objectType;
-        //        uint64_t physicsId = rayResult.userData.physicsId;
-        //        uint64_t objectId = rayResult.userData.objectId;
-        //        std::cout << "Debug ray hit: " << Util::PhysicsTypeToString(physicsType) << " / " << Util::ObjectTypeToString(objectType) << "\n";
-        //    }
-        //}
-
         for (Bullet& bullet : bullets) {
 
             // Did it hit a piano key?
@@ -86,13 +39,18 @@ namespace World {
                 uint64_t physicsId = rayResult.userData.physicsId;
                 uint64_t objectId = rayResult.userData.objectId;
 
-                //std::cout << "Bullet hit: " << Util::PhysicsTypeToString(physicsType) << " / " << Util::ObjectTypeToString(objectType) << "\n";
-
                 // Shot a player ragdoll?
                 if (objectType == ObjectType::RAGDOLL_PLAYER) {
                     Player* player = Game::GetPlayerByPlayerId(objectId);
                     if (player) {
                         player->Kill();
+                    }
+                }
+
+                if (objectType == ObjectType::SHARK) {
+                    Shark* shark = World::GetSharkByObjectId(objectId);
+                    if (shark) {
+                        shark->GiveDamage(bullet.GetOwnerObjectId(), bullet.GetDamage());
                     }
                 }
 
@@ -163,6 +121,7 @@ namespace World {
                         bulletCreateInfo.direction = bullet.GetDirection();
                         bulletCreateInfo.damage = bullet.GetDamage();
                         bulletCreateInfo.weaponIndex = bullet.GetWeaponIndex();
+                        bulletCreateInfo.ownerObjectId = bullet.GetOwnerObjectId();
                         newBullets.emplace_back(Bullet(bulletCreateInfo));
 
                         glassWasHit = true;

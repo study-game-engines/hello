@@ -34,6 +34,5 @@ private:
     TreeType m_treeType = TreeType::UNDEFINED;
     Transform m_transform;
     glm::mat4 m_modelMatrix = glm::mat4(1.0f);
-    std::vector<RenderItem> m_renderItems;
     bool m_isSelected = false;
 };

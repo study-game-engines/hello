@@ -105,6 +105,9 @@ namespace Editor {
             // you need to figure this out bro
         }
 
+        if (Input::KeyPressed(HELL_KEY_F1)) {
+            Callbacks::NewRun();
+        }
         if (Input::KeyPressed(HELL_KEY_F4)) {
             Callbacks::OpenHouseEditor();
         }

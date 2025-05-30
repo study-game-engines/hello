@@ -39,6 +39,8 @@ namespace World {
     void EndFrame();
     void Update(float deltaTime);
 
+    void NewRun();
+
     void SubmitRenderItems();
 
     void LoadMap(const std::string& mapName);
@@ -142,6 +144,7 @@ namespace World {
     Tree* GetTreeByObjectId(uint64_t objectId);
     Wall* GetWallByObjectId(uint64_t objectID);
     Wall* GetWallByWallSegmentObjectId(uint64_t objectID);
+    Shark* GetSharkByObjectId(uint64_t objectID);
     Window* GetWindowByObjectId(uint64_t objectId);
     GameObject* GetGameObjectByIndex(int32_t index);
     GameObject* GetGameObjectByName(const std::string& name);

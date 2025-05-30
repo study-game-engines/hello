@@ -1,16 +1,25 @@
 #include "Shark.h"
-#include "../Core/Audio.h"
-#include "../Game/Game.h"
-#include "../Game/Scene.h"
-#include "../Game/Water.h"
-#include "../Math/LineMath.hpp"
-#include "../Util.hpp"
+#include "Audio/Audio.h"
+#include "Core/Game.h"
+#include "Math/LineMath.hpp"
+
+//#include "../Game/Scene.h"
+//#include "../Game/Water.h"
+//#include "../Util.hpp"
 
 void Shark::UpdateHuntingLogic(float deltaTime) {
-    AnimatedGameObject* animatedGameObject = Scene::GetAnimatedGameObjectByIndex(m_animatedGameObjectIndex);
+    AnimatedGameObject* animatedGameObject = GetAnimatedGameObject();
+    if (!animatedGameObject) return;
+
+    Player* player = Game::GetPlayerByPlayerId(m_huntedPlayerId);
+
+    // Does the player not exist for some reason?
+    if (!player) {
+        SetMovementState(SharkMovementState::FOLLOWING_PATH);
+        return;
+    }
 
     // Did player leave the water?
-    Player* player = Game::GetPlayerByIndex(m_huntedPlayerIndex);
     if (player && !player->FeetBelowWater()) {
         m_movementState = SharkMovementState::FOLLOWING_PATH_ANGRY;
     }
@@ -22,9 +31,11 @@ void Shark::UpdateHuntingLogic(float deltaTime) {
             m_huntingState = SharkHuntingState::BITING_PLAYER;
             if (TargetIsOnLeft(m_targetPosition)) {
                 PlayAnimation("Shark_Attack_Left_Quick", 1.0f);
+                std::cout << "Shark left bite\n";
             }
             else {
                 PlayAnimation("Shark_Attack_Right_Quick", 1.0f);
+                std::cout << "Shark right bite\n";
             }
             Audio::PlayAudio("Shark_Bite_Overwater_Edited.wav", 1.0f);
             m_hasBitPlayer = false;
@@ -35,8 +46,8 @@ void Shark::UpdateHuntingLogic(float deltaTime) {
     // Issue bite to player in range (PLAYER 1 ONLY)
     if (m_huntingState == SharkHuntingState::BITING_PLAYER && !m_hasBitPlayer) {
 
-        if (m_huntedPlayerIndex != -1) {
-            Player* player = Game::GetPlayerByIndex(m_huntedPlayerIndex);
+        if (m_huntedPlayerId != 0) {
+            Player* player = Game::GetPlayerByPlayerId(m_huntedPlayerId);
             float killRange = 1.6f;
             float minimumkillAngle = std::cos(glm::radians(55.0));
 
@@ -47,7 +58,7 @@ void Shark::UpdateHuntingLogic(float deltaTime) {
             bool playerBitten = false;
             m_playerSafe = true;
 
-            glm::vec3 playerPos = Game::GetPlayerByIndex(0)->GetViewPos() * glm::vec3(1.0f, 0.0f, 1.0f);
+            glm::vec3 playerPos = player->GetFootPosition() * glm::vec3(1.0f, 0.0f, 1.0f);
 
             // Perpendicular Distance
             glm::vec3 lineStart = GetMouthPosition2D() + (GetForwardVector() * 10.0f);
@@ -111,31 +122,31 @@ void Shark::UpdateHuntingLogic(float deltaTime) {
 
             m_logicSubStepCount = 6;
            
-            if (m_drawDebug) {
-                std::cout << "\n";
-                std::cout << "GetAnimationFrameNumber(): " << GetAnimationFrameNumber() << "\n";
-                std::cout << "IsBehindEvadePoint(playerPos): " << Util::BoolToString(IsBehindEvadePoint(playerPos)) << "\n";
-                std::cout << "distanceFromHead2D:  " << distanceFromHead2D << "\n";
-                std::cout << "dotToPlayer:  " << dotToPlayer << "\n";
-                std::cout << "perpendicularDistance:  " << perpendicularDistance << "\n";
-             
-            }
+            //if (m_drawDebug) {
+            //    std::cout << "\n";
+            //    std::cout << "GetAnimationFrameNumber(): " << GetAnimationFrameNumber() << "\n";
+            //    std::cout << "IsBehindEvadePoint(playerPos): " << Util::BoolToString(IsBehindEvadePoint(playerPos)) << "\n";
+            //    std::cout << "distanceFromHead2D:  " << distanceFromHead2D << "\n";
+            //    std::cout << "dotToPlayer:  " << dotToPlayer << "\n";
+            //    std::cout << "perpendicularDistance:  " << perpendicularDistance << "\n";
+            // 
+            //}
 
             if (!m_playerSafe) {
 
-                std::cout << "\nKILLED on anim frame " << GetAnimationFrameNumber() << "\n";
-                std::cout << "IsBehindEvadePoint(playerPos): " << Util::BoolToString(IsBehindEvadePoint(playerPos)) << "\n";
-                std::cout << "distanceFromHead2D:  " << distanceFromHead2D << "\n";
-                std::cout << "dotToPlayer:  " << dotToPlayer << "\n";
-                std::cout << "perpendicularDistance:  " << perpendicularDistance << "\n";
+                //std::cout << "\nKILLED on anim frame " << GetAnimationFrameNumber() << "\n";
+                //std::cout << "IsBehindEvadePoint(playerPos): " << Util::BoolToString(IsBehindEvadePoint(playerPos)) << "\n";
+                //std::cout << "distanceFromHead2D:  " << distanceFromHead2D << "\n";
+                //std::cout << "dotToPlayer:  " << dotToPlayer << "\n";
+                //std::cout << "perpendicularDistance:  " << perpendicularDistance << "\n";
              
                 m_hasBitPlayer = true;
                 player->Kill();
-                Game::g_sharkKills++; 
-                std::ofstream out("SharkKills.txt");
-                out << Game::g_sharkKills;
-                out.close();
-                m_huntedPlayerIndex = -1;
+                //Game::g_sharkKills++; 
+                //std::ofstream out("SharkKills.txt");
+                //out << Game::g_sharkKills;
+                //out.close();
+                m_huntedPlayerId = 0;
                 m_movementState = SharkMovementState::FOLLOWING_PATH_ANGRY;
             }
         }

@@ -6,60 +6,11 @@
 
 #include <unordered_map>
 
-struct RigidComponent {
-    int ID;
-    std::string name;
-    std::string shapeType;
-    std::string correspondingJointName;
-    float capsuleLength;
-    float radius;
-    float mass;
-    float friction;
-    float restitution;
-    float linearDamping;
-    float angularDamping;
-    float sleepThreshold;
-    glm::vec3 angularMass;
-    glm::quat rotation;
-    glm::mat4 restMatrix;
-    glm::vec3 scaleAbsoluteVector;
-    glm::vec3 boxExtents, offset;
-};
 
-struct JointComponent {
-    std::string name;
-    int parentID;
-    int childID;
-    glm::mat4 parentFrame;
-    glm::mat4 childFrame;
-
-    // Drive component
-    float drive_angularDamping;
-    float drive_angularStiffness;
-    float drive_linearDampening;
-    float drive_linearStiffness;
-    bool drive_enabled;
-    glm::mat4 target;
-
-    // Limit component
-    float twist;
-    float swing1;
-    float swing2;
-    float limit_angularStiffness;
-    float limit_angularDampening;
-    float limit_linearStiffness;
-    float limit_linearDampening;
-
-    glm::vec3 limit;
-    bool joint_enabled;
-};
 
 namespace Physics {
 
-    struct RagdollComponents {
-        std::vector<RigidComponent> rigids;
-        std::vector<JointComponent> joints;
-    };
+ 
 
     std::unordered_map<std::string, RagdollComponents> g_ragdollComponents;
     std::unordered_map<uint64_t, Ragdoll> g_ragdolls;
@@ -116,37 +67,92 @@ namespace Physics {
 
                 // — Joint components —
                 if (comps.contains("JointComponent")) {
-                    JointComponent jc;
-                    jc.name = comps["NameComponent"]["members"]["value"].get<std::string>();
 
-                    if (jc.name.find("Absolute") != std::string::npos)
-                        continue;
+                    std::string rawName = comps["NameComponent"]["members"]["value"].get<std::string>();
+                    bool isAbs = rawName.find("Absolute") != std::string::npos;
+                    bool isRel = rawName.find("Relative") != std::string::npos;
 
-                    auto& jointM = comps["JointComponent"]["members"];
-                    jc.parentID = jointM["parent"]["value"].get<int>();
-                    jc.childID = jointM["child"]["value"].get<int>();
-                    jc.parentFrame = jointM["parentFrame"]["values"].get<glm::mat4>();
-                    jc.childFrame = jointM["childFrame"]["values"].get<glm::mat4>();
+                    std::string baseName = rawName;
+                    if (isAbs) baseName.erase(baseName.find("Absolute"), 8);
+                    if (isRel) baseName.erase(baseName.find("Relative"), 8);
 
-                    auto& driveM = comps["DriveComponent"]["members"];
-                    jc.drive_angularDamping = driveM["angularDamping"].get<float>();
-                    jc.drive_angularStiffness = driveM["angularStiffness"].get<float>();
-                    jc.drive_linearDampening = driveM["linearDamping"].get<float>();
-                    jc.drive_linearStiffness = driveM["linearStiffness"].get<float>();
-                    jc.drive_enabled = driveM["enabled"].get<bool>();
-                    jc.target = driveM["target"]["values"].get<glm::mat4>();
+                    JointComponent& jc = ragdollComponents.jointMap[baseName];
+                    jc.name = baseName;
 
-                    auto& limitM = comps["LimitComponent"]["members"];
-                    if (limitM.contains("twist"))
-                        jc.twist = limitM["twist"].get<float>();
+                    auto& jm = comps["JointComponent"]["members"];
+                    glm::mat4 pFrame = jm["parentFrame"]["values"].get<glm::mat4>();
+                    glm::mat4 cFrame = jm["childFrame"]["values"].get<glm::mat4>();
 
-                    jc.swing1 = limitM["swing1"].get<float>();
-                    jc.swing2 = limitM["swing2"].get<float>();
-                    jc.limit.x = limitM["x"].get<float>();
-                    jc.limit.y = limitM["y"].get<float>();
-                    jc.limit.z = limitM["z"].get<float>();
+                    jc.parentID = jm["parent"]["value"].get<int>();
+                    jc.childID = jm["child"]["value"].get<int>();
 
-                    ragdollComponents.joints.push_back(jc);
+                    if (isAbs) {
+                        jc.absParentFrame = pFrame;
+                        jc.absChildFrame = cFrame;
+                    }
+                    if (isRel) {
+                        jc.parentFrame = pFrame;
+                        jc.childFrame = cFrame;
+
+                        // parse drive
+                        auto& d = comps["DriveComponent"]["members"];
+                        jc.drive_angularDamping = d["angularDamping"].get<float>();
+                        jc.drive_angularStiffness = d["angularStiffness"].get<float>();
+                        jc.drive_linearDampening = d["linearDamping"].get<float>();
+                        jc.drive_linearStiffness = d["linearStiffness"].get<float>();
+                        jc.drive_enabled = d["enabled"].get<bool>();
+                        jc.target = d["target"]["values"].get<glm::mat4>();
+
+                        // parse limit
+                        auto& L = comps["LimitComponent"]["members"];
+                        float twistDeg = L.contains("twist") ? L["twist"].get<float>() : 0.0f;
+                        float swing1Deg = L["swing1"].get<float>();
+                        float swing2Deg = L["swing2"].get<float>();
+
+                        jc.twist = glm::radians(twistDeg);
+                        jc.swing1 = glm::radians(swing1Deg);
+                        jc.swing2 = glm::radians(swing2Deg);
+
+
+                        jc.limit = glm::vec3(L["x"].get<float>(),
+                                             L["y"].get<float>(),
+                                             L["z"].get<float>());
+
+                        jc.limit_linearStiffness = L["linearStiffness"].get<float>();
+                        jc.limit_linearDampening = L["linearDamping"].get<float>();
+                        jc.limit_angularStiffness = L["angularStiffness"].get<float>();
+                        jc.limit_angularDampening = L["angularDamping"].get<float>();
+                       //
+                       //std::cout << "jc.limit_linearStiffness: " << jc.limit_linearStiffness << "\n";
+                       //std::cout << "jc.limit_linearDampening: " << jc.limit_linearDampening << "\n";
+                       //std::cout << "jc.limit_angularStiffness: " << jc.limit_angularStiffness << "\n";
+                       //std::cout << "jc.limit_angularDampening: " << jc.limit_angularDampening << "\n";
+                       //
+                       //
+                       //jc.limit_linearStiffness *= 0.00000001f;
+                       //jc.limit_angularStiffness *= 0.00000001f;
+                       //jc.limit_linearDampening  *= 0.1f;
+                       //jc.limit_angularDampening *= 0.1f;
+
+                        //jc.limit_linearStiffness = 500.0f;
+                        //jc.limit_linearDampening = 50.0f;
+                        //jc.limit_angularStiffness = 200.0f;
+                        //jc.limit_angularDampening = 20.0f;
+
+                        jc.limit_linearStiffness *= 0.001f;
+                        jc.limit_angularStiffness *= 0.001f;
+                        jc.limit_linearDampening *= 0.001f;
+                        jc.limit_angularDampening *= 0.001f;
+
+                        jc.limit_linearStiffness = 10000;
+                        jc.limit_linearDampening = 1000000;
+                        jc.drive_angularStiffness = 10000;
+                        jc.drive_angularDamping = 1000000;
+
+                        if (jc.parentID != 0) {
+                            ragdollComponents.joints.push_back(jc);
+                        }
+                    }
                 }
             }
 
@@ -154,6 +160,12 @@ namespace Physics {
             std::cout << " - rigid count: " << ragdollComponents.rigids.size() << "\n";
             std::cout << " - joint count: " << ragdollComponents.joints.size() << "\n";
         }
+    }
+
+    inline PxTransform GlmMat4ToPxTransform(const glm::mat4& m) {
+        glm::vec3 t = glm::vec3(m[3]);                  // column-major translation
+        glm::quat q = glm::quat_cast(m);                // extract rotation
+        return PxTransform(Physics::GlmVec3toPxVec3(t), Physics::GlmQuatToPxQuat(q));
     }
 
     uint64_t CreateRagdollByName(const std::string& name, float ragdollTotalWeight) {
@@ -170,9 +182,12 @@ namespace Physics {
         RagdollComponents ragdollComponents = g_ragdollComponents[name];
 
         for (JointComponent& joint : ragdollComponents.joints) {
-            joint.name = joint.name.substr(8);
-            joint.name = joint.name.substr(0, joint.name.size() - 8);
+            std::cout << joint.name << " " << joint.parentID << " " << joint.childID << "\n";
+            //joint.name = joint.name.substr(8);
+            //joint.name = joint.name.substr(0, joint.name.size() - 8);
         }
+
+        std::cout << name << ": " << ragdollComponents.joints.size() << " joints\n";
 
         // Temp vector of RigidComponent Ids to lookup
         std::vector <uint32_t> rigidComponentIds;
@@ -181,6 +196,7 @@ namespace Physics {
             PxTransform shapeOffsetTranslation = PxTransform(PxVec3(rigidComponent.offset.x, rigidComponent.offset.y, rigidComponent.offset.z));
             PxQuat pxRotation = GlmQuatToPxQuat(rigidComponent.rotation);            
             PxTransform shapeOffsetRotation = PxTransform(pxRotation);
+            glm::mat4 restMatrix = rigidComponent.restMatrix;
 
             glm::mat4 shapeOffsetMatrix = Physics::PxMat44ToGlmMat4(shapeOffsetTranslation.transform(shapeOffsetRotation));
 
@@ -194,7 +210,7 @@ namespace Physics {
                 PxCapsuleGeometry geom = PxCapsuleGeometry(radius, halfExtent);
                 PxShape* pxShape = Physics::GetPxPhysics()->createShape(geom, *material, true);
 
-                uint64_t rigidDynmamicId = Physics::CreateRigidDynamicFromPxShape(pxShape, glm::mat4(1.0f), shapeOffsetMatrix);
+                uint64_t rigidDynmamicId = Physics::CreateRigidDynamicFromPxShape(pxShape, restMatrix, shapeOffsetMatrix);
                 ragdoll.m_rigidDynamicIds.push_back(rigidDynmamicId);
                 ragdoll.m_correspondingBoneNames.push_back(rigidComponent.correspondingJointName);
 
@@ -211,7 +227,7 @@ namespace Physics {
                 PxBoxGeometry geom = PxBoxGeometry(rigidComponent.boxExtents.x * 0.5f, rigidComponent.boxExtents.y * 0.5f, rigidComponent.boxExtents.z * 0.5f);
                 PxShape* pxShape = Physics::GetPxPhysics()->createShape(geom, *material, true);
 
-                uint64_t rigidDynmamicId = Physics::CreateRigidDynamicFromPxShape(pxShape, glm::mat4(1.0f), shapeOffsetMatrix);
+                uint64_t rigidDynmamicId = Physics::CreateRigidDynamicFromPxShape(pxShape, restMatrix, shapeOffsetMatrix);
                 ragdoll.m_rigidDynamicIds.push_back(rigidDynmamicId);
                 ragdoll.m_correspondingBoneNames.push_back(rigidComponent.correspondingJointName);
 
@@ -225,7 +241,7 @@ namespace Physics {
                 PxSphereGeometry geom = PxSphereGeometry(radius);
                 PxShape* pxShape = Physics::GetPxPhysics()->createShape(geom, *material, true);
 
-                uint64_t rigidDynmamicId = Physics::CreateRigidDynamicFromPxShape(pxShape, glm::mat4(1.0f), shapeOffsetMatrix);
+                uint64_t rigidDynmamicId = Physics::CreateRigidDynamicFromPxShape(pxShape, restMatrix, shapeOffsetMatrix);
                 ragdoll.m_rigidDynamicIds.push_back(rigidDynmamicId);
                 ragdoll.m_correspondingBoneNames.push_back(rigidComponent.correspondingJointName);
 
@@ -259,6 +275,12 @@ namespace Physics {
             }
         }
 
+        // Does this do anything?
+        for (uint64_t rigidDynamicId : ragdoll.m_rigidDynamicIds) {
+            RigidDynamic* rigidDynamic = GetRigidDynamicById(rigidDynamicId);
+            rigidDynamic->GetPxRigidDynamic()->setSolverIterationCounts(8, 1);
+        }
+
         // Set some reasonable default filter data
         PhysicsFilterData filterData;
         filterData.raycastGroup = RaycastGroup::RAYCAST_ENABLED;
@@ -276,54 +298,64 @@ namespace Physics {
         PxScene* pxScene = Physics::GetPxScene();
 
         for (JointComponent& joint : ragdollComponents.joints) {
+            if (joint.parentID == 0) continue;
 
-            // Skip joints with no parent. It's possible this is a bug, check with Marcus.
-            if (joint.parentID == 0) {
-                continue;
-            }
-
-            // Find parent and child RigidDynamics
-            uint64_t parentRigidDynamicId = 0;
-            uint64_t childRigidDynamicId = 0;
-
+            uint64_t parentRigidDynamicId = 0, childRigidDynamicId = 0;
             for (int i = 0; i < rigidComponentIds.size(); i++) {
-                uint32_t rigidComponentId = rigidComponentIds[i];
-
-                if (rigidComponentId == joint.parentID) {
+                if (rigidComponentIds[i] == joint.parentID)
                     parentRigidDynamicId = ragdoll.m_rigidDynamicIds[i];
-                }
-                else if (rigidComponentId == joint.childID) {
+                else if (rigidComponentIds[i] == joint.childID)
                     childRigidDynamicId = ragdoll.m_rigidDynamicIds[i];
-                }
             }
-
-            RigidDynamic* parentRigidDynamic = GetRigidDynamicById(parentRigidDynamicId);
-            RigidDynamic* childRigidDynamic = GetRigidDynamicById(childRigidDynamicId);
-
-            // This should never happen, but check for it anyway
-            if (!childRigidDynamic || !parentRigidDynamic) {
-                std::cout << "Physics::CreateRagdollByName() failed to retrieve parent or child rigid dynamic(s)\n";
+            auto* parentRigidDynamic = GetRigidDynamicById(parentRigidDynamicId);
+            auto* childRigidDynamic = GetRigidDynamicById(childRigidDynamicId);
+            if (!parentRigidDynamic || !childRigidDynamic) {
+                std::cout << "…failed to retrieve parent or child\n";
                 continue;
             }
 
-            uint64_t d6JointId = Physics::CreateD6Joint(parentRigidDynamicId, childRigidDynamicId, joint.parentFrame, joint.childFrame);
+            PxRigidDynamic* pPx = parentRigidDynamic->GetPxRigidDynamic();
+            PxRigidDynamic* cPx = childRigidDynamic->GetPxRigidDynamic();
+
+            PxTransform absP = GlmMat4ToPxTransform(joint.absParentFrame);
+            PxTransform absC = GlmMat4ToPxTransform(joint.absChildFrame);
+
+            PxTransform localP = pPx->getGlobalPose().transformInv(absP);
+            PxTransform localC = cPx->getGlobalPose().transformInv(absC);
+
+            glm::mat4 glmLocalP = Physics::PxMat44ToGlmMat4(localP);
+            glm::mat4 glmLocalC = Physics::PxMat44ToGlmMat4(localC);
+
+            uint64_t d6JointId = Physics::CreateD6Joint(
+                parentRigidDynamicId,
+                childRigidDynamicId,
+                joint.parentFrame,
+                joint.childFrame 
+            );
+
             ragdoll.m_d6JointIds.push_back(d6JointId);
 
+
             D6Joint* d6Joint = Physics::GetD6JointById(d6JointId);
+            PxD6Joint* pxD6Joint = d6Joint->GetPxD6Joint();
             if (!d6Joint) {
                 std::cout << "Physics::CreateRagdollByName() failed to retrieve d6Joint by id " << d6JointId << "\n";
                 continue;
             }
 
-            PxD6Joint* pxD6Joint = d6Joint->GetPxD6Joint();
-            if (!pxD6Joint) {
-                std::cout << "Physics::CreateRagdollByName() failed because a pxD6Joint was nullptr\n";
-                continue;
-            }
+           //PxD6Joint* pxD6Joint = d6Joint->GetPxD6Joint();
+           //if (!pxD6Joint) {
+           //    std::cout << "Physics::CreateRagdollByName() failed because a pxD6Joint was nullptr\n";
+           //    continue;
+           //}
 
             // Linear spring
-            joint.limit_linearStiffness = 10000;
-            joint.limit_linearDampening = 1000000;
+            //joint.limit_linearStiffness = 10000;
+            //joint.limit_linearDampening = 1000000;
+            //joint.drive_angularStiffness = 10000;
+            //joint.drive_angularDamping = 1000000;
+
+
             const PxSpring linearSpring = PxSpring(joint.limit_linearStiffness, joint.limit_linearDampening);
 
             if (joint.limit.x > -1) {
@@ -347,6 +379,11 @@ namespace Physics {
 
             pxD6Joint->setTwistLimit(twistLimit);
             pxD6Joint->setSwingLimit(swingLimit);
+
+           // pxD6Joint->setConstraintFlag(PxConstraintFlag::ePROJECTION, true);
+           // pxD6Joint->setConstraintFlag(PxD6JointFlag::ePROJECTION, true);
+           // pxD6Joint->setProjectionLinearTolerance(0.05f);
+           // pxD6Joint->setProjectionAngularTolerance(glm::radians(0.5f));
 
             if (joint.limit.x > 0) pxD6Joint->setMotion(PxD6Axis::eX, PxD6Motion::eLIMITED);
             if (joint.limit.y > 0) pxD6Joint->setMotion(PxD6Axis::eY, PxD6Motion::eLIMITED);
@@ -405,6 +442,7 @@ namespace Physics {
             }
         }
 
+        ragdoll.m_components = ragdollComponents;
         return ragdollID;
     }
 

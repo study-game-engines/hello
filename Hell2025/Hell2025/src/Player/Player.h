@@ -196,6 +196,8 @@ private:
     glm::vec3 m_rayHitPosition = glm::vec3(0.0f);
     bool m_rayHitFound = false;
     bool m_interactFound = false;
+    int32_t m_deathCount = 0;
+    int32_t m_respawnCount = 0;
 
     glm::vec3 m_position = glm::vec3(0.0f);
     ivecXZ m_chunkPos;

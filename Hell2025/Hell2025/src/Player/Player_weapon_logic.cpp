@@ -8,7 +8,7 @@
 #include "World/World.h"
 
 void Player::UpdateWeaponLogic(float deltaTime) {
-    if (!HasControl()) return;
+    if (!HasControl() || IsDead()) return;
 
     if (PressedNextWeapon()) {
         NextWeapon();

@@ -153,6 +153,47 @@ void AnimatedGameObject::Update(float deltaTime, std::unordered_map<std::string,
             ragdoll->SetRigidGlobalPosesFromAnimatedGameObject(this);
         }
     }
+
+    Ragdoll* ragdoll = Physics::GetRagdollById(m_ragdollId);
+    if (ragdoll && false) {
+        for (int i = 0; i < ragdoll->m_components.joints.size(); i++) {
+
+            JointComponent& joint = ragdoll->m_components.joints[i];
+            D6Joint* d6Joint = Physics::GetD6JointById(ragdoll->m_d6JointIds[i]);
+            PxD6Joint* pxD6Joint = d6Joint->GetPxD6Joint();
+
+            // Linear spring
+            joint.limit_linearStiffness = 10000;
+            joint.limit_linearDampening = 1000000;
+            joint.drive_angularStiffness = 10000;
+            joint.drive_angularDamping = 1000000;
+
+            const PxSpring linearSpring = PxSpring(joint.limit_linearStiffness, joint.limit_linearDampening);
+
+            if (joint.limit.x > -1) {
+                const PxJointLinearLimitPair limitX = PxJointLinearLimitPair(-joint.limit.x, joint.limit.x, linearSpring);
+                pxD6Joint->setLinearLimit(PxD6Axis::eX, limitX);
+            }
+
+            if (joint.limit.y > -1) {
+                const PxJointLinearLimitPair limitY = PxJointLinearLimitPair(-joint.limit.y, joint.limit.y, linearSpring);
+                pxD6Joint->setLinearLimit(PxD6Axis::eY, limitY);
+            }
+
+            if (joint.limit.z > -1) {
+                const PxJointLinearLimitPair limitZ = PxJointLinearLimitPair(-joint.limit.z, joint.limit.z, linearSpring);
+                pxD6Joint->setLinearLimit(PxD6Axis::eZ, limitZ);
+            }
+
+            const PxSpring angularSpring = PxSpring(joint.drive_angularStiffness, joint.drive_angularDamping);
+            const PxJointAngularLimitPair twistLimit = PxJointAngularLimitPair(-joint.twist, joint.twist, angularSpring);
+            const PxJointLimitCone swingLimit = PxJointLimitCone(joint.swing1, joint.swing2, angularSpring);
+
+            pxD6Joint->setTwistLimit(twistLimit);
+            pxD6Joint->setSwingLimit(swingLimit);
+        }
+
+    }
 }
 
 void AnimatedGameObject::CleanUp() {
@@ -338,9 +379,10 @@ const glm::mat4 AnimatedGameObject::GetModelMatrix() {
 }
 
 bool AnimatedGameObject::IsAnimationComplete() {
-    std::cout << "WARNING!!! AnimatedGameObject::IsAnimationComplete() is not implemeneted!\n";
+    if (m_animationLayer.m_animationStates.size()) {
+        return m_animationLayer.m_animationStates[0].IsComplete();
+    }
     return true;
-    //return m_animationStateA.IsComplete();// _animationIsComplete;
 }
 
 std::string AnimatedGameObject::GetName() {

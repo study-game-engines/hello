@@ -19,7 +19,38 @@ namespace World {
     }
     // 
 
+
+
     void Update(float deltaTime) {
+
+        /*
+        {
+        // Visualize dot product arc
+            glm::vec3 forward = Game::GetLocalPlayerByIndex(0)->GetCameraForward();
+            forward.y = 0.0f;
+            forward = glm::normalize(forward);
+            glm::vec3 origin = Game::GetLocalPlayerByIndex(0)->GetFootPosition();
+            float dotThreshold = 0.7f;
+            float angle = acos(dotThreshold);
+            glm::mat4 rotRight = glm::rotate(glm::mat4(1.0f), -angle, glm::vec3(0, 1, 0));
+            glm::mat4 rotLeft = glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0, 1, 0));
+            glm::vec3 rightEdge = glm::vec3(rotRight * glm::vec4(forward, 0.0f));
+            glm::vec3 leftEdge = glm::vec3(rotLeft * glm::vec4(forward, 0.0f));
+            float length = 2.0f;
+            glm::vec4 color = RED;
+
+            AnimatedGameObject* roo = GetAnimatedGameObjectByObjectId(g_rooAnimatedGameObject);
+            glm::vec3 target = roo->_transform.position;
+            glm::vec3 toTarget = glm::normalize(target - origin);
+            float dotValue = glm::dot(forward, toTarget);
+            if (dotValue >= dotThreshold) {
+                color = GREEN;
+            }
+            Renderer::DrawLine(origin, origin + forward * length, color);     // center
+            Renderer::DrawLine(origin, origin + leftEdge * length, color);    // left limit
+            Renderer::DrawLine(origin, origin + rightEdge * length, color);   // right limit
+        }*/
+
         if (g_rooAnimatedGameObject == 0) {
             g_rooAnimatedGameObject = CreateAnimatedGameObject();
             AnimatedGameObject* roo = GetAnimatedGameObjectByObjectId(g_rooAnimatedGameObject);
@@ -31,6 +62,7 @@ namespace World {
             roo->SetAllMeshMaterials("Leopard");
             roo->PrintMeshNames();
             roo->SetRagdoll("Kangaroo", 1500.0f);
+
 
             Ragdoll* ragdoll = Physics::GetRagdollById(roo->GetRagdollId());
             if (ragdoll) {
@@ -55,7 +87,8 @@ namespace World {
             AnimatedGameObject* roo = GetAnimatedGameObjectByObjectId(g_rooAnimatedGameObject);
             AnimationPlaybackParams params;
             params.animationSpeed = 1.0f;
-            roo->PlayAndLoopAnimation("Kangaroo_Hop2", params);
+            //roo->PlayAndLoopAnimation("Kangaroo_Hop2", params);
+            roo->PlayAndLoopAnimation("Kangaroo_Bite", params);
         }
         // REMOVE ME
 

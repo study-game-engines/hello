@@ -5,6 +5,7 @@
 namespace Audio {
     std::unordered_map<std::string, FMOD::Sound*> g_loadedAudio;
     std::unordered_map<uint64_t, AudioHandle> g_playingAudio;
+    std::vector<std::string> g_audioPlayedThisFrame;
     constexpr int AUDIO_CHANNEL_COUNT = 512;
     FMOD::System* g_system;
 
@@ -104,12 +105,20 @@ namespace Audio {
 
         // Update FMOD internal hive mind
         g_system->update();
+        g_audioPlayedThisFrame.clear();
     }
 
     uint64_t PlayAudio(const std::string& filename, float volume, float frequency) {
         // Load if needed
-        if (g_loadedAudio.find(filename) == g_loadedAudio.end()) {  // i think you are removing all these per frame
+        if (g_loadedAudio.find(filename) == g_loadedAudio.end()) {
             LoadAudio(filename);
+        }
+
+        // Skip if this sound is already playing
+        for (const std::string& existingFilename : g_audioPlayedThisFrame) {
+            if (existingFilename == filename) {
+                return 0;
+            }
         }
 
         uint64_t uniqueId = UniqueID::GetNext();
@@ -137,6 +146,7 @@ namespace Audio {
             return 0;
         }
 
+        g_audioPlayedThisFrame.push_back(filename);
         return uniqueId;
     }
 

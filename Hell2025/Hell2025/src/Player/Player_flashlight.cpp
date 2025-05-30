@@ -7,7 +7,7 @@
 
 void Player::UpdateFlashlight(float deltaTime) {
     // Toggle on/off
-    if (PressedFlashlight()) {
+    if (PressedFlashlight() && IsAlive()) {
         Audio::PlayAudio("Flashlight.wav", 1.5f);
         m_flashlightOn = !m_flashlightOn;
     }

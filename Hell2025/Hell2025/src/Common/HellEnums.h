@@ -88,6 +88,7 @@ enum class ObjectType {
     PICTURE_FRAME,
     RAGDOLL_ENEMY,
     RAGDOLL_PLAYER,
+    SHARK,
     WALL,
     WALL_SEGMENT,
     WINDOW

@@ -40,8 +40,6 @@ namespace Editor {
 
         ObjectType hovererdType = Editor::GetHoveredObjectType();
 
-        //std::cout << "Hover: "<< Util::ObjectTypeToString(hovererdType) << "\n";
-
         // Find parents if necessary
         if (GetHoveredObjectType() == ObjectType::DOOR_FRAME) {
             Door* door = World::GetDoorByDoorFrameObjectId(GetHoveredObjectId());

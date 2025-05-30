@@ -89,6 +89,10 @@ namespace Callbacks {
         }
     }
 
+    void NewRun() {
+        World::NewRun();
+    }
+
     void BeginAddingDoor() {
         Editor::SetEditorState(EditorState::DOOR_PLACEMENT);
     }

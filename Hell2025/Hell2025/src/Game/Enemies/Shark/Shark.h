@@ -1,5 +1,6 @@
 #pragma once
 #include "Types/Game/AnimatedGameObject.h"
+#include "Physics/Types/Ragdoll.h"
 #include <vector>
 
 #define SHARK_SPINE_SEGMENT_COUNT 11
@@ -17,44 +18,77 @@ struct Shark {
     void SetPosition(glm::vec3 position);
     void CleanUp();
     void DrawSpinePoints();
-
+    void HuntPlayer(uint64_t playerId); 
+    void GiveDamage(uint64_t playerId, int damageAmount);
+    void Kill();
+    void Respawn();
+    void SetPositionToBeginningOfPath();
+    void PlayAnimation(const std::string& animationName, float speed);
+    void PlayAndLoopAnimation(const std::string& animationName, float speed);
+    void SetMovementState(SharkMovementState state);
+    void StraightenSpine(float deltaTime, float straightSpeed);
+    
     AnimatedGameObject* GetAnimatedGameObject();
+    Ragdoll* GetRadoll();
 
     glm::vec3 m_spinePositions[SHARK_SPINE_SEGMENT_COUNT];
     std::string m_spineBoneNames[SHARK_SPINE_SEGMENT_COUNT];
     float m_spineSegmentLengths[SHARK_SPINE_SEGMENT_COUNT - 1];
 
+    const bool IsDead() const           { return !m_alive; }
+    const bool IsAlive() const          { return m_alive; }
+    const uint64_t& GetObjectId() const { return m_objectId; };
+
 private:
     void CalculateTargetFromPath();
     void CalculateForwardVectorFromTarget(float deltaTime);
     void CalculateForwardVectorFromArrowKeys(float deltaTime);
+    void CalculateTargetFromPlayer();
     void MoveShark(float deltaTime);
 
+    void UpdateHuntingLogic(float deltaTime);
+
     // Util
+    int GetAnimationFrameNumber();
+    float GetDistanceMouthToTarget3D();
     float GetDistanceToTarget2D();
     float GetTurningRadius() const;
+    bool TargetIsOnLeft(glm::vec3 targetPosition);
+    bool IsBehindEvadePoint(glm::vec3 position);
+    glm::vec3 GetMouthPosition3D();
     glm::vec3 GetForwardVector();
     glm::vec3 GetTargetPosition2D();
     glm::vec3 GetHeadPosition2D();
+    glm::vec3 GetMouthPosition2D();
     glm::vec3 GetCollisionLineEnd();
     glm::vec3 GetCollisionSphereFrontPosition();
-    bool TargetIsOnLeft(glm::vec3 targetPosition);
+    glm::vec3 GetSpinePosition(int index);
+    glm::vec3 GetEvadePoint3D();
+    glm::vec3 GetEvadePoint2D();
 
-    uint64_t g_animatedGameObjectObjectId = 0;
-    glm::vec3 m_forward = glm::vec3(0);
-    glm::vec3 m_right = glm::vec3(0);
-    glm::vec3 m_left = glm::vec3(0); 
+    uint64_t m_objectId = 0;
+    uint64_t g_animatedGameObjectObjectId = 0; 
+    uint64_t m_huntedPlayerId = 0;
+    int m_health = SHARK_HEALTH_MAX;
+    int m_logicSubStepCount = 8;
     float m_swimSpeed = 8.0f;
     float m_rotationSpeed = 2.5f;
-    int m_logicSubStepCount = 8;
+    glm::vec3 m_forward = glm::vec3(0);
+    glm::vec3 m_right = glm::vec3(0);
+    glm::vec3 m_lastKnownTargetPosition = glm::vec3(0);
+    glm::vec3 m_left = glm::vec3(0); 
+    bool m_hasBitPlayer = false;
+    bool m_alive = false; 
+    bool m_playerSafe = false;
 
+    SharkHuntingState m_huntingState = SharkHuntingState::UNDEFINED;
     SharkMovementState m_movementState = SharkMovementState::FOLLOWING_PATH;
 
     int32_t m_nextPathPointIndex = 0;
     glm::vec3 m_targetPosition = glm::vec3(0);
     std::vector<glm::vec3> m_path;
 
-    //glm::vec3 m_lastKnownTargetPosition = glm::vec3(0);
+    //
 
    // RigidComponent* m_rigidComponents[SHARK_SPINE_SEGMENT_COUNT];
 
@@ -69,7 +103,7 @@ private:
   //
   // float GetDotToTarget2D();
   // float GetDotMouthDirectionToTarget3D();
-  // void HuntPlayer(int playerIndex);
+  // 
   // void Respawn();
   // void Kill();
   // void CleanUp();
@@ -78,7 +112,7 @@ private:
   // void PlayAndLoopAnimation(const std::string& animationName, float speed = 1.0f);
   // int GetAnimationFrameNumber();
   //
-  // void GiveDamage(int playerIndex, int damageAmount);
+  // 
   //
   // bool IsDead();
   // bool IsAlive();
@@ -129,10 +163,10 @@ private:
   // void HuntClosestPlayerInLineOfSight();
   //
   //
-  // SharkHuntingState m_huntingState;
+  // 
   //
-  // bool m_hasBitPlayer = false;
-  // bool m_isDead = false;
+  // 
+  // 
   //
   //
   //
@@ -162,13 +196,13 @@ private:
   // SharkMovementDirection m_movementDirection;
   //
   //
-  // int m_huntedPlayerIndex = -1;
+  // 
   //
   // bool m_drawPath = false;
   //
-  // int m_health = SHARK_HEALTH_MAX;
+  // 
   //
-  // bool m_playerSafe = false;
+  // 
   //
   // static std::string SharkMovementStateToString(SharkMovementState state);
   // static std::string SharkHuntingStateToString(SharkHuntingState state);

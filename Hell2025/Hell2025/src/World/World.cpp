@@ -63,11 +63,22 @@ namespace World {
     void AddSectorAtLocation(SectorCreateInfo& sectorCreateInfo, SpawnOffset spawnOffset, bool loadHouses);
 
     void Init() {
+        NewRun();
+    }
+
+
+    void NewRun() {
         std::string sectorName = "TestSector";
         SectorCreateInfo* sectorCreateInfo = SectorManager::GetSectorCreateInfoByName(sectorName);
         if (sectorCreateInfo) {
             World::LoadSingleSector(sectorCreateInfo, true);
         }
+
+        Game::RespawnPlayers();
+
+        // Add shark
+        Shark& shark = g_sharks.emplace_back();
+        shark.Init();
     }
 
     void BeginFrame() {
@@ -609,9 +620,6 @@ namespace World {
         //mermaidCreateInfo.position = glm::vec3(32.0f, 9.5f, 35.3f);
         mermaidCreateInfo.rotation.y = 0.25f;
         AddMermaid(mermaidCreateInfo);
-
-        Shark& shark = g_sharks.emplace_back();
-        shark.Init();
     }
 
     void UpdateClippingCubes() {
@@ -848,6 +856,16 @@ namespace World {
         }
         return nullptr;
     }
+
+    Shark* GetSharkByObjectId(uint64_t objectId) {
+        for (Shark& shark: g_sharks) {
+            if (shark.GetObjectId() == objectId) {
+                return &shark;
+            }
+        }
+        return nullptr;
+    }
+
 
     Tree* GetTreeByObjectId(uint64_t objectId) {
         for (Tree& tree : g_trees) {

@@ -42,34 +42,6 @@ namespace OpenGLRenderer {
             g_mouseRayWorldPositionReadBackReady = true;
             g_mouseRayReadBack.Reset();
         }
-
-        // Get player crosshair ray hit position
-        //for (int i = 0; i < Game::GetLocalPlayerCount(); i++) {
-        //    if (!g_playerRayReadBack[i].IsRequestInProgress()) {
-        //        OpenGLFrameBuffer* gBuffer = GetFrameBuffer("GBuffer");
-        //        GLuint fboHandle = gBuffer->GetHandle();
-        //        GLuint attachment = gBuffer->GetColorAttachmentSlotByName("WorldPosition");
-        //
-        //        Player* player = Game::GetLocalPlayerByIndex(i);
-        //        glm::ivec2 coords = player->GetViewportCenter();
-        //
-        //        //std::cout << i << ": " << coords.x << ", " << coords.y << "\n";
-        //
-        //        int xOffset = coords.x;
-        //        int yOffset = coords.y;
-        //        int width = 1;
-        //        int height = 1;
-        //        g_playerRayReadBack[i].IssueDataRequest(fboHandle, attachment, xOffset, yOffset, width, height, GL_RGBA32F);
-        //    }
-        //    if (g_playerRayReadBack[i].IsRequestInProgress()) {
-        //        g_playerRayReadBack[i].Update();
-        //    }
-        //    if (g_playerRayReadBack[i].IsResultReady()) {
-        //        g_playerRayWorldPosition[i] = g_playerRayReadBack[i].GetFloatPixel(0);
-        //        g_playerRayWorldPositionReadBackReady[i] = true;
-        //        g_playerRayReadBack[i].Reset();
-        //    }
-        //}
     }
 
     //void SaveHeightMap() {

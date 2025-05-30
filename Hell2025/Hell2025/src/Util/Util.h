@@ -114,6 +114,11 @@ namespace Util {
     std::vector<glm::vec4> GetFrustumCornersWorldSpace(const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix);
     std::vector<glm::mat4> GetLightProjectionViews(const glm::mat4& viewMatrix, glm::vec3 lightDir, std::vector<float>& shadowCascadeLevels, const float viewportWidth, const float viewportHeight, const float fov);
 
+    // Easing
+    float EaseIn(float t, float a);
+    float EaseOut(float t, float a);
+    float EaseInOut(float t, float a);
+    float HermiteEaseInOut(float t);
 
     // Animation
     //int FindAnimatedNodeIndex(float AnimationTime, const AnimatedNode* animatedNode);

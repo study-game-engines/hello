@@ -44,8 +44,6 @@ void Player::BeginFrame() {
     m_interactFound = false;
     m_interactObjectId = 0;
     m_interactObjectType = ObjectType::NONE;
-    //m_interactPhysicsId = 0;
-    //m_interactPhysicsType = PhysicsType::NONE;
 }
 
 void Player::Update(float deltaTime) {
@@ -53,7 +51,19 @@ void Player::Update(float deltaTime) {
         return;
     }
 
+    // Respawn
     if (IsAwaitingSpawn()) Respawn();
+    if (IsDead() && m_timeSinceDeath > 3.25) {
+        if (PressedFire() ||
+            PressedReload() ||
+            PressedCrouch() ||
+            PressedInteract() ||
+            PresingJump() ||
+            PressedNextWeapon()) {
+            Respawn();
+            Audio::PlayAudio("RE_Beep.wav", 0.5);
+        }
+    }
 
     if (World::HasOcean()) {
         float feetHeight = GetFootPosition().y;
@@ -102,7 +112,6 @@ void Player::Update(float deltaTime) {
     UpdateFlashlight(deltaTime);
     UpdateFlashlightFrustum();
     UpdatePlayingPiano(deltaTime);
-
     UpdateCharacterModelHacks();
 
     if (m_infoTextTimer > 0) {
@@ -119,27 +128,83 @@ void Player::Update(float deltaTime) {
     else {
         m_timeSinceDeath += deltaTime;
     }
+
+    //if (Input::KeyPressed(HELL_KEY_Q)) {
+    //    std::cout << GetFootPosition() << "\n";
+    //    std::cout << GetCamera().GetEulerRotation() << "\n\n";
+    //}
 }
 
+struct SpawnPoint {
+    glm::vec3 position;
+    glm::vec3 camEuler;
+};
+
 void Player::Respawn() {
-    AnimatedGameObject* viewWeapon = GetViewWeaponAnimatedGameObject();
-    //viewWeapon->SetSkinnedModel("Glock");
-    //viewWeapon->PlayAndLoopAnimation("Glock_Reload");
-    //viewWeapon->SetSkinnedModel("SPAS");
-    //viewWeapon->PlayAndLoopAnimation("SPAS_Reload2Shells");
-    //viewWeapon->SetSkinnedModel("Knife");
-    //viewWeapon->PlayAndLoopAnimation("Knife_Idle");
+
+
+    if (m_viewportIndex == 0) {
+
+        std::vector<SpawnPoint> spawnPoints;
+        spawnPoints.push_back({ glm::vec3(17.0f, 30.7f, 41.5f), glm::vec3(-0.162, 0.002, 0) });
+        spawnPoints.push_back({ glm::vec3(17.103, 30.7209, 37.7175), glm::vec3(-0.184, -3.124, 0) });
+        spawnPoints.push_back({ glm::vec3(21.7034, 30.7429, 45.7712), glm::vec3(-0.228, 0.00400294, 0) });
+        spawnPoints.push_back({ glm::vec3(20.1269, 30.6869, 41.3917), glm::vec3(-0.3, -0.725997, 0) });
+
+        spawnPoints.push_back({ glm::vec3(52.6439, 30.8008, 22.1873), glm::vec3(-0.158, -3.536, 0) });
+        spawnPoints.push_back({ glm::vec3(38.4154, 30.6024, 53.6721), glm::vec3(-0.0679997, -0.497999, 0) });
+        spawnPoints.push_back({ glm::vec3(57.9582, 30.574, 31.0938), glm::vec3(-0.154, 1.894, 0) });
+        spawnPoints.push_back({ glm::vec3(18.8848, 30.5776, 34.2176), glm::vec3(-0.134, -1.996, 0) });
+
+        int rand = Util::RandomInt(0, spawnPoints.size() - 1);
+
+        SpawnPoint& spawnPoint = spawnPoints[rand];
+
+        // First time u spawn is always at first spawn location
+        if (m_respawnCount == 0) {
+            spawnPoint = spawnPoints[0];
+        }
+
+        // Check you didn't just spawn on another player
+        for (int i = 0; i < Game::GetLocalPlayerCount(); i++) {
+            Player* otherPlayer = Game::GetLocalPlayerByIndex(i);
+            if (this != otherPlayer) {
+                float distanceToOtherPlayer = glm::distance(spawnPoint.position, otherPlayer->GetFootPosition());
+                if (distanceToOtherPlayer < 1.0f) {
+                    Respawn();
+                    return;
+                }
+            }
+        }
+
+        SetFootPosition(spawnPoint.position);
+        GetCamera().SetEulerRotation(spawnPoint.camEuler);
+    }
+    else {
+        if (m_viewportIndex == 1) {
+            SetFootPosition(glm::vec3(12.5f, 30.6f, 45.5f));
+            m_camera.SetEulerRotation(glm::vec3(0, 0, 0));
+        }
+        if (m_viewportIndex == 2) {
+            SetFootPosition(glm::vec3(12.5f, 30.6f, 55.5f));
+            m_camera.SetEulerRotation(glm::vec3(0, 0, 0));
+        }
+        if (m_viewportIndex == 3) {
+            SetFootPosition(glm::vec3(12.5f, 30.6f, 605.5f));
+            m_camera.SetEulerRotation(glm::vec3(0, 0, 0));
+        }
+    }
 
     m_alive = true;
 
-    if (m_viewportIndex == 0) {
-        SetFootPosition(glm::vec3(17.0f, 30.7f, 41.5f));
-        SetFootPosition(glm::vec3(27.0f, 32.7f, 36.5f)); // roo
-    }
-    if (m_viewportIndex == 1) {
-        SetFootPosition(glm::vec3(12.5f, 30.6f, 45.5f));
-        m_camera.SetEulerRotation(glm::vec3(0, 0, 0));
-    }
+   //if (m_viewportIndex == 0) {
+   //    SetFootPosition(glm::vec3(17.0f, 30.7f, 41.5f));
+   //    //SetFootPosition(glm::vec3(27.0f, 32.7f, 36.5f)); // roo
+   //}
+   //if (m_viewportIndex == 1) {
+   //    SetFootPosition(glm::vec3(12.5f, 30.6f, 45.5f));
+   //    m_camera.SetEulerRotation(glm::vec3(0, 0, 0));
+   //}
 
     m_weaponStates.clear();
     for (int i = 0; i < WeaponManager::GetWeaponCount(); i++) {
@@ -157,7 +222,7 @@ void Player::Respawn() {
     }
 
     GiveDefaultLoadout();
-    SwitchWeapon("Knife", WeaponAction::DRAW_BEGIN);
+    SwitchWeapon("Glock", WeaponAction::DRAW_BEGIN);
 
     m_flashlightOn = false;
     m_awaitingSpawn = false; 
@@ -165,6 +230,17 @@ void Player::Respawn() {
     m_camera.Update();
     m_flashlightDirection = m_camera.GetForward();
 
+
+    // Are you inside? Turn flash light on
+    float maxRayDistance = 2000;
+    glm::vec3 rayOrigin = GetFootPosition() + glm::vec3(0, 2, 0);
+    glm::vec3 rayDir = glm::vec3(0, 1, 0);
+    PhysXRayResult physxRayResult = Physics::CastPhysXRay(rayOrigin, rayDir, maxRayDistance, true);
+    if (!physxRayResult.hitFound) {
+        m_flashlightOn = true;
+    }
+
+    m_respawnCount++;
 }
 
 
@@ -307,6 +383,7 @@ const float Player::GetFov() {
 }
 
 void Player::Kill() {
+    m_deathCount++;
     m_alive = false;
     m_characterModelAnimatedGameObject.SetAnimationModeToRagdoll();
     Audio::PlayAudio("Death0.wav", 1.0f);
