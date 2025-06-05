@@ -16,15 +16,23 @@ namespace OpenGLRenderer {
         OpenGLShader* shader = GetShader("Glass");
         OpenGLShader* compositeShader = GetShader("GlassComposite");
         OpenGLFrameBuffer* gBuffer = GetFrameBuffer("GBuffer");
+        OpenGLShadowMap* flashLightShadowMapsFBO = GetShadowMap("FlashlightShadowMaps");
+
+        if (!shader) return;
+        if (!compositeShader) return;
+        if (!gBuffer) return;
+        if (!flashLightShadowMapsFBO) return;
 
         shader->Bind();
 
         gBuffer->Bind();
         gBuffer->DrawBuffer("Glass");
 
+
         glBindVertexArray(OpenGLBackEnd::GetVertexDataVAO());
         glBindTextureUnit(0, gBuffer->GetDepthAttachmentHandle());
         glBindTextureUnit(7, AssetManager::GetTextureByName("Flashlight2")->GetGLTexture().GetHandle());
+        glBindTextureUnit(8, flashLightShadowMapsFBO->GetDepthTextureHandle());
 
         //OpenGLFrameBuffer* flashLightShadowMapFBO = GetFrameBuffer("FlashlightShadowMap");
         //glBindTextureUnit(8, flashLightShadowMapFBO->GetDepthAttachmentHandle());

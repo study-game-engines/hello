@@ -57,7 +57,7 @@ namespace World {
 
                 // Shot enemy ragdoll?
                 if (objectType == ObjectType::RAGDOLL_ENEMY && !rooDeath) {
-                    //std::cout << "Bullet hit RAGDOLL_ENEMY\n";
+
                     for (AnimatedGameObject& animatedGameObject : GetAnimatedGameObjects()) {
                         if (animatedGameObject.GetRagdollId() == objectId) {
 
@@ -73,13 +73,14 @@ namespace World {
                             }
                         }
                     }
+
+                    // Spawn volumetric blood
+                    glm::vec3 position = rayResult.hitPosition;
+                    glm::vec3 front = bullet.GetDirection() * glm::vec3(-1);
+                    World::AddVolumetricBlood(position, -bullet.GetDirection());
+
                 }
 
-                // Spawn volumetric blood
-                glm::vec3 position = rayResult.hitPosition;
-                glm::vec3 front = bullet.GetDirection() * glm::vec3(-1);
-                World::AddVolumetricBlood(position, -bullet.GetDirection());
-                //fleshWasHit = true;
 
                 // Apply force if object is dynamic
                 if (physicsType == PhysicsType::RIGID_DYNAMIC) {

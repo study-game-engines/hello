@@ -13,6 +13,7 @@ layout (binding = 2) uniform sampler2D rmaTexture;
 layout (binding = 7) uniform sampler2D FlashlightCookieTexture;
 layout (binding = 8) uniform sampler2DArray FlashlighShadowMapTextureArray;
 
+
 readonly restrict layout(std430, binding = 1) buffer rendererDataBuffer { RendererData  rendererData;   };
 readonly restrict layout(std430, binding = 2) buffer viewportDataBuffer { ViewportData  viewportData[]; };
 readonly restrict layout(std430, binding = 4) buffer lightsBuffer       { Light         lights[];       };
@@ -91,7 +92,7 @@ void main() {
         vec3 cookie = ApplyCookie(lightProjectionView, WorldPos.xyz, spotLightPos, spotLightColor, 10, FlashlightCookieTexture);
         vec3 spotLighting = GetSpotlightLighting(spotLightPos, spotLightDir, spotLightColor, spotLightRadius, spotLightStregth, innerAngle, outerAngle, normal.xyz, WorldPos.xyz, gammaBaseColor.rgb, roughness, metallic, viewPos, lightProjectionView);
         vec4 FragPosLightSpace = lightProjectionView * vec4(WorldPos.xyz, 1.0);
-        float shadow = 1.0;//SpotlightShadowCalculation(FragPosLightSpace, normal.xyz, spotLightDir, WorldPos.xyz, spotLightPos, viewPos, FlashlighShadowMapTextureArray, layerIndex);  
+        float shadow = SpotlightShadowCalculation(FragPosLightSpace, normal.xyz, spotLightDir, WorldPos.xyz, spotLightPos, viewPos, FlashlighShadowMapTextureArray, layerIndex);  
         spotLighting *= vec3(1 - shadow);
         spotLighting *= cookie * cookie * 5 * spotLightColor;
         directLighting += vec3(spotLighting) * flashlightModifer;

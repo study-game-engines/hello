@@ -55,6 +55,7 @@ void Wall::UpdateSegmentsAndVertexData() {
     // Create weather boards
     if (m_createInfo.wallType == WallType::WEATHER_BOARDS) {
         CreateWeatherBoards();
+        CreateCSGVertexData();
     }
     // Create CSG geometry and trims
     else {
@@ -214,6 +215,12 @@ void Wall::CreateCSGVertexData() {
 }
 
 void Wall::SubmitRenderItems() {
+
+    // If this wall is exterior, then dont render the CSG geometry, or any trims if you accidentally set it to have trims
+    if (m_createInfo.wallType == WallType::WEATHER_BOARDS) {
+        return;
+    }
+
     for (WallSegment& wallSegment : m_wallSegments) {
         Mesh* mesh = World::GetHouseMeshByIndex(wallSegment.GetMeshIndex());
         if (!mesh) continue;

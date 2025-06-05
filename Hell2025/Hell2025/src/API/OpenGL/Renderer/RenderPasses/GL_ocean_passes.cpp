@@ -66,94 +66,104 @@ namespace OpenGLRenderer {
             offset = Ocean::GetBaseFFTResolution().x * scale;
         }
 
-        const ViewportData& viewportData = RenderDataManager::GetViewportData()[0];
-        glm::mat4 projectionMatrix = viewportData.projection;
-        glm::mat4 viewMatrix = viewportData.view;
-        glm::vec3 viewPos = viewportData.viewPos;
-        glm::mat4 projectionView = viewportData.projectionView;
-
-        float patchOffset = Ocean::GetBaseFFTResolution().y * scale;
 
 
-        //DrawPoint(glm::vec3(0, -0.65f, 0), WHITE);
-        //DrawPoint(glm::vec3(patchOffset, -0.65f, 0), WHITE);
 
-        Transform tesseleationTransform;
-        tesseleationTransform.scale = glm::vec3(scale);
 
-        OpenGLRenderer::BlitFrameBufferDepth(gBuffer, waterFrameBuffer);
 
-        waterFrameBuffer->Bind();
-        waterFrameBuffer->SetViewport();
-        waterFrameBuffer->DrawBuffers({ "Color", "UnderwaterMask", "WorldPosition" });
 
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, fftFrameBuffer_band0->GetColorAttachmentHandleByName("Displacement"));
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, fftFrameBuffer_band0->GetColorAttachmentHandleByName("Normals"));
-        glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_2D, fftFrameBuffer_band1->GetColorAttachmentHandleByName("Displacement"));
-        glActiveTexture(GL_TEXTURE3);
-        glBindTexture(GL_TEXTURE_2D, fftFrameBuffer_band1->GetColorAttachmentHandleByName("Normals"));
-        glActiveTexture(GL_TEXTURE4);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxCubemapView->GetHandle());
-        glActiveTexture(GL_TEXTURE5);
-        glBindTexture(GL_TEXTURE_2D, gBuffer->GetColorAttachmentHandleByName("WorldPosition"));
-        glBindTextureUnit(6, AssetManager::GetTextureByName("Flashlight2")->GetGLTexture().GetHandle());
-        glBindTextureUnit(7, flashLightShadowMapsFBO->GetDepthTextureHandle());
-        glActiveTexture(GL_TEXTURE8);
-        glBindTexture(GL_TEXTURE_2D, AssetManager::GetTextureByName("WaterNormals")->GetGLTexture().GetHandle());
+        for (int i = 0; i < 4; i++) {
+            Viewport* viewport = ViewportManager::GetViewportByIndex(i);
+            if (!viewport->IsVisible()) continue;
 
-        glPolygonMode(GL_FRONT_AND_BACK, wireframe ? GL_LINE : GL_FILL);
-        glMemoryBarrier(GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
+            OpenGLRenderer::BlitFrameBufferDepth(gBuffer, waterFrameBuffer);
 
-        glEnable(GL_CULL_FACE);
-        glEnable(GL_DEPTH_TEST);
+            waterFrameBuffer->Bind();
+            waterFrameBuffer->DrawBuffers({ "Color", "UnderwaterMask", "WorldPosition" });
+            OpenGLRenderer::SetViewport(waterFrameBuffer, viewport);
+         
+            const ViewportData& viewportData = RenderDataManager::GetViewportData()[i];
+            glm::mat4 projectionMatrix = viewportData.projection;
+            glm::mat4 viewMatrix = viewportData.view;
+            glm::vec3 viewPos = viewportData.viewPos;
+            glm::mat4 projectionView = viewportData.projectionView;
 
-        // Tessellated ocean
-        tesseleationTransform.position.x = -patchOffset;
-        shader->Bind();
-        shader->SetMat4("u_projectionView", projectionView);
-        shader->SetVec3("u_wireframeColor", GREEN);
-        shader->SetMat4("u_model", tesseleationTransform.to_mat4());
-        shader->SetInt("u_mode", GetFftDisplayMode());
-        shader->SetVec3("u_viewPos", viewPos);
-        shader->SetVec2("u_fftGridSize", Ocean::GetBaseFFTResolution());
-        shader->SetBool("u_wireframe", wireframe);
-        shader->SetFloat("u_meshSubdivisionFactor", Ocean::GetMeshSubdivisionFactor());
-        shader->SetFloat("u_oceanOriginY", Ocean::GetOceanOriginY());
-        shader->SetFloat("u_time", Game::GetTotalTime());
+            float patchOffset = Ocean::GetBaseFFTResolution().y * scale;
 
-        glGenerateTextureMipmap(fftFrameBuffer_band0->GetColorAttachmentHandleByName("Normals"));
-        glGenerateTextureMipmap(fftFrameBuffer_band1->GetColorAttachmentHandleByName("Normals"));
+            Transform tesseleationTransform;
+            tesseleationTransform.scale = glm::vec3(scale);
 
-        glBindVertexArray(oceanMeshPatch->GetVAO());
-        glPatchParameteri(GL_PATCH_VERTICES, 4);
+            shader->SetInt("u_viewportIndex", i);
 
-        Frustum frustum;
-        frustum.Update(projectionView);
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, fftFrameBuffer_band0->GetColorAttachmentHandleByName("Displacement"));
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, fftFrameBuffer_band0->GetColorAttachmentHandleByName("Normals"));
+            glActiveTexture(GL_TEXTURE2);
+            glBindTexture(GL_TEXTURE_2D, fftFrameBuffer_band1->GetColorAttachmentHandleByName("Displacement"));
+            glActiveTexture(GL_TEXTURE3);
+            glBindTexture(GL_TEXTURE_2D, fftFrameBuffer_band1->GetColorAttachmentHandleByName("Normals"));
+            glActiveTexture(GL_TEXTURE4);
+            glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxCubemapView->GetHandle());
+            glActiveTexture(GL_TEXTURE5);
+            glBindTexture(GL_TEXTURE_2D, gBuffer->GetColorAttachmentHandleByName("WorldPosition"));
+            glBindTextureUnit(6, AssetManager::GetTextureByName("Flashlight2")->GetGLTexture().GetHandle());
+            glBindTextureUnit(7, flashLightShadowMapsFBO->GetDepthTextureHandle());
+            glActiveTexture(GL_TEXTURE8);
+            glBindTexture(GL_TEXTURE_2D, AssetManager::GetTextureByName("WaterNormals")->GetGLTexture().GetHandle());
 
-        // Surface
-        glDisable(GL_CULL_FACE);
-        for (int x = min; x < max; x++) {
-            for (int z = min; z < max; z++) {
-                tesseleationTransform.position = glm::vec3(patchOffset * x, Ocean::GetOceanOriginY(), patchOffset * z);
-                if (swap) {
-                    tesseleationTransform.position += glm::vec3(offset, 0.0f, 0.0f);
-                }
+            glPolygonMode(GL_FRONT_AND_BACK, wireframe ? GL_LINE : GL_FILL);
+            glMemoryBarrier(GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
 
-                float threshold = 1.0f;
-                glm::vec3 aabbMin = tesseleationTransform.position - glm::vec3(0, threshold / 2, 0);
-                glm::vec3 aabbMax = tesseleationTransform.position + glm::vec3(patchOffset, threshold / 2, patchOffset);
-                AABB aabb(aabbMin, aabbMax);
-                //DrawAABB(aabb, BLUE);
+            glEnable(GL_CULL_FACE);
+            glEnable(GL_DEPTH_TEST);
 
-                if (frustum.IntersectsAABB(aabb)) {
-                    shader->SetMat4("u_model", tesseleationTransform.to_mat4());
-                    glDrawElements(GL_PATCHES, oceanMeshPatch->GetIndexCount(), GL_UNSIGNED_INT, nullptr);
+            // Tessellated ocean
+            tesseleationTransform.position.x = -patchOffset;
+            shader->Bind();
+            shader->SetMat4("u_projectionView", projectionView);
+            shader->SetVec3("u_wireframeColor", GREEN);
+            shader->SetMat4("u_model", tesseleationTransform.to_mat4());
+            shader->SetInt("u_mode", GetFftDisplayMode());
+            shader->SetVec3("u_viewPos", viewPos);
+            shader->SetVec2("u_fftGridSize", Ocean::GetBaseFFTResolution());
+            shader->SetBool("u_wireframe", wireframe);
+            shader->SetFloat("u_meshSubdivisionFactor", Ocean::GetMeshSubdivisionFactor());
+            shader->SetFloat("u_oceanOriginY", Ocean::GetOceanOriginY());
+            shader->SetFloat("u_time", Game::GetTotalTime());
+
+            glGenerateTextureMipmap(fftFrameBuffer_band0->GetColorAttachmentHandleByName("Normals"));
+            glGenerateTextureMipmap(fftFrameBuffer_band1->GetColorAttachmentHandleByName("Normals"));
+
+            glBindVertexArray(oceanMeshPatch->GetVAO());
+            glPatchParameteri(GL_PATCH_VERTICES, 4);
+
+            Frustum frustum;
+            frustum.Update(projectionView);
+
+            // Surface
+            glDisable(GL_CULL_FACE);
+            for (int x = min; x < max; x++) {
+                for (int z = min; z < max; z++) {
+                    tesseleationTransform.position = glm::vec3(patchOffset * x, Ocean::GetOceanOriginY(), patchOffset * z);
+                    if (swap) {
+                        tesseleationTransform.position += glm::vec3(offset, 0.0f, 0.0f);
+                    }
+
+                    float threshold = 1.0f;
+                    glm::vec3 aabbMin = tesseleationTransform.position - glm::vec3(0, threshold / 2, 0);
+                    glm::vec3 aabbMax = tesseleationTransform.position + glm::vec3(patchOffset, threshold / 2, patchOffset);
+                    AABB aabb(aabbMin, aabbMax);
+                    //DrawAABB(aabb, BLUE);
+
+                    if (frustum.IntersectsAABB(aabb)) {
+                        shader->SetMat4("u_model", tesseleationTransform.to_mat4());
+                        glDrawElements(GL_PATCHES, oceanMeshPatch->GetIndexCount(), GL_UNSIGNED_INT, nullptr);
+                    }
                 }
             }
         }
+
 
         // Cleanup
         shader->SetBool("u_wireframe", false);
