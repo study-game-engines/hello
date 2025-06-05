@@ -41,7 +41,7 @@ namespace File {
     }
 
     void ExportModelV2(const ModelData& modelData) {
-        std::string outputPath = "res/models/v2/" + modelData.name + ".model";
+        std::string outputPath = "res/models/" + modelData.name + ".model";
         std::ofstream file(outputPath, std::ios::binary);
         if (!file.is_open()) {
             std::cout << "Failed to open file for writing: " << outputPath << "\n";
