@@ -10,3 +10,9 @@ const std::string Kangaroo::GetAnimationStateAsString() {
         default: return "UNKNOWN";
     }
 }
+
+bool Kangaroo::HasValidPath() {
+    return m_aStar.m_finalPath.size() >= 2; 
+    
+    // TODO!!! Replace with smooth path
+}

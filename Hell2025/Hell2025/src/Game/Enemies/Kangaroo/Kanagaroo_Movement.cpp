@@ -48,13 +48,6 @@ void Kangaroo::UpdateMovementLogic(float deltaTime) {
             // Compute forward vector from 2d direction
             m_forward = glm::vec3(direction2D.x, 0, direction2D.y);
 
-            // Compute euler from forward vector
-            glm::vec3 start = m_position;
-            glm::vec3 end = m_position + m_forward;
-            m_rotation.x = 0.0f;
-            m_rotation.y = Util::EulerYRotationBetweenTwoPoints(start, end) + (HELL_PI * 0.5f);
-            m_rotation.z = 0.0f;
-
             // Move him
             float speed = 7.5f;
 
@@ -82,11 +75,4 @@ void Kangaroo::UpdateMovementLogic(float deltaTime) {
     if (rayresult.hitFound) {
         m_position.y = rayresult.hitPosition.y;
     }
-
-    // Update animated game object position/rotation
-    animatedGameObject->SetPosition(m_position);
-    animatedGameObject->SetRotationX(m_rotation.x);
-    animatedGameObject->SetRotationY(m_rotation.y);
-    animatedGameObject->SetRotationZ(m_rotation.z);
-
 }

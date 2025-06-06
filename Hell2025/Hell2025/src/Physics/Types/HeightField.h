@@ -3,9 +3,12 @@
 #include "Math/AABB.h"
 #include <vector>
 #include <glm/vec3.hpp>
-#include "PhysX/include/PxShape.h"
-#include "PhysX/include/PxRigidStatic.h"
-#include "PhysX/include/geometry/PxHeightField.h"
+
+#pragma warning(push, 0)
+#include <physx/PxShape.h>
+#include <physx/PxRigidStatic.h>
+#include <physx/geometry/PxHeightField.h>
+#pragma warning(pop)
 
 using namespace physx;
 

@@ -66,61 +66,7 @@ void Kangaroo::Respawn() {
 
 }
 
-void Kangaroo::Update(float deltaTime) {
 
-    if (m_animationState == KanagarooAnimationState::BITE) {
-        m_timeSinceBiteBegan += deltaTime;
-    }
-    else {
-        m_timeSinceBiteBegan = 0.0f;
-    }
-    if (m_animationState == KanagarooAnimationState::IDLE) {
-        m_timeSinceIdleBegan += deltaTime;
-    }
-    else {
-        m_timeSinceIdleBegan = 0.0f;
-    }
-
-        
-    if (Input::KeyPressed(HELL_KEY_COMMA)) {
-        //SetMovementState(KanagarooMovementState::HOP);
-
-        glm::vec3 targetPosition = glm::vec3(42, 32, 40);
-        GoToTarget(targetPosition);
-    }
-
-    if (Input::KeyPressed(HELL_KEY_PERIOD)) {
-        Respawn();
-    }
-
-    UpdateAnimationStateMachine();
-    UpdateMovementLogic(deltaTime);
-    UpdateAudio();
-    //DebugDraw();
-
-
-    if (Input::KeyPressed(HELL_KEY_SLASH) || true || false || true == false) {
-
-        Player* player = Game::GetLocalPlayerByIndex(0);;
-        glm::vec3 playerPosition = player->GetCameraPosition();
-
-        glm::ivec2 start = AStarMap::GetCellCoordsFromWorldSpacePosition(m_position);
-        glm::ivec2 end = AStarMap::GetCellCoordsFromWorldSpacePosition(playerPosition);
-        m_aStar.InitSearch(start.x, start.y, end.x, end.y);
-        m_aStar.FindPath();
-
-        //auto path = GetPath();
-        //std::cout << "Path size: " << path.size() << "\n";
-    }
-
-   // UpdateMovement(deltaTime);
-
-    // Death check
-    if (m_health <= 0) {
-        Kill();
-    }
-    m_health = glm::clamp(m_health, 0, 9999999);
-}
 
 AnimatedGameObject* Kangaroo::GetAnimatedGameObject(){
     return World::GetAnimatedGameObjectByObjectId(m_animatedGameObjectId);

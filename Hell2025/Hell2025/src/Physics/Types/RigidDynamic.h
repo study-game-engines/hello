@@ -1,8 +1,11 @@
 #pragma once
+#pragma warning(push, 0)
+#include <physx/PxShape.h>
+#include <physx/PxRigidDynamic.h>
+#pragma warning(pop)
+
 #include "HellTypes.h"
 #include "Math/AABB.h"
-#include "PhysX/include/PxShape.h"
-#include "PhysX/include/PxRigidDynamic.h"
 
 using namespace physx;
 

@@ -2,10 +2,10 @@
 #pragma warning(push, 0)
 #include "PxPhysicsAPI.h"
 #include "geometry/PxGeometryHelpers.h"
+#include "Physics/Types/RigidDynamic.h"
 #pragma warning(pop)
 #include "HellTypes.h"
 #include "Math/AABB.h"
-#include "Physics/Types/RigidDynamic.h"
 #include <span>
 #include <vector>
 

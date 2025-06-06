@@ -49,17 +49,25 @@ struct Kangaroo {
     glm::vec3 GetPosition()     { return m_position; }
 
 private:
+    void UpdateAnimatedGameObjectPositionRotation();
     void UpdateAudio();
     void UpdateMovementLogic(float deltaTime);
     void UpdateAnimationStateMachine();
+    
+    void FindPathToTarget();
+
     void PlayAnimation(const std::string& animationName, float speed);
     void PlayAndLoopAnimation(const std::string& animationName, float speed);
     bool AnimationIsComplete();
+    
     void DebugDraw();
 
     // Audio wrappers
     void PlayFleshAudio();
     void PlayBiteSound();
+
+    // Util
+    bool HasValidPath();
     
 
     float m_timeSinceBiteBegan = 0.0f;
@@ -75,7 +83,7 @@ private:
     glm::vec3 m_position;
     glm::vec3 m_rotation;
 
-    glm::vec3 m_forward;
+    glm::vec3 m_forward = glm::vec3(-1.0f, 0.0f, 0.0f);
 
     bool m_awaitingHopStepAudio = false;
 

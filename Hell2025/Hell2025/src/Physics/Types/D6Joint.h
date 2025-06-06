@@ -1,6 +1,8 @@
 #pragma once
 #include "HellTypes.h"
-#include "PhysX/include/extensions/PxD6Joint.h"
+#pragma warning(push, 0)
+#include <physx/extensions/PxD6Joint.h>
+#pragma warning(pop)
 
 using namespace physx;
 

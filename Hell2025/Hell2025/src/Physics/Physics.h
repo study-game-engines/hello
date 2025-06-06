@@ -1,20 +1,20 @@
 #pragma once
 #pragma warning(push, 0)
-#include "PxPhysicsAPI.h"
-#include "geometry/PxGeometryHelpers.h"
+#include <physx/PxPhysicsAPI.h>
+#include <physx/geometry/PxGeometryHelpers.h>
+#include <physx/PxQueryFiltering.h>
 #pragma warning(pop)
-#include "CollisionReports.h"
-#include "HellTypes.h"
-#include "Math/AABB.h"
 #include "Physics/Types/D6Joint.h"
 #include "Physics/Types/HeightField.h"
 #include "Physics/Types/Ragdoll.h"
 #include "Physics/Types/RigidDynamic.h"
+#include "CollisionReports.h"
+#include "HellTypes.h"
+#include "Math/AABB.h"
 #include <string>
 #include <span>
 #include <vector>
 
-#include <PxQueryFiltering.h>
 
 using namespace physx;
 
