@@ -39,6 +39,7 @@ uniform int u_globalInstanceIndex;
 #endif
 
 out flat int WoundMaskTextureIndex;
+out flat int BlockScreenSpaceBloodDecalsFlag;
 
 void main() {
 

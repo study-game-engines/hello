@@ -83,6 +83,11 @@ struct RenderItem {
     float furShellDistanceAttenuation;
     float furUVScale;
     int customFlag; // what does this do?
+
+    int blockScreenSpaceBloodDecals;  // True or false
+    int padding0;
+    int padding1;
+    int padding2;
 };
 
 struct Light {

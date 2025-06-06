@@ -36,6 +36,7 @@ in vec4 WorldPos;
 in vec3 ViewPos;
 in vec3 EmissiveColor;
 in flat int WoundMaskTextureIndex;
+in flat int BlockScreenSpaceBloodDecalsFlag;
 uniform bool u_alphaDiscard;
 
 //layout (binding = 6) uniform sampler2DArray woundMaskTextureArray;
@@ -78,30 +79,22 @@ void main() {
          woundMask = 0;
      }
     
- 
-  //  woundMask = clamp(woundMask, 0, 1);
-
-//    baseColor += woundMask;
-
     baseColor = mix(baseColor, woundBaseColor, woundMask);
     normalMap = mix(normalMap, woundNormalMap, woundMask);
     rma = mix(rma, woundRma, woundMask);
-
-    //baseColor = woundBaseColor;
 
     mat3 tbn = mat3(normalize(Tangent), normalize(BiTangent), normalize(Normal));
     normalMap.rgb = normalMap.rgb * 2.0 - 1.0;
     normalMap = normalize(normalMap);
     vec3 normal = normalize(tbn * (normalMap));
 
-   // normal = texture2D(normalTexture, TexCoord).rgb;
-  // normal = texture(sampler2D(textureSamplers[NormalTextureIndex]), TexCoord).rgb;  
-    
- //   baseColor.rgb = vec3(woundMask);
 
     BaseColorOut = vec4(baseColor);
     NormalOut = vec4(normal, 1.0);   
-    RMAOut = vec4(rma, 1.0);
+
+    RMAOut.rgb = rma;
+    RMAOut.a = BlockScreenSpaceBloodDecalsFlag;
+
     WorldPositionOut = vec4(WorldPos.rgb, 1.0);
     EmissiveOut = vec4(EmissiveColor, 0);
     

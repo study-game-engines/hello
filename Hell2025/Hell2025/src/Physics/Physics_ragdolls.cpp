@@ -6,6 +6,7 @@
 
 #include <unordered_map>
 
+#include "Input/Input.h"
 
 
 namespace Physics {
@@ -174,6 +175,8 @@ namespace Physics {
             return 0;
         }
 
+        //std::cout << "Physics::CreateRagdollByName() " << name << "\n";
+        
         uint64_t ragdollID = UniqueID::GetNext();
 
         Ragdoll& ragdoll = g_ragdolls[ragdollID];
@@ -580,6 +583,10 @@ namespace Physics {
                 ++it;
             }
         }
+    }
+
+    int GetRagdollCount() {
+        return g_ragdolls.size();
     }
 
     void PrintSceneRagdollInfo() {

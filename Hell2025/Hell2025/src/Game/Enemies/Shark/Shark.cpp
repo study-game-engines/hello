@@ -147,6 +147,16 @@ void Shark::Update(float deltaTime) {
         }
     }
 
+    // Did the player enter the water again while the shark is still angry from being like shot before
+    if (m_movementState == SharkMovementState::FOLLOWING_PATH_ANGRY) {
+        Player* player = Game::GetPlayerByPlayerId(m_huntedPlayerId);
+        if (player && player->FeetBelowWater()) {
+            // TO DO: Only activate hunt state again if she shark has line of sight to the player
+            m_movementState = SharkMovementState::HUNT_PLAYER;
+            m_huntingState = SharkHuntingState::CHARGE_PLAYER;
+        }
+    }
+
     if (Input::KeyPressed(HELL_KEY_SLASH)) {
         if (m_movementState == SharkMovementState::FOLLOWING_PATH) {
             m_movementState = SharkMovementState::ARROW_KEYS;
@@ -219,7 +229,8 @@ void Shark::Update(float deltaTime) {
             }
         }
         // Path following
-        else if (m_movementState == SharkMovementState::FOLLOWING_PATH) {
+        else if (m_movementState == SharkMovementState::FOLLOWING_PATH ||
+                 m_movementState == SharkMovementState::FOLLOWING_PATH_ANGRY) {
             CalculateForwardVectorFromTarget(deltaTime);
             CalculateTargetFromPath();
 

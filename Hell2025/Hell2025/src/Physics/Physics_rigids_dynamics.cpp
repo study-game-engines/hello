@@ -442,6 +442,10 @@ namespace Physics {
         }
     }
 
+    int GetRigidDynamicCount() {
+        return g_rigidDynamics.size();
+    }
+
     void PrintSceneRigidInfo() {
         std::cout << " Rigid Dynamics\n\n";
 

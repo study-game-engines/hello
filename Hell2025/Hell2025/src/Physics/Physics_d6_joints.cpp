@@ -4,6 +4,7 @@
 #include <vector>
 #include "Util.h"
 #include "UniqueID.h"
+#include "Input/Input.h"
 
 namespace Physics {
     std::unordered_map<uint64_t, D6Joint> g_d6Joints;
@@ -51,12 +52,15 @@ namespace Physics {
         PxScene* pxScene = Physics::GetPxScene();
 
         for (auto it = g_d6Joints.begin(); it != g_d6Joints.end(); ) {
+            uint64_t d6JointId = it->first;
             D6Joint& d6Joint = it->second;
             if (d6Joint.IsMarkedForRemoval()) {
-                // Retrieve pointers
-                PxD6Joint* pxD6joint = d6Joint.GetPxD6Joint();
 
-                
+                // Retrieve pointers
+                PxD6Joint* pxD6joint = d6Joint.GetPxD6Joint(); 
+                pxD6joint->release();
+                pxD6joint = nullptr;
+
                 // Remove from container
                 it = g_d6Joints.erase(it);
             }
@@ -67,15 +71,20 @@ namespace Physics {
     }
     
     void MarkD6JointForRemoval(uint64_t d6JointId) {
-        if (RigidDynamicExists(d6JointId)) {
+        if (D6JointExists(d6JointId)) {
             D6Joint& d6Joint = g_d6Joints[d6JointId];
             d6Joint.MarkForRemoval();
+            return;
         }
     }
 
     bool D6JointExists(uint64_t d6JointId) {
         return (g_d6Joints.find(d6JointId) != g_d6Joints.end());
 
+    }
+
+    int GetD6JointCount() {
+        return g_d6Joints.size();
     }
 
     void PrintSceneD6JointInfo() {

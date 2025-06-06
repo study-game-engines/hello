@@ -5,6 +5,7 @@
 struct ScreenSpaceBloodDecal {
     void Init(ScreenSpaceBloodDecalCreateInfo createInfo);
 
+    int GetType()                       { return m_type; }
     glm::mat4 GetModelMatrix()          { return m_modelMatrix; }
     glm::mat4 GetInverseModelMatrix()   { return m_inverseModelMatrix; }
 

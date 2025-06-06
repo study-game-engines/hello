@@ -8,10 +8,6 @@
 #define COLLISION_TEST_STEP_COUNT 40
 #define SHARK_HEALTH_MAX 1000
 
-enum class SharkMovementState { STOPPED, FOLLOWING_PATH, FOLLOWING_PATH_ANGRY, ARROW_KEYS, HUNT_PLAYER };
-enum class SharkMovementDirection { STRAIGHT, LEFT, RIGHT, NONE };
-enum class SharkHuntingState { CHARGE_PLAYER, BITING_PLAYER, UNDEFINED };
-
 struct Shark {
     void Init();
     void Update(float deltaTime);
@@ -28,6 +24,8 @@ struct Shark {
     void SetMovementState(SharkMovementState state);
     void StraightenSpine(float deltaTime, float straightSpeed);
     
+    std::string GetDebugInfoAsString();
+
     AnimatedGameObject* GetAnimatedGameObject();
     Ragdoll* GetRadoll();
 

@@ -323,6 +323,27 @@ enum class PictureFrameType {
     UNDEFINED
 }; 
 
+enum class SharkMovementState { 
+    STOPPED, 
+    FOLLOWING_PATH, 
+    FOLLOWING_PATH_ANGRY, 
+    ARROW_KEYS, 
+    HUNT_PLAYER 
+};
+
+enum class SharkHuntingState { 
+    CHARGE_PLAYER, 
+    BITING_PLAYER, 
+    UNDEFINED 
+};
+
+enum class SharkMovementDirection {
+    STRAIGHT,
+    LEFT,
+    RIGHT,
+    NONE
+};
+
 enum class RaycastIgnoreFlags : uint32_t {
     NONE = 0,
     PLAYER_CHARACTER_CONTROLLERS = 1 << 0,

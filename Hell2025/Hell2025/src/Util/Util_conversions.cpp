@@ -292,6 +292,24 @@ namespace Util {
         }
     }
 
+    std::string SharkMovementStateToString(const SharkMovementState& state) {
+        switch (state) {
+            case SharkMovementState::STOPPED:               return "STOPPED";
+            case SharkMovementState::FOLLOWING_PATH:        return "FOLLOWING_PATH";
+            case SharkMovementState::FOLLOWING_PATH_ANGRY:  return "FOLLOWING_PATH_ANGRY";
+            case SharkMovementState::ARROW_KEYS:            return "ARROW_KEYS";
+            case SharkMovementState::HUNT_PLAYER:           return "HUNT_PLAYER";
+            default:                                        return "UNDEFINED";
+        }
+    }
+
+    std::string SharkHuntingStateToString(const SharkHuntingState& state) {
+        switch (state) {
+            case SharkHuntingState::CHARGE_PLAYER:      return "CHARGE_PLAYER";
+            case SharkHuntingState::BITING_PLAYER:      return "BITING_PLAYER";
+            default:                        return "UNDEFINED";
+        }
+    }
 
     ObjectType IntToEnum(int value) {
         return static_cast<ObjectType>(value);

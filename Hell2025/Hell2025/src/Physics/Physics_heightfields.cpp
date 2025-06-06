@@ -131,4 +131,8 @@ namespace Physics {
             heightField.ActivatePhsyics();
         }
     }
+
+    int GetHeightFieldCount() {
+        return g_HeightFields.size();
+    }
 }

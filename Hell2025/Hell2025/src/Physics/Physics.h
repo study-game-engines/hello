@@ -132,6 +132,14 @@ namespace Physics {
     void Destroy(PxTriangleMesh*& triangleMesh);
 
     // Debug
+
+    int GetRagdollCount();
+    int GetRigidDynamicCount();
+    int GetRigidStaticCount();
+    int GetHeightFieldCount();
+    int GetD6JointCount();
+    std::string GetObjectCountsAsString();
+
     void PrintSceneInfo();
     void PrintSceneD6JointInfo();
     void PrintSceneRigidInfo();

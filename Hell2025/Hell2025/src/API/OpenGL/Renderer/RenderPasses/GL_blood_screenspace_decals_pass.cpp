@@ -97,8 +97,11 @@ namespace OpenGLRenderer {
 
         glBindTextureUnit(0, gBuffer->GetColorAttachmentHandleByName("WorldPosition"));
         glBindTextureUnit(1, gBuffer->GetColorAttachmentHandleByName("Normal"));
-        glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_2D, AssetManager::GetTextureByName("BloodDecal7")->GetGLTexture().GetHandle());
+
+
+
+        glDisable(GL_DEPTH_TEST);
+        glDisable(GL_CULL_FACE);
 
         for (int i = 0; i < 4; i++) {
             Viewport* viewport = ViewportManager::GetViewportByIndex(i);
@@ -107,6 +110,8 @@ namespace OpenGLRenderer {
                 OpenGLRenderer::SetViewport(gBuffer, viewport);
 
                 shader->SetMat4("u_projectionView", viewportData[i].projectionView);
+
+
 
 
                 // glDepthMask(GL_FALSE);
@@ -120,8 +125,24 @@ namespace OpenGLRenderer {
                 // glCullFace(GL_FRONT);
                 // glDisable(GL_DEPTH_TEST);
                 //
+                
+               glEnable(GL_BLEND);
+               glBlendEquation(GL_MAX);
+               glBlendFunc(GL_ONE, GL_ONE);
 
                 for (ScreenSpaceBloodDecal& screenSpaceBloodDecal : World::GetScreenSpaceBloodDecals()) {
+
+                    GLuint textureHandle = 0;
+                    switch (screenSpaceBloodDecal.GetType()) {
+                        case 0: textureHandle = AssetManager::GetTextureByName("BloodDecal4")->GetGLTexture().GetHandle(); break;
+                        case 1: textureHandle = AssetManager::GetTextureByName("BloodDecal6")->GetGLTexture().GetHandle(); break;
+                        case 2: textureHandle = AssetManager::GetTextureByName("BloodDecal7")->GetGLTexture().GetHandle(); break;
+                        case 3: textureHandle = AssetManager::GetTextureByName("BloodDecal9")->GetGLTexture().GetHandle(); break;
+                        default: continue;
+                    }
+                    glBindTextureUnit(2, textureHandle);
+
+
                     shader->SetMat4("u_model", screenSpaceBloodDecal.GetModelMatrix());
                     shader->SetMat4("u_inverseModel", screenSpaceBloodDecal.GetInverseModelMatrix());
 
@@ -130,6 +151,8 @@ namespace OpenGLRenderer {
                 }
             }
         }    
+
+        glBlendEquation(GL_FUNC_ADD);
     }
 
     void CompositePass() {

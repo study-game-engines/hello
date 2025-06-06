@@ -89,7 +89,7 @@ namespace OpenGLRenderer {
         g_frameBuffers["GBuffer"] = OpenGLFrameBuffer("GBuffer", resolutions.gBuffer);
         g_frameBuffers["GBuffer"].CreateAttachment("BaseColor", GL_RGBA8);
         g_frameBuffers["GBuffer"].CreateAttachment("Normal", GL_RGBA16F);
-        g_frameBuffers["GBuffer"].CreateAttachment("RMA", GL_RGBA8);
+        g_frameBuffers["GBuffer"].CreateAttachment("RMA", GL_RGBA8);        // In alpha is screenspace blood decal mask
         g_frameBuffers["GBuffer"].CreateAttachment("FinalLighting", GL_RGBA16F);
         g_frameBuffers["GBuffer"].CreateAttachment("WorldPosition", GL_RGBA32F);
         g_frameBuffers["GBuffer"].CreateAttachment("Emissive", GL_RGBA8);

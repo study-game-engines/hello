@@ -7,6 +7,7 @@
 //#include "../Game/Water.h"
 //#include "../Util.hpp"
 
+
 void Shark::UpdateHuntingLogic(float deltaTime) {
     AnimatedGameObject* animatedGameObject = GetAnimatedGameObject();
     if (!animatedGameObject) return;
@@ -22,6 +23,7 @@ void Shark::UpdateHuntingLogic(float deltaTime) {
     // Did player leave the water?
     if (player && !player->FeetBelowWater()) {
         m_movementState = SharkMovementState::FOLLOWING_PATH_ANGRY;
+        m_huntingState = SharkHuntingState::UNDEFINED;
     }
 
     // Is it within biting range?

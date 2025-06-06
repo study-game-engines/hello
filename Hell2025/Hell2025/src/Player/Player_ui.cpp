@@ -108,12 +108,15 @@ void Player::UpdateUI() {
         text += "Cam Pos: " + Util::Vec3ToString(GetCameraPosition()) + "\n";
         text += "Cam Euler: " + Util::Vec3ToString(GetCameraRotation()) + "\n";
 
-        if (World::GetKangaroos().size()) {
-            Kangaroo& kangaroo = World::GetKangaroos()[0];
-            text += "\n";
-            text += "KANGAROO\n";
-            text += "Health: " + std::to_string(kangaroo.GetHealth()) + "\n";
-            text += "AnimationState: " + kangaroo.GetAnimationStateAsString() +"\n";
+        // Kangaroos
+        if (true) {
+            if (World::GetKangaroos().size()) {
+                Kangaroo& kangaroo = World::GetKangaroos()[0];
+                text += "\n";
+                text += "KANGAROO\n";
+                text += "Health: " + std::to_string(kangaroo.GetHealth()) + "\n";
+                text += "AnimationState: " + kangaroo.GetAnimationStateAsString() + "\n";
+            }
         }
 
         // Weapons
@@ -144,6 +147,20 @@ void Player::UpdateUI() {
         if (false) {
             for (Light& Light : World::GetLights()) {
                 text += "Light: " + Util::BoolToString(Light.IsDirty()) + "\n";
+            }
+        }
+
+        // Physx Object Count
+        if (false) {
+            text += "\n";
+            text += Physics::GetObjectCountsAsString();
+            text += "\n";
+        }
+
+        // Shark
+        if (false) {
+            for (Shark& shark : World::GetSharks()) {
+                text += shark.GetDebugInfoAsString();
             }
         }
 

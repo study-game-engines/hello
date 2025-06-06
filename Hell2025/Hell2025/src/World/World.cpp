@@ -564,6 +564,8 @@ namespace World {
     }
 
     void ResetWorld() {
+        std::cout << "Reset world()\n";
+
         // Zero out all map names
         for (int x = 0; x < MAX_MAP_WIDTH; x++) {
             for (int z = 0; z < MAX_MAP_DEPTH; z++) {
@@ -607,6 +609,9 @@ namespace World {
         for (Shark& shark : g_sharks) {
             shark.CleanUp();
         }
+        for (Tree& tree : g_trees) {
+            tree.CleanUp();
+        }
         for (Wall& wall : g_walls) {
             wall.CleanUp();
         }
@@ -633,7 +638,6 @@ namespace World {
         g_walls.clear();
         g_windows.clear();
 
-        std::cout << "Reset world\n";
 
         MermaidCreateInfo mermaidCreateInfo;
         mermaidCreateInfo.position = glm::vec3(29.0f, 29.5f, 52.5f);

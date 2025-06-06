@@ -32,7 +32,7 @@ void main() {
     color = mix(color, vec3(noiseSq), 0.3);
     
     BaseColorOut = vec4(color * 0.6, 1.0);
-    RMAOut = vec4(0.9, 0.5, 1.0, 0.0);
+    RMAOut = vec4(0.9, 0.5, 1.0, 1.0);
     NormalOut = vec4(Normal, 0.0);
     WorldPositionOut = vec4(WorldPos, 1.0);
     EmissiveOut = vec4(0.0, 0.0, 0.0, 0.45);

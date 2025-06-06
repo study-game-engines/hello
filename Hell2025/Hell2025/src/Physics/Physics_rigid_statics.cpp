@@ -371,6 +371,10 @@ namespace Physics {
        }
    }
 
+   int GetRigidStaticCount() {
+       return g_rigidStatics.size();
+   }
+
    void RemoveAnyRigidStaticMarkedForRemoval() {
        PxScene* pxScene = Physics::GetPxScene();
 

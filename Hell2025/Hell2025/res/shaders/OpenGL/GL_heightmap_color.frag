@@ -30,7 +30,7 @@ void main() {
     vec3 dirtNormalMap = texture2D(normalTexture, TexCoord).rgb;
     vec3 dirtRma = texture2D(rmaTexture, TexCoord).rgb;
 
-    vec2 dirtRoadUV = TexCoord * 1.5;
+    vec2 dirtRoadUV = TexCoord * 2.0;
     vec4 dirtRoadBaseColor = texture2D(DirtRoadBaseColorTexture, dirtRoadUV) + 0.1;
     vec3 dirtRoadNormalMap = texture2D(DirtRoadNormalTexture, dirtRoadUV).rgb;
     vec3 dirtRoadRma = texture2D(DirtRoadRmaTexture, dirtRoadUV).rgb;
@@ -53,11 +53,13 @@ void main() {
     vec3 N = vec3(0,1,0);
     mat3 TBN = mat3(T, B, N);
     vec3 worldNormal = normalize(TBN * tangentNormal);
-
-
+    
     BaseColorOut = vec4(baseColor, 1);
-    RMAOut = vec4(rma, 0.0);
+    RMAOut = vec4(rma, 1.0);
     NormalOut = vec4(normalize(worldNormal), 0);
     WorldPosOut = vec4(WorldPos, 1.0);
     EmissiveOut = vec4(0.0, 0.0, 0.0, 0.45);
+
+    
+
 }

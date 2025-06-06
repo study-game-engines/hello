@@ -1,8 +1,7 @@
 #version 450
 #extension GL_ARB_shader_texture_lod : require
 
-layout (location = 0) out vec4 BaseColorOut;
-layout (location = 1) out vec4 RMAOut;
+layout (location = 0) out vec4 DecalMaskOut;
 
 layout (binding = 0) uniform sampler2D WorldPositionTexture;
 layout (binding = 1) uniform sampler2D GBufferNormalTexture;
@@ -39,13 +38,14 @@ void main() {
     float angleToFloor = abs(dot(worldNormal, vec3(0, 1, 0)));
     float angle = dot(worldNormal, _DecalForwardDirection);  
 
+    // Prevents barcode effect
     if(abs(angle) < 0.125 && angleToFloor < 0.5) {
-      discard;
+     // discard;
     }
 
     // Backstab test. If world normal is facing away from original bullet angle.
     if (angle < -0.5) {
-        discard;
+        //discard;
         // you almost certainly dont need this
     }
         
@@ -107,23 +107,25 @@ void main() {
     res.rgb = mix(_TintColor.rgb, _TintColor.rgb * 0.2, mask.z * colorMask * 0.75);
     float magic = 0.67;
 
-    BaseColorOut.rgb = mix(vec3(magic), res.rgb * 1.45, res.a * projClipFade);
-    BaseColorOut.rgb *= vec3(0.725);
-    BaseColorOut.a = 1.0;
+   //BaseColorOut.rgb = mix(vec3(magic), res.rgb * 1.45, res.a * projClipFade);
+   //BaseColorOut.rgb *= vec3(0.725);
+   //BaseColorOut.a = 1.0;
    
    // Roughness / metallic / ambient
    // gAlbedo = vec4(0.125 , 0.25, 1, 0);
     //RMAOut = vec4(0.125, 0.25, 1.0, 1.0);
 
-    BaseColorOut.rgb  = worldNormal;
-    BaseColorOut.rgb  = vec3(decalTexCoord, 0);
+  // BaseColorOut.rgb  = worldNormal;
+  // BaseColorOut.rgb  = vec3(decalTexCoord, 0);
 
 
      vec3 decalColor = texture(DecalTex, decalTexCoord).rgb;
      
      
      float  decalAlpha = texture(DecalTex, decalTexCoord).a;
-   decalColor = vec3(decalAlpha);
+   decalColor = vec3(decalAlpha * 1);
 
-   BaseColorOut.rgb  = vec3(decalColor);
+//   decalColor = vec3(1,0,0);
+
+   DecalMaskOut.rgb  = vec3(decalColor);
 }

@@ -50,6 +50,11 @@ struct RenderItem {
     float furShellDistanceAttenuation = 0.0f;
     float furUVScale = 0.0f;
     int customFlag = 0;
+
+    int blockScreenSpaceBloodDecals = 0;  // True or false
+    int padding0;
+    int padding1;
+    int padding2;
 };
 
 struct HouseRenderItem {

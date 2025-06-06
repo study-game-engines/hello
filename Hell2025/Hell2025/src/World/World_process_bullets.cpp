@@ -35,11 +35,7 @@ namespace World {
 
             // On hit
             if (rayResult.hitFound) {
-
-                ScreenSpaceBloodDecalCreateInfo decalCreateInfo;
-                decalCreateInfo.position = rayResult.hitPosition;
-                World::AddScreenSpaceBloodDecal(decalCreateInfo);
-
+                             
                 PhysicsType& physicsType = rayResult.userData.physicsType;
                 ObjectType& objectType = rayResult.userData.objectType;
                 uint64_t physicsId = rayResult.userData.physicsId;
@@ -63,6 +59,19 @@ namespace World {
                 // Shot enemy ragdoll?
                 if (objectType == ObjectType::RAGDOLL_ENEMY && !rooDeath) {
 
+                    // Find screenspace blood decal spawn position
+                    glm::vec3 rayOrigin = rayResult.hitPosition;
+                    glm::vec3 rayDirection = glm::vec3(0.0f, -1.0f, 0.0f);
+                    float rayLength = 100;
+                    PhysXRayResult downwardRayResult = Physics::CastPhysXRayStaticEnviroment(rayOrigin, rayDirection, rayLength);
+                    
+                    if (downwardRayResult.hitFound) {
+                        ScreenSpaceBloodDecalCreateInfo decalCreateInfo;
+                        decalCreateInfo.position = downwardRayResult.hitPosition;
+                        World::AddScreenSpaceBloodDecal(decalCreateInfo);
+                    }
+
+                    // Give damage to enemy
                     for (AnimatedGameObject& animatedGameObject : GetAnimatedGameObjects()) {
                         if (animatedGameObject.GetRagdollId() == objectId) {
 
@@ -83,7 +92,6 @@ namespace World {
                     glm::vec3 position = rayResult.hitPosition;
                     glm::vec3 front = bullet.GetDirection() * glm::vec3(-1);
                     World::AddVolumetricBlood(position, -bullet.GetDirection());
-
                 }
 
 

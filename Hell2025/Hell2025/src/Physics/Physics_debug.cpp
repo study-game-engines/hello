@@ -68,4 +68,14 @@ namespace Physics {
             Renderer::DrawLine(Physics::PxVec3toGlmVec3(pxLine.pos0), Physics::PxVec3toGlmVec3(pxLine.pos1), color);
         }
     }
+
+    std::string GetObjectCountsAsString() {
+        std::string result = "PhysX Object counts\n";
+        result += "- D6 Joints: " + std::to_string(GetD6JointCount()) + "\n";
+        result += "- Height Fields: " + std::to_string(GetHeightFieldCount()) + "\n";
+        result += "- Ragdolls: " + std::to_string(GetRagdollCount()) + "\n";
+        result += "- Rigid Dynamics: " + std::to_string(GetRigidDynamicCount()) + "\n";
+        result += "- Rigid Statics: " + std::to_string(GetRigidStaticCount()) + "\n";
+        return result;
+    }
 }

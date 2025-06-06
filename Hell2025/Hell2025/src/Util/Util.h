@@ -88,6 +88,9 @@ namespace Util {
     std::string ImageDataTypeToString(const ImageDataType& imageDataType);
     std::string EditorModeToString(const EditorMode& editorMode);
     std::string DebugRenderModeToString(const DebugRenderMode& mode);
+    std::string SharkMovementStateToString(const SharkMovementState& state);
+    std::string SharkHuntingStateToString(const SharkHuntingState& state);
+
     const char* CopyConstChar(const char* text);
     bool StrCmp(const char* queryA, const char* queryB);
 

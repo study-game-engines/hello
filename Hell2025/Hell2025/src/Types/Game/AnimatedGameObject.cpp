@@ -56,6 +56,7 @@ void AnimatedGameObject::UpdateRenderItems() {
             renderItem.furUVScale = m_meshRenderingEntries[i].furUVScale;
             renderItem.furShellDistanceAttenuation = m_meshRenderingEntries[i].furShellDistanceAttenuation;
             renderItem.woundMaskTexutreIndex = m_woundMaskTextureIndices[i];
+            renderItem.blockScreenSpaceBloodDecals = 1;
 
             if (m_skinnedModel->GetName() == "Kangaroo") {
                 renderItem.customFlag = 1;
@@ -211,7 +212,10 @@ void AnimatedGameObject::Update(float deltaTime, std::unordered_map<std::string,
 }
 
 void AnimatedGameObject::CleanUp() {
-    Physics::MarkRagdollForRemoval(m_ragdollId);
+    if (m_ragdollId != 0) {
+        //std::cout << "AnimatedGameObject::CleanUp() ragdollId: " << m_ragdollId << "\n";
+        Physics::MarkRagdollForRemoval(m_ragdollId);
+    }
 }
 
 void AnimatedGameObject::SetMeshMaterialByMeshName(const std::string& meshName, const std::string& materialName) {
