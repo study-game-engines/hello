@@ -1,9 +1,10 @@
 #include "AStar.h"
-//#include "Pathfinding.h"
 #include "AStarMap.h"
 #include "Timer.hpp"
 
 void AStar::InitSearch(int startX, int startY, int destinationX, int destinationY) {
+    //Timer timer("InitSearch()");
+
     ClearData();
 
     m_cells.resize(AStarMap::GetCellCount());
@@ -15,8 +16,28 @@ void AStar::InitSearch(int startX, int startY, int destinationX, int destination
         return;
     }
 
-    m_openList.AllocateSpace(m_mapWidth * m_mapHeight);
-    m_openList.Clear();
+    // Preprocess the cells
+    for (int i = 0; i < m_cells.size(); i++) {
+        int x = i % m_mapWidth;
+        int y = i / m_mapWidth;
+        int idx = Index1D(x, y);
+
+        Cell& cell = m_cells[i];
+        cell.x = x;
+        cell.y = y;
+        cell.obstacle = AStarMap::IsCellObstacle(x, y);
+        cell.g = 99999;
+        cell.f = -1;
+        cell.parent = nullptr;
+        cell.neighbourCount = 0;
+        //cell.neighbours.clear();
+        //cell.neighbours.reserve(8);
+
+        // Precompute H
+        int dx = std::abs(cell.x - destinationX);
+        int dy = std::abs(cell.y - destinationY);
+        cell.h = ORTHOGONAL_COST * (dx + dy) + (DIAGONAL_COST - 2 * ORTHOGONAL_COST) * std::min(dx, dy);
+    }
 
     int idxStart = Index1D(startX, startY);
     int idxDestination = Index1D(destinationX, destinationY);
@@ -26,38 +47,24 @@ void AStar::InitSearch(int startX, int startY, int destinationX, int destination
     m_current = m_start;
     m_start->g = 0;
     m_start->GetF(m_destination);
-    m_openList.AddItem(m_start);
     m_searchInitilized = true;
 
-    // Preprocess the cells
-    for (int i = 0; i < m_cells.size(); i++) {
-        int x = i % m_mapWidth;
-        int y = i / m_mapWidth;
-        int idx = Index1D(x, y);
+    // Init min heap
+    m_openList.AllocateSpace(m_mapWidth * m_mapHeight);
+    m_openList.Clear();
+    m_openList.AddItem(m_start);
 
-        Cell& cell = m_cells[idx];
-        cell.x = x;
-        cell.y = y;
-        cell.obstacle = AStarMap::IsCellObstacle(x, y);
-        cell.g = 99999;
-        cell.f = -1;
-        cell.parent = nullptr;
-        cell.neighbours.clear();
-
-        // Precompute H
-        int dx = std::abs(cell.x - m_destination->x);
-        int dy = std::abs(cell.y - m_destination->y);
-        cell.h = ORTHOGONAL_COST * (dx + dy) + (DIAGONAL_COST - 2 * ORTHOGONAL_COST) * std::min(dx, dy);
-    }
+    // Init start cell
+    m_start->g = 0;
+    m_start->f = m_start->g + m_start->h;
 
     // initialize closed list to false
     m_closedFlags.assign(m_mapWidth * m_mapHeight, false);
 
     // Cache all neighbours
-    for (int x = 0; x < m_mapWidth; x++) {
-        for (int y = 0; y < m_mapHeight; y++) {
-            FindNeighbours(x, y);
-        }
+
+    for (int i = 0; i < m_cells.size(); i++) {
+        FindNeighbours(i);
     }
 }
 
@@ -85,45 +92,40 @@ bool AStar::SearchInitilized() {
 }
 
 void AStar::FindPath() {
-    //Timer timer("RooPathFind");
 
     if (m_destination->obstacle) {
-        std::cout << "FindPath() failed because destination was an obstacle\n";
         return;
     }
     if (m_openList.IsEmpty()) {
-        std::cout << "FindPath() bailed early coz open list was empty\n";
         return;
     }
     if (m_gridPathFound) {
-        std::cout << "FindPath() bailed early coz a path was already found\n";
         return;
     }
 
-    //int cellsSearched = 0;
     while (!m_openList.IsEmpty())
     {
         m_current = m_openList.RemoveFirst();
         if (IsDestination(m_current)) {
             m_gridPathFound = true;
             BuildFinalPath();
-            //std::cout << "cellsSearched: " << cellsSearched << "\n";
             //PrintPath();
             return;
         }
-
-        //cellsSearched++;
 
         // Add current cell to closed list
         int idxCurrent = Index1D(m_current->x, m_current->y);
         m_closedFlags[idxCurrent] = true;
 
-        for (Cell* neighbour : m_current->neighbours) {
-            // Calculate G cost. Equal to parent G cost + 10 if orthogonal and + 14 if diagonal
-            int new_g = IsOrthogonal(m_current, neighbour) ? m_current->g + ORTHOGONAL_COST : m_current->g + DIAGONAL_COST;
+        for (int i = 0; i < m_current->neighbourCount; ++i) {
+            Cell* neighbour = m_current->neighbours[i];
+            int new_g = IsOrthogonal(m_current, neighbour)
+                ? m_current->g + ORTHOGONAL_COST
+                : m_current->g + DIAGONAL_COST;
 
-            if (IsInClosedList(neighbour) || m_openList.Contains(neighbour)) {
-                // If new G is lower than currently stored value, update it and change parent to the current cell
+            int idxN = Index1D(neighbour->x, neighbour->y);
+
+            if (m_closedFlags[idxN] || m_openList.Contains(neighbour)) {
                 if (new_g < neighbour->g) {
                     neighbour->g = new_g;
                     neighbour->f = new_g + neighbour->GetH(m_destination);
@@ -134,17 +136,12 @@ void AStar::FindPath() {
                 neighbour->g = new_g;
                 neighbour->f = new_g + neighbour->GetH(m_destination);
                 neighbour->parent = m_current;
-
                 if (!m_openList.Contains(neighbour)) {
                     m_openList.AddItem(neighbour);
                 }
             }
         }
     }
-
-    //if (!Pathfinding::SlowModeEnabled()) {
-    ////    FindPath();
-    //}
 }
 
 void AStar::PrintPath() {
@@ -259,54 +256,66 @@ bool AStar::IsInClosedList(Cell* cell) {
     return m_closedFlags[idx];
 }
 
-void AStar::FindNeighbours(int x, int y) {
-    int idx = Index1D(x, y);
-    int idxN = Index1D(x, y - 1);
-    int idxS = Index1D(x, y + 1);
-    int idxE = Index1D(x - 1, y);
-    int idxW = Index1D(x + 1, y);
-    int idxNW = Index1D(x - 1, y - 1);
-    int idxNE = Index1D(x + 1, y - 1);
-    int idxSW = Index1D(x - 1, y + 1);
-    int idxSE = Index1D(x + 1, y + 1);
+void AStar::FindNeighbours(int idx) {
+    int w = m_mapWidth;
+    int h = m_mapHeight;
+    Cell& cell = m_cells[idx];
 
-    // Don't search for neighbours if they already exist
-    if (m_cells[idx].neighbours.size() != 0) {
+    // If already cached, skip
+    if (cell.neighbourCount != 0)
         return;
-    }
+
+    int x = idx % w;
+    int y = idx / w;
+
+    cell.neighbourCount = 0;
 
     // North
-    if (AStarMap::IsInBounds(x, y - 1) && !AStarMap::IsCellObstacle(x, y - 1)) {
-        m_cells[idx].neighbours.push_back(&m_cells[idxN]);
+    if (y > 0) {
+        int idxN = idx - w;
+        if (!m_cells[idxN].obstacle)
+            cell.neighbours[cell.neighbourCount++] = &m_cells[idxN];
     }
     // South
-    if (AStarMap::IsInBounds(x, y + 1) && !AStarMap::IsCellObstacle(x, y + 1)) {
-        m_cells[idx].neighbours.push_back(&m_cells[idxS]);
+    if (y + 1 < h) {
+        int idxS = idx + w;
+        if (!m_cells[idxS].obstacle)
+            cell.neighbours[cell.neighbourCount++] = &m_cells[idxS];
     }
     // West
-    if (AStarMap::IsInBounds(x - 1, y) && !AStarMap::IsCellObstacle(x - 1, y)) {
-        m_cells[idx].neighbours.push_back(&m_cells[idxE]);
+    if (x > 0) {
+        int idxW = idx - 1;
+        if (!m_cells[idxW].obstacle)
+            cell.neighbours[cell.neighbourCount++] = &m_cells[idxW];
     }
     // East
-    if (AStarMap::IsInBounds(x + 1, y) && !AStarMap::IsCellObstacle(x + 1, y)) {
-        m_cells[idx].neighbours.push_back(&m_cells[idxW]);
+    if (x + 1 < w) {
+        int idxE = idx + 1;
+        if (!m_cells[idxE].obstacle)
+            cell.neighbours[cell.neighbourCount++] = &m_cells[idxE];
     }
     // Northwest
-    if (AStarMap::IsInBounds(x - 1, y - 1) && !AStarMap::IsCellObstacle(x - 1, y - 1)) {
-        m_cells[idx].neighbours.push_back(&m_cells[idxNW]);
+    if (x > 0 && y > 0) {
+        int idxNW = idx - w - 1;
+        if (!m_cells[idxNW].obstacle)
+            cell.neighbours[cell.neighbourCount++] = &m_cells[idxNW];
     }
     // Northeast
-    if (AStarMap::IsInBounds(x + 1, y - 1) && !AStarMap::IsCellObstacle(x + 1, y - 1)) {
-        m_cells[idx].neighbours.push_back(&m_cells[idxNE]);
+    if (x + 1 < w && y > 0) {
+        int idxNE = idx - w + 1;
+        if (!m_cells[idxNE].obstacle)
+            cell.neighbours[cell.neighbourCount++] = &m_cells[idxNE];
     }
     // Southwest
-    if (AStarMap::IsInBounds(x - 1, y + 1) && !AStarMap::IsCellObstacle(x - 1, y + 1)) {
-        m_cells[idx].neighbours.push_back(&m_cells[idxSW]);
+    if (x > 0 && y + 1 < h) {
+        int idxSW = idx + w - 1;
+        if (!m_cells[idxSW].obstacle)
+            cell.neighbours[cell.neighbourCount++] = &m_cells[idxSW];
     }
     // Southeast
-    if (AStarMap::IsInBounds(x + 1, y + 1) && !AStarMap::IsCellObstacle(x + 1, y + 1)) {
-        m_cells[idx].neighbours.push_back(&m_cells[idxSE]);
+    if (x + 1 < w && y + 1 < h) {
+        int idxSE = idx + w + 1;
+        if (!m_cells[idxSE].obstacle)
+            cell.neighbours[cell.neighbourCount++] = &m_cells[idxSE];
     }
-    
-
 }

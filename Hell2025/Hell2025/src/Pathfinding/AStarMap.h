@@ -7,6 +7,7 @@ namespace AStarMap {
     void Update();
     void UpdateDebugMeshesFromHeightField();
     void MarkCellAsObstacle(int x, int y);
+    void MarkCellAsNotObstacle(int x, int y);
     bool IsInBounds(int x, int y);
     bool IsCellObstacle(int x, int y);
 

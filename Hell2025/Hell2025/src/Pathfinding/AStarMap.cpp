@@ -1,6 +1,7 @@
 #include "AStarMap.h"
 #include "BackEnd/BackEnd.h"
 #include "Input/Input.h"
+#include "Ocean/Ocean.h"
 #include "Physics/Physics.h"
 #include "World/World.h"
 
@@ -14,24 +15,30 @@ namespace AStarMap {
     int g_mapWidth = 200;
     int g_mapHeight = 200;
     float g_worldSpaceSpacing = 0.25f;    
-    std::vector<glm::ivec2> g_wallCells; // Only used to debug draw
+    std::vector<glm::ivec2> g_mapObstacleCells; // Only used to debug draw
 
     void UpdateDebugGridMesh();
     void UpdateDebugSolidMesh();
 
+    inline int Index1D(int x, int y) { return y * g_mapWidth + x; }
     inline glm::ivec2 Index2D(int idx) { return glm::ivec2(idx % g_mapWidth, idx / g_mapWidth); }
     inline int Index1DDebugMesh(int x, int y, int mapWidth) { return y * mapWidth + x; }
-    inline int Index1D(int x, int y) { return y * g_mapWidth + x; }
 
 
     void Init() {
         g_map.resize(GetCellCount());
 
+        // Zero out all obstacles
+        for (int i = 0; i < AStarMap::GetCellCount(); i++) {
+            glm::ivec2 cellCoords = Index2D(i);
+            int x = cellCoords.x;
+            int y = cellCoords.y;
+            MarkCellAsNotObstacle(x, y);
+        }
+
         // Mark trees
         for (Tree& tree : World::GetTrees()) {
-
-            glm::vec3 position = tree.GetPosition();
-            
+            glm::vec3 position = tree.GetPosition();            
             int size = 2;
             glm::ivec2 treeCell = GetCellCoordsFromWorldSpacePosition(position);
 
@@ -40,21 +47,64 @@ namespace AStarMap {
                     MarkCellAsObstacle(treeCell.x + x, treeCell.y + y);
                 }
             }
-
-
-            std::cout << "Marking tree " << position << " at " << treeCell << "\n";
         }
 
-        // Store wall cells once at init
-        g_wallCells.clear();
-        for (int i = 0; i < g_map.size(); i++) {
-            if (g_map[i]) {                
-                g_wallCells.push_back(Index2D(i));
+
+        // Mark all ocean and house cells as walls
+        Physics::ActivateAllHeightFields();
+
+        for (int i = 0; i < AStarMap::GetCellCount(); i++) {
+            glm::ivec2 cellCoords = Index2D(i);
+            int x = cellCoords.x;
+            int y = cellCoords.y;
+            glm::vec3 worldPos = GetWorldSpacePositionFromCellCoords(cellCoords);
+
+            // Mark water and house as obstacle
+            glm::vec3 rayOrigin = worldPos + glm::vec3(0.0f, 100.0f, 0.0f);
+            glm::vec3 rayDirection = glm::vec3(0.0f, -1.0f, 0.0f);
+            float rayLength = 1000;
+
+            PhysXRayResult rayresult = Physics::CastPhysXRayStaticEnviroment(rayOrigin, rayDirection, rayLength);
+
+            if (rayresult.hitFound) {
+
+                // Mark anything that is not the heightmap as an obstacle aka the house (I guess this ASTAR map is kangaroo only)
+                if (rayresult.userData.physicsType != PhysicsType::HEIGHT_FIELD) {
+                    MarkCellAsObstacle(x, y);
+                    continue;
+                }
+
+                // Anything below water is an obstacle
+                if (rayresult.userData.physicsType == PhysicsType::HEIGHT_FIELD) {
+                    bool belowWater = rayresult.hitPosition.y < Ocean::GetOceanOriginY();
+                    if (belowWater) {
+                        MarkCellAsObstacle(x, y);
+                    }
+                }
             }
         }
 
+
+
+
+
+
+
+
+
+
+        // Store wall cells once at init
+        g_mapObstacleCells.clear();
+        for (int i = 0; i < g_map.size(); i++) {
+            if (g_map[i]) {                
+                g_mapObstacleCells.push_back(Index2D(i));
+            }
+        }
+
+
+
         std::cout << "World::GetTrees().size(): " << World::GetTrees().size() << "\n";
-        std::cout << "g_wallCells.size(): " << g_wallCells.size() << "\n";
+        std::cout << "g_wallCells.size(): " << g_mapObstacleCells.size() << "\n";
     }
 
     void Update() {
@@ -176,6 +226,17 @@ namespace AStarMap {
         }
     }
 
+    void MarkCellAsNotObstacle(int x, int y) {
+        if (IsInBounds(x, y)) {
+            int idx = Index1D(x, y);
+            g_map[idx] = 0;
+        }
+        else {
+            std::cout << "MarkCellAsObstacle() failed coz " << x << ", " << y << " is out of bounds\n";
+        }
+    }
+
+
     bool IsInBounds(int x, int y) {
         return (x >= 0 && y >= 0 && x < g_mapWidth && y < g_mapHeight);
     }
@@ -202,7 +263,8 @@ namespace AStarMap {
         return glm::vec3(x, 0.0f, z);
     }
 
-    std::vector<glm::ivec2> GetWallCells()  { return g_wallCells; }
+
+    std::vector<glm::ivec2> GetWallCells()  { return g_mapObstacleCells; }
     int GetCellCount()                      { return g_mapWidth * g_mapHeight; }
     int GetMapWidth()                       { return g_mapWidth; }
     int GetMapHeight()                      { return g_mapHeight; }

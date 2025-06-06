@@ -24,6 +24,7 @@ namespace World {
 
     std::vector<Light> g_lights;
     std::vector<AnimatedGameObject> g_animatedGameObjects;
+    std::vector<ScreenSpaceBloodDecal> g_screenSpaceBloodDecals;
     std::vector<Bullet> g_bullets;
     std::vector<BulletCasing> g_bulletCasings;
     std::vector<ClippingCube> g_clippingCubes;
@@ -355,8 +356,6 @@ namespace World {
                 AddHouse(*houseCreateInfo, houseSpawnOffset);
             }
         }
-
-        AStarMap::Init();
     }
 
     AnimatedGameObject* GetAnimatedGameObjectByObjectId(uint64_t objectID) {
@@ -616,6 +615,7 @@ namespace World {
         }
 
         // Clear all containers
+        g_screenSpaceBloodDecals.clear();
         g_bulletCasings.clear();
         g_decals.clear();
         g_doors.clear();
@@ -720,6 +720,11 @@ namespace World {
     void AddMermaid(MermaidCreateInfo createInfo, SpawnOffset spawnOffset) {
         Mermaid& mermaid = g_mermaids.emplace_back();
         mermaid.Init(createInfo, spawnOffset);
+    }
+
+    void AddScreenSpaceBloodDecal(ScreenSpaceBloodDecalCreateInfo createInfo) {
+        ScreenSpaceBloodDecal& screenSpaceBloodDecal = g_screenSpaceBloodDecals.emplace_back();
+        screenSpaceBloodDecal.Init(createInfo);
     }
 
     void AddPiano(PianoCreateInfo createInfo, SpawnOffset spawnOffset) {
@@ -911,6 +916,7 @@ namespace World {
     size_t GetLightCount()                                              { return g_lights.size(); }
 
     std::vector<AnimatedGameObject>& GetAnimatedGameObjects()           { return g_animatedGameObjects; }
+    std::vector<ScreenSpaceBloodDecal>& GetScreenSpaceBloodDecals()     { return g_screenSpaceBloodDecals; }
     std::vector<Bullet>& GetBullets()                                   { return g_bullets; };
     std::vector<BulletCasing>& GetBulletCasings()                       { return g_bulletCasings; };
     std::vector<ClippingCube>& GetClippingCubes()                       { return g_clippingCubes; }

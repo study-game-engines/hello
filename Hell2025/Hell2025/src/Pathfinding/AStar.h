@@ -37,7 +37,7 @@ struct AStar {
 
 private:
     void BuildFinalPath();
-    void FindNeighbours(int x, int y);
+    void FindNeighbours(int idx);
     bool IsDestination(Cell* cell);
     bool IsOrthogonal(Cell* cellA, Cell* cellB);
     bool IsInClosedList(Cell* cell);

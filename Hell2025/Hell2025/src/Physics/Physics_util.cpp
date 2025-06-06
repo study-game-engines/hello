@@ -39,6 +39,44 @@ namespace Physics {
         return matrix;
     }
 
+
+    PhysXRayResult CastPhysXRayStaticEnviroment(glm::vec3 rayOrigin, glm::vec3 rayDirection, float rayLength) {
+        PxScene* scene = Physics::GetPxScene();
+        PxVec3 origin = PxVec3(rayOrigin.x, rayOrigin.y, rayOrigin.z);
+        PxVec3 unitDir = PxVec3(rayDirection.x, rayDirection.y, rayDirection.z);
+        PxReal maxDistance = rayLength;
+        PxRaycastBuffer hit;
+        PxHitFlags outputFlags = PxHitFlag::ePOSITION | PxHitFlag::eNORMAL | PxHitFlag::eMESH_BOTH_SIDES;
+
+        PxQueryFilterData filterData = PxQueryFilterData();
+        filterData.flags = PxQueryFlag::eSTATIC | PxQueryFlag::eDYNAMIC | PxQueryFlag::ePREFILTER;
+
+        // Defaults
+        PhysXRayResult result;
+        result.hitObjectName = "NO_USERDATA";
+        result.hitPosition = glm::vec3(0, 0, 0);
+        result.hitNormal = glm::vec3(0, 0, 0);
+        result.rayDirection = rayDirection;
+        result.userData = PhysicsUserData();
+
+        RaycastStaticEnviromentFilterCallback callback;
+        result.hitFound = scene->raycast(origin, unitDir, maxDistance, hit, outputFlags, filterData, &callback);
+
+        // On hit
+        if (result.hitFound) {
+            result.hitPosition = glm::vec3(hit.block.position.x, hit.block.position.y, hit.block.position.z);
+            result.hitNormal = glm::vec3(hit.block.normal.x, hit.block.normal.y, hit.block.normal.z);
+            result.hitFound = true;
+            PhysicsUserData* userData = (PhysicsUserData*)hit.block.actor->userData;
+            if (userData) {
+                result.userData = *userData;
+                result.hitObjectName = "HAS_USERDATA";
+            }
+        }
+
+        return result;
+    }
+
     PhysXRayResult CastPhysXRayHeightMap(glm::vec3 rayOrigin, glm::vec3 rayDirection, float rayLength) {
         PxScene* scene = Physics::GetPxScene();
         PxVec3 origin = PxVec3(rayOrigin.x, rayOrigin.y, rayOrigin.z);

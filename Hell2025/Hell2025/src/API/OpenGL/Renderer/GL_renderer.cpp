@@ -102,6 +102,7 @@ namespace OpenGLRenderer {
         g_frameBuffers["MiscFullSize"].Create("FullSize", resolutions.gBuffer);
         g_frameBuffers["MiscFullSize"].CreateAttachment("GaussianFinalLightingIntermediate", GL_RGBA16F);
         g_frameBuffers["MiscFullSize"].CreateAttachment("GaussianFinalLighting", GL_RGBA16F);
+        g_frameBuffers["MiscFullSize"].CreateAttachment("ScreenSpaceBloodDecalMask", GL_R8);
               
         g_frameBuffers["Water"] = OpenGLFrameBuffer("Water", resolutions.gBuffer);
         g_frameBuffers["Water"].CreateAttachment("Color", GL_RGBA16F);
@@ -225,7 +226,6 @@ namespace OpenGLRenderer {
             AssetManager::GetTextureByName("ny"),
             AssetManager::GetTextureByName("pz"),
             AssetManager::GetTextureByName("nz"),
-
             //AssetManager::GetTextureByName("NightSky_Right"),
             //AssetManager::GetTextureByName("NightSky_Left"),
             //AssetManager::GetTextureByName("NightSky_Top"),
@@ -248,7 +248,8 @@ namespace OpenGLRenderer {
     void LoadShaders() {
         g_shaders["BlurHorizontal"] = OpenGLShader({ "GL_blur_horizontal.vert", "GL_blur.frag" });
         g_shaders["BlurVertical"] = OpenGLShader({ "GL_blur_vertical.vert", "GL_blur.frag" });
-        g_shaders["BloodScreenSpaceDecals"] = OpenGLShader({ "GL_blood_screenspac_decals.vert", "GL_blood_screenspac_decals.frag" });
+        g_shaders["BloodScreenSpaceDecalsComposite"] = OpenGLShader({ "GL_blood_screenspace_composite.comp" });
+        g_shaders["BloodScreenSpaceDecalsMask"] = OpenGLShader({ "GL_blood_screenspace_decals_mask.vert", "GL_blood_screenspace_decals_mask.frag" });
         g_shaders["ComputeSkinning"] = OpenGLShader({ "GL_compute_skinning.comp" });
         g_shaders["DebugSolidColor"] = OpenGLShader({ "GL_debug_solid_color.vert", "GL_debug_solid_color.frag" });
         g_shaders["DebugTextured"] = OpenGLShader({ "GL_debug_textured.vert", "GL_debug_textured.frag" });
@@ -510,6 +511,7 @@ namespace OpenGLRenderer {
         OpenGLFrameBuffer* gBuffer = GetFrameBuffer("GBuffer");
         OpenGLFrameBuffer* waterFrameBuffer = GetFrameBuffer("Water");
         OpenGLFrameBuffer* finalImageFBO = GetFrameBuffer("FinalImage");
+        OpenGLFrameBuffer* miscFullSizeFBO = GetFrameBuffer("MiscFullSize");
 
         // Water
         waterFrameBuffer->Bind();
@@ -527,6 +529,10 @@ namespace OpenGLRenderer {
         gBuffer->ClearAttachment("Emissive", 0, 0, 0, 0);
         gBuffer->ClearAttachment("Glass", 0, 1, 0, 0);
         gBuffer->ClearDepthAttachment();
+
+        // Decal mask
+        miscFullSizeFBO->Bind();
+        miscFullSizeFBO->ClearTexImage("ScreenSpaceBloodDecalMask", 0, 0, 0, 0);
 
         // Viewport index
         for (unsigned int i = 0; i < 4; i++) {

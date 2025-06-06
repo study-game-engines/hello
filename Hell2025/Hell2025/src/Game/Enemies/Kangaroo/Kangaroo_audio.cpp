@@ -17,7 +17,10 @@ void Kangaroo::UpdateAudio() {
     float minDistance = 10.0f;
     float maxDistance = 20.0f;
     float volume = 0.0f;
-    if (distanceToPlayer <= minDistance) {
+    if (!m_alive) {
+        volume = 0.0f;
+    }
+    else if (distanceToPlayer <= minDistance) {
         volume = 1.0f;
     }
     else if (distanceToPlayer >= maxDistance) {
@@ -27,6 +30,7 @@ void Kangaroo::UpdateAudio() {
         float t = (distanceToPlayer - minDistance) / (maxDistance - minDistance);
         volume = glm::mix(1.0f, 0.0f, t);
     }
+
     Audio::SetVolume(m_ambientLoopAudioHandle, volume);
 
     // Hop steps

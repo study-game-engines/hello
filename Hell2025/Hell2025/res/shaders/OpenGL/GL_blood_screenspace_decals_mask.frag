@@ -20,12 +20,12 @@ float saturate(float value) {
 	return clamp(value, 0.0, 1.0);
 }
 
-void main() {
-    BaseColorOut = vec4(1,0,0, 1);
-    RMAOut = vec4(0.5,0.5,1, 1);
-}
+//void main() {
+//    BaseColorOut = vec4(1, 0, 0, 1);
+//    RMAOut = vec4(0.5, 0.5, 1, 1);
+//}
 
-void main2() {
+void main() {
     vec2 gbufferDimensions = textureSize(GBufferNormalTexture, 0);
     vec2 screenCoords = gl_FragCoord.xy / gbufferDimensions;
 
@@ -38,19 +38,24 @@ void main2() {
     vec3 worldNormal = texture(GBufferNormalTexture, screenCoords).rgb;
     float angleToFloor = abs(dot(worldNormal, vec3(0, 1, 0)));
     float angle = dot(worldNormal, _DecalForwardDirection);  
-    if(abs(angle) < 0.125 && angleToFloor < 0.5) 
-        discard;
+
+    if(abs(angle) < 0.125 && angleToFloor < 0.5) {
+      discard;
+    }
 
     // Backstab test. If world normal is facing away from original bullet angle.
-    if (angle < -0.5)
+    if (angle < -0.5) {
         discard;
-
+        // you almost certainly dont need this
+    }
         
     vec3 gbufferWorldPosition = texture(WorldPositionTexture, screenCoords).rgb;
 
     // Don't draw on ceiling
-	if (gbufferWorldPosition.y > 2.39)
-		discard;
+	if (gbufferWorldPosition.y > 2.39) {
+	//	discard;
+        // you almost certainly dont need this
+    }
 
 	vec4 objectPosition = u_inverseModel * vec4(gbufferWorldPosition, 1.0);
     vec3 stepVal = (vec3(0.5, 0.5, 0.5) - abs(objectPosition.xyz)) * 1000;
@@ -75,8 +80,9 @@ void main2() {
     res.a = saturate(mask.a * 2);
     res.a *= projClipFade;
 
-    if (mask.a * 2 * projClipFade < 0.1) 
-       discard;
+    if (mask.a * 2 * projClipFade < 0.1) {
+      //  discard;
+    }
 
    vec3 _TintColor = vec3(0.32, 0, 0);
    float colorMask = (mask.a * 5) * res.a;
@@ -85,6 +91,17 @@ void main2() {
    colorMask = clamp(colorMask , 0, 1);
    colorMask = mask.a * 0.5;
    res.a = mask.a;
+
+
+   decalTexCoord = clamp(decalTexCoord, 0, 1);
+
+  //f (decalTexCoord.x < 0 ||
+  //   decalTexCoord.y < 0 ||
+  //   decalTexCoord.x > 1 ||
+  //   decalTexCoord.y > 1) {
+  //discard;
+  //
+
 
 
     res.rgb = mix(_TintColor.rgb, _TintColor.rgb * 0.2, mask.z * colorMask * 0.75);
@@ -96,5 +113,17 @@ void main2() {
    
    // Roughness / metallic / ambient
    // gAlbedo = vec4(0.125 , 0.25, 1, 0);
-    RMAOut = vec4(0.125, 0.25, 1.0, 1.0);
+    //RMAOut = vec4(0.125, 0.25, 1.0, 1.0);
+
+    BaseColorOut.rgb  = worldNormal;
+    BaseColorOut.rgb  = vec3(decalTexCoord, 0);
+
+
+     vec3 decalColor = texture(DecalTex, decalTexCoord).rgb;
+     
+     
+     float  decalAlpha = texture(DecalTex, decalTexCoord).a;
+   decalColor = vec3(decalAlpha);
+
+   BaseColorOut.rgb  = vec3(decalColor);
 }

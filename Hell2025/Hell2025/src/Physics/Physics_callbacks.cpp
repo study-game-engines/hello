@@ -41,3 +41,20 @@ PxQueryHitType::Enum RaycastHeightFieldFilterCallback::postFilter(const PxFilter
     return PxQueryHitType::eBLOCK;
 }
 
+// Maybe find a better way to do this, coz it so similar to the above
+// Maybe find a better way to do this, coz it so similar to the above
+// Maybe find a better way to do this, coz it so similar to the above
+// Maybe find a better way to do this, coz it so similar to the above
+
+PxQueryHitType::Enum RaycastStaticEnviromentFilterCallback::preFilter(const PxFilterData& filterData, const PxShape* shape, const PxRigidActor* actor, PxHitFlags& queryFlags) {
+    const PxGeometryHolder geomHolder = shape->getGeometry();
+    if (geomHolder.getType() != PxGeometryType::eHEIGHTFIELD && geomHolder.getType() != PxGeometryType::eTRIANGLEMESH) {
+        return PxQueryHitType::eNONE;
+    }
+    return PxQueryHitType::eBLOCK;
+}
+
+PxQueryHitType::Enum RaycastStaticEnviromentFilterCallback::postFilter(const PxFilterData& filterData, const PxQueryHit& hit, const PxShape* shape, const PxRigidActor* actor) {
+    return PxQueryHitType::eBLOCK;
+}
+

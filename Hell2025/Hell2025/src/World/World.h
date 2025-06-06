@@ -12,6 +12,7 @@
 #include "Types/Game/Light.h"
 #include "Types/Game/PickUp.h"
 #include "Types/Effects/VolumetricBloodSplatter.h"
+#include "Types/Effects/ScreenSpaceBloodDecal.h"
 #include "Types/House/Door.h"
 #include "Types/House/Plane.h"
 #include "Types/House/Wall.h"
@@ -71,6 +72,7 @@ namespace World {
     void AddKangaroo(const KangarooCreateInfo& createInfo);
     void AddLight(LightCreateInfo createInfo, SpawnOffset spawnOffset = SpawnOffset());
     void AddMermaid(MermaidCreateInfo createInfo, SpawnOffset spawnOffset = SpawnOffset());
+    void AddScreenSpaceBloodDecal(ScreenSpaceBloodDecalCreateInfo createInfo);
     void AddPiano(PianoCreateInfo createInfo, SpawnOffset spawnOffset);
     void AddPickUp(PickUpCreateInfo createInfo, SpawnOffset spawnOffset = SpawnOffset());
     void AddPictureFrame(PictureFrameCreateInfo createInfo, SpawnOffset spawnOffset = SpawnOffset());
@@ -157,6 +159,7 @@ namespace World {
     size_t GetLightCount();
 
     std::vector<AnimatedGameObject>& GetAnimatedGameObjects();
+    std::vector<ScreenSpaceBloodDecal>& GetScreenSpaceBloodDecals();
     std::vector<Bullet>& GetBullets();
     std::vector<BulletCasing>& GetBulletCasings();
     std::vector<ClippingCube>& GetClippingCubes();

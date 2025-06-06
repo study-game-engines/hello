@@ -21,6 +21,9 @@ void Kangaroo::Update(float deltaTime) {
 
     // Rotate to target test
     if (Input::KeyDown(HELL_KEY_COMMA)) {
+
+        AStarMap::Init();
+
         if (HasValidPath()) {
             Cell* nextPathCell = m_aStar.m_finalPath[1];
             glm::ivec2 nextPathCellCoords = glm::ivec2(nextPathCell->x, nextPathCell->y);

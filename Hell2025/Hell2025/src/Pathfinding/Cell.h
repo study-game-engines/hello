@@ -10,15 +10,14 @@ struct Cell {
     int g = 99999;  // G cost: distance from starting node
     int h = -1;     // H cost: distance from end node. Aka the heuristic.
     int f = -1;     // F cost: g + f
-    std::vector<Cell*> neighbours;
+    Cell* neighbours[8];
+    uint8_t neighbourCount = 0;
     Cell* parent = nullptr;
     int heapIndex = -1;
 
     inline int GetH(const Cell*) const { return h; }
 
     inline int GetF(const Cell* dest) {
-        // we can drop the f == -1 caching if we prefer,
-        // or reset f = -1 before each search
         return g + GetH(dest);
     }
 };

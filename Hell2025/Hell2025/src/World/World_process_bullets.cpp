@@ -35,6 +35,11 @@ namespace World {
 
             // On hit
             if (rayResult.hitFound) {
+
+                ScreenSpaceBloodDecalCreateInfo decalCreateInfo;
+                decalCreateInfo.position = rayResult.hitPosition;
+                World::AddScreenSpaceBloodDecal(decalCreateInfo);
+
                 PhysicsType& physicsType = rayResult.userData.physicsType;
                 ObjectType& objectType = rayResult.userData.objectType;
                 uint64_t physicsId = rayResult.userData.physicsId;
