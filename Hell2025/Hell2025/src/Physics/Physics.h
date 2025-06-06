@@ -53,10 +53,11 @@ namespace Physics {
     uint64_t CreateRagdollByName(const std::string& name, float totalRagdollWeight);
     Ragdoll* GetRagdollById(uint64_t ragdollId);
     bool RagdollExists(uint64_t ragdollId);
-    void RemoveRagdoll(uint64_t ragdollId);
     bool PxRigidDynamicBelongsToRagdoll(PxRigidDynamic* pxRigidDynamic);
     std::vector<PxRigidDynamic*> GetRagdollPxRigidDynamics(uint64_t ragdollId);
     std::vector<PxRigidActor*> GetRagdollPxRigidActors(uint64_t ragdollId);
+    void MarkRagdollForRemoval(uint64_t ragdollId);
+    void RemoveAnyRagdollsMarkedForRemoval();
 
     // Materials
     PxMaterial* GetDefaultMaterial();
@@ -72,10 +73,10 @@ namespace Physics {
     // Height fields
     void UpdateHeightFields();
     void CreateHeightField(vecXZ& worldSpaceOffset, const float* heightValues);
-    void MarkAllHeightFieldsForRemoval();
     void RemoveAnyHeightFieldMarkedForRemoval();
     const std::vector<HeightField>& GetHeightFields();
     void ActivateAllHeightFields();
+    void MarkAllHeightFieldsForRemoval();
 
     // Rigid Dynamics
     void UpdateActiveRigidDynamicAABBList();
@@ -115,7 +116,8 @@ namespace Physics {
     uint64_t CreateD6Joint(uint64_t parentRigidDynamicId, uint64_t childRigidDynamicId, glm::mat4 parentFrame, glm::mat4 childFrame);
     D6Joint* GetD6JointById(uint64_t d6JointId);
     bool D6JointExists(uint64_t d6JointId);
-    void RemoveD6Joint(uint64_t d6JointId);
+    void MarkD6JointForRemoval(uint64_t d6JointId);
+    void RemoveAnyD6JointMarkedForRemoval();
 
     // Destroy
     void Destroy(PxRigidDynamic*& rigidDynamic);

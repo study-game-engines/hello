@@ -53,7 +53,7 @@ namespace Physics {
             }
             // Regular check
             else if (intersectionFound) {
-                    heightfield.ActivatePhsyics();
+                heightfield.ActivatePhsyics();
             }
             else {
                 heightfield.DisablePhsyics();

@@ -211,7 +211,7 @@ void AnimatedGameObject::Update(float deltaTime, std::unordered_map<std::string,
 }
 
 void AnimatedGameObject::CleanUp() {
-    Physics::RemoveRagdoll(m_ragdollId);
+    Physics::MarkRagdollForRemoval(m_ragdollId);
 }
 
 void AnimatedGameObject::SetMeshMaterialByMeshName(const std::string& meshName, const std::string& materialName) {

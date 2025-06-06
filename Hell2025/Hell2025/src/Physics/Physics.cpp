@@ -110,6 +110,8 @@ namespace Physics {
 
     void BeginFrame() {
         RemoveAnyHeightFieldMarkedForRemoval();
+        RemoveAnyRagdollsMarkedForRemoval();
+        RemoveAnyD6JointMarkedForRemoval();
         RemoveAnyRigidDynamicMarkedForRemoval();
         RemoveAnyRigidStaticMarkedForRemoval();
     }

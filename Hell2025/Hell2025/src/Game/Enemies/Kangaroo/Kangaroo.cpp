@@ -45,6 +45,7 @@ void Kangaroo::Respawn() {
 
     m_position = m_createInfo.position;
     m_rotation = m_createInfo.rotation;
+    m_forward = glm::vec3(-1.0f, 0.0f, 0.0f);
     m_alive = true;
     m_health = m_maxHealth;
 
@@ -63,7 +64,6 @@ void Kangaroo::Respawn() {
         params.animationSpeed = 1.00f;
         animatedGameObject->PlayAndLoopAnimation("Kangaroo_Idle", params);
     }
-
 }
 
 

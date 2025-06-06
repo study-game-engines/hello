@@ -68,7 +68,6 @@ struct Ragdoll {
     //void DisableVisualization();
     //void EnableCollision();
     //void DisableCollision();
-    //void CleanUp();
 
     void SetFilterData(PhysicsFilterData physicsFilterData);
     void SetPhysicsData(uint64_t objectId, ObjectType objectType);
@@ -85,4 +84,9 @@ struct Ragdoll {
     std::vector<uint64_t> m_d6JointIds;
 
     RagdollComponents m_components;
+    void MarkForRemoval();
+
+    bool m_markedForRemoval = false;
+
+    bool IsMarkedForRemoval() { return m_markedForRemoval; }
 };

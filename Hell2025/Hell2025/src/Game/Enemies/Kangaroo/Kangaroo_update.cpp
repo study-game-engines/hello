@@ -1,4 +1,5 @@
 #include "Kangaroo.h"
+#include "Pathfinding/AStarMap.h"
 #include "Util.h"
 
 #include "Core/Game.h"   // remove me
@@ -18,15 +19,23 @@ void Kangaroo::Update(float deltaTime) {
         m_timeSinceIdleBegan = 0.0f;
     }
 
-    if (Input::KeyPressed(HELL_KEY_COMMA)) {
-        //SetMovementState(KanagarooMovementState::HOP);
-
-        //glm::vec3 targetPosition = glm::vec3(42, 32, 40);
-        //GoToTarget(targetPosition);
-
+    // Rotate to target test
+    if (Input::KeyDown(HELL_KEY_COMMA)) {
         if (HasValidPath()) {
-            m_forward = glm::vec3(0, 0, 1);
+            Cell* nextPathCell = m_aStar.m_finalPath[1];
+            glm::ivec2 nextPathCellCoords = glm::ivec2(nextPathCell->x, nextPathCell->y);
+            glm::vec3 nextPathWorldPosition = AStarMap::GetWorldSpacePositionFromCellCoords(nextPathCellCoords);
+
+            // Compute forward vector from 2d direction
+            glm::vec3 normalizedPosition = m_position * glm::vec3(1.0f, 0.0f, 1.0f);
+            glm::vec3 targetForward = glm::normalize(nextPathWorldPosition - normalizedPosition);
+            
+            float turnSpeed = 1.5f;
+            float alpha = glm::clamp(turnSpeed * deltaTime, 0.0f, 1.0f);
+            m_forward = glm::normalize(m_forward * (1.0f - alpha) + targetForward * alpha);
         }
+
+
     }
 
     if (Input::KeyPressed(HELL_KEY_PERIOD)) {
@@ -41,7 +50,7 @@ void Kangaroo::Update(float deltaTime) {
 
     UpdateAudio();
     
-    DebugDraw();
+    //DebugDraw();
 
     // Death check
     if (m_health <= 0) {

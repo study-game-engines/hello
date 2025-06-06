@@ -459,7 +459,7 @@ namespace Physics {
         }
     }
 
-    void RemoveRagdoll(uint64_t ragdollId) {
+    /*void RemoveRagdoll(uint64_t ragdollId) {
         if (RagdollExists(ragdollId)) {
             PxPhysics* pxPhysics = Physics::GetPxPhysics();
             PxScene* pxScene = Physics::GetPxScene();
@@ -504,7 +504,7 @@ namespace Physics {
             // Remove from container
             g_ragdolls.erase(ragdollId);
         }
-    }
+    }*/
 
     bool PxRigidDynamicBelongsToRagdoll(PxRigidDynamic* pxRigidDynamic) {
         for (auto it = g_ragdolls.begin(); it != g_ragdolls.end(); ) {
@@ -552,6 +552,34 @@ namespace Physics {
             }
         }
         return result;
+    }
+
+    void MarkRagdollForRemoval(uint64_t ragdollId) {
+        if (RagdollExists(ragdollId)) {
+            Ragdoll& ragdoll = g_ragdolls[ragdollId];
+            ragdoll.MarkForRemoval();
+        }
+    }
+
+    void RemoveAnyRagdollsMarkedForRemoval() {
+        for (auto it = g_ragdolls.begin(); it != g_ragdolls.end(); ) {
+            Ragdoll& ragdoll = it->second;
+
+            if (ragdoll.IsMarkedForRemoval()) {
+                for (uint64_t rigidDynamicId : ragdoll.m_rigidDynamicIds) {
+                    Physics::MarkRigidDynamicForRemoval(rigidDynamicId);
+                }
+                for (uint64_t d6JointId : ragdoll.m_d6JointIds) {
+                    Physics::MarkD6JointForRemoval(d6JointId);
+                }
+
+                // Remove from container
+                it = g_ragdolls.erase(it);
+            }
+            else {
+                ++it;
+            }
+        }
     }
 
     void PrintSceneRagdollInfo() {

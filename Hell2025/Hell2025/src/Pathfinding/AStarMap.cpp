@@ -196,6 +196,12 @@ namespace AStarMap {
         return  glm::ivec2(x, y);
     }
 
+    glm::vec3 GetWorldSpacePositionFromCellCoords(glm::ivec2 cellCoords) {
+        float x = cellCoords.x * g_worldSpaceSpacing + g_mapWorldSpaceOffset.x;
+        float z = cellCoords.y * g_worldSpaceSpacing + g_mapWorldSpaceOffset.z;
+        return glm::vec3(x, 0.0f, z);
+    }
+
     std::vector<glm::ivec2> GetWallCells()  { return g_wallCells; }
     int GetCellCount()                      { return g_mapWidth * g_mapHeight; }
     int GetMapWidth()                       { return g_mapWidth; }

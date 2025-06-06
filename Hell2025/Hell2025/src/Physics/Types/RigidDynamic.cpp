@@ -65,7 +65,6 @@ void RigidDynamic::SetPxShape(PxShape* shape) {
     m_pxShape = shape; 
 }
 
-
 void RigidDynamic::SetFilterData(PhysicsFilterData filterData) {
     PxFilterData pxFilterData;
     pxFilterData.word0 = (PxU32)filterData.raycastGroup;

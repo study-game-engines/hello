@@ -7,6 +7,7 @@ void Kangaroo::DebugDraw() {
     Renderer::DrawPoint(m_position, RED);
     Renderer::DrawPoint(m_position + m_forward, RED);
 
+    std::cout << "Kangaroo forward: " << m_forward << "\n";
     //std::cout << "m_position: " << m_position << "\n";
     //std::cout << "m_position + m_forward: " << m_position + m_forward << "\n";
 }

@@ -46,7 +46,33 @@ namespace Physics {
             return nullptr;
         }
     }
+
+    void RemoveAnyD6JointMarkedForRemoval() {
+        PxScene* pxScene = Physics::GetPxScene();
+
+        for (auto it = g_d6Joints.begin(); it != g_d6Joints.end(); ) {
+            D6Joint& d6Joint = it->second;
+            if (d6Joint.IsMarkedForRemoval()) {
+                // Retrieve pointers
+                PxD6Joint* pxD6joint = d6Joint.GetPxD6Joint();
+
+                
+                // Remove from container
+                it = g_d6Joints.erase(it);
+            }
+            else {
+                ++it;
+            }
+        }
+    }
     
+    void MarkD6JointForRemoval(uint64_t d6JointId) {
+        if (RigidDynamicExists(d6JointId)) {
+            D6Joint& d6Joint = g_d6Joints[d6JointId];
+            d6Joint.MarkForRemoval();
+        }
+    }
+
     bool D6JointExists(uint64_t d6JointId) {
         return (g_d6Joints.find(d6JointId) != g_d6Joints.end());
 
