@@ -21,7 +21,7 @@ void AnimationLayer::Update(float deltaTime, std::unordered_map<std::string, glm
         }
     }
     // Update each animation state
-    for (AnimationState& animationState : m_animationStates) {
+    for (AnimationStateOld& animationState : m_animationStates) {
         animationState.Update(m_skinnedModelIndex, deltaTime, additiveBoneTransforms);
         for (int i = 0; i < animationState.m_globalNodeTransforms.size(); i++) {
             m_globalBlendedNodeTransforms.push_back(animationState.m_globalNodeTransforms[i].to_mat4());
@@ -34,7 +34,7 @@ void AnimationLayer::Update(float deltaTime, std::unordered_map<std::string, glm
         for (int i = 0; i < m_jointCount; i++) {
             std::vector<AnimatedTransform> animatedTransforms;
             std::vector<float> weights;
-            for (AnimationState& animationState : m_animationStates) {
+            for (AnimationStateOld& animationState : m_animationStates) {
                 animatedTransforms.push_back(animationState.m_globalNodeTransforms[i]);
                 weights.push_back(animationState.m_blendFactor);
             }
@@ -56,7 +56,7 @@ void AnimationLayer::PlayAnimation(const std::string& animationName, const Anima
             m_animationStates.clear();
         }
         // If it is already playing, then restart the existing animation
-        for (AnimationState& animationState : m_animationStates) {
+        for (AnimationStateOld& animationState : m_animationStates) {
             if (animationState.GetAnimationIndex() == animationIndex) {
                 animationState.PlayAnimation(animationName, playbackParams);
                 std::cout << "bailing because not sure\n";
@@ -64,7 +64,7 @@ void AnimationLayer::PlayAnimation(const std::string& animationName, const Anima
             }
         }
         // If not, then add it
-        AnimationState& animationState = m_animationStates.emplace_back();
+        AnimationStateOld& animationState = m_animationStates.emplace_back();
         animationState.PlayAnimation(animationName, playbackParams);
     }
 }
@@ -83,14 +83,14 @@ void AnimationLayer::PlayAndLoopAnimation(const std::string& animationName, cons
             }
         }
         // rETHINK THIS
-        for (AnimationState& animationState : m_animationStates) {
+        for (AnimationStateOld& animationState : m_animationStates) {
             if (animationState.GetAnimationIndex() == animationIndex) {
                 //animationState.PlayAndLoopAnimation(animationName, playbackParams);
                 return;
             }
         }
         // If not, then add it
-        AnimationState& animationState = m_animationStates.emplace_back();
+        AnimationStateOld& animationState = m_animationStates.emplace_back();
         animationState.PlayAndLoopAnimation(animationName, playbackParams);
     }
 }
@@ -123,14 +123,14 @@ bool AnimationLayer::AllAnimationIsComplete() {
 }
 
 void AnimationLayer::ForceStopAnimationStateByName(const std::string& animationName) {
-    for (AnimationState& animationState : m_animationStates) {
+    for (AnimationStateOld& animationState : m_animationStates) {
         if (animationState.m_playbackParams.animationName == animationName) {
             animationState.ForceStop();
         }
     }
 }
 void AnimationLayer::ForceEaseOutAnimationStateByName(const std::string& animationName) {
-    for (AnimationState& animationState : m_animationStates) {
+    for (AnimationStateOld& animationState : m_animationStates) {
         if (animationState.m_playbackParams.animationName == animationName) {
             animationState.ForceEaseOut();
         }
@@ -138,7 +138,7 @@ void AnimationLayer::ForceEaseOutAnimationStateByName(const std::string& animati
 }
 
 void AnimationLayer::SetLoopStateByName(const std::string& animationName, bool loopState) {
-    for (AnimationState& animationState : m_animationStates) {
+    for (AnimationStateOld& animationState : m_animationStates) {
         if (animationState.m_playbackParams.animationName == animationName) {
             animationState.m_loop = loopState;
         }
@@ -146,7 +146,7 @@ void AnimationLayer::SetLoopStateByName(const std::string& animationName, bool l
 }
 
 void AnimationLayer::PauseAnimationStateByName(const std::string& animationName) {
-    for (AnimationState& animationState : m_animationStates) {
+    for (AnimationStateOld& animationState : m_animationStates) {
         if (animationState.m_playbackParams.animationName == animationName) {
             animationState.m_paused = true;
         }

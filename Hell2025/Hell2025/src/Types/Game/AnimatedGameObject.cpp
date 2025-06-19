@@ -146,20 +146,41 @@ void AnimatedGameObject::Update(float deltaTime, std::unordered_map<std::string,
         m_globalBlendedNodeTransforms.push_back(m_animationLayer.m_globalBlendedNodeTransforms[i]);
     }
 
-    // Clean this abomination up!
-    for (int i = 0; i < m_skinnedModel->m_nodes.size(); i++) {
-        const std::string& nodeName = m_skinnedModel->m_nodes[i].name;
-        if (m_skinnedModel->m_boneMapping.find(nodeName) != m_skinnedModel->m_boneMapping.end()) {
-            unsigned int boneIndex = m_skinnedModel->m_boneMapping[nodeName];
-            if (boneIndex >= 0 && boneIndex < m_globalBlendedNodeTransforms.size()) {
-                glm::mat4 boneOffset = m_skinnedModel->m_boneOffsets[boneIndex];
-                m_LocalBlendedBoneTransforms[boneIndex] = m_globalBlendedNodeTransforms[i] * boneOffset;
-            }
-            else {
-                std::cout << "your animation shit is broken\n";
-            }
+
+    // OVERWRITE WITH ANIMATOR
+    if (m_skinnedModel->GetName() == "Kangaroo") {
+
+
+        if (m_animator.m_animationStates.empty()) {
+            m_animator.SetSkinnedModel("Kangaroo");
+            m_animator.RegisterAnimation("Kangaroo_Hop");
+            //m_animator.RegisterAnimation("Kangaroo_Bite");
+            std::cout << "hi\n";
+
+            m_animator.m_animationStates[1].m_AnimationWeight = 0.0;
         }
+
+        m_animator.UpdateAnimations(deltaTime);
+
+        m_globalBlendedNodeTransforms = m_animator.m_globalBlendedNodeTransforms;
+
+        //if (m_animator.m_animationStates.size()) {
+        //    m_globalBlendedNodeTransforms.resize(m_animator.m_animationStates[0].m_nodeTransforms.size());
+        //    for (int i = 0; i < m_animator.m_animationStates[1].m_nodeTransforms.size(); i++) {
+        //        m_globalBlendedNodeTransforms[i] = m_animator.m_animationStates[1].m_nodeTransforms[i].to_mat4();
+        //    }
+        //}
     }
+
+    // Compute local bone matrices
+    int boneCount = m_skinnedModel->GetBoneCount();
+    m_LocalBlendedBoneTransforms.resize(boneCount);
+    for (int b = 0; b < boneCount; ++b) {
+        int nodeIdx = m_skinnedModel->m_boneNodeIndex[b];
+        m_LocalBlendedBoneTransforms[b] = m_globalBlendedNodeTransforms[nodeIdx] * m_skinnedModel->m_boneOffsets[b];
+    }
+
+
 
     // If it has a ragdoll
     if (m_animationMode != AnimationMode::RAGDOLL) {
@@ -573,7 +594,7 @@ void AnimatedGameObject::SetIgnoredViewportIndex(int index) {
 }
 
 bool AnimatedGameObject::AnimationByNameIsComplete(const std::string& name) {
-    for (AnimationState& AnimationState : m_animationLayer.m_animationStates) {
+    for (AnimationStateOld& AnimationState : m_animationLayer.m_animationStates) {
         int animationIndex = AssetManager::GetAnimationIndexByName(name);
         if (AnimationState.m_index == animationIndex) {
             return AnimationState.IsComplete();

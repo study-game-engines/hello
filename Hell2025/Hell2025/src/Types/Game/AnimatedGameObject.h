@@ -1,5 +1,6 @@
 #pragma once
 #include "Types/Animation/AnimationLayer.h"
+#include "Types/Animation/Animator.h"
 #include "Types/Renderer/SkinnedModel.h"
 #include <unordered_map>
 
@@ -48,6 +49,8 @@ public:
     void SetMeshWoundMaskTextureIndex(const std::string& meshName, int32_t woundMaskTextureIndex);
     std::vector<int32_t> m_woundMaskTextureIndices;
 
+
+    Animator m_animator;
 
     std::unordered_map<std::string, unsigned int> m_boneMapping;
     glm::mat4 GetAnimatedTransformByBoneName(const std::string& name);

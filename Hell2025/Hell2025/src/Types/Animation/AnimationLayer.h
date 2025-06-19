@@ -8,7 +8,7 @@ struct AnimationLayer {
     std::string m_name;
     int m_skinnedModelIndex = -1;
     int m_jointCount = -1;
-    std::vector<AnimationState> m_animationStates;   
+    std::vector<AnimationStateOld> m_animationStates;   
     std::vector<glm::mat4> m_globalBlendedNodeTransforms;
 
     void SetSkinnedModel(const std::string& skinnedModelName);

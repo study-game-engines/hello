@@ -34,7 +34,7 @@ struct AnimationPlaybackParams {
     }
 };
 
-struct AnimationState {
+struct AnimationStateOld {
     // Methods
 public:
     void PlayAnimation(const std::string& animationName, const AnimationPlaybackParams& playbackParams);

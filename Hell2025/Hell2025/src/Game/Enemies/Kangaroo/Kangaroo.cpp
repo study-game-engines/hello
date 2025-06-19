@@ -138,7 +138,7 @@ bool Kangaroo::AnimationIsComplete() {
     AnimatedGameObject* animatedGameObject = GetAnimatedGameObject();
 
     if (animatedGameObject) {
-        for (AnimationState& animationState : animatedGameObject->m_animationLayer.m_animationStates) {
+        for (AnimationStateOld& animationState : animatedGameObject->m_animationLayer.m_animationStates) {
             if (!animationState.IsComplete()) {
                 return false;
             }

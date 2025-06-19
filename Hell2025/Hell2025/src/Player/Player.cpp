@@ -176,6 +176,10 @@ void Player::Respawn() {
             spawnPoint = spawnPoints[0];
         }
 
+
+        spawnPoint.position = glm::vec3(44.21f, 32.3, 35.15);
+        spawnPoint.camEuler = glm::vec3(-0.2f, -2.99, 0.0f);
+
         // Check you didn't just spawn on another player
         for (int i = 0; i < Game::GetLocalPlayerCount(); i++) {
             Player* otherPlayer = Game::GetLocalPlayerByIndex(i);
@@ -364,7 +368,7 @@ bool Player::ViewModelAnimationsCompleted() {
         std::cout << "WARNING!!! Player::ViewModelAnimationsCompleted() failed coz viewWeapon was nullptr\n";
         return true;
     }
-    for (AnimationState& animationState : viewWeapon->m_animationLayer.m_animationStates) {
+    for (AnimationStateOld& animationState : viewWeapon->m_animationLayer.m_animationStates) {
         if (!animationState.IsComplete()) {
             return false;
         }

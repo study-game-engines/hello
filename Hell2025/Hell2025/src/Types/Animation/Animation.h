@@ -18,9 +18,7 @@ struct AnimatedNode {
     const char* m_nodeName;
 };
 
-
 struct Animation {
-public:
     Animation() = default;
     float m_duration;
     float m_ticksPerSecond;

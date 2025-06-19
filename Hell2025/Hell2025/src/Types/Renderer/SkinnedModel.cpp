@@ -22,6 +22,15 @@ void SkinnedModel::Load(SkinnedModelData& skinnedModelData) {
         std::lock_guard<std::mutex> lock(mutex);
         this->AddMeshIndex(AssetManager::CreateSkinnedMesh(meshName, vertices, indices, baseVertexLocal, aabbMin, aabbMax));
     }
+
+    // Store bone node indices
+    m_boneNodeIndex.assign(m_boneMapping.size(), -1);
+    for (int nodeIdx = 0; nodeIdx < GetNodeCount(); ++nodeIdx) {
+        const auto& name = m_nodes[nodeIdx].name;
+        auto it = m_boneMapping.find(name);
+        if (it != m_boneMapping.end())
+            m_boneNodeIndex[it->second] = nodeIdx;
+    }
 }
 
 void SkinnedModel::SetFileInfo(FileInfo fileInfo) {
@@ -68,6 +77,10 @@ uint32_t SkinnedModel::GetVertexCount() {
     return m_vertexCount; 
 }
 
-uint32_t SkinnedModel::GetBoneCount() { 
-    return m_boneMapping.size(); 
+uint32_t SkinnedModel::GetBoneCount() {
+    return m_boneMapping.size();
+}
+
+uint32_t SkinnedModel::GetNodeCount() {
+    return m_nodes.size();
 }

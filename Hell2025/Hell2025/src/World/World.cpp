@@ -70,7 +70,7 @@ namespace World {
        // AStarMap::Init();
 
         KangarooCreateInfo kangarooCreateInfo;
-        kangarooCreateInfo.position = glm::vec3(45, 36.6, 39);
+        kangarooCreateInfo.position = glm::vec3(45, 32.6, 39);
         kangarooCreateInfo.rotation = glm::vec3(0, HELL_PI * -0.5f, 0);
 
         AddKangaroo(kangarooCreateInfo);

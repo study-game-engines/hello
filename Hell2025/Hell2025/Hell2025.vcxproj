@@ -327,6 +327,7 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <ClCompile Include="src\Player\Player_character_model.cpp" />
     <ClCompile Include="src\Player\Player_ragdoll.cpp" />
     <ClCompile Include="src\Renderer\GlobalIllumination.cpp" />
+    <ClCompile Include="src\Types\Animation\Animator.cpp" />
     <ClCompile Include="src\Types\Effects\ScreenSpaceBloodDecal.cpp" />
     <ClCompile Include="src\Types\Effects\VolumetricBloodSplatter.cpp" />
     <ClCompile Include="src\Game\Allies\Mermaid\Mermaid.cpp" />
@@ -635,6 +636,7 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <ClInclude Include="src\Pathfinding\Pathfinding.h" />
     <ClInclude Include="src\Physics\Types\CharacterController.h" />
     <ClInclude Include="src\Renderer\GlobalIllumination.h" />
+    <ClInclude Include="src\Types\Animation\Animator.h" />
     <ClInclude Include="src\Types\Effects\ScreenSpaceBloodDecal.h" />
     <ClInclude Include="src\Types\Effects\VolumetricBloodSplatter.h" />
     <ClInclude Include="src\Game\Allies\Mermaid\Mermaid.h" />

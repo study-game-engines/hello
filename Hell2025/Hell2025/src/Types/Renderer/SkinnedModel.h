@@ -20,6 +20,7 @@ struct SkinnedModel {
     uint32_t GetMeshCount();
     uint32_t GetVertexCount();
     uint32_t GetBoneCount();
+    uint32_t GetNodeCount();
     LoadingState& GetLoadingState();
     std::vector<uint32_t>& GetMeshIndices();
 
@@ -27,6 +28,7 @@ public:
     std::vector<Node> m_nodes;
     std::vector<glm::mat4> m_boneOffsets;
     std::map<std::string, unsigned int> m_boneMapping;
+    std::vector<int> m_boneNodeIndex;
 
 private:
     LoadingState m_loadingState = LoadingState::AWAITING_LOADING_FROM_DISK;

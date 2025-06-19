@@ -3,7 +3,7 @@
 #include "AssetManagement/AssetManager.h"
 #include "Util.h"
 
-void AnimationState::PlayAnimation(const std::string& animationName, const AnimationPlaybackParams& playbackParams) {
+void AnimationStateOld::PlayAnimation(const std::string& animationName, const AnimationPlaybackParams& playbackParams) {
     int tempIndex = AssetManager::GetAnimationIndexByName(animationName);
     if (tempIndex != -1) {
         m_index = tempIndex;
@@ -23,7 +23,7 @@ void AnimationState::PlayAnimation(const std::string& animationName, const Anima
     }
 }
 
-void AnimationState::PlayAndLoopAnimation(const std::string& animationName, const AnimationPlaybackParams& playbackParams) {
+void AnimationStateOld::PlayAndLoopAnimation(const std::string& animationName, const AnimationPlaybackParams& playbackParams) {
     int tempIndex = AssetManager::GetAnimationIndexByName(animationName);
     if (tempIndex == -1) {
         std::cout << "AnimationState::PlayAndLoopAnimation() failed because " << animationName << " does not exist\n";
@@ -54,19 +54,19 @@ void AnimationState::PlayAndLoopAnimation(const std::string& animationName, cons
     }
 }
 
-void AnimationState::StartAnimation() {
+void AnimationStateOld::StartAnimation() {
     m_paused = false;
 }
 
-void AnimationState::PauseAnimation() {
+void AnimationStateOld::PauseAnimation() {
     m_paused = true;
 }
 
-bool AnimationState::IsComplete() {
+bool AnimationStateOld::IsComplete() {
     return m_isComplete;
 }
 
-int AnimationState::GetAnimationIndex() {
+int AnimationStateOld::GetAnimationIndex() {
     return m_index;
 }
 
@@ -80,13 +80,13 @@ const AnimatedNode* FindAnimatedNode(Animation* animation, const char* NodeName)
     return nullptr;
 }
 
-void AnimationState::SetToBindPose() {
+void AnimationStateOld::SetToBindPose() {
     m_index = -1;
 }
 
 
 
-void AnimationState::Update(int skinnedModelIndex, float deltaTime, std::unordered_map<std::string, glm::mat4>& additiveBoneTransforms) {
+void AnimationStateOld::Update(int skinnedModelIndex, float deltaTime, std::unordered_map<std::string, glm::mat4>& additiveBoneTransforms) {
     Animation* animation = AssetManager::GetAnimationByIndex(m_index, false);
     SkinnedModel* skinnedModel = AssetManager::GetSkinnedModelByIndex(skinnedModelIndex);
     if (!skinnedModel) {
@@ -161,7 +161,7 @@ void AnimationState::Update(int skinnedModelIndex, float deltaTime, std::unorder
     m_blendFactor = m_playbackParams.blendWeight - easedValue;
 }
 
-float AnimationState::GetTimeInTicks(float currentTime) {
+float AnimationStateOld::GetTimeInTicks(float currentTime) {
     Animation* animation = AssetManager::GetAnimationByIndex(m_index);
     if (animation) {
         float ticksPerSecond = animation->m_ticksPerSecond != 0 ? animation->m_ticksPerSecond : 25.0f;
@@ -180,7 +180,7 @@ float AnimationState::GetTimeInTicks(float currentTime) {
     }
 }
 
-int AnimationState::GetAnimationFrameNumber() {
+int AnimationStateOld::GetAnimationFrameNumber() {
     Animation* animation = AssetManager::GetAnimationByIndex(m_index);
     if (animation) {
         return  m_currentTime * animation->m_ticksPerSecond;
@@ -190,11 +190,11 @@ int AnimationState::GetAnimationFrameNumber() {
     }
 }
 
-bool AnimationState::AnimationIsPastFrameNumber(int frameNumber) {
+bool AnimationStateOld::AnimationIsPastFrameNumber(int frameNumber) {
     return frameNumber < GetAnimationFrameNumber();
 }
 
-std::string AnimationState::GetDebugInfo() {
+std::string AnimationStateOld::GetDebugInfo() {
     std::string text = "Index: " + std::to_string(m_index) + "\n";
     if (m_index != -1) {
         Animation* animation = AssetManager::GetAnimationByIndex(m_index);
@@ -213,7 +213,7 @@ std::string AnimationState::GetDebugInfo() {
     return text;
 }
 
-bool AnimationState::AwaitingRemoval() {
+bool AnimationStateOld::AwaitingRemoval() {
     if (m_playbackParams.removeAnimationStateWhenComplete&& IsComplete()) {
         return true;
     }
@@ -226,11 +226,11 @@ bool AnimationState::AwaitingRemoval() {
     return false;
 }
 
-void AnimationState::ForceStop() {
+void AnimationStateOld::ForceStop() {
     m_forceStop = true;
 }
 
-void AnimationState::ForceEaseOut() {
+void AnimationStateOld::ForceEaseOut() {
     m_easeOut = true;
 }
 
