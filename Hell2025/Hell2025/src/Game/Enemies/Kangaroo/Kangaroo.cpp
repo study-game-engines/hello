@@ -36,18 +36,18 @@ void Kangaroo::Init(KangarooCreateInfo createInfo) {
         animatedGameObject->PlayAndLoopAnimation("Kangaroo_Hop2", params);
 
         m_woundMaskIndex = 1;
+
+        CreateCharacterController(m_createInfo.position);
     }
 }
 
 void Kangaroo::Respawn() {
-    m_createInfo.position = glm::vec3(45, 30.6, 39);
-    m_createInfo.rotation = glm::vec3(0, HELL_PI * -0.5f, 0);
-
     m_position = m_createInfo.position;
     m_rotation = m_createInfo.rotation;
     m_forward = glm::vec3(-1.0f, 0.0f, 0.0f);
     m_alive = true;
     m_health = m_maxHealth;
+    m_yVelocity = 0;
 
     m_agroState = KanagarooAgroState::CHILLING;
     m_movementState = KanagarooMovementState::IDLE;
@@ -64,9 +64,13 @@ void Kangaroo::Respawn() {
         params.animationSpeed = 1.00f;
         animatedGameObject->PlayAndLoopAnimation("Kangaroo_Idle", params);
     }
+
+    CharacterController* characterController = GetCharacterController();
+    if (characterController) {
+        characterController->SetPosition(m_createInfo.position);
+        std::cout << "Set Kangaroo character controller position to " << m_createInfo.position << "\n";
+    }
 }
-
-
 
 AnimatedGameObject* Kangaroo::GetAnimatedGameObject(){
     return World::GetAnimatedGameObjectByObjectId(m_animatedGameObjectId);
@@ -141,6 +145,10 @@ bool Kangaroo::AnimationIsComplete() {
         }
     }
     return true;
+}
+
+CharacterController* Kangaroo::GetCharacterController() {
+    return Physics::GetCharacterControllerById(m_characterControllerId);
 }
 
 glm::vec2 Kangaroo::GetGridPosition() {

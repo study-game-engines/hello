@@ -95,4 +95,5 @@
 #define WOUND_MASK_TEXTURE_SIZE 256
 #define KANGAROO_MAX_HEALTH 400
 
-
+// Global illumination
+#define POINT_CLOUD_SPACING 0.4f

@@ -90,9 +90,9 @@ namespace Renderer {
         }
     }
 
-    void DrawLine(glm::vec3 begin, glm::vec3 end, glm::vec3 color, bool obeyDepth, int exclusiveViewportIndex) {
+    void DrawLine(glm::vec3 begin, glm::vec3 end, glm::vec3 color, bool obeyDepth, int exclusiveViewportIndex, int ignoredViewportIndex) {
         if (BackEnd::GetAPI() == API::OPENGL) {
-            OpenGLRenderer::DrawLine(begin, end, color, obeyDepth, exclusiveViewportIndex);
+            OpenGLRenderer::DrawLine(begin, end, color, obeyDepth, exclusiveViewportIndex, ignoredViewportIndex);
         }
         else if (BackEnd::GetAPI() == API::VULKAN) {
             // TODO

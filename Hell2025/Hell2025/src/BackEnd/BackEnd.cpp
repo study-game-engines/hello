@@ -21,6 +21,7 @@
 #include "Input/InputMulti.h"
 #include "Modelling/Unused/Modelling.h"
 #include "Physics/Physics.h"
+#include "Renderer/GlobalIllumination.h"
 #include "Renderer/Renderer.h"
 #include "Renderer/RenderDataManager.h"
 #include "UI/UIBackEnd.h"
@@ -149,6 +150,7 @@ namespace BackEnd {
         Audio::Update(deltaTime);
         MidiFileManager::Update(deltaTime);
         Input::Update();
+        GlobalIllumination::Update();
 
         UpdateLazyKeypresses();
     }

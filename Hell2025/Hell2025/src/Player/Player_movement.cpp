@@ -8,16 +8,15 @@
 #include "Util.h"
 
 void Player::UpdateMovement(float deltaTime) {
-    // Hack to move faster when pressing SHIFT
-    m_speedBoost = Input::KeyDown(GLFW_KEY_LEFT_SHIFT) ? 1.5f : 1.0f;
 
-    // Hack to control camera height
+    // Hack to move camera height debug keys faster when pressing SHIFT and the logic to do so
+    float speedBoost = Input::KeyDown(GLFW_KEY_LEFT_SHIFT) ? 1.5f : 1.0f;
     float heightSpeed = 3.0f;
     if (Input::KeyDown(HELL_KEY_EQUAL)) {
-        m_position.y += deltaTime * heightSpeed * m_speedBoost;
+        m_position.y += deltaTime * heightSpeed * speedBoost;
     }
     if (Input::KeyDown(GLFW_KEY_MINUS)) {
-        m_position.y -= deltaTime * heightSpeed * m_speedBoost;
+        m_position.y -= deltaTime * heightSpeed * speedBoost;
     }
 
     if (Editor::IsClosed() && m_controlEnabled) {
@@ -30,6 +29,9 @@ void Player::UpdateMovement(float deltaTime) {
             //std::cout << " walking\n";
         }
     }
+
+    // Character controller AABB
+    m_characterControllerAABB = Physics::GetCharacterControllerAABB(m_characterControllerId);
 }
 
 void Player::UpdateWalkingMovement(float deltaTime) {
@@ -38,6 +40,16 @@ void Player::UpdateWalkingMovement(float deltaTime) {
     m_groundedLastFrame = m_grounded;
 
     if (!Editor::IsOpen() && m_controlEnabled) {
+
+        // TO DO!!!!!!!!!!!!!!
+        // You need to find a way to cleanly determine character controller grounded states, and whether its head is touching the ceiling
+        // FIND ME
+        PxController* m_characterController = nullptr;
+        CharacterController* characterControler = Physics::GetCharacterControllerById(m_characterControllerId);
+        if (characterControler) {
+            m_characterController = characterControler->GetPxController();
+        }
+
 
         float accelerationSpeed = 7.5f;
         float decelerationSpeed = 4.0f;
@@ -82,7 +94,7 @@ void Player::UpdateWalkingMovement(float deltaTime) {
         }
         
         // Calculate movement speed
-        float targetSpeed = m_crouching ? m_crouchingSpeed : m_walkingSpeed;
+        float targetSpeed = GetTargetWalkingSpeed();
         float interpolationSpeed = 18.0f;
         if (!IsMoving()) {
             targetSpeed = 0.0f;
@@ -91,7 +103,7 @@ void Player::UpdateWalkingMovement(float deltaTime) {
         m_currentSpeed = Util::FInterpTo(m_currentSpeed, targetSpeed, deltaTime, interpolationSpeed);
 
         // Jump
-        if (PresingJump() && HasControl() && m_grounded) {
+        if (PressingJump() && HasControl() && m_grounded) {
             m_yVelocity = 4.5f;  // Magic value for jump strength
             m_grounded = false;
         }
@@ -107,9 +119,12 @@ void Player::UpdateWalkingMovement(float deltaTime) {
 
         // Move character controller
         glm::vec3 displacement = m_movementDirection * m_acceleration;
-        displacement *= m_currentSpeed * deltaTime * m_speedBoost;
+        displacement *= m_currentSpeed * deltaTime;
         displacement.y += m_yVelocity * deltaTime;
-        MoveCharacterController(glm::vec3(displacement.x, displacement.y, displacement.z));
+
+        // Update character controller
+        Physics::MoveCharacterController(m_characterControllerId, displacement);
+        m_position = Physics::GetCharacterControllerPosition(m_characterControllerId);
 
         // Check grounded state
         m_grounded = false;
@@ -130,13 +145,6 @@ void Player::UpdateWalkingMovement(float deltaTime) {
         }
 
         Physics::ClearCharacterControllerCollsionReports();
-
-        // Character controller AABB
-        PxRigidDynamic* actor = m_characterController->getActor();
-        PxBounds3 bounds = actor->getWorldBounds();
-        glm::vec3 aabbMin = glm::vec3(bounds.minimum.x, bounds.minimum.y, bounds.minimum.z);
-        glm::vec3 aabbMax = glm::vec3(bounds.maximum.x, bounds.maximum.y, bounds.maximum.z);
-        m_characterControllerAABB = AABB(aabbMin, aabbMax);
 
         // Piano hacks
         if (IsPlayingPiano()) {
@@ -211,10 +219,9 @@ void Player::UpdateSwimmingMovement(float deltaTime) {
     m_currentSpeed = Util::FInterpTo(m_currentSpeed, targetSpeed, deltaTime, interpolationSpeed);
 
 
-
     // Move character controller
     glm::vec3 displacement = m_movementDirection * m_acceleration;
-    displacement *= m_currentSpeed * deltaTime * m_speedBoost;
+    displacement *= m_currentSpeed * deltaTime;
     displacement.y += m_yVelocity * deltaTime;
 
     //float yDisplacement = m_yVelocity * deltaTime;
@@ -229,7 +236,7 @@ void Player::UpdateSwimmingMovement(float deltaTime) {
     if (PressingCrouch()) {
         m_swimVerticalAcceleration = Util::FInterpTo(m_swimVerticalAcceleration, -m_swimMaxVerticalAcceleration, deltaTime, m_swimVerticalInterpolationSpeed);
     }
-    else if (PresingJump()) {
+    else if (PressingJump()) {
         m_swimVerticalAcceleration = Util::FInterpTo(m_swimVerticalAcceleration, m_swimMaxVerticalAcceleration, deltaTime, m_swimVerticalInterpolationSpeed);
     }
     else {
@@ -237,16 +244,11 @@ void Player::UpdateSwimmingMovement(float deltaTime) {
     }
     displacement.y += m_swimVerticalAcceleration;
 
-    MoveCharacterController(glm::vec3(displacement.x, displacement.y, displacement.z));
+    // Update character controller
+    Physics::MoveCharacterController(m_characterControllerId, displacement);
+    m_position = Physics::GetCharacterControllerPosition(m_characterControllerId);
 
     Physics::ClearCharacterControllerCollsionReports();
-
-    // Character controller AABB
-    PxRigidDynamic* actor = m_characterController->getActor();
-    PxBounds3 bounds = actor->getWorldBounds();
-    glm::vec3 aabbMin = glm::vec3(bounds.minimum.x, bounds.minimum.y, bounds.minimum.z);
-    glm::vec3 aabbMax = glm::vec3(bounds.maximum.x, bounds.maximum.y, bounds.maximum.z);
-    m_characterControllerAABB = AABB(aabbMin, aabbMax);
 
     static bool test = false;
     if (Input::KeyPressed(HELL_KEY_L)) {
@@ -269,7 +271,8 @@ void Player::UpdateSwimmingMovement(float deltaTime) {
             float downDot = glm::dot(m_camera.GetForward(), glm::vec3(0.0f, -1.0f, 0.0f));
             const float lookDownThreshold = 0.01f;
             if (downDot < lookDownThreshold) {
-                MoveCharacterController(snapDisplacement);
+                Physics::MoveCharacterController(m_characterControllerId, snapDisplacement);
+                //MoveCharacterController(snapDisplacement);
             }
         }
     }

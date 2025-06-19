@@ -1,5 +1,7 @@
 #include "Physics.h"
+#include "Core/Game.h"
 #include "Renderer/Renderer.h"
+#include "Viewport/ViewportManager.h"
 
 namespace Physics {
 
@@ -44,6 +46,8 @@ namespace Physics {
                         actor->setActorFlag(PxActorFlag::eVISUALIZATION, false);
                     }
                 }
+
+                //actor->setActorFlag(PxActorFlag::eVISUALIZATION, true);
             }
         }
         const PxRenderBuffer& renderBuffer = pxScene->getRenderBuffer();
@@ -67,6 +71,85 @@ namespace Physics {
 
             Renderer::DrawLine(Physics::PxVec3toGlmVec3(pxLine.pos0), Physics::PxVec3toGlmVec3(pxLine.pos1), color);
         }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        // Player ragdolls 
+        std::vector<Viewport>& viewports = ViewportManager::GetViewports();
+
+        for (int i = 0; i < 4; i++) {
+            if (!viewports[i].IsVisible()) continue;
+
+            // Prepare
+            PxU32 nbActors = pxScene->getNbActors(PxActorTypeFlag::eRIGID_DYNAMIC | PxActorTypeFlag::eRIGID_STATIC);
+            if (nbActors) {
+                std::vector<PxRigidActor*> actors(nbActors);
+                pxScene->getActors(PxActorTypeFlag::eRIGID_DYNAMIC | PxActorTypeFlag::eRIGID_STATIC, reinterpret_cast<PxActor**>(&actors[0]), nbActors);
+
+                for (PxRigidActor* actor : actors) {
+                 //  actor->setActorFlag(PxActorFlag::eVISUALIZATION, false);
+
+                   //PhysicsUserData* userData = (PhysicsUserData*)actor->userData;
+                   //if (userData && userData->objectType == ObjectType::RAGDOLL_PLAYER) {
+                   //
+                   //    // Does this ragdoll rigid belong to this viewports players ragdoll
+                   //    bool found = false;
+                   //
+                   //    if (Player* player = Game::GetLocalPlayerByIndex(i)) {
+                   //
+                   //        Ragdoll* ragdoll = player->GetRagdoll();
+                   //        if (!ragdoll) continue;
+                   //
+                   //        for (uint64_t rigidDynamicId : ragdoll->m_rigidDynamicIds) {
+                   //            RigidDynamic* rigidDynamic = Physics::GetRigidDynamicById(rigidDynamicId);
+                   //
+                   //            if (rigidDynamic) {
+                   //                PxRigidDynamic* pxRigidDynamic = rigidDynamic->GetPxRigidDynamic();
+                   //
+                   //                if (pxRigidDynamic == actor) {
+                   //                    actor->setActorFlag(PxActorFlag::eVISUALIZATION, true);
+                   //                }
+                   //            }
+                   //        }
+                   //    }
+                   //}
+                }
+            }
+
+           //const PxRenderBuffer& renderBuffer = pxScene->getRenderBuffer();
+           //int vertexCount = renderBuffer.getNbLines() * 2;
+           //
+           //vertices.clear();
+           //vertices.resize(vertexCount);
+           //
+           //for (unsigned int i = 0; i < renderBuffer.getNbLines(); i++) {
+           //    const PxDebugLine& pxLine = renderBuffer.getLines()[i];
+           //
+           //    glm::vec4 color;
+           //    switch (debugRenderMode) {
+           //        case DebugRenderMode::PHYSX_ALL:        color = GREEN;      break;
+           //        case DebugRenderMode::RAGDOLLS:         color = LIGHT_BLUE; break;
+           //        default: color = WHITE; break;
+           //    }
+           //
+           //   // Renderer::DrawLine(Physics::PxVec3toGlmVec3(pxLine.pos0), Physics::PxVec3toGlmVec3(pxLine.pos1), color, false, -1, i);
+           //}
+        }
+
+
+
     }
 
     std::string GetObjectCountsAsString() {

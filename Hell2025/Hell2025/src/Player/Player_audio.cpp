@@ -76,7 +76,12 @@ void Player::UpdateAudio() {
                 Audio::PlayAudio(filenames[random], 0.75f);
             }
             else {
-                Game::PlayFootstepOutdoorAudio();
+                if (AreFeetAboveHeightField()) {
+                    Game::PlayFootstepOutdoorAudio();
+                }
+                else {
+                    Game::PlayFootstepIndoorAudio();
+                }
             }
 
             m_footstepPlayed = true;
@@ -87,7 +92,13 @@ void Player::UpdateAudio() {
 
         // Landing on ground
         if (m_grounded && !m_groundedLastFrame) {
-            Game::PlayFootstepOutdoorAudio();
+
+            if (AreFeetAboveHeightField()) {
+                Game::PlayFootstepOutdoorAudio();
+            } else {
+                Game::PlayFootstepIndoorAudio();
+            }
+
             m_headBobTime = 0.0f;
         }
     }

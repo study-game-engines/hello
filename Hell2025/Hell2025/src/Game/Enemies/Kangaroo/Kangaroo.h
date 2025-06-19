@@ -4,6 +4,7 @@
 #include "CreateInfo.h"
 #include "HellDefines.h"
 #include "Pathfinding/AStar.h"
+#include "Physics/Types/CharacterController.h"
 
 enum struct KanagarooAgroState {
     CHILLING,
@@ -41,12 +42,16 @@ struct Kangaroo {
 
     AnimatedGameObject* GetAnimatedGameObject();
 
+    const std::string GetDebugInfoString();
     const std::string GetAnimationStateAsString();
     std::vector<glm::ivec2> GetPath();
     glm::vec2 GetGridPosition();
 
-    int GetHealth()             { return m_health; }
-    glm::vec3 GetPosition()     { return m_position; }
+    CharacterController* GetCharacterController();
+
+    int GetHealth()                             { return m_health; }
+    uint64_t GetCharacterControllerId ()        { return m_characterControllerId; }
+    glm::vec3 GetPosition()                     { return m_position; }
 
 private:
     void UpdateAnimatedGameObjectPositionRotation();
@@ -68,6 +73,7 @@ private:
 
     // Util
     bool HasValidPath();
+    void CreateCharacterController(glm::vec3 position);
     
 
     float m_timeSinceBiteBegan = 0.0f;
@@ -86,10 +92,13 @@ private:
     glm::vec3 m_forward = glm::vec3(-1.0f, 0.0f, 0.0f);
 
     bool m_awaitingHopStepAudio = false;
+    bool m_grounded = false;
+    float m_yVelocity = 0;
 
     uint64_t m_ambientLoopAudioHandle = 0;
-
+    uint64_t m_characterControllerId = 0;
     uint64_t m_animatedGameObjectId = 0;
+
     KangarooCreateInfo m_createInfo;
     KanagarooAgroState m_agroState = KanagarooAgroState::CHILLING;
     KanagarooMovementState m_movementState = KanagarooMovementState::IDLE;

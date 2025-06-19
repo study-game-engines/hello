@@ -288,7 +288,7 @@ namespace Physics {
         PhysicsFilterData filterData;
         filterData.raycastGroup = RaycastGroup::RAYCAST_ENABLED;
         filterData.collisionGroup = CollisionGroup::RAGDOLL_ENEMY;
-        filterData.collidesWith = CollisionGroup(ENVIROMENT_OBSTACLE | PLAYER);
+        filterData.collidesWith = CollisionGroup(ENVIROMENT_OBSTACLE | CHARACTER_CONTROLLER);
 
 
         for (uint64_t rigidDynamicId : ragdoll.m_rigidDynamicIds) {

@@ -364,4 +364,21 @@ namespace Util {
         }
         return totalVolume;
     }
+
+    bool IsPointInTriangle2D(const glm::vec2& pt, const glm::vec2& v0, const glm::vec2& v1, const glm::vec2& v2) {
+        glm::vec2 v0v1 = v1 - v0;
+        glm::vec2 v0v2 = v2 - v0;
+        glm::vec2 v0pt = pt - v0;
+        // Precompute the determinant to avoid division in each barycentric calculation
+        float denom = v0v1.x * v0v2.y - v0v1.y * v0v2.x;
+        // Early out if the denominator is zero (i.e., the triangle is degenerate)
+        if (denom == 0.0f) return false;
+        float invDenom = 1.0f / denom;
+        // Compute the barycentric coordinates (u, v, w) directly
+        float v = (v0pt.x * v0v2.y - v0pt.y * v0v2.x) * invDenom;
+        float w = (v0v1.x * v0pt.y - v0v1.y * v0pt.x) * invDenom;
+        float u = 1.0f - v - w;
+        // Check if point is inside the triangle
+        return (u >= 0.0f) && (v >= 0.0f) && (w >= 0.0f);
+    }
 }

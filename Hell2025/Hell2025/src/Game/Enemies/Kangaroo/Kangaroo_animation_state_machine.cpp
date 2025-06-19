@@ -1,4 +1,4 @@
-#include "Kangaroo.h"
+ #include "Kangaroo.h"
 #include "Core/Game.h"
 #include "Util.h"
 
@@ -14,6 +14,11 @@ void Kangaroo::UpdateAnimationStateMachine() {
     Player* player = Game::GetLocalPlayerByIndex(0);
     float distanceToPlayer = glm::distance(player->GetFootPosition(), m_position);
     float biteRange = 10.0f;
+
+    // Hack to stop him killing you
+   //if (distanceToPlayer < 1.0f) {
+   //    m_animationState = KanagarooAnimationState::IDLE;
+   //}
 
     // If at end of hop, 
     if (m_animationState == KanagarooAnimationState::HOP) {

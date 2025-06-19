@@ -19,28 +19,6 @@ void Kangaroo::Update(float deltaTime) {
         m_timeSinceIdleBegan = 0.0f;
     }
 
-    // Rotate to target test
-    if (Input::KeyDown(HELL_KEY_COMMA)) {
-
-        AStarMap::Init();
-
-        if (HasValidPath()) {
-            Cell* nextPathCell = m_aStar.m_finalPath[1];
-            glm::ivec2 nextPathCellCoords = glm::ivec2(nextPathCell->x, nextPathCell->y);
-            glm::vec3 nextPathWorldPosition = AStarMap::GetWorldSpacePositionFromCellCoords(nextPathCellCoords);
-
-            // Compute forward vector from 2d direction
-            glm::vec3 normalizedPosition = m_position * glm::vec3(1.0f, 0.0f, 1.0f);
-            glm::vec3 targetForward = glm::normalize(nextPathWorldPosition - normalizedPosition);
-            
-            float turnSpeed = 1.5f;
-            float alpha = glm::clamp(turnSpeed * deltaTime, 0.0f, 1.0f);
-            m_forward = glm::normalize(m_forward * (1.0f - alpha) + targetForward * alpha);
-        }
-
-
-    }
-
     if (Input::KeyPressed(HELL_KEY_PERIOD)) {
         Respawn();
     }
@@ -64,9 +42,15 @@ void Kangaroo::Update(float deltaTime) {
 
 void Kangaroo::UpdateAnimatedGameObjectPositionRotation() {
     AnimatedGameObject* animatedGameObject = GetAnimatedGameObject();
+    CharacterController* characterController = GetCharacterController();
+
+    if (!animatedGameObject) return;
+    if (!characterController) return;
 
     // TODO:
     // Get position from PhysX character controller
+
+    m_position = characterController->GetFootPosition();
 
     // Compute euler from forward vector
     glm::vec3 start = m_position;

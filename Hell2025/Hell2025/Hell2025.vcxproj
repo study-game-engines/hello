@@ -213,7 +213,7 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <ClCompile Include="src\API\OpenGL\Renderer\ComputePasses\GL_compute_skinning.cpp" />
     <ClCompile Include="src\API\OpenGL\Renderer\GL_renderer.cpp" />
     <ClCompile Include="src\API\OpenGL\Renderer\GL_renderer_util.cpp" />
-    <ClCompile Include="src\API\OpenGL\Renderer\RenderPasses\GL_blood_screenspace_decals_pass.cpp" />
+    <ClCompile Include="src\API\OpenGL\Renderer\RenderPasses\GL_screenspace_decals_pass.cpp" />
     <ClCompile Include="src\API\OpenGL\Renderer\RenderPasses\GL_decal_painting_pass.cpp" />
     <ClCompile Include="src\API\OpenGL\Renderer\RenderPasses\GL_decal_pass.cpp" />
     <ClCompile Include="src\API\OpenGL\Renderer\RenderPasses\GL_fur_pass.cpp" />
@@ -303,6 +303,7 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <ClCompile Include="src\Editor\Editor_objects.cpp" />
     <ClCompile Include="src\Editor\ObjectPlacement\Editor_object_placement.cpp" />
     <ClCompile Include="src\Editor\ObjectPlacement\Editor_window_placement.cpp" />
+    <ClCompile Include="src\Game\Enemies\Kangaroo\Kanagroo_attack_logic.cpp" />
     <ClCompile Include="src\Game\Enemies\Kangaroo\Kangaroo_animation_state_machine.cpp" />
     <ClCompile Include="src\Game\Enemies\Kangaroo\Kangaroo_audio.cpp" />
     <ClCompile Include="src\Game\Enemies\Kangaroo\Kangaroo_debug_draw.cpp" />
@@ -320,9 +321,12 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <ClCompile Include="src\Pathfinding\NavMesh.cpp" />
     <ClCompile Include="src\Pathfinding\Pathfinding.cpp" />
     <ClCompile Include="src\Physics\Physics_callbacks.cpp" />
+    <ClCompile Include="src\Physics\Physics_character_controllers.cpp" />
     <ClCompile Include="src\Physics\Physics_ignore_lists.cpp" />
+    <ClCompile Include="src\Physics\Types\CharacterController.cpp" />
     <ClCompile Include="src\Player\Player_character_model.cpp" />
     <ClCompile Include="src\Player\Player_ragdoll.cpp" />
+    <ClCompile Include="src\Renderer\GlobalIllumination.cpp" />
     <ClCompile Include="src\Types\Effects\ScreenSpaceBloodDecal.cpp" />
     <ClCompile Include="src\Types\Effects\VolumetricBloodSplatter.cpp" />
     <ClCompile Include="src\Game\Allies\Mermaid\Mermaid.cpp" />
@@ -629,6 +633,8 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <ClInclude Include="src\Pathfinding\MinHeap.h" />
     <ClInclude Include="src\Pathfinding\NavMesh.h" />
     <ClInclude Include="src\Pathfinding\Pathfinding.h" />
+    <ClInclude Include="src\Physics\Types\CharacterController.h" />
+    <ClInclude Include="src\Renderer\GlobalIllumination.h" />
     <ClInclude Include="src\Types\Effects\ScreenSpaceBloodDecal.h" />
     <ClInclude Include="src\Types\Effects\VolumetricBloodSplatter.h" />
     <ClInclude Include="src\Game\Allies\Mermaid\Mermaid.h" />

@@ -17,3 +17,15 @@ glm::ivec2 Player::GetViewportCenter() {
     int centerY = yTop + (height / 2);
     return glm::ivec2(centerX, centerY);
 }
+
+float Player::GetTargetWalkingSpeed() {
+    if (m_crouching) {
+        return m_crouchingSpeed;
+    }
+    else if (m_running) {
+        return m_runningSpeed;
+    }
+    else {
+        return m_walkingSpeed;
+    }
+}

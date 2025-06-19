@@ -185,7 +185,7 @@ enum InputType {
 enum CollisionGroup : uint64_t {
     NO_COLLISION = 0,
     BULLET_CASING = 1,
-    PLAYER = 2,
+    CHARACTER_CONTROLLER = 2,
     ENVIROMENT_OBSTACLE = 4,
     GENERIC_BOUNCEABLE = 8,
     ITEM_PICK_UP = 16,

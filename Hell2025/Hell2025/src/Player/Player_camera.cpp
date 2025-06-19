@@ -15,15 +15,16 @@ void Player::UpdateHeadBob(float deltaTime) {
 
         m_headBobTime += deltaTime;
 
-        float walkSpeed = 3.2f;
-
+        float frequency = 14.4;
         if (IsCrouching()) {
-            walkSpeed *= 0.75f;
+            frequency *= 0.75f;
+        }
+        else if (IsRunning()) {
+            frequency *= 1.1f;
         }
 
         float bobIntensity = 0.05f;
         float noiseIntensity = 0.02f;
-        float frequency = 4.5f * walkSpeed;
         m_bobOffsetY = glm::sin(m_headBobTime * frequency) * bobIntensity;
         m_bobOffsetX = glm::sin(m_headBobTime * frequency * 0.5f) * (bobIntensity * 0.5f);
         float noiseOffsetY = glm::perlin(glm::vec2(m_headBobTime * 0.1f, 0.0f)) * noiseIntensity;

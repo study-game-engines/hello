@@ -13,8 +13,6 @@ namespace Physics {
 
     void UpdateHeightFields() {
 
-        float threshold = 6.0f;
-
         for (HeightField& heightfield : g_HeightFields) {
             const AABB& heightFieldAABB = heightfield.GetAABB();
 
@@ -24,13 +22,17 @@ namespace Physics {
             // Enable heightfield physics if other active PhysX object AABBs intersect heightfield AABB
             if (Editor::IsClosed()) {
 
-                // Players
-                for (int i = 0; i < Game::GetLocalPlayerCount(); i++) {
-                    const AABB& playerAABB = Game::GetLocalPlayerByIndex(i)->GetCharacterControllerAABB();
-                    if (heightFieldAABB.IntersectsAABB(playerAABB, threshold)) {
+                // Character controllers
+                const std::unordered_map<uint64_t, CharacterController>& characterControllers = GetCharacterControllers();
+                for (auto it = characterControllers.begin(); it != characterControllers.end(); ) {
+                    const CharacterController& characterController = it->second;
+
+                    const AABB characterControllerAABB = characterController.GetAABB();
+                    if (heightFieldAABB.IntersectsAABB(characterControllerAABB, threshold)) {
                         intersectionFound = true;
                         break;
                     }
+                    it++;
                 }
 
                 // Active rigid dynamics

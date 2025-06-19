@@ -4,6 +4,7 @@
 #include <physx/geometry/PxGeometryHelpers.h>
 #include <physx/PxQueryFiltering.h>
 #pragma warning(pop)
+#include "Physics/Types/CharacterController.h"
 #include "Physics/Types/D6Joint.h"
 #include "Physics/Types/HeightField.h"
 #include "Physics/Types/Ragdoll.h"
@@ -123,6 +124,18 @@ namespace Physics {
     bool D6JointExists(uint64_t d6JointId);
     void MarkD6JointForRemoval(uint64_t d6JointId);
     void RemoveAnyD6JointMarkedForRemoval();
+
+    // Character controllers
+    uint64_t CreateCharacterController(uint64_t parentObjectId, glm::vec3 position, float height, float radius, PhysicsFilterData physicsFilterData);
+    CharacterController* GetCharacterControllerById(uint64_t characterControllerId);
+    void RemoveAnyCharacterControllerMarkedForRemoval();
+    void MarkCharacterControllerForRemoval(uint64_t characterControllerId);
+    bool CharacterControllerExists(uint64_t characterControllerId);
+    int GetCharacterControllerCount();
+    AABB GetCharacterControllerAABB(uint64_t characterControllerId);
+    void MoveCharacterController(uint64_t characterControllerId, glm::vec3 displacement);
+    glm::vec3 GetCharacterControllerPosition(uint64_t characterControllerId);
+    const std::unordered_map<uint64_t, CharacterController>& GetCharacterControllers();
 
     // Destroy
     void Destroy(PxRigidDynamic*& rigidDynamic);

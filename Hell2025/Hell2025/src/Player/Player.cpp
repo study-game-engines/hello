@@ -51,6 +51,16 @@ void Player::Update(float deltaTime) {
         return;
     }
 
+    // Inside or outside?
+    glm::vec3 rayOrigin = GetCameraPosition();
+    glm::vec3 rayDirection = glm::vec3(0.0f, -1.0f, 0.0f);
+    float rayLength = 100.0f;
+    PhysXRayResult rayResult = Physics::CastPhysXRayStaticEnviroment(rayOrigin, rayDirection, rayLength);
+    m_feetAboveHeightField = (rayResult.hitFound && rayResult.userData.physicsType == PhysicsType::HEIGHT_FIELD);
+
+    // Running
+    m_running = PressingRun() && !m_crouching;
+
     // Respawn
     if (IsAwaitingSpawn()) Respawn();
     if (IsDead() && m_timeSinceDeath > 3.25) {
@@ -58,7 +68,7 @@ void Player::Update(float deltaTime) {
             PressedReload() ||
             PressedCrouch() ||
             PressedInteract() ||
-            PresingJump() ||
+            PressingJump() ||
             PressedNextWeapon()) {
             Respawn();
             Audio::PlayAudio("RE_Beep.wav", 0.5);
@@ -96,7 +106,6 @@ void Player::Update(float deltaTime) {
     m_weaponAudioFrequency = CameraIsUnderwater() ? 0.4f : 1.0f;
  
     UpdateMovement(deltaTime);
-    UpdateCharacterController();
     UpdateHeadBob(deltaTime);
     UpdateBreatheBob(deltaTime);
     UpdateCamera(deltaTime);
@@ -309,6 +318,14 @@ const int32_t Player::GetViewportIndex() const {
 }
 
 const glm::vec3 Player::GetFootPosition() const {
+    // FIND ME
+    PxController* m_characterController = nullptr;
+    CharacterController* characterControler = Physics::GetCharacterControllerById(m_characterControllerId);
+    if (characterControler) {
+        m_characterController = characterControler->GetPxController();
+    }
+
+
     PxExtendedVec3 pxPos = m_characterController->getFootPosition();
     return glm::vec3(
         static_cast<float>(pxPos.x),
@@ -433,7 +450,4 @@ Ragdoll* Player::GetRagdoll() {
     return Physics::GetRagdollById(m_characterModelAnimatedGameObject.GetRagdollId());
 }
 
-uint64_t Player::GetRadollId() {
-    return m_characterModelAnimatedGameObject.GetRagdollId();
-}
 

@@ -54,7 +54,7 @@ Tree::Tree(TreeCreateInfo createInfo) {
     PhysicsFilterData filterData;
     filterData.raycastGroup = RaycastGroup::RAYCAST_ENABLED;
     filterData.collisionGroup = CollisionGroup::ENVIROMENT_OBSTACLE;
-    filterData.collidesWith = (CollisionGroup)(PLAYER | BULLET_CASING | ITEM_PICK_UP);
+    filterData.collidesWith = (CollisionGroup)(CHARACTER_CONTROLLER | BULLET_CASING | ITEM_PICK_UP);
     
     // Create collision capsule
     Transform localOffset;

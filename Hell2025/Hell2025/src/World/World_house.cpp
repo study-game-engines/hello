@@ -1,6 +1,7 @@
 #include "World.h"
 #include "AssetManagement/AssetManager.h"
 #include "Core/JSON.h"
+#include "Renderer/GlobalIllumination.h"
 #include "Renderer/RenderDataManager.h"
 #include "World/HouseManager.h"
 
@@ -39,6 +40,8 @@ namespace World {
 
         UpdateHouseMeshBuffer();
         UpdateWeatherBoardMeshBuffer();
+
+        //GlobalIllumination::CreatePointCloud();
     }
 
     void SaveHouse() {

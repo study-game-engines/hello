@@ -34,14 +34,6 @@ namespace Editor {
                // text += "IsActive: " + Util::BoolToString(i == Editor::GetActiveViewportIndex()) + "\n";
 
 
-                //text += "Mouse ray origin: " + Util::Vec3ToString(Editor::GetMouseRayOriginByViewportIndex(i)) + "\n";
-                //text += "Ray dir: " + Util::Vec3ToString(Editor::GetMouseRayDirectionByViewportIndex(i)) + "\n";
-
-               // text += "Cam pos: " + Util::Vec3ToString(camera->GetPosition()) + "\n";
-               // text += "Cam rot: " + Util::Vec3ToString(camera->GetEulerRotation()) + "\n";
-                //text += "Orbit target: " + Util::Vec3ToString(camera->m_orbitTarget) + "\n";
-                //text += "Cam euler: " + Util::Vec3ToString(camera->GetEulerRotation()) + "\n";
-                
 
 
                // text += "Gizmo Position: " + Util::Vec3ToString(Gizmo::GetPosition()) + "\n";

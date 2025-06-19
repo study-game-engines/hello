@@ -358,7 +358,7 @@ namespace OpenGLRenderer {
         GeometryPass();
         WeatherBoardsPass();
         VatBloodPass();
-        BloodScreenSpaceDecalsPass();
+        ScreenSpaceDecalsPass();
         TextureReadBackPass();
         LightCullingPass();
         LightingPass();

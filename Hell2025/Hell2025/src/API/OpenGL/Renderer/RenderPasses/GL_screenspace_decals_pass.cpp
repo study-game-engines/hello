@@ -6,16 +6,14 @@
 
 namespace OpenGLRenderer {
 
-    GLuint g_cubeVao = 0;
     void InitDecalCube();
-
     void MaskPass();
     void CompositePass();
 
-    void BloodScreenSpaceDecalsPass() {
-        if (g_cubeVao == 0) {
-            InitDecalCube();
-        }
+    GLuint g_cubeVao = 0;
+
+    void ScreenSpaceDecalsPass() {
+        if (g_cubeVao == 0) InitDecalCube();
 
         MaskPass();
         CompositePass();
@@ -23,55 +21,37 @@ namespace OpenGLRenderer {
 
     void InitDecalCube() {
         float vertices[] = {
-            // positions
-            0.5f,  0.5f,  0.5f,
-            0.5f,  0.5f, -0.5f,
-            -0.5f,  0.5f, -0.5f,
-            -0.5f,  0.5f, -0.5f,
+             0.5f,  0.5f,  0.5f,  
+             0.5f,  0.5f, -0.5f, 
+            -0.5f,  0.5f, -0.5f, 
             -0.5f,  0.5f,  0.5f,
-            0.5f,  0.5f,  0.5f,
-
-            0.5f,  0.5f, -0.5f,
-            0.5f, -0.5f, -0.5f,
-            -0.5f, -0.5f, -0.5f,
-            -0.5f, -0.5f, -0.5f,
-            -0.5f,  0.5f, -0.5f,
-            0.5f, 0.5f, -0.5f,
-
-            -0.5f, -0.5f,  0.5f,
-            0.5f, -0.5f,  0.5f,
-            0.5f,  0.5f,  0.5f,
-            0.5f,  0.5f,  0.5f,
-            -0.5f,  0.5f,  0.5f,
-            -0.5f, -0.5f,  0.5f,
-
-            -0.5f,  0.5f,  0.5f,
-            -0.5f,  0.5f, -0.5f,
-            -0.5f, -0.5f, -0.5f,
-            -0.5f, -0.5f, -0.5f,
-            -0.5f, -0.5f,  0.5f,
-            -0.5f,  0.5f,  0.5f,
-
-            0.5f, -0.5f, -0.5f,
-            0.5f,  0.5f, -0.5f,
-            0.5f,  0.5f,  0.5f,
-            0.5f,  0.5f,  0.5f,
-            0.5f, -0.5f,  0.5f,
-            0.5f, -0.5f, -0.5f,
-
-            -0.5f, -0.5f, -0.5f,
-            0.5f, -0.5f, -0.5f,
-            0.5f, -0.5f,  0.5f,
-            0.5f, -0.5f,  0.5f,
-            -0.5f, -0.5f,  0.5f,
-            -0.5f, -0.5f, -0.5f,
+             0.5f, -0.5f,  0.5f,  
+             0.5f, -0.5f, -0.5f, 
+            -0.5f, -0.5f, -0.5f, 
+            -0.5f, -0.5f,  0.5f
         };
-        unsigned int VBO;
+        unsigned int indices[] = {
+            0, 1, 2,  2, 3, 0, // Top
+            1, 5, 6,  6, 2, 1, // Back
+            7, 4, 0,  0, 3, 7, // Front
+            3, 2, 6,  6, 7, 3, // Left
+            5, 1, 0,  0, 4, 5, // Right
+            6, 5, 4,  4, 7, 6  // Bottom
+        };
+
+        unsigned int VBO, EBO;
         glGenVertexArrays(1, &g_cubeVao);
         glGenBuffers(1, &VBO);
+        glGenBuffers(1, &EBO);
+
+        glBindVertexArray(g_cubeVao);
+
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-        glBindVertexArray(g_cubeVao);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(0);
     }
@@ -98,8 +78,6 @@ namespace OpenGLRenderer {
         glBindTextureUnit(0, gBuffer->GetColorAttachmentHandleByName("WorldPosition"));
         glBindTextureUnit(1, gBuffer->GetColorAttachmentHandleByName("Normal"));
 
-
-
         glDisable(GL_DEPTH_TEST);
         glDisable(GL_CULL_FACE);
 
@@ -111,24 +89,9 @@ namespace OpenGLRenderer {
 
                 shader->SetMat4("u_projectionView", viewportData[i].projectionView);
 
-
-
-
-                // glDepthMask(GL_FALSE);
-                // glEnable(GL_BLEND);
-                // glBlendFunc(GL_DST_COLOR, GL_SRC_COLOR);
-                // glBlendFunc(GL_DST_COLOR, GL_SRC_COLOR);
-                // glBlendEquation(GL_FUNC_ADD);
-                // glEnablei(GL_BLEND, 1);
-                // glBlendFunci(1, GL_DST_COLOR, GL_SRC_COLOR);
-                // glDisablei(GL_BLEND, 1);
-                // glCullFace(GL_FRONT);
-                // glDisable(GL_DEPTH_TEST);
-                //
-                
-               glEnable(GL_BLEND);
-               glBlendEquation(GL_MAX);
-               glBlendFunc(GL_ONE, GL_ONE);
+                glEnable(GL_BLEND);
+                glBlendEquation(GL_MAX);
+                glBlendFunc(GL_ONE, GL_ONE);
 
                 for (ScreenSpaceBloodDecal& screenSpaceBloodDecal : World::GetScreenSpaceBloodDecals()) {
 
@@ -142,12 +105,11 @@ namespace OpenGLRenderer {
                     }
                     glBindTextureUnit(2, textureHandle);
 
-
                     shader->SetMat4("u_model", screenSpaceBloodDecal.GetModelMatrix());
                     shader->SetMat4("u_inverseModel", screenSpaceBloodDecal.GetInverseModelMatrix());
 
                     glBindVertexArray(g_cubeVao);
-                    glDrawArrays(GL_TRIANGLES, 0, 36);
+                    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
                 }
             }
         }    

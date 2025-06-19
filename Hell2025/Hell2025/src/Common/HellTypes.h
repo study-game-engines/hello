@@ -158,6 +158,7 @@ struct DebugVertex {
     glm::vec3 color;
     glm::ivec2 pixelOffset;
     int exclusiveViewportIndex = -1;
+    int ignoredViewportIndex = -1;
 };
 #pragma pack(pop)
 
@@ -393,6 +394,7 @@ struct PlayerControls {
     unsigned int MELEE = HELL_KEY_V;
     unsigned int FLASHLIGHT = HELL_KEY_F;
     unsigned int MISC_WEAPON_FUNCTION = HELL_KEY_T;
+    unsigned int RUN = HELL_KEY_LEFT_SHIFT;
 };
 
 /*

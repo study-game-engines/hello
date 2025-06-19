@@ -21,7 +21,12 @@ void Player::UpdatePlayingPiano(float deltaTime) {
 
     // Move character control to piano seat position
     glm::vec3 targetPosition = piano->GetSeatPosition();
-    m_characterController->setFootPosition(PxExtendedVec3(targetPosition.x, targetPosition.y, targetPosition.z));
+
+    CharacterController* characterControler = Physics::GetCharacterControllerById(m_characterControllerId);
+    if (characterControler) {
+        PxController* pxControler = characterControler->GetPxController();
+        pxControler->setFootPosition(PxExtendedVec3(targetPosition.x, targetPosition.y, targetPosition.z));
+    }
 
     // Leave the piano
     if (Input::MiddleMousePressed()) {

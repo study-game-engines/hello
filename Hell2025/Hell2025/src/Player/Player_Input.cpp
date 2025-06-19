@@ -141,7 +141,28 @@ bool Player::PressingFire() {
     }
 }
 
-bool Player::PresingJump() {
+bool Player::PressingRun() {
+    if (m_inputType == InputType::KEYBOARD_AND_MOUSE) {
+        return InputMulti::KeyDown(m_keyboardIndex, m_mouseIndex, m_controls.RUN);
+    }
+    else {
+        //return InputMulti::ButtonPressed(_controllerIndex, m_controls.JUMP);
+        return false;
+    }
+}
+
+bool Player::PressedRun() {
+    if (m_inputType == InputType::KEYBOARD_AND_MOUSE) {
+        return InputMulti::KeyPressed(m_keyboardIndex, m_mouseIndex, m_controls.RUN);
+    }
+    else {
+        //return InputMulti::ButtonPressed(_controllerIndex, m_controls.JUMP);
+        return false;
+    }
+}
+
+
+bool Player::PressingJump() {
     if (m_inputType == InputType::KEYBOARD_AND_MOUSE) {
         return InputMulti::KeyDown(m_keyboardIndex, m_mouseIndex, m_controls.JUMP);
     }

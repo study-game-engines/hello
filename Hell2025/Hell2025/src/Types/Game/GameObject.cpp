@@ -19,7 +19,7 @@ GameObject::GameObject(GameObjectCreateInfo createInfo) {
         PhysicsFilterData filterData;
         filterData.raycastGroup = RaycastGroup::RAYCAST_ENABLED;
         filterData.collisionGroup = CollisionGroup::ENVIROMENT_OBSTACLE;
-        filterData.collidesWith = (CollisionGroup)(PLAYER | BULLET_CASING | ITEM_PICK_UP);
+        filterData.collidesWith = (CollisionGroup)(CHARACTER_CONTROLLER | BULLET_CASING | ITEM_PICK_UP);
         m_physicsId = Physics::CreateRigidStaticConvexMeshFromModel(m_transform, "Bench_ConvexHulls", filterData);
     }
 
@@ -116,7 +116,7 @@ void GameObject::SetConvexHullsFromModel(const std::string modelName) {
     PhysicsFilterData filterData;
     filterData.raycastGroup = RaycastGroup::RAYCAST_ENABLED;
     filterData.collisionGroup = CollisionGroup::ENVIROMENT_OBSTACLE;
-    filterData.collidesWith = CollisionGroup::PLAYER;
+    filterData.collidesWith = CollisionGroup::CHARACTER_CONTROLLER;
 
     PxFilterData pxFilterData;
     pxFilterData.word0 = (PxU32)filterData.raycastGroup;

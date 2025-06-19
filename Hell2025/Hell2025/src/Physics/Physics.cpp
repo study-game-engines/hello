@@ -88,7 +88,7 @@ namespace Physics {
         PxFilterData filterData;
         filterData.word0 = RaycastGroup::RAYCAST_ENABLED; // must be disabled or it causes crash in scene::update when it tries to retrieve rigid body flags from this actor
         filterData.word1 = CollisionGroup::ENVIROMENT_OBSTACLE;
-        filterData.word2 = CollisionGroup::BULLET_CASING | CollisionGroup::GENERIC_BOUNCEABLE | CollisionGroup::PLAYER;
+        filterData.word2 = CollisionGroup::BULLET_CASING | CollisionGroup::GENERIC_BOUNCEABLE | CollisionGroup::CHARACTER_CONTROLLER;
         groundShape->setQueryFilterData(filterData);
         groundShape->setSimulationFilterData(filterData); // sim is for ragz
 

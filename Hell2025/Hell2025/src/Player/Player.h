@@ -19,7 +19,7 @@ struct Player {
     void InitRagdoll();
     void InitCharacterModel();
     void CreateCharacterController(glm::vec3 position);
-    void MoveCharacterController(glm::vec3 displacement);
+    //void MoveCharacterController(glm::vec3 displacement);
     const bool IsAwaitingSpawn();
     const bool HasControl();
     const bool IsLocal() const;
@@ -68,11 +68,8 @@ struct Player {
 
     void Kill();
     Ragdoll* GetRagdoll();
-    uint64_t GetRadollId();
-    uint64_t m_playerId = 0;
     glm::mat4 m_deathCamViewMatrix = glm::mat4(1.0f);
 
-    uint64_t GetPlayerId() { return m_playerId; }
 
     // Weapon shit
     int GetCurrentWeaponMagAmmo();
@@ -100,10 +97,10 @@ struct Player {
     //glm::vec3 m_velocity = glm::vec3(0.0f);
     glm::vec3 m_movementDirection = glm::vec3(0.0f); // can be zero
     float m_acceleration = 0.0f;
-    float m_speedBoost = 1.0f;
 
     glm::ivec2 GetViewportCenter();
     void CheckForMeleeHit();
+    float GetTargetWalkingSpeed();
 
     // Water
     WaterState m_waterState;
@@ -155,7 +152,9 @@ struct Player {
     bool PressedReload();
     bool PressedFire();
     bool PressingFire();
-    bool PresingJump();
+    bool PressingJump();
+    bool PressingRun();
+    bool PressedRun();
     bool PressedCrouch();
     bool PressedWeaponMiscFunction();
     bool PressedNextWeapon();
@@ -230,12 +229,15 @@ private:
     bool m_crouching = false;
     bool m_grounded = true;
     bool m_groundedLastFrame;
+    bool m_feetAboveHeightField = false;
+    bool m_running = false;
 
     // Speed
     float m_walkSpeed = 5.0f;
     float m_currentSpeed = 0.0f;
     float m_walkingSpeed = 4.85f;
     float m_crouchingSpeed = 2.325f;
+    float m_runningSpeed = m_walkingSpeed * 1.1f;
     float m_swimmingSpeed = 3.25f;
     float m_crouchDownSpeed = 17.5f;
 
@@ -350,7 +352,6 @@ private:
 
         // Physics 
         void SetFootPosition(glm::vec3 position);
-        void UpdateCharacterController();
         PxShape* GetCharacterControllerShape();
         PxRigidDynamic* GetCharacterControllerActor();
 
@@ -377,7 +378,10 @@ private:
         AnimatedGameObject m_viewWeaponAnimatedGameObject;
         AnimatedGameObject m_characterModelAnimatedGameObject;
         SpriteSheetObject m_muzzleFlash;
-        PxController* m_characterController = NULL;
+
+      //  CharacterController
+
+        //PxController* m_characterController = NULL;
 
         std::vector<SpriteSheetRenderItem> m_spriteSheetRenderItems;
         AABB m_characterControllerAABB;
@@ -385,10 +389,17 @@ private:
         void UpdateWalkingMovement(float deltaTime);
         void UpdateSwimmingMovement(float deltaTime);
 
+        uint64_t m_playerId = 0;
+        uint64_t m_characterControllerId = 0;
+
     public:
+        const uint64_t GetPlayerId()                                            { return m_playerId; }
+        const uint64_t GetcharacterControllerId()                               { return m_characterControllerId; }
         const uint64_t GetRagdollId()                                           { return m_characterModelAnimatedGameObject.GetRagdollId(); }
         const bool IsAlive()                                                    { return m_alive; }
         const bool IsDead()                                                     { return !m_alive; }
+        const bool IsRunning()                                                  { return m_running; }
+        const bool AreFeetAboveHeightField()                                    { return m_feetAboveHeightField; }
         const std::vector<SpriteSheetRenderItem>& GetSpriteSheetRenderItems()   { return m_spriteSheetRenderItems; }
         const glm::vec3 GetFlashlightPosition()                                 { return m_flashlightPosition; }
         const glm::vec3 GetFlashlightDirection()                                { return m_flashlightDirection; };

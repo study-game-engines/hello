@@ -47,6 +47,9 @@ public:
         glEnableVertexAttribArray(3);
         glVertexAttribIPointer(3, 1, GL_INT, sizeof(DebugVertex), (void*)offsetof(DebugVertex, exclusiveViewportIndex));
 
+        glEnableVertexAttribArray(4);
+        glVertexAttribIPointer(4, 1, GL_INT, sizeof(DebugVertex), (void*)offsetof(DebugVertex, ignoredViewportIndex));
+
         glBindVertexArray(0);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
 
