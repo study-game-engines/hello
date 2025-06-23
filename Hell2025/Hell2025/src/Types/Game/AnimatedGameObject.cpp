@@ -153,14 +153,15 @@ void AnimatedGameObject::Update(float deltaTime, std::unordered_map<std::string,
 
         if (m_animator.m_animationStates.empty()) {
             m_animator.SetSkinnedModel("Kangaroo");
-            m_animator.RegisterAnimation("Kangaroo_Hop");
-            //m_animator.RegisterAnimation("Kangaroo_Bite");
-            std::cout << "hi\n";
-
-            m_animator.m_animationStates[1].m_AnimationWeight = 0.0;
+            m_animator.RegisterAnimation("Kangaroo_Hop_LowerBody");
+            m_animator.RegisterAnimation("Kangaroo_Hop_UpperBody");
+            //std::cout << "hi\n";
         }
 
-        m_animator.UpdateAnimations(deltaTime);
+        m_animator.m_animationStates[0].m_AnimationWeight = 0.5;//0.01;
+        m_animator.m_animationStates[1].m_AnimationWeight = 0.5;//0.99;
+
+        m_animator.UpdateAnimations(deltaTime * 0.1f);
 
         m_globalBlendedNodeTransforms = m_animator.m_globalBlendedNodeTransforms;
 
@@ -169,6 +170,11 @@ void AnimatedGameObject::Update(float deltaTime, std::unordered_map<std::string,
         //    for (int i = 0; i < m_animator.m_animationStates[1].m_nodeTransforms.size(); i++) {
         //        m_globalBlendedNodeTransforms[i] = m_animator.m_animationStates[1].m_nodeTransforms[i].to_mat4();
         //    }
+        //}
+
+
+        //if (Input::KeyPressed(HELL_KEY_SPACE)) {
+        //    PrintBoneNames();
         //}
     }
 

@@ -1,5 +1,5 @@
 #version 430 core
-layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+layout (local_size_x = 128, local_size_y = 1, local_size_z = 1) in;
 
 struct Vertex {
     float position[3];
@@ -29,10 +29,16 @@ layout(std140,set = 0, binding = 2) readonly buffer B {mat4 data[];} animatedTra
 uniform int baseInputVertex;
 uniform int baseOutputVertex;
 uniform int baseTransformIndex;
+uniform int vertexCount;
 
 void main() {
 
 	uint index = gl_GlobalInvocationID.x;
+
+    if (index >= vertexCount) {
+        return;
+    }
+
 	float pos_x = InputVertexBuffer[index + baseInputVertex].position[0];
 	float pos_y = InputVertexBuffer[index + baseInputVertex].position[1];
 	float pos_z = InputVertexBuffer[index + baseInputVertex].position[2];

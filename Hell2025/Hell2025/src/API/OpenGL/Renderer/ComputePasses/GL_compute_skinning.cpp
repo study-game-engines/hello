@@ -59,7 +59,11 @@ namespace OpenGLRenderer {
                 shader->SetInt("baseOutputVertex", baseOutputVertex);
                 shader->SetInt("baseTransformIndex", baseTransformIndex);
                 shader->SetInt("vertexCount", mesh->vertexCount);
-                glDispatchCompute(mesh->vertexCount, 1, 1);
+
+                GLuint workgroupSize = 128;
+                GLuint groupCountX = (mesh->vertexCount + workgroupSize - 1) / workgroupSize;
+                glDispatchCompute(groupCountX, 1, 1);
+
                 baseOutputVertex += mesh->vertexCount;
             }
             baseTransformIndex += animatedGameObject->GetLocalBlendedBoneTransforms().size();
