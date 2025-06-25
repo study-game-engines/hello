@@ -72,12 +72,18 @@ public:
 	void SetRotationX(float rotation);
 	void SetRotationY(float rotation);
 	void SetRotationZ(float rotation);
+
+    void PlayAnimation(const std::string& animationName, float speed, unsigned int layer = 0);
+    void PlayAnimation(std::vector<const std::string&> animationNames, float speed, unsigned int layer = 0);
+    void PlayAndLoopAnimation(const std::string& animationName, float speed, unsigned int layer = 0);
+    void PlayAndLoopAnimation(std::vector<const std::string&> animationNames, float speed, unsigned int layer = 0);
+
     void PlayAnimation(const std::string& animationName, float speed);
-	void PlayAnimation(const std::string& animationName, const AnimationPlaybackParams& playbackParams = AnimationPlaybackParams());
+    void PlayAnimation(const std::string& animationName, const AnimationPlaybackParams& playbackParams = AnimationPlaybackParams());
     void PlayAnimation(const std::vector<std::string>& animationNames, float speed);
     void PlayAnimation(const std::vector<std::string>& animationNames, const AnimationPlaybackParams& playbackParams);
     void PlayAndLoopAnimation(const std::string& animationName, float speed);
-	void PlayAndLoopAnimation(const std::string& animationName, const AnimationPlaybackParams& playbackParams = AnimationPlaybackParams());
+    void PlayAndLoopAnimation(const std::string& animationName, const AnimationPlaybackParams& playbackParams = AnimationPlaybackParams());
     void SetAnimationModeToBindPose();
     void SetAnimationModeToRagdoll();
     void SetMeshMaterialByMeshName(const std::string& meshName, const std::string& materialName);

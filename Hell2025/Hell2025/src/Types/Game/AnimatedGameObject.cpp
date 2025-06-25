@@ -8,6 +8,8 @@
 #include "UniqueID.h"
 #include "Util.h"
 
+#include <unordered_set>
+
 void AnimatedGameObject::Init() {
     m_objectId = UniqueID::GetNext();
 }
@@ -56,7 +58,7 @@ void AnimatedGameObject::UpdateRenderItems() {
             renderItem.furUVScale = m_meshRenderingEntries[i].furUVScale;
             renderItem.furShellDistanceAttenuation = m_meshRenderingEntries[i].furShellDistanceAttenuation;
             renderItem.woundMaskTexutreIndex = m_woundMaskTextureIndices[i];
-            renderItem.blockScreenSpaceBloodDecals = 1;
+            renderItem.blockScreenSpaceBloodDecals = (int)true;
 
             if (m_skinnedModel->GetName() == "Kangaroo") {
                 renderItem.customFlag = 1;
@@ -128,13 +130,6 @@ void AnimatedGameObject::Update(float deltaTime, std::unordered_map<std::string,
         m_animationLayer.Update(deltaTime, additiveBoneTransforms);
     }
 
-    // Blending
-    //m_accumulatedBlendingTime += deltaTime;
-    //float remainingTime = m_totalBlendDuration - m_accumulatedBlendingTime;
-    //m_blendFactor = remainingTime / m_totalBlendDuration;
-    //m_blendFactor = glm::clamp(m_blendFactor, 0.0f, 1.0f);
-    //m_blendFactor = Util::SmoothStep(m_blendFactor);
-
     m_LocalBlendedBoneTransforms.clear();
     m_globalBlendedNodeTransforms.clear();
 
@@ -145,37 +140,194 @@ void AnimatedGameObject::Update(float deltaTime, std::unordered_map<std::string,
     for (int i = 0; i < m_animationLayer.m_globalBlendedNodeTransforms.size(); i++) {
         m_globalBlendedNodeTransforms.push_back(m_animationLayer.m_globalBlendedNodeTransforms[i]);
     }
-
-
+        
     // OVERWRITE WITH ANIMATOR
     if (m_skinnedModel->GetName() == "Kangaroo") {
-
-
         if (m_animator.m_animationStates.empty()) {
             m_animator.SetSkinnedModel("Kangaroo");
-            m_animator.RegisterAnimation("Kangaroo_Hop_LowerBody");
-            m_animator.RegisterAnimation("Kangaroo_Hop_UpperBody");
-            //std::cout << "hi\n";
+            m_animator.RegisterAnimation("Kangaroo_Hop");
+            m_animator.RegisterAnimation("Kangaroo_Bite_UpperBody");
+
+            int nodeCount = m_skinnedModel->GetNodeCount();
+            std::vector<float> boneWeightsLowerBody(nodeCount);
+            std::vector<float> boneWeightsUpperBody(nodeCount);
+
+            std::unordered_set<std::string> upperBones = {
+                "RootNode",
+                "Armature" ,
+                //"def_root" ,
+                //"def_hip" ,
+                "def_spine_01" ,
+                "def_spine_02" ,
+                "def_chest" ,
+                "def_neck_01" ,
+                "def_neck_02" ,
+                "def_head" ,
+                "def_ear_01_L" ,
+                "def_ear_02_L" ,
+                "def_ear_03_L" ,
+                "def_ear_04_L" ,
+                "def_jaw" ,
+                "def_lower_lip_L" ,
+                "def_lower_lip_C" ,
+                "def_lower_lip_R" ,
+                "def_tongue_01" ,
+                "def_tongue_05" ,
+                "def_tongue_03" ,
+                "def_tongue_07" ,
+                "def_tongue_02" ,
+                "def_tongue_06" ,
+                "def_tongue_04" ,
+                "def_tongue_08" ,
+                "def_tongue_09" ,
+                "def_brow_L" ,
+                "def_eye_L" ,
+                "def_snout" ,
+                "def_upper_lip_L" ,
+                "def_upper_lip_C" ,
+                "def_brow_R" ,
+                "def_eye_R" ,
+                "def_upper_lip_R" ,
+                "def_ear_01_R" ,
+                "def_ear_02_R" ,
+                "def_ear_03_R" ,
+                "def_ear_04_R" ,
+                "def_upper_lid_L" ,
+                "def_upper_lid_tweak_L" ,
+                "def_lower_lid_L" ,
+                "def_lower_lid_tweak_L" ,
+                "def_upper_lid_R" ,
+                "def_upper_lid_tweak_R" ,
+                "def_lower_lid_R" ,
+                "def_lower_lid_tweak_R" ,
+                "def_corner_mouth_L" ,
+                "def_corner_mouth_R" ,
+                "def_collar_L" ,
+                "def_upper_arm_01_L" ,
+                "def_upper_arm_02_L" ,
+                "def_upper_arm_03_L" ,
+                "def_upper_arm_04_L" ,
+                "def_upper_arm_05_L" ,
+                "def_lower_arm_01_L" ,
+                "def_lower_arm_02_L" ,
+                "def_lower_arm_03_L" ,
+                "def_lower_arm_04_L" ,
+                "def_lower_arm_05_L" ,
+                "def_hand_L" ,
+                "def_pinky_finger_01_L" ,
+                "def_pinky_finger_02_L" ,
+                "def_pinky_finger_03_L" ,
+                "def_carpol_01_L" ,
+                "def_pointer_finger_01_L" ,
+                "def_pointer_finger_02_L" ,
+                "def_pointer_finger_03_L" ,
+                "def_carpol_02_L" ,
+                "def_middle_finger_01_L" ,
+                "def_middle_finger_02_L" ,
+                "def_middle_finger_03_L" ,
+                "def_carpol_03_L" ,
+                "def_ring_finger_01_L" ,
+                "def_ring_finger_02_L" ,
+                "def_ring_finger_03_L" ,
+                "def_carpol_04_L" ,
+                "def_carpol_05_L" ,
+                "def_thumb_01_L" ,
+                "def_thumb_02_L" ,
+                "def_thumb_03_L" ,
+                "def_pit_correction_L" ,
+                "def_collar_R" ,
+                "def_pit_correction_R" ,
+                "def_upper_arm_01_R" ,
+                "def_upper_arm_02_R" ,
+                "def_upper_arm_03_R" ,
+                "def_upper_arm_04_R" ,
+                "def_upper_arm_05_R" ,
+                "def_lower_arm_01_R" ,
+                "def_lower_arm_02_R" ,
+                "def_lower_arm_03_R" ,
+                "def_lower_arm_04_R" ,
+                "def_lower_arm_05_R" ,
+                "def_hand_R" ,
+                "def_pinky_finger_01_R" ,
+                "def_pinky_finger_02_R" ,
+                "def_pinky_finger_03_R" ,
+                "def_carpol_01_R" ,
+                "def_pointer_finger_01_R" ,
+                "def_pointer_finger_02_R" ,
+                "def_pointer_finger_03_R" ,
+                "def_carpol_02_R" ,
+                "def_middle_finger_01_R" ,
+                "def_middle_finger_02_R" ,
+                "def_middle_finger_03_R" ,
+                "def_carpol_03_R" ,
+                "def_ring_finger_01_R" ,
+                "def_ring_finger_02_R" ,
+                "def_ring_finger_03_R" ,
+                "def_carpol_04_R" ,
+                "def_carpol_05_R" ,
+                "def_thumb_01_R" ,
+                "def_thumb_02_R" ,
+                "def_thumb_03_R" ,
+                //"def_breathing" ,
+                //"def_tail_01" ,
+                //"def_tail_02" ,
+                //"def_tail_03" ,
+                //"def_tail_04" ,
+                //"def_tail_05" ,
+                //"def_tail_06" ,
+                //"def_tail_07" ,
+                //"def_tail_08" ,
+                //"def_tail_09" ,
+                //"def_trail_10" ,
+                //"def_trail_11" ,
+                //"def_upper_leg_L" ,
+                //"def_lower_leg_L" ,
+                //"def_foot_L" ,
+                //"def_toe_right_01_L" ,
+                //"def_toe_right_02_L" ,
+                //"def_toe_left_01_L" ,
+                //"def_toe_left_02_L" ,
+                //"def_toe_middle_01_L" ,
+                //"def_toe_middle_02_L" ,
+                //"def_upper_leg_R" ,
+                //"def_lower_leg_R" ,
+                //"def_foot_R" ,
+                //"def_toe_right_01_R" ,
+                //"def_toe_right_02_R" ,
+                //"def_toe_left_01_R" ,
+                //"def_toe_left_02_R" ,
+                //"def_toe_middle_01_R" ,
+                //"def_toe_middle_02_R" ,
+                "Body" ,
+                "LeftEye_Iris" ,
+                "LeftEye_Sclera" ,
+                "Mouth" ,
+                "Nails" ,
+                "RightEye_Iris" ,
+                "RightEye_Sclera",
+                "Teeth",
+                "Tongue"
+            };
+
+            for (int i = 0; i < nodeCount; ++i) {
+                const std::string& name = m_skinnedModel->m_nodes[i].name;
+                bool isUpper = upperBones.count(name) > 0;
+
+                boneWeightsUpperBody[i] = isUpper ? 10.0f : 0.01f;
+                boneWeightsLowerBody[i] = isUpper ? 0.01f : 10.0f;
+            }
+
+            m_animator.m_animationStates[0].m_boneWeights = boneWeightsLowerBody;
+            m_animator.m_animationStates[1].m_boneWeights = boneWeightsUpperBody;
         }
 
-        m_animator.m_animationStates[0].m_AnimationWeight = 0.5;//0.01;
-        m_animator.m_animationStates[1].m_AnimationWeight = 0.5;//0.99;
+        m_animator.m_animationStates[0].m_AnimationWeight = 1.0;
+        m_animator.m_animationStates[1].m_AnimationWeight = 1.0;
 
-        m_animator.UpdateAnimations(deltaTime * 0.1f);
+        m_animator.UpdateAnimations(deltaTime);
 
         m_globalBlendedNodeTransforms = m_animator.m_globalBlendedNodeTransforms;
 
-        //if (m_animator.m_animationStates.size()) {
-        //    m_globalBlendedNodeTransforms.resize(m_animator.m_animationStates[0].m_nodeTransforms.size());
-        //    for (int i = 0; i < m_animator.m_animationStates[1].m_nodeTransforms.size(); i++) {
-        //        m_globalBlendedNodeTransforms[i] = m_animator.m_animationStates[1].m_nodeTransforms[i].to_mat4();
-        //    }
-        //}
-
-
-        //if (Input::KeyPressed(HELL_KEY_SPACE)) {
-        //    PrintBoneNames();
-        //}
     }
 
     // Compute local bone matrices
@@ -400,6 +552,21 @@ void AnimatedGameObject::PlayAndLoopAnimation(const std::string& animationName, 
     m_animationLayer.PlayAndLoopAnimation(animationName, params);
 }
 
+void AnimatedGameObject::PlayAnimation(const std::string& animationName, float speed, unsigned int layer) {
+  
+}
+
+void AnimatedGameObject::PlayAnimation(std::vector<const std::string&> animationNames, float speed, unsigned int layer) {
+
+}
+
+void AnimatedGameObject::PlayAndLoopAnimation(const std::string& animationName, float speed, unsigned int layer) {
+
+}
+
+void AnimatedGameObject::PlayAndLoopAnimation(std::vector<const std::string&> animationNames, float speed, unsigned int layer) {
+
+}
 
 std::vector<glm::mat4>& AnimatedGameObject::GetLocalBlendedBoneTransforms() {
     return m_LocalBlendedBoneTransforms;

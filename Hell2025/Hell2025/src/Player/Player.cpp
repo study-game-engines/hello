@@ -176,7 +176,6 @@ void Player::Respawn() {
             spawnPoint = spawnPoints[0];
         }
 
-
         spawnPoint.position = glm::vec3(44.21f, 32.3, 35.15);
         spawnPoint.camEuler = glm::vec3(-0.2f, -2.99, 0.0f);
 

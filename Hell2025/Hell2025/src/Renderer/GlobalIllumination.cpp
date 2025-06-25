@@ -104,15 +104,18 @@ namespace GlobalIllumination {
             max.x = RoundUp(max.x, POINT_CLOUD_SPACING) + POINT_CLOUD_SPACING * 0.5f;
             max.y = RoundUp(max.y, POINT_CLOUD_SPACING) + POINT_CLOUD_SPACING * 0.5f;
 
+            float theshold = 0.05f;
+            min.x += theshold;
+            min.y += theshold;
+            max.x -= theshold;
+            max.y -= theshold;
+
             // Generate points within the bounding box
             for (float x = min.x; x <= max.x; x += POINT_CLOUD_SPACING) {
                 for (float y = min.y; y <= max.y; y += POINT_CLOUD_SPACING) {
                     glm::vec2 pt(x, y);
                     if (Util::IsPointInTriangle2D(pt, v0_2d, v1_2d, v2_2d)) {
                         glm::vec3 pt3d = triangle.v0 + right * (pt.x - v0_2d.x) + up * (pt.y - v0_2d.y);
-
-
-                      //  std::cout << "- adding point " << pt3d << "    min: " << min << "  max: " << max << "  x: " << x << "  y:"  << y << "\n";
 
                         CloudPoint& cloudPoint = g_pointCloud.emplace_back();
                         cloudPoint.position = glm::vec4(pt3d, 0.0f);
@@ -121,9 +124,6 @@ namespace GlobalIllumination {
                 }
             }
         }
-
-      //  std::cout << "Point cloud point count: " << g_pointCloud.size() << "\n";
-
     }
         
 
