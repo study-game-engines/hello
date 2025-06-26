@@ -17,12 +17,7 @@ void Player::FireMelee() {
     }
 
     if (weaponInfo->animationNames.fire.size()) {
-        int rand = std::rand() % weaponInfo->animationNames.fire.size();
-
-        AnimationPlaybackParams params = AnimationPlaybackParams::GetDefaultPararms();
-        params.animationSpeed = weaponInfo->animationSpeeds.fire;
-
-        viewWeapon->PlayAnimation(weaponInfo->animationNames.fire[rand], params);
+        viewWeapon->PlayAnimation("MainLayer", weaponInfo->animationNames.fire, weaponInfo->animationSpeeds.fire);
     }
 
     m_weaponAction = WeaponAction::FIRE;
@@ -33,6 +28,6 @@ bool Player::CanFireMelee() {
     WeaponAction weaponAction = GetCurrentWeaponAction();
     return (
         weaponAction == IDLE ||
-        weaponAction == FIRE && viewWeapon->AnimationIsPastFrameNumber(5)
+        weaponAction == FIRE && viewWeapon->AnimationIsPastFrameNumber("MainLayer", 5)
     );
 }

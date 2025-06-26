@@ -142,17 +142,22 @@ void AnimatedGameObject::Update(float deltaTime, std::unordered_map<std::string,
     }
         
     // OVERWRITE WITH ANIMATOR
+
+    if (m_skinnedModel->GetName() == "Shark") {
+        if (m_animator.m_animationLayers.empty()) {
+            m_animator.SetSkinnedModel("Shark");
+            m_animator.CreateAnimationLayer("FullBody");
+            m_animator.PlayAndLoopAnimation("FullBody", "Shark_Swim");
+        }
+    }
+
     if (m_skinnedModel->GetName() == "Kangaroo") {
-        if (m_animator.m_animationStates.empty()) {
-            m_animator.SetSkinnedModel("Kangaroo");
-            m_animator.RegisterAnimation("Kangaroo_Hop");
-            m_animator.RegisterAnimation("Kangaroo_Bite_UpperBody");
 
-            int nodeCount = m_skinnedModel->GetNodeCount();
-            std::vector<float> boneWeightsLowerBody(nodeCount);
-            std::vector<float> boneWeightsUpperBody(nodeCount);
+        if (Input::KeyPressed(HELL_KEY_N)) {
+            m_animator.PlayAnimation("UpperBody", "Kangaroo_Bite_UpperBody");
+        }
 
-            std::unordered_set<std::string> upperBones = {
+        static std::unordered_set<std::string> upperBones = {
                 "RootNode",
                 "Armature" ,
                 //"def_root" ,
@@ -307,28 +312,34 @@ void AnimatedGameObject::Update(float deltaTime, std::unordered_map<std::string,
                 "RightEye_Sclera",
                 "Teeth",
                 "Tongue"
-            };
+        };
+
+        if (m_animator.m_animationLayers.empty()) {
+            m_animator.SetSkinnedModel("Kangaroo");
+
+            m_animator.CreateAnimationLayer("FullBody");
+            m_animator.CreateAnimationLayer("UpperBody");
+
+            m_animator.PlayAndLoopAnimation("FullBody", "Kangaroo_Hop");
+            m_animator.PlayAnimation("UpperBody", "Kangaroo_Bite_UpperBody");
+
+            int nodeCount = m_skinnedModel->GetNodeCount();
+            std::vector<float> boneWeightsLowerBody(nodeCount);
+            std::vector<float> boneWeightsUpperBody(nodeCount);
 
             for (int i = 0; i < nodeCount; ++i) {
                 const std::string& name = m_skinnedModel->m_nodes[i].name;
                 bool isUpper = upperBones.count(name) > 0;
-
-                boneWeightsUpperBody[i] = isUpper ? 10.0f : 0.01f;
-                boneWeightsLowerBody[i] = isUpper ? 0.01f : 10.0f;
+                boneWeightsUpperBody[i] = isUpper ? 100000.0f : 0.001f;
+                boneWeightsLowerBody[i] = isUpper ? 0.001f : 100000.0f;
             }
-
-            m_animator.m_animationStates[0].m_boneWeights = boneWeightsLowerBody;
-            m_animator.m_animationStates[1].m_boneWeights = boneWeightsUpperBody;
+            m_animator.m_animationLayers["UpperBody"].m_boneWeights = boneWeightsUpperBody;
+            m_animator.m_animationLayers["FullBody"].m_boneWeights = boneWeightsLowerBody;
         }
-
-        m_animator.m_animationStates[0].m_AnimationWeight = 1.0;
-        m_animator.m_animationStates[1].m_AnimationWeight = 1.0;
-
-        m_animator.UpdateAnimations(deltaTime);
-
-        m_globalBlendedNodeTransforms = m_animator.m_globalBlendedNodeTransforms;
-
     }
+
+    m_animator.UpdateAnimations(deltaTime);
+    m_globalBlendedNodeTransforms = m_animator.m_globalBlendedNodeTransforms;
 
     // Compute local bone matrices
     int boneCount = m_skinnedModel->GetBoneCount();
@@ -337,8 +348,6 @@ void AnimatedGameObject::Update(float deltaTime, std::unordered_map<std::string,
         int nodeIdx = m_skinnedModel->m_boneNodeIndex[b];
         m_LocalBlendedBoneTransforms[b] = m_globalBlendedNodeTransforms[nodeIdx] * m_skinnedModel->m_boneOffsets[b];
     }
-
-
 
     // If it has a ragdoll
     if (m_animationMode != AnimationMode::RAGDOLL) {
@@ -516,56 +525,58 @@ void AnimatedGameObject::SetAnimationModeToRagdoll() {
     }
 }
 
-void AnimatedGameObject::PlayAnimation(const std::string& animationName, float speed) {
-    AnimationPlaybackParams params = AnimationPlaybackParams::GetDefaultPararms();
-    params.animationSpeed = speed;
-    m_animationMode = AnimationMode::ANIMATION;
-    m_animationLayer.PlayAnimation(animationName, params);
+//void AnimatedGameObject::PlayAnimation(const std::string& animationName, float speed) {
+//    AnimationPlaybackParams params = AnimationPlaybackParams::GetDefaultPararms();
+//    params.animationSpeed = speed;
+//    m_animationMode = AnimationMode::ANIMATION;
+//    m_animationLayer.PlayAnimation(animationName, params);
+//}
+//
+//void AnimatedGameObject::PlayAnimation(const std::string& animationName, const AnimationPlaybackParams& playbackParams) {
+//    m_animationMode = AnimationMode::ANIMATION;
+//    m_animationLayer.PlayAnimation(animationName, playbackParams);
+//}
+//
+//void AnimatedGameObject::PlayAnimation(const std::vector<std::string>& animationNames, float speed) {
+//    AnimationPlaybackParams params = AnimationPlaybackParams::GetDefaultPararms();
+//    params.animationSpeed = speed;
+//    int rand = std::rand() % animationNames.size();
+//    m_animationLayer.PlayAnimation(animationNames[rand], params);
+//}
+//
+//void AnimatedGameObject::PlayAnimation(const std::vector<std::string>& animationNames, const AnimationPlaybackParams& playbackParams) {
+//    int rand = std::rand() % animationNames.size();
+//    m_animationLayer.PlayAnimation(animationNames[rand], playbackParams);
+//}
+//
+//void AnimatedGameObject::PlayAndLoopAnimation(const std::string& animationName, const AnimationPlaybackParams& playbackParams) {
+//    m_animationMode = AnimationMode::ANIMATION;
+//    m_animationLayer.PlayAndLoopAnimation(animationName, playbackParams);
+//}
+//
+//void AnimatedGameObject::PlayAndLoopAnimation(const std::string& animationName, float speed) {
+//    AnimationPlaybackParams params = AnimationPlaybackParams::GetDefaultPararms();
+//    params.animationSpeed = speed;
+//    m_animationMode = AnimationMode::ANIMATION;
+//    m_animationLayer.PlayAndLoopAnimation(animationName, params);
+//}
+
+void AnimatedGameObject::PlayAnimation(const std::string& layerName, const std::string& animationName, float speed) {
+    m_animator.PlayAnimation(layerName, animationName, speed, false);
 }
 
-void AnimatedGameObject::PlayAnimation(const std::string& animationName, const AnimationPlaybackParams& playbackParams) {
-    m_animationMode = AnimationMode::ANIMATION;
-    m_animationLayer.PlayAnimation(animationName, playbackParams);
+void AnimatedGameObject::PlayAndLoopAnimation(const std::string& layerName, const std::string& animationName, float speed) {
+    m_animator.PlayAnimation(layerName, animationName, speed, true);
 }
 
-void AnimatedGameObject::PlayAnimation(const std::vector<std::string>& animationNames, float speed) {
-    AnimationPlaybackParams params = AnimationPlaybackParams::GetDefaultPararms();
-    params.animationSpeed = speed;
+void AnimatedGameObject::PlayAnimation(const std::string& layerName, std::vector<std::string>& animationNames, float speed) {
     int rand = std::rand() % animationNames.size();
-    m_animationLayer.PlayAnimation(animationNames[rand], params);
+    PlayAnimation(layerName, animationNames[rand], speed);
 }
 
-void AnimatedGameObject::PlayAnimation(const std::vector<std::string>& animationNames, const AnimationPlaybackParams& playbackParams) {
+void AnimatedGameObject::PlayAndLoopAnimation(const std::string& layerName, std::vector<std::string>& animationNames, float speed) {
     int rand = std::rand() % animationNames.size();
-    m_animationLayer.PlayAnimation(animationNames[rand], playbackParams);
-}
-
-void AnimatedGameObject::PlayAndLoopAnimation(const std::string& animationName, const AnimationPlaybackParams& playbackParams) {
-    m_animationMode = AnimationMode::ANIMATION;
-    m_animationLayer.PlayAndLoopAnimation(animationName, playbackParams);
-}
-
-void AnimatedGameObject::PlayAndLoopAnimation(const std::string& animationName, float speed) {
-    AnimationPlaybackParams params = AnimationPlaybackParams::GetDefaultPararms();
-    params.animationSpeed = speed;
-    m_animationMode = AnimationMode::ANIMATION;
-    m_animationLayer.PlayAndLoopAnimation(animationName, params);
-}
-
-void AnimatedGameObject::PlayAnimation(const std::string& animationName, float speed, unsigned int layer) {
-  
-}
-
-void AnimatedGameObject::PlayAnimation(std::vector<const std::string&> animationNames, float speed, unsigned int layer) {
-
-}
-
-void AnimatedGameObject::PlayAndLoopAnimation(const std::string& animationName, float speed, unsigned int layer) {
-
-}
-
-void AnimatedGameObject::PlayAndLoopAnimation(std::vector<const std::string&> animationNames, float speed, unsigned int layer) {
-
+    PlayAndLoopAnimation(layerName, animationNames[rand], speed);
 }
 
 std::vector<glm::mat4>& AnimatedGameObject::GetLocalBlendedBoneTransforms() {
@@ -628,6 +639,8 @@ void AnimatedGameObject::SetSkinnedModel(std::string name) {
         for (int i = 0; i < m_skinnedModel->m_nodes.size(); i++) {
             m_boneMapping[m_skinnedModel->m_nodes[i].name] = i;
         }
+
+        m_animator.SetSkinnedModel(name);
     }
     else {
         std::cout << "Could not SetSkinnedModel(name) with name: \"" << name << "\", it does not exist\n";
@@ -707,15 +720,12 @@ void AnimatedGameObject::PrintMeshNames() {
     }
 }
 
-uint32_t AnimatedGameObject::GetAnimationFrameNumber() {
-    if (m_animationLayer.m_animationStates.size()) {
-        return m_animationLayer.m_animationStates[0].GetAnimationFrameNumber();
-    }
-    return 0;
+uint32_t AnimatedGameObject::GetAnimationFrameNumber(const std::string& animationLayerName) {
+    return m_animator.GetAnimationFrameNumber(animationLayerName);
 }
 
-bool AnimatedGameObject::AnimationIsPastFrameNumber(int frameNumber) {
-    return frameNumber < GetAnimationFrameNumber();
+bool AnimatedGameObject::AnimationIsPastFrameNumber(const std::string& animationLayerName, int frameNumber) {
+    return m_animator.AnimationIsPastFrameNumber(animationLayerName, frameNumber);
 }
 
 void AnimatedGameObject::DrawBones(int exclusiveViewportIndex) {
@@ -767,13 +777,7 @@ void AnimatedGameObject::SetIgnoredViewportIndex(int index) {
 }
 
 bool AnimatedGameObject::AnimationByNameIsComplete(const std::string& name) {
-    for (AnimationStateOld& AnimationState : m_animationLayer.m_animationStates) {
-        int animationIndex = AssetManager::GetAnimationIndexByName(name);
-        if (AnimationState.m_index == animationIndex) {
-            return AnimationState.IsComplete();
-        }
-    }
-    return true;
+    return m_animator.AnimationIsCompleteAnyLayer(name);
 }
 
 int AnimatedGameObject::GetBoneIndex(const std::string& boneName) {

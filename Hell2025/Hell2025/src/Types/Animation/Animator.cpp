@@ -6,50 +6,84 @@ void Animator::SetSkinnedModel(const std::string& skinnedModelName) {
     m_skinnedModel= AssetManager::GetSkinnedModelByName(skinnedModelName);
 }
 
-void Animator::RegisterAnimation(const std::string& animationName) {
+void Animator::PlayAnimation(const std::string& layerName, const std::string& animationName, float speed, bool loop) {
     Animation* animation = AssetManager::GetAnimationByName(animationName);
     if (!animation) return;
 
-    // Bail if animation already exists
-    for (AnimationState& animationState : m_animationStates) {
-        if (animationState.m_animation == animation) {
-            return;
-        }
+    // Create layer if it doesn't exist
+    if (!AnimationLayerExists(layerName)) {
+        CreateAnimationLayer(layerName);
     }
+
+    AnimationLayer* animationLayer = GetAnimationLayerByName(layerName);
+    if (!animationLayer) return;
+
+    // Bail if told to loop and already playing this animation
+    if (loop && animationLayer->m_animation == animation) {
+        return;
+    }
+
     int nodeCount = animation->m_animatedNodes.size();
 
-    AnimationState& animationState = m_animationStates.emplace_back();
-    animationState.m_animation = animation;
-    animationState.m_globalNodeTransforms.resize(nodeCount);
-    animationState.m_boneWeights.resize(nodeCount);
-    animationState.m_AnimationWeight = 1.0f;
-    animationState.m_animationSpeed = 1.0f;
-    animationState.m_currentTime = 0.0f;
-    animationState.m_isComplete = false;
-    animationState.m_paused = false;
-    animationState.m_loop = true;
+    animationLayer->m_animation = animation;
+    animationLayer->m_globalNodeTransforms.resize(nodeCount);
+    animationLayer->m_boneWeights.resize(nodeCount);
+    animationLayer->m_animationSpeed = speed;
+    animationLayer->m_currentTime = 0.0f;
+    animationLayer->m_isComplete = false;
+    animationLayer->m_paused = false;
+    animationLayer->m_loop = loop;
 
     // Set default weight for each bone to 1.0 and transform to identity
     for (int i = 0; i < nodeCount; i++) {
-        animationState.m_globalNodeTransforms[i] = glm::mat4(1.0f);
-        animationState.m_boneWeights[i] = 1.0f;
+        animationLayer->m_globalNodeTransforms[i] = glm::mat4(1.0f);
+        animationLayer->m_boneWeights[i] = 1.0f;
     }
+}
+
+void Animator::PlayAndLoopAnimation(const std::string& layerName, const std::string& animationName, float speed) {
+    PlayAnimation(layerName, animationName, speed, true);
+}
+
+void Animator::CreateAnimationLayer(const std::string& name) {
+    if (AnimationLayerExists(name)) return;
+
+    m_animationLayers[name] = AnimationLayer();
+    m_animationLayers[name].m_AnimationWeight = 1.0f;
+}
+
+void Animator::ClearAllAnimations() {
+    m_animationLayers.clear();
+}
+
+void Animator::PauseAllLayers() {
+    for (auto& [name, animationLayer] : m_animationLayers) {
+        animationLayer.m_paused = true;
+    }
+}
+
+bool Animator::AnimationLayerExists(const std::string& name) const {
+    return m_animationLayers.find(name) != m_animationLayers.end();
+}
+
+AnimationLayer* Animator::GetAnimationLayerByName(const std::string& name) {
+    auto it = m_animationLayers.find(name);
+    if (it == m_animationLayers.end()) return nullptr;
+    return &it->second;
 }
 
 void Animator::UpdateAnimations(float deltaTime) {
     // Bail if invalid skinned model
     if (!m_skinnedModel) return;
 
-    // Compute all animations individually
-    for (AnimationState& animationState : m_animationStates) {
-        UpdateAnimation(animationState, deltaTime);
+    // First compute all animations individually
+    for (auto& [name, animationLayer] : m_animationLayers) {
+        UpdateAnimation(animationLayer, deltaTime);
     }
 
-
     int nodeCount = m_skinnedModel->GetNodeCount();
-    std::vector<AnimatedTransform> finalLocals(nodeCount);
 
-    // m_animationStates[0].m_AnimationWeight = 0.1;
+    std::vector<AnimatedTransform> finalLocals(nodeCount);
     std::vector<float> weightSum(nodeCount, 0.0f);
    
     // Clear output and weight accumulators
@@ -57,30 +91,36 @@ void Animator::UpdateAnimations(float deltaTime) {
         weightSum[i] = 0.0f;
         finalLocals[i].translation = glm::vec3(0.0f);
         finalLocals[i].scale = glm::vec3(0.0f);
-        finalLocals[i].rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f); // Identity quaternion
+        finalLocals[i].rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
     }
 
-    // Blend all animation states
-    for (int stateIdx = 0; stateIdx < m_animationStates.size(); ++stateIdx) {
-        const auto& state = m_animationStates[stateIdx];
-        if (state.m_AnimationWeight <= 1e-5f) continue;
+    // Now blend all animation states
+    for (auto& [name, animationLayer] : m_animationLayers) {
+
+        // Skip if layer weight too low
+        if (animationLayer.m_AnimationWeight <= 0.00001f) continue;
 
         for (int i = 0; i < nodeCount; ++i) {
-            float w = state.m_AnimationWeight * state.m_boneWeights[i];
+            float w = animationLayer.m_AnimationWeight * animationLayer.m_boneWeights[i];
 
-            if (w <= 1e-5f) continue;
+            // Skip if bone weight too low
+            if (w <= 0.00001f) continue;
 
             float newWeightSum = weightSum[i] + w;
             float blendFactor = w / newWeightSum;
 
             // Linearly blend translation and scale
-            finalLocals[i].translation += state.m_localNodeTransforms[i].translation * w;
-            finalLocals[i].scale += state.m_localNodeTransforms[i].scale * w;
+            finalLocals[i].translation += animationLayer.m_localNodeTransforms[i].translation * w;
+            finalLocals[i].scale += animationLayer.m_localNodeTransforms[i].scale * w;
 
             // Slerp rotation
             glm::quat current = glm::normalize(finalLocals[i].rotation);
-            glm::quat target = state.m_localNodeTransforms[i].rotation;
-            if (glm::dot(current, target) < 0.0f) target = -target;
+            glm::quat target = animationLayer.m_localNodeTransforms[i].rotation;
+
+            // Fix inverted rotations
+            if (glm::dot(current, target) < 0.0f) {
+                target = -target;
+            }
 
             finalLocals[i].rotation = glm::slerp(current, target, blendFactor);
             finalLocals[i].rotation = glm::normalize(finalLocals[i].rotation);
@@ -95,57 +135,70 @@ void Animator::UpdateAnimations(float deltaTime) {
             float inv = 1.0f / weightSum[i];
             finalLocals[i].translation *= inv;
             finalLocals[i].scale *= inv;
-            finalLocals[i].rotation = glm::normalize(finalLocals[i].rotation); // already normalized, but safe
+            finalLocals[i].rotation = glm::normalize(finalLocals[i].rotation);
         }
         else {
-         // Fallback to bind pose or default animation
-            finalLocals[i] = m_animationStates[0].m_localNodeTransforms[i];
+            // Fallback to bind pose
+            finalLocals[i] = m_skinnedModel->m_nodes[i].inverseBindTransform;
         }
     }
 
-    //finalLocals = m_animationStates[0].m_localNodeTransforms;
-
-    // Rebuild global chain
+    m_LocalBlendedBoneTransforms.resize(nodeCount);
     m_globalBlendedNodeTransforms.resize(nodeCount);
+
     for (int i = 0; i < nodeCount; ++i) {
-        glm::mat4 localM = finalLocals[i].to_mat4();
+        glm::mat4 localMatrix = finalLocals[i].to_mat4();
+
+        // Apply additive matrix
+        std::string& nodeName = m_skinnedModel->m_nodes[i].name;
+        auto it = m_additiveBoneTransforms.find(nodeName);
+        if (it != m_additiveBoneTransforms.end()) {
+            localMatrix = it->second * localMatrix;
+        }
+
+        // Store final local
+        m_LocalBlendedBoneTransforms[i] = localMatrix;
+
+        // Store final global
         int parent = m_skinnedModel->m_nodes[i].parentIndex;
         if (parent >= 0) {
-            m_globalBlendedNodeTransforms[i] = m_globalBlendedNodeTransforms[parent] * localM;
+            m_globalBlendedNodeTransforms[i] = m_globalBlendedNodeTransforms[parent] * localMatrix;
         }
         else {
-            m_globalBlendedNodeTransforms[i] = localM;
+            m_globalBlendedNodeTransforms[i] = localMatrix;
         }
     }
 }
 
+void Animator::UpdateAnimation(AnimationLayer& animationLayer, float deltaTime) {
+    if (!m_skinnedModel) return;
+    if (!animationLayer.m_animation) return;
 
-void Animator::UpdateAnimation(AnimationState& animationState, float deltaTime) {
     int nodeCount = m_skinnedModel->GetNodeCount();
 
     // Ensure transforms match the number of nodes
-    animationState.m_globalNodeTransforms.resize(nodeCount);
-    animationState.m_localNodeTransforms.resize(nodeCount);
+    animationLayer.m_globalNodeTransforms.resize(nodeCount);
+    animationLayer.m_localNodeTransforms.resize(nodeCount);
 
     // Update current animation time based on deltaTime
     float timeInTicks = 0;
-    if (animationState.m_animation) {
-        if (!animationState.m_paused) {
-            animationState.m_currentTime += deltaTime * animationState.m_animationSpeed;
-        }
-        float duration = animationState.m_animation->m_duration / animationState.m_animation->m_ticksPerSecond;
-        if (animationState.m_currentTime >= duration) {
-            if (!animationState.m_loop) {
-                animationState.m_currentTime = duration;
-                animationState.m_paused = true;
-                animationState.m_isComplete = true;
-            }
-            else {
-                animationState.m_currentTime = 0;
-            }
-        }
-        timeInTicks = GetAnimationTimeInTicks(animationState);
+    if (!animationLayer.m_paused) {
+        animationLayer.m_currentTime += deltaTime * animationLayer.m_animationSpeed;
     }
+    float duration = animationLayer.m_animation->m_duration / animationLayer.m_animation->m_ticksPerSecond;
+    if (animationLayer.m_currentTime >= duration) {
+        if (!animationLayer.m_loop) {
+            animationLayer.m_currentTime = duration;
+            animationLayer.m_paused = true;
+            animationLayer.m_isComplete = true;
+        }
+        else {
+            animationLayer.m_currentTime = 0;
+            //animationLayer.m_currentTime = fmod(animationLayer.m_currentTime, duration);
+        }
+    }
+    timeInTicks = GetAnimationTimeInTicks(animationLayer);
+   
 
     // Traverse the tree
     for (int i = 0; i < m_skinnedModel->m_nodes.size(); i++) {
@@ -153,8 +206,8 @@ void Animator::UpdateAnimation(AnimationState& animationState, float deltaTime) 
         std::string& nodeName = m_skinnedModel->m_nodes[i].name;
 
         // Interpolate the node transformation if it's animated
-        if (animationState.m_animation) {
-            const AnimatedNode* animatedNode = FindAnimatedNode(animationState.m_animation, nodeName.c_str());
+        if (animationLayer.m_animation) {
+            const AnimatedNode* animatedNode = FindAnimatedNode(animationLayer.m_animation, nodeName.c_str());
             if (animatedNode) {
                 glm::vec3 translation;
                 glm::quat rotation;
@@ -170,25 +223,19 @@ void Animator::UpdateAnimation(AnimationState& animationState, float deltaTime) 
             nodeTransformation = m_skinnedModel->m_nodes[i].inverseBindTransform;
         }
 
-        //if (nodeName == "def_spine_02") {
-        //    Transform transform;
-        //    transform.rotation.y = HELL_PI;
-        //    nodeTransformation = transform.to_mat4();
-        //}
-
-        animationState.m_localNodeTransforms[i] = AnimatedTransform(nodeTransformation);
+        animationLayer.m_localNodeTransforms[i] = AnimatedTransform(nodeTransformation);
     }
 
     // Rebuild global matrices from the locals
     for (int i = 0; i < nodeCount; ++i) {
-        glm::mat4 localM = animationState.m_localNodeTransforms[i].to_mat4();
+        glm::mat4 localM = animationLayer.m_localNodeTransforms[i].to_mat4();
         int parent = m_skinnedModel->m_nodes[i].parentIndex;
-        glm::mat4 worldM = (parent >= 0) ? animationState.m_globalNodeTransforms[parent].to_mat4() * localM : localM;
-        animationState.m_globalNodeTransforms[i] = AnimatedTransform(worldM);
+        glm::mat4 worldM = (parent >= 0) ? animationLayer.m_globalNodeTransforms[parent].to_mat4() * localM : localM;
+        animationLayer.m_globalNodeTransforms[i] = AnimatedTransform(worldM);
     }
 }
 
-float Animator::GetAnimationTimeInTicks(AnimationState& animationState) {
+float Animator::GetAnimationTimeInTicks(AnimationLayer& animationState) {
     Animation* animation = animationState.m_animation;
     if (!animation) return 0;
     
@@ -202,6 +249,7 @@ float Animator::GetAnimationTimeInTicks(AnimationState& animationState) {
         timeInTicks = std::min(timeInTicks, animation->m_duration);
         return timeInTicks;
     }
+    return 0;
 }
 
 const AnimatedNode* Animator::FindAnimatedNode(Animation* animation, const char* NodeName) {
@@ -213,4 +261,38 @@ const AnimatedNode* Animator::FindAnimatedNode(Animation* animation, const char*
         }
     }
     return nullptr;
+}
+
+bool Animator::AnimationIsCompleteAnyLayer(const std::string& animationName) {
+    for (auto& [name, animationLayer] : m_animationLayers) {
+        if (animationLayer.m_animation->GetName() == animationName && animationLayer.m_isComplete) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool Animator::AllAnimationsComplete() {
+    for (auto& [name, animationLayer] : m_animationLayers) {
+        if (!animationLayer.m_isComplete) {
+            return false;
+        }
+    }
+    return true;
+}
+
+uint32_t Animator::GetAnimationFrameNumber(const std::string& animationLayerName) {
+    AnimationLayer* animationLayer = GetAnimationLayerByName(animationLayerName);
+    if (!animationLayer) return 0;
+    if (!animationLayer->m_animation) return 0;
+
+    return animationLayer->m_currentTime * animationLayer->m_animation->m_ticksPerSecond;
+}
+
+bool Animator::AnimationIsPastFrameNumber(const std::string& animationLayerName, int frameNumber) {
+    AnimationLayer* animationLayer = GetAnimationLayerByName(animationLayerName);
+    if (!animationLayer) return false;
+
+    uint32_t currentFrame = uint32_t(animationLayer->m_currentTime * animationLayer->m_animation->m_ticksPerSecond);
+    return currentFrame > uint32_t(frameNumber);
 }

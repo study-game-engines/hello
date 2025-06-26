@@ -3,7 +3,7 @@
 #include "AnimationState.h"
 #include <unordered_map>
 
-struct AnimationLayer {
+struct AnimationLayerOLD {
 
     std::string m_name;
     int m_skinnedModelIndex = -1;

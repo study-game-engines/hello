@@ -33,21 +33,21 @@ void Player::UpdateWeaponLogic(float deltaTime) {
 
         // Drawing a shotgun when it needs a pump
         if (GetCurrentWeaponType() == WeaponType::SHOTGUN && !IsShellInShotgunChamber() && weaponState->ammoInMag > 0) {
-            viewWeapon->PlayAnimation(weaponInfo->animationNames.shotgunDrawPump, weaponInfo->animationSpeeds.shotgunDrawPump);
+            viewWeapon->PlayAnimation("MainLayer", weaponInfo->animationNames.shotgunDrawPump, weaponInfo->animationSpeeds.shotgunDrawPump);
             weaponState->shotgunAwaitingPumpAudio = true;
             weaponState->shotgunRequiresPump = true;
             m_weaponAction = DRAWING_WITH_SHOTGUN_PUMP;
         }
         // First draw
         else if (weaponState->awaitingDrawFirst && weaponInfo->animationNames.drawFirst != "") {
-            viewWeapon->PlayAnimation(weaponInfo->animationNames.drawFirst, weaponInfo->animationSpeeds.drawFirst);
+            viewWeapon->PlayAnimation("MainLayer", weaponInfo->animationNames.drawFirst, weaponInfo->animationSpeeds.drawFirst);
             weaponState->awaitingDrawFirst = false;
             m_weaponAction = DRAWING_FIRST;
             Audio::PlayAudio(weaponInfo->audioFiles.drawFirst, 1.0f);
         }
         // Regular draw
         else {
-            viewWeapon->PlayAnimation(weaponInfo->animationNames.draw, weaponInfo->animationSpeeds.draw);
+            viewWeapon->PlayAnimation("MainLayer", weaponInfo->animationNames.draw, weaponInfo->animationSpeeds.draw);
             m_weaponAction = DRAWING;
         }
     }
@@ -68,17 +68,17 @@ void Player::UpdateWeaponLogic(float deltaTime) {
     // In ADS idle?
     if (GetCurrentWeaponAction() == WeaponAction::ADS_IDLE) {
         if (IsMoving()) {
-            viewWeapon->PlayAndLoopAnimation(weaponInfo->animationNames.adsWalk, weaponInfo->animationSpeeds.adsWalk);
+            viewWeapon->PlayAndLoopAnimation("MainLayer", weaponInfo->animationNames.adsWalk, weaponInfo->animationSpeeds.adsWalk);
         }
         else {
-            viewWeapon->PlayAndLoopAnimation(weaponInfo->animationNames.adsIdle, weaponInfo->animationSpeeds.adsIdle);
+            viewWeapon->PlayAndLoopAnimation("MainLayer", weaponInfo->animationNames.adsIdle, weaponInfo->animationSpeeds.adsIdle);
         }
     }
 
     // In idle? Then play idle or walk if moving
     if (GetCurrentWeaponAction() == WeaponAction::IDLE) {
         const std::string& animName = IsMoving() ? weaponInfo->animationNames.walk : weaponInfo->animationNames.idle;
-        viewWeapon->PlayAndLoopAnimation(animName, AnimationPlaybackParams::GetDefaultLoopingPararms());
+        viewWeapon->PlayAndLoopAnimation("MainLayer", animName, 1.0f);
     }
 
     // Everything done? Go to idle
@@ -319,16 +319,16 @@ void Player::UpdateWeaponSlide() {
     WeaponState* weaponState = GetCurrentWeaponState();
     if (weaponState->requiresSlideOffset) {
 
-        AnimationLayer& animationLayer = viewWeapon->GetAnimationLayer();
+        //AnimationLayerOLD& animationLayer = viewWeapon->GetAnimationLayer();
         std::string& boneName = weaponInfo->pistolSlideBoneName;
         int boneIndex = viewWeapon->GetBoneIndex(boneName);
 
-        if (boneIndex == -1 || animationLayer.m_globalBlendedNodeTransforms.empty()) {
+        if (boneIndex == -1 || viewWeapon->m_animator.m_globalBlendedNodeTransforms.empty()) {
             std::cout << "Player::UpdateWeaponSlide() failed: bone name '" << boneName << "' not found!\n";
         }
         else {
             std::cout << "found bone!\n";
-        }
+        } 
 
       
         //  m_globalNodeTransforms

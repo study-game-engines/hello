@@ -73,17 +73,17 @@ public:
 	void SetRotationY(float rotation);
 	void SetRotationZ(float rotation);
 
-    void PlayAnimation(const std::string& animationName, float speed, unsigned int layer = 0);
-    void PlayAnimation(std::vector<const std::string&> animationNames, float speed, unsigned int layer = 0);
-    void PlayAndLoopAnimation(const std::string& animationName, float speed, unsigned int layer = 0);
-    void PlayAndLoopAnimation(std::vector<const std::string&> animationNames, float speed, unsigned int layer = 0);
+    void PlayAnimation(const std::string& layerName, const std::string& animationName, float speed);
+    void PlayAnimation(const std::string& layerName, std::vector<std::string>& animationNames, float speed);
+    void PlayAndLoopAnimation(const std::string& layerName, const std::string& animationName, float speed);
+    void PlayAndLoopAnimation(const std::string& layerName, std::vector<std::string>& animationNames, float speed);
 
-    void PlayAnimation(const std::string& animationName, float speed);
-    void PlayAnimation(const std::string& animationName, const AnimationPlaybackParams& playbackParams = AnimationPlaybackParams());
-    void PlayAnimation(const std::vector<std::string>& animationNames, float speed);
-    void PlayAnimation(const std::vector<std::string>& animationNames, const AnimationPlaybackParams& playbackParams);
-    void PlayAndLoopAnimation(const std::string& animationName, float speed);
-    void PlayAndLoopAnimation(const std::string& animationName, const AnimationPlaybackParams& playbackParams = AnimationPlaybackParams());
+    //void PlayAnimation(const std::string& animationName, float speed);
+    //void PlayAnimation(const std::string& animationName, const AnimationPlaybackParams& playbackParams = AnimationPlaybackParams());
+    //void PlayAnimation(const std::vector<std::string>& animationNames, float speed);
+    //void PlayAnimation(const std::vector<std::string>& animationNames, const AnimationPlaybackParams& playbackParams);
+    //void PlayAndLoopAnimation(const std::string& animationName, float speed);
+    //void PlayAndLoopAnimation(const std::string& animationName, const AnimationPlaybackParams& playbackParams = AnimationPlaybackParams());
     void SetAnimationModeToBindPose();
     void SetAnimationModeToRagdoll();
     void SetMeshMaterialByMeshName(const std::string& meshName, const std::string& materialName);
@@ -178,10 +178,10 @@ public:
     glm::mat4 GetBindPoseByBoneName(const std::string& name);
 
 
-    uint32_t GetAnimationFrameNumber();                     // the logic in here needs rethinking!!!
-    bool AnimationIsPastFrameNumber(int frameNumber);       // the logic in here needs rethinking!!!
+    uint32_t GetAnimationFrameNumber(const std::string& animationLayerName);                     // the logic in here needs rethinking!!!
+    bool AnimationIsPastFrameNumber(const std::string& animationLayerName, int frameNumber);       // the logic in here needs rethinking!!!
 
-    AnimationLayer m_animationLayer;
+    AnimationLayerOLD m_animationLayer;
 
     void DrawBones(int exclusiveViewportIndex = -1);
     void DrawBoneTangentVectors(float size = 0.1f, int exclusiveViewportIndex = -1);
@@ -194,6 +194,6 @@ public:
     int m_ignoredViewportIndex = -1;
     int m_exclusiveViewportIndex = -1;
 
-    AnimationLayer& GetAnimationLayer() { return m_animationLayer; }
+    AnimationLayerOLD& GetAnimationLayer() { return m_animationLayer; }
     void SubmitForSkinning();
 };

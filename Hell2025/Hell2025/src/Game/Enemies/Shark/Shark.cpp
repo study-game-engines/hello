@@ -34,7 +34,8 @@ void Shark::Init() {
     animatedGameObject->SetSkinnedModel("Shark");
     animatedGameObject->SetName("GreatestGreatWhiteShark");
     animatedGameObject->SetAllMeshMaterials("Shark");
-    animatedGameObject->PlayAndLoopAnimation("Shark_Swim", 1.0f);
+    animatedGameObject->PlayAndLoopAnimation("MainLayer", "Shark_Swim", 1.0f);
+
     animatedGameObject->SetScale(0.01);
     animatedGameObject->SetPosition(glm::vec3(0, 0, 0));
     animatedGameObject->SetRagdoll("Shark", 1500.0f);
@@ -205,7 +206,6 @@ void Shark::Update(float deltaTime) {
     additiveBoneTransforms["BN_Spine_05"] = glm::rotate(glm::mat4(1.0f), rot5 - rot4, glm::vec3(0, 1, 0));
     additiveBoneTransforms["BN_Spine_06"] = glm::rotate(glm::mat4(1.0f), rot6 - rot5, glm::vec3(0, 1, 0));
     additiveBoneTransforms["BN_Spine_07"] = glm::rotate(glm::mat4(1.0f), rot7 - rot6, glm::vec3(0, 1, 0));
-
     additiveBoneTransforms["BN_Neck_00"] = glm::rotate(glm::mat4(1.0f), rot8 - rot1, glm::vec3(0, 1, 0));
     additiveBoneTransforms["BN_Neck_01"] = glm::rotate(glm::mat4(1.0f), rot9 - rot8, glm::vec3(0, 1, 0));
     additiveBoneTransforms["BN_Head_00"] = glm::rotate(glm::mat4(1.0f), rot10 - rot9, glm::vec3(0, 1, 0));
@@ -216,6 +216,18 @@ void Shark::Update(float deltaTime) {
         animatedGameObject->Update(deltaTime, additiveBoneTransforms);
         animatedGameObject->UpdateRenderItems();
     }
+
+    animatedGameObject->m_animator.m_additiveBoneTransforms["Spine_00"] = rootBoneMatrix;
+    animatedGameObject->m_animator.m_additiveBoneTransforms["BN_Spine_01"] = glm::rotate(glm::mat4(1.0f), rot1 - rot0, glm::vec3(0, 1, 0));
+    animatedGameObject->m_animator.m_additiveBoneTransforms["BN_Spine_02"] = glm::rotate(glm::mat4(1.0f), rot2 - rot1, glm::vec3(0, 1, 0));
+    animatedGameObject->m_animator.m_additiveBoneTransforms["BN_Spine_03"] = glm::rotate(glm::mat4(1.0f), rot3 - rot2, glm::vec3(0, 1, 0));
+    animatedGameObject->m_animator.m_additiveBoneTransforms["BN_Spine_04"] = glm::rotate(glm::mat4(1.0f), rot4 - rot3, glm::vec3(0, 1, 0));
+    animatedGameObject->m_animator.m_additiveBoneTransforms["BN_Spine_05"] = glm::rotate(glm::mat4(1.0f), rot5 - rot4, glm::vec3(0, 1, 0));
+    animatedGameObject->m_animator.m_additiveBoneTransforms["BN_Spine_06"] = glm::rotate(glm::mat4(1.0f), rot6 - rot5, glm::vec3(0, 1, 0));
+    animatedGameObject->m_animator.m_additiveBoneTransforms["BN_Spine_07"] = glm::rotate(glm::mat4(1.0f), rot7 - rot6, glm::vec3(0, 1, 0));
+    animatedGameObject->m_animator.m_additiveBoneTransforms["BN_Neck_00"] = glm::rotate(glm::mat4(1.0f), rot8 - rot1, glm::vec3(0, 1, 0));
+    animatedGameObject->m_animator.m_additiveBoneTransforms["BN_Neck_01"] = glm::rotate(glm::mat4(1.0f), rot9 - rot8, glm::vec3(0, 1, 0));
+    animatedGameObject->m_animator.m_additiveBoneTransforms["BN_Head_00"] = glm::rotate(glm::mat4(1.0f), rot10 - rot9, glm::vec3(0, 1, 0));
 
     // Arrow key movement
     if (IsAlive()) {
@@ -268,8 +280,8 @@ void Shark::Update(float deltaTime) {
 
     if (IsDead()) {
         StraightenSpine(deltaTime, 0.25f);
-        if (animatedGameObject->GetAnimationFrameNumber() > 100) {
-            animatedGameObject->m_animationLayer.m_animationStates[0].PauseAnimation();
+        if (animatedGameObject->GetAnimationFrameNumber("MainLayer") > 100) {
+            animatedGameObject->m_animator.PauseAllLayers();
         }
     }
 

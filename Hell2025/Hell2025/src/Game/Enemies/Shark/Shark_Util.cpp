@@ -4,25 +4,21 @@
 void Shark::PlayAnimation(const std::string& animationName, float speed) {
     AnimatedGameObject* animatedGameObject = GetAnimatedGameObject();
     if (animatedGameObject) {
-        auto params = AnimationPlaybackParams::GetDefaultLoopingPararms();
-        params.animationSpeed = speed;
-        animatedGameObject->PlayAnimation(animationName, params);
+        animatedGameObject->PlayAnimation("MainLayer", animationName, 1.0f);
     }
 }
 
 void Shark::PlayAndLoopAnimation(const std::string& animationName, float speed) {
     AnimatedGameObject* animatedGameObject = GetAnimatedGameObject();
     if (animatedGameObject) {
-        auto params = AnimationPlaybackParams::GetDefaultLoopingPararms();
-        params.animationSpeed = speed;
-        animatedGameObject->PlayAndLoopAnimation(animationName, params);
+        animatedGameObject->PlayAndLoopAnimation("MainLayer", animationName, 1.0f);
     }
 }
 
 int Shark::GetAnimationFrameNumber() {
     AnimatedGameObject* animatedGameObject = GetAnimatedGameObject();
     if (animatedGameObject) {
-        return animatedGameObject->GetAnimationFrameNumber();
+        return animatedGameObject->GetAnimationFrameNumber("MainLayer");
     }
     else {
         return 0;

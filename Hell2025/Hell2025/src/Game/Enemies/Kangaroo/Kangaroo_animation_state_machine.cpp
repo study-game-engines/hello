@@ -67,8 +67,8 @@ void Kangaroo::UpdateAnimationStateMachine() {
     AnimatedGameObject* animatedGameObject = GetAnimatedGameObject();
 
     if (m_animationState == KanagarooAnimationState::BITE &&
-        animatedGameObject->GetAnimationFrameNumber() > 10 &&
-        animatedGameObject->GetAnimationFrameNumber() < 20 &&
+        animatedGameObject->GetAnimationFrameNumber("MainLayer") > 10 &&
+        animatedGameObject->GetAnimationFrameNumber("MainLayer") < 20 &&
         distanceToPlayer < 4.0f) {
         player->Kill();
     }

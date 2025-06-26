@@ -367,12 +367,7 @@ bool Player::ViewModelAnimationsCompleted() {
         std::cout << "WARNING!!! Player::ViewModelAnimationsCompleted() failed coz viewWeapon was nullptr\n";
         return true;
     }
-    for (AnimationStateOld& animationState : viewWeapon->m_animationLayer.m_animationStates) {
-        if (!animationState.IsComplete()) {
-            return false;
-        }
-    }
-    return true;
+    return viewWeapon->m_animator.AllAnimationsComplete();
 }
 
 float Player::GetWeaponAudioFrequency() {

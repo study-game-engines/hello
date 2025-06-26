@@ -39,13 +39,13 @@ void Player::UpdateCharacterModelHacks() {
             HideGlockMesh();
             HideShotgunMesh();
             if (IsMoving()) {
-                m_characterModelAnimatedGameObject.PlayAndLoopAnimation("UnisexGuy_Knife_Walk", 1.0f);
+                m_characterModelAnimatedGameObject.PlayAndLoopAnimation("MainLayer", "UnisexGuy_Knife_Walk", 1.0f);
             }
             else {
-                m_characterModelAnimatedGameObject.PlayAndLoopAnimation("UnisexGuy_Knife_Idle", 1.0f);
+                m_characterModelAnimatedGameObject.PlayAndLoopAnimation("MainLayer", "UnisexGuy_Knife_Idle", 1.0f);
             }
             if (IsCrouching()) {
-                m_characterModelAnimatedGameObject.PlayAndLoopAnimation("UnisexGuy_Knife_Crouch", 1.0f);
+                m_characterModelAnimatedGameObject.PlayAndLoopAnimation("MainLayer", "UnisexGuy_Knife_Crouch", 1.0f);
             }
         }
         if (weaponInfo->type == WeaponType::PISTOL) {
@@ -53,13 +53,13 @@ void Player::UpdateCharacterModelHacks() {
             HideShotgunMesh();
             HideKnifeMesh();
             if (IsMoving()) {
-                m_characterModelAnimatedGameObject.PlayAndLoopAnimation("UnisexGuy_Glock_Walk", 1.0f);
+                m_characterModelAnimatedGameObject.PlayAndLoopAnimation("MainLayer", "UnisexGuy_Glock_Walk", 1.0f);
             }
             else {
-                m_characterModelAnimatedGameObject.PlayAndLoopAnimation("UnisexGuy_Glock_Idle", 1.0f);
+                m_characterModelAnimatedGameObject.PlayAndLoopAnimation("MainLayer", "UnisexGuy_Glock_Idle", 1.0f);
             }
             if (IsCrouching()) {
-                m_characterModelAnimatedGameObject.PlayAndLoopAnimation("UnisexGuy_Glock_Crouch", 1.0f);
+                m_characterModelAnimatedGameObject.PlayAndLoopAnimation("MainLayer", "UnisexGuy_Glock_Crouch", 1.0f);
             }
         }
         if (weaponInfo->type == WeaponType::AUTOMATIC) {
@@ -67,13 +67,13 @@ void Player::UpdateCharacterModelHacks() {
             HideKnifeMesh();
             HideGlockMesh();
             if (IsMoving()) {
-                m_characterModelAnimatedGameObject.PlayAndLoopAnimation("UnisexGuy_AKS74U_Walk", 1.0f);
+                m_characterModelAnimatedGameObject.PlayAndLoopAnimation("MainLayer", "UnisexGuy_AKS74U_Walk", 1.0f);
             }
             else {
-                m_characterModelAnimatedGameObject.PlayAndLoopAnimation("UnisexGuy_AKS74U_Idle", 1.0f);
+                m_characterModelAnimatedGameObject.PlayAndLoopAnimation("MainLayer", "UnisexGuy_AKS74U_Idle", 1.0f);
             }
             if (IsCrouching()) {
-                m_characterModelAnimatedGameObject.PlayAndLoopAnimation("UnisexGuy_AKS74U_Crouch", 1.0f);
+                m_characterModelAnimatedGameObject.PlayAndLoopAnimation("MainLayer", "UnisexGuy_AKS74U_Crouch", 1.0f);
             }
         }
         if (weaponInfo->type == WeaponType::SHOTGUN) {
@@ -81,13 +81,13 @@ void Player::UpdateCharacterModelHacks() {
             HideKnifeMesh();
             HideGlockMesh();
             if (IsMoving()) {
-                m_characterModelAnimatedGameObject.PlayAndLoopAnimation("UnisexGuy_Shotgun_Walk", 1.0f);
+                m_characterModelAnimatedGameObject.PlayAndLoopAnimation("MainLayer", "UnisexGuy_Shotgun_Walk", 1.0f);
             }
             else {
-                m_characterModelAnimatedGameObject.PlayAndLoopAnimation("UnisexGuy_Shotgun_Idle", 1.0f);
+                m_characterModelAnimatedGameObject.PlayAndLoopAnimation("MainLayer", "UnisexGuy_Shotgun_Idle", 1.0f);
             }
             if (IsCrouching()) {
-                m_characterModelAnimatedGameObject.PlayAndLoopAnimation("UnisexGuy_Shotgun_Crouch", 1.0f);
+                m_characterModelAnimatedGameObject.PlayAndLoopAnimation("MainLayer", "UnisexGuy_Shotgun_Crouch", 1.0f);
             }
         }
 

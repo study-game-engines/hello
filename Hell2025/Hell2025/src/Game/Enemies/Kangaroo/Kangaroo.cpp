@@ -31,9 +31,7 @@ void Kangaroo::Init(KangarooCreateInfo createInfo) {
             ragdoll->SetPhysicsData(animatedGameObject->GetRagdollId(), ObjectType::RAGDOLL_ENEMY);
         }
 
-        AnimationPlaybackParams params;
-        params.animationSpeed = 1.0f;
-        animatedGameObject->PlayAndLoopAnimation("Kangaroo_Hop2", params);
+        animatedGameObject->PlayAndLoopAnimation("MainLayer", "Kangaroo_Hop2", 1.0f);
 
         m_woundMaskIndex = 1;
 
@@ -60,9 +58,7 @@ void Kangaroo::Respawn() {
         animatedGameObject->SetRotationY(m_rotation.y);
         animatedGameObject->SetRotationZ(m_rotation.z);
 
-        AnimationPlaybackParams params;
-        params.animationSpeed = 1.00f;
-        animatedGameObject->PlayAndLoopAnimation("Kangaroo_Idle", params);
+        animatedGameObject->PlayAndLoopAnimation("MainLayer", "Kangaroo_Idle", 1.0f);
     }
 
     CharacterController* characterController = GetCharacterController();
@@ -119,32 +115,21 @@ void Kangaroo::SetMovementState(KanagarooMovementState state) {
 void Kangaroo::PlayAnimation(const std::string& animationName, float speed) {
     AnimatedGameObject* animatedGameObject = GetAnimatedGameObject();
     if (animatedGameObject) {
-        auto params = AnimationPlaybackParams::GetDefaultLoopingPararms();
-        params.animationSpeed = speed;
-        animatedGameObject->PlayAnimation(animationName, params);
+        animatedGameObject->PlayAnimation("MainLayer", animationName, speed);
     }
 }
 
 void Kangaroo::PlayAndLoopAnimation(const std::string& animationName, float speed) {
     AnimatedGameObject* animatedGameObject = GetAnimatedGameObject();
     if (animatedGameObject) {
-        auto params = AnimationPlaybackParams::GetDefaultLoopingPararms();
-        params.animationSpeed = speed;
-        animatedGameObject->PlayAndLoopAnimation(animationName, params);
+        animatedGameObject->PlayAndLoopAnimation("MainLayer", animationName, speed);
     }
 }
 
 bool Kangaroo::AnimationIsComplete() {
     AnimatedGameObject* animatedGameObject = GetAnimatedGameObject();
-
-    if (animatedGameObject) {
-        for (AnimationStateOld& animationState : animatedGameObject->m_animationLayer.m_animationStates) {
-            if (!animationState.IsComplete()) {
-                return false;
-            }
-        }
-    }
-    return true;
+    if (!animatedGameObject) return false;
+    return animatedGameObject->m_animator.AllAnimationsComplete();
 }
 
 CharacterController* Kangaroo::GetCharacterController() {

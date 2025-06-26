@@ -27,10 +27,11 @@ void Player::FireGun() {
     WeaponState* weaponState = GetWeaponStateByName(weaponInfo->name);
         
     if (weaponInfo->hasADS && IsInADS()) {
-        viewWeapon->PlayAnimation(weaponInfo->animationNames.adsFire, weaponInfo->animationSpeeds.adsFire);
+        viewWeapon->PlayAnimation("MainLayer", weaponInfo->animationNames.adsFire, weaponInfo->animationSpeeds.adsFire);
         m_weaponAction = WeaponAction::ADS_FIRE;
-    } else {
-        viewWeapon->PlayAnimation(weaponInfo->animationNames.fire, weaponInfo->animationSpeeds.fire);
+    }
+    else {
+        viewWeapon->PlayAnimation("MainLayer", weaponInfo->animationNames.fire, weaponInfo->animationSpeeds.fire);
         m_weaponAction = WeaponAction::FIRE;
     }
     
@@ -52,14 +53,12 @@ void Player::ReloadGun() {
 
     if (GetCurrentWeaponMagAmmo() == 0) {
         Audio::PlayAudio(weaponInfo->audioFiles.reloadEmpty, 0.7f);
-        params.animationSpeed = weaponInfo->animationSpeeds.reloadempty;
-        viewWeapon->PlayAnimation(weaponInfo->animationNames.reloadempty, params);
+        viewWeapon->PlayAnimation("MainLayer", weaponInfo->animationNames.reloadempty, weaponInfo->animationSpeeds.reloadempty);
         m_weaponAction = RELOAD_FROM_EMPTY;
     }
     else {
         Audio::PlayAudio(weaponInfo->audioFiles.reload, 0.8f);
-        params.animationSpeed = weaponInfo->animationSpeeds.reload;
-        viewWeapon->PlayAnimation(weaponInfo->animationNames.reload, params);
+        viewWeapon->PlayAnimation("MainLayer", weaponInfo->animationNames.reload, weaponInfo->animationSpeeds.reload);
         m_weaponAction = RELOAD;
     }
     weaponState->awaitingMagReload = true;
@@ -82,7 +81,7 @@ void Player::UpdateGunReloadLogic() {
         default: return;
     }
 
-    if (weaponState->awaitingMagReload && viewWeapon->AnimationIsPastFrameNumber(frameNumber)) {
+    if (weaponState->awaitingMagReload && viewWeapon->AnimationIsPastFrameNumber("MainLayer", frameNumber)) {
         int ammoToGive = std::min(weaponInfo->magSize - weaponState->ammoInMag, ammoState->ammoOnHand);
         weaponState->ammoInMag += ammoToGive;
         ammoState->ammoOnHand -= ammoToGive;
@@ -118,18 +117,17 @@ void Player::UpdateADSLogic(float deltaTime) {
     viewport->SetPerspective(m_cameraZoom, NEAR_PLANE, FAR_PLANE);
 }
 
-
 void Player::EnterADS() {
     AnimatedGameObject* viewWeapon = GetViewWeaponAnimatedGameObject();
     WeaponInfo* weaponInfo = GetCurrentWeaponInfo();
-    viewWeapon->PlayAnimation(weaponInfo->animationNames.adsIn, weaponInfo->animationSpeeds.adsIn);
+    viewWeapon->PlayAnimation("MainLayer", weaponInfo->animationNames.adsIn, weaponInfo->animationSpeeds.adsIn);
     m_weaponAction = ADS_IN;
 }
 
 void Player::LeaveADS() {
     AnimatedGameObject* viewWeapon = GetViewWeaponAnimatedGameObject();
     WeaponInfo* weaponInfo = GetCurrentWeaponInfo();
-    viewWeapon->PlayAnimation(weaponInfo->animationNames.adsOut, weaponInfo->animationSpeeds.adsOut);
+    viewWeapon->PlayAnimation("MainLayer", weaponInfo->animationNames.adsOut, weaponInfo->animationSpeeds.adsOut);
     m_weaponAction = ADS_OUT;
 }
 
@@ -150,11 +148,11 @@ bool Player::CanFireGun() {
         return (
             weaponAction == IDLE              ||
             weaponAction == ADS_IDLE          ||
-            weaponAction == ADS_FIRE          && viewWeapon->AnimationIsPastFrameNumber(weaponInfo->animationCancelFrames.adsFire) ||
-            weaponAction == DRAWING           && viewWeapon->AnimationIsPastFrameNumber(weaponInfo->animationCancelFrames.draw) ||
-            weaponAction == FIRE              && viewWeapon->AnimationIsPastFrameNumber(weaponInfo->animationCancelFrames.fire) ||
-            weaponAction == RELOAD            && viewWeapon->AnimationIsPastFrameNumber(weaponInfo->animationCancelFrames.reload) ||
-            weaponAction == RELOAD_FROM_EMPTY && viewWeapon->AnimationIsPastFrameNumber(weaponInfo->animationCancelFrames.reloadFromEmpty));
+            weaponAction == ADS_FIRE          && viewWeapon->AnimationIsPastFrameNumber("MainLayer", weaponInfo->animationCancelFrames.adsFire) ||
+            weaponAction == DRAWING           && viewWeapon->AnimationIsPastFrameNumber("MainLayer", weaponInfo->animationCancelFrames.draw) ||
+            weaponAction == FIRE              && viewWeapon->AnimationIsPastFrameNumber("MainLayer", weaponInfo->animationCancelFrames.fire) ||
+            weaponAction == RELOAD            && viewWeapon->AnimationIsPastFrameNumber("MainLayer", weaponInfo->animationCancelFrames.reload) ||
+            weaponAction == RELOAD_FROM_EMPTY && viewWeapon->AnimationIsPastFrameNumber("MainLayer", weaponInfo->animationCancelFrames.reloadFromEmpty));
     }
     else {
         std::cout << "Cannot fire gun\n";
@@ -169,8 +167,8 @@ bool Player::CanEnterADS() {
 
     if (weaponInfo->hasADS) {
         return (m_weaponAction != RELOAD && m_weaponAction != RELOAD_FROM_EMPTY && !IsInADS() ||
-                m_weaponAction == RELOAD && viewWeapon->AnimationIsPastFrameNumber(weaponInfo->animationCancelFrames.reload) ||
-                m_weaponAction == RELOAD_FROM_EMPTY && viewWeapon->AnimationIsPastFrameNumber(weaponInfo->animationCancelFrames.reloadFromEmpty));
+                m_weaponAction == RELOAD && viewWeapon->AnimationIsPastFrameNumber("MainLayer", weaponInfo->animationCancelFrames.reload) ||
+                m_weaponAction == RELOAD_FROM_EMPTY && viewWeapon->AnimationIsPastFrameNumber("MainLayer", weaponInfo->animationCancelFrames.reloadFromEmpty));
     }
 }
 

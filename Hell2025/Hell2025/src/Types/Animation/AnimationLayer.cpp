@@ -2,7 +2,7 @@
 #include "AssetManagement/AssetManager.h"
 #include "Util.h"
 
-void AnimationLayer::SetSkinnedModel(const std::string& skinnedModelName) {
+void AnimationLayerOLD::SetSkinnedModel(const std::string& skinnedModelName) {
     int index = AssetManager::GetSkinnedModelIndexByName(skinnedModelName);
     if (index != -1) {
         m_skinnedModelIndex = index;
@@ -11,7 +11,7 @@ void AnimationLayer::SetSkinnedModel(const std::string& skinnedModelName) {
     }
 }
 
-void AnimationLayer::Update(float deltaTime, std::unordered_map<std::string, glm::mat4>& additiveBoneTransforms) {
+void AnimationLayerOLD::Update(float deltaTime, std::unordered_map<std::string, glm::mat4>& additiveBoneTransforms) {
 
     // Remove any animations awaiting removal
     for (int i = 0; i < m_animationStates.size(); i++) {
@@ -48,7 +48,7 @@ void AnimationLayer::Update(float deltaTime, std::unordered_map<std::string, glm
     }
 }
 
-void AnimationLayer::PlayAnimation(const std::string& animationName, const AnimationPlaybackParams& playbackParams) {
+void AnimationLayerOLD::PlayAnimation(const std::string& animationName, const AnimationPlaybackParams& playbackParams) {
     int animationIndex = AssetManager::GetAnimationIndexByName(animationName);
     if (animationIndex != -1) {
         // Remove any existing animations if specified to do so
@@ -69,7 +69,7 @@ void AnimationLayer::PlayAnimation(const std::string& animationName, const Anima
     }
 }
 
-void AnimationLayer::PlayAndLoopAnimation(const std::string& animationName, const AnimationPlaybackParams& playbackParams) {
+void AnimationLayerOLD::PlayAndLoopAnimation(const std::string& animationName, const AnimationPlaybackParams& playbackParams) {
     int animationIndex = AssetManager::GetAnimationIndexByName(animationName);
 
     if (animationIndex != -1) {
@@ -95,7 +95,7 @@ void AnimationLayer::PlayAndLoopAnimation(const std::string& animationName, cons
     }
 }
 
-void AnimationLayer::SkinToBindPose() {
+void AnimationLayerOLD::SkinToBindPose() {
     if (m_skinnedModelIndex == -1) {
         std::cout << "AnimationLayer::SkinToBindPose() failed cause m_skinnedModelIndex was -1\n";
         return;
@@ -113,23 +113,23 @@ void AnimationLayer::SkinToBindPose() {
     }
 }
 
-void AnimationLayer::ClearAllAnimationStates() {
+void AnimationLayerOLD::ClearAllAnimationStates() {
     m_animationStates.clear();
 }
 
-bool AnimationLayer::AllAnimationIsComplete() {
+bool AnimationLayerOLD::AllAnimationIsComplete() {
     std::cout << " THIS FUNCITON IS BROKEN COZ ANIMATION STATES CAN STAY AFTER COMPLETION!!!\n";
     return m_animationStates.empty();
 }
 
-void AnimationLayer::ForceStopAnimationStateByName(const std::string& animationName) {
+void AnimationLayerOLD::ForceStopAnimationStateByName(const std::string& animationName) {
     for (AnimationStateOld& animationState : m_animationStates) {
         if (animationState.m_playbackParams.animationName == animationName) {
             animationState.ForceStop();
         }
     }
 }
-void AnimationLayer::ForceEaseOutAnimationStateByName(const std::string& animationName) {
+void AnimationLayerOLD::ForceEaseOutAnimationStateByName(const std::string& animationName) {
     for (AnimationStateOld& animationState : m_animationStates) {
         if (animationState.m_playbackParams.animationName == animationName) {
             animationState.ForceEaseOut();
@@ -137,7 +137,7 @@ void AnimationLayer::ForceEaseOutAnimationStateByName(const std::string& animati
     }
 }
 
-void AnimationLayer::SetLoopStateByName(const std::string& animationName, bool loopState) {
+void AnimationLayerOLD::SetLoopStateByName(const std::string& animationName, bool loopState) {
     for (AnimationStateOld& animationState : m_animationStates) {
         if (animationState.m_playbackParams.animationName == animationName) {
             animationState.m_loop = loopState;
@@ -145,7 +145,7 @@ void AnimationLayer::SetLoopStateByName(const std::string& animationName, bool l
     }
 }
 
-void AnimationLayer::PauseAnimationStateByName(const std::string& animationName) {
+void AnimationLayerOLD::PauseAnimationStateByName(const std::string& animationName) {
     for (AnimationStateOld& animationState : m_animationStates) {
         if (animationState.m_playbackParams.animationName == animationName) {
             animationState.m_paused = true;

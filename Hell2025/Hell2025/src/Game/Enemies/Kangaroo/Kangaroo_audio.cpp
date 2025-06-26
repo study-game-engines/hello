@@ -38,11 +38,11 @@ void Kangaroo::UpdateAudio() {
 
 
         // Hack reset the flag
-        if (animatedGameObject->GetAnimationFrameNumber() < 3) {
+        if (animatedGameObject->GetAnimationFrameNumber("MainLayer") < 3) {
             m_awaitingHopStepAudio = true;
         }
 
-        if (animatedGameObject->GetAnimationFrameNumber() >= 6 && m_awaitingHopStepAudio) {
+        if (animatedGameObject->GetAnimationFrameNumber("MainLayer") >= 6 && m_awaitingHopStepAudio) {
             std::vector<const char*> filenames = {
                            "unloved_kingkroo_footstep_01.wav",
                            "unloved_kingkroo_footstep_02.wav",
