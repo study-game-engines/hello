@@ -85,7 +85,6 @@ void Player::UpdateUI() {
                     int hack = 7 + 9;
 
                     std::string shellTextureName = "ShotgunShellRed";
-                    WeaponState* weaponState = GetCurrentWeaponState();
                     if (weaponState->shotgunSlug) {
                         shellTextureName = "ShotgunShellGreen";
                     }

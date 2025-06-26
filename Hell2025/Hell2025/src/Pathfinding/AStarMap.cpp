@@ -100,11 +100,6 @@ namespace AStarMap {
                 g_mapObstacleCells.push_back(Index2D(i));
             }
         }
-
-
-
-        std::cout << "World::GetTrees().size(): " << World::GetTrees().size() << "\n";
-        std::cout << "g_wallCells.size(): " << g_mapObstacleCells.size() << "\n";
     }
 
     void Update() {

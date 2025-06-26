@@ -142,6 +142,11 @@ void Player::Update(float deltaTime) {
     //    std::cout << GetFootPosition() << "\n";
     //    std::cout << GetCamera().GetEulerRotation() << "\n\n";
     //}
+
+    if (Input::KeyPressed(HELL_KEY_N) && m_viewportIndex == 0) {
+        auto* viewWeapon = GetViewWeaponAnimatedGameObject();
+        viewWeapon->PrintNodeNames();
+    }
 }
 
 struct SpawnPoint {
@@ -176,8 +181,8 @@ void Player::Respawn() {
             spawnPoint = spawnPoints[0];
         }
 
-        spawnPoint.position = glm::vec3(44.21f, 32.3, 35.15);
-        spawnPoint.camEuler = glm::vec3(-0.2f, -2.99, 0.0f);
+        //spawnPoint.position = glm::vec3(44.21f, 32.3, 35.15);
+        //spawnPoint.camEuler = glm::vec3(-0.2f, -2.99, 0.0f);
 
         // Check you didn't just spawn on another player
         for (int i = 0; i < Game::GetLocalPlayerCount(); i++) {
@@ -367,7 +372,7 @@ bool Player::ViewModelAnimationsCompleted() {
         std::cout << "WARNING!!! Player::ViewModelAnimationsCompleted() failed coz viewWeapon was nullptr\n";
         return true;
     }
-    return viewWeapon->m_animator.AllAnimationsComplete();
+    return viewWeapon->IsAllAnimationsComplete();
 }
 
 float Player::GetWeaponAudioFrequency() {
@@ -389,10 +394,10 @@ void Player::DisplayInfoText(const std::string& text) {
 
 void Player::UpdateAnimatedGameObjects(float deltaTime) {
     m_viewWeaponAnimatedGameObject.Update(deltaTime);
-    m_characterModelAnimatedGameObject.Update(deltaTime);
+    m_viewWeaponAnimatedGameObject.SetExclusiveViewportIndex(m_viewportIndex);
 
-    m_viewWeaponAnimatedGameObject.m_exclusiveViewportIndex = m_viewportIndex;
-    m_characterModelAnimatedGameObject.m_ignoredViewportIndex = m_viewportIndex;
+    m_characterModelAnimatedGameObject.Update(deltaTime);
+    m_characterModelAnimatedGameObject.SetIgnoredViewportIndex(m_viewportIndex);
 }
 
 const float Player::GetFov() {

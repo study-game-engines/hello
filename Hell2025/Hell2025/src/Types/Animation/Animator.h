@@ -26,6 +26,7 @@ struct Animator {
     void CreateAnimationLayer(const std::string& name);
     void ClearAllAnimations();
     void PauseAllLayers();
+    void SetAdditiveTransform(const std::string& nodeName, const glm::mat4& matrix);
 
     uint32_t GetAnimationFrameNumber(const std::string& animationLayerName);
     bool AnimationIsPastFrameNumber(const std::string& animationLayerName, int frameNumber);
@@ -38,7 +39,7 @@ struct Animator {
     std::vector<glm::mat4> m_LocalBlendedBoneTransforms;
     std::vector<glm::mat4> m_globalBlendedNodeTransforms;
 
-    std::unordered_map<std::string, glm::mat4> m_additiveBoneTransforms; // Used for shark spine
+    std::unordered_map<std::string, glm::mat4> m_additiveNodeTransforms; // Used for shark spine
 
     std::unordered_map<std::string, AnimationLayer> m_animationLayers;
     //std::vector<AnimationState> m_animationStates;

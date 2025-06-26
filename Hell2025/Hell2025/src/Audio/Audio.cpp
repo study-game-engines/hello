@@ -190,7 +190,6 @@ namespace Audio {
         g_system->playSound(handle.sound, nullptr, false, &handle.channel);
         handle.channel->setVolume(volume);
 
-        std::cout << "LoopAudio() returned id " << uniqueId << "\n";
         return uniqueId;
     }
 

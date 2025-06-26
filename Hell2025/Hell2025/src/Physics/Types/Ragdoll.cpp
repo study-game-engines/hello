@@ -68,7 +68,7 @@ void Ragdoll::SetRigidGlobalPosesFromAnimatedGameObject(AnimatedGameObject* anim
     for (int i = 0; i < m_correspondingBoneNames.size(); i++) {
         const std::string& correspondingBoneName = m_correspondingBoneNames[i];
 
-        for (const auto& entry : animatedGameObject->m_boneMapping) {
+        for (const auto& entry : animatedGameObject->GetSkinnedModel()->m_boneMapping) {
             const std::string& boneName = entry.first;
             unsigned int boneIndex = entry.second;
 

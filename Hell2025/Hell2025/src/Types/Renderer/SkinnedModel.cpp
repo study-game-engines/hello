@@ -24,12 +24,14 @@ void SkinnedModel::Load(SkinnedModelData& skinnedModelData) {
     }
 
     // Store bone node indices
-    m_boneNodeIndex.assign(m_boneMapping.size(), -1);
+    m_boneNodeIndices.assign(m_boneMapping.size(), -1);
     for (int nodeIdx = 0; nodeIdx < GetNodeCount(); ++nodeIdx) {
         const auto& name = m_nodes[nodeIdx].name;
         auto it = m_boneMapping.find(name);
-        if (it != m_boneMapping.end())
-            m_boneNodeIndex[it->second] = nodeIdx;
+        if (it != m_boneMapping.end()) {
+            m_boneNodeIndices[it->second] = nodeIdx;
+        }
+        m_nodeMapping[name] = nodeIdx;
     }
 }
 

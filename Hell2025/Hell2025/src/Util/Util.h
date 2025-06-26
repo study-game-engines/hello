@@ -8,6 +8,8 @@
 #include <assimp/matrix3x3.h>
 #include <assimp/matrix4x4.h>
 #include <span>
+#include <type_traits>
+
 #include <vector>
 
 namespace Util {
@@ -35,7 +37,6 @@ namespace Util {
     float FInterpTo(float current, float target, float deltaTime, float interpSpeed);
     glm::vec3 LerpVec3(glm::vec3 current, glm::vec3 target, float deltaTime, float interpSpeed);
     float RandomFloat(float min, float max);
-    float MapRange(float inValue, float minInRange, float maxInRange, float minOutRange, float maxOutRange);
     bool IsWithinThreshold(const glm::ivec2& pointA, const glm::ivec2& pointB, float threshold);
     glm::ivec2 WorldToScreenCoords(const glm::vec3& worldPos, const glm::mat4& viewProjection, int screenWidth, int screenHeight, bool flipY = false);
     //glm::ivec2 WorldToScreenCoordsOrtho(const glm::vec3& worldPos, const glm::mat4& orthoMatrix, int screenWidth, int screenHeight, bool flipY = false);
@@ -162,7 +163,8 @@ namespace Util {
     WallType StringToWallType(const std::string& str);
     ObjectType IntToEnum(int value);
     int32_t EnumToInt(ObjectType type);
-    std::string FloatToString(float value, int prevision = 3);
+    std::string FloatToString(float value, int precision = 3);
+    std::string DoubleToString(double value, int precision = 3);
 
     // Time
     double GetCurrentTime();
@@ -171,4 +173,18 @@ namespace Util {
     // Debug Info
     void PrintDebugInfo(TextureData& textureData);
     std::string BytesToMBString(size_t bytes);
+
+    // Templates
+    template<typename In, typename MinIn, typename MaxIn, typename MinOut, typename MaxOut>
+    inline float MapRange(In inValue, MinIn minInRange, MaxIn maxInRange, MinOut minOutRange, MaxOut maxOutRange) {
+        static_assert(std::is_arithmetic<In>::value && std::is_arithmetic<MinIn>::value && std::is_arithmetic<MaxIn>::value && std::is_arithmetic<MinOut>::value && std::is_arithmetic<MaxOut>::value, "MapRange requires arithmetic types");
+        float iv = static_cast<float>(inValue);
+        float minI = static_cast<float>(minInRange);
+        float maxI = static_cast<float>(maxInRange);
+        float minO = static_cast<float>(minOutRange);
+        float maxO = static_cast<float>(maxOutRange);
+        float x = (iv - minI) / (maxI - minI);
+        return minO + (maxO - minO) * x;
+    }
+
 }

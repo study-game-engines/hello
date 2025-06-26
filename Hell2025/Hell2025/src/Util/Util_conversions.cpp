@@ -319,9 +319,16 @@ namespace Util {
         return static_cast<int32_t>(type);
     }
 
-    std::string FloatToString(float value, int prevision) {
+    std::string FloatToString(float value, int precision) {
         char buffer[64];
-        snprintf(buffer, sizeof(buffer), ("%." + std::to_string(prevision) + "f").c_str(), value);
+        snprintf(buffer, sizeof(buffer), ("%." + std::to_string(precision) + "f").c_str(), value);
+        return std::string(buffer);
+    }
+
+    std::string DoubleToString(double value, int precision) {
+        char buffer[64];
+        std::string fmt = "%." + std::to_string(precision) + "f";
+        std::snprintf(buffer, sizeof(buffer), fmt.c_str(), value);
         return std::string(buffer);
     }
 }

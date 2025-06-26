@@ -28,8 +28,8 @@ struct MidiFile {
 
     const std::string GetFileName () const  { return m_filename; }
     const bool IsComplete() const           { return m_complete; }
-    const float GetPlaybackTime() const     { return m_playbackTime; }
-    const float GetDuration() const         { return m_totalDurationSeconds; }
+    const float GetPlaybackTime() const     { return (float)m_playbackTime; }
+    const float GetDuration() const         { return (float)m_totalDurationSeconds; }
 
 private:
     std::string m_filename = "";

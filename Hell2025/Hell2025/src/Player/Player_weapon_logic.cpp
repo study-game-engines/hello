@@ -323,12 +323,12 @@ void Player::UpdateWeaponSlide() {
         std::string& boneName = weaponInfo->pistolSlideBoneName;
         int boneIndex = viewWeapon->GetBoneIndex(boneName);
 
-        if (boneIndex == -1 || viewWeapon->m_animator.m_globalBlendedNodeTransforms.empty()) {
-            std::cout << "Player::UpdateWeaponSlide() failed: bone name '" << boneName << "' not found!\n";
-        }
-        else {
-            std::cout << "found bone!\n";
-        } 
+        //if (boneIndex == -1 || viewWeapon->m_animator.m_globalBlendedNodeTransforms.empty()) {
+        //    std::cout << "Player::UpdateWeaponSlide() failed: bone name '" << boneName << "' not found!\n";
+        //}
+        //else {
+        //    std::cout << "found bone!\n";
+        //} 
 
       
         //  m_globalNodeTransforms

@@ -250,11 +250,6 @@ namespace Util {
         return dist(rng);
     }
 
-    float MapRange(float inValue, float minInRange, float maxInRange, float minOutRange, float maxOutRange) {
-        float x = (inValue - minInRange) / (maxInRange - minInRange);
-        return minOutRange + (maxOutRange - minOutRange) * x;
-    }
-
     void InterpolateQuaternion(glm::quat& Out, const glm::quat& Start, const glm::quat& End, float pFactor) {
         // calc cosine theta
         float cosom = Start.x * End.x + Start.y * End.y + Start.z * End.z + Start.w * End.w;

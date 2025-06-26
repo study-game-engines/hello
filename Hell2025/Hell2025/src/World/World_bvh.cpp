@@ -3,9 +3,8 @@
 #include "Bvh/Bvh.h";
 #include "Core/Game.h"
 #include "Editor/Editor.h"
-#include "Renderer/RenderDataManager.h";
-#include "Viewport/ViewportManager.h";
-
+#include "Renderer/RenderDataManager.h"
+#include "Viewport/ViewportManager.h"
 #include "Renderer/Renderer.h"
 #include "Input/Input.h"
 

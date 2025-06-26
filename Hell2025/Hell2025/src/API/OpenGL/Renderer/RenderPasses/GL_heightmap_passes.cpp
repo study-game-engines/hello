@@ -31,7 +31,6 @@
 namespace OpenGLRenderer {
 
     void BlitHeightMapWorld();
-    void GenerateHeightMapImageData();
     void GenerateHeightMapVertexData();
     void GeneratePhysXTextures();
     void DrawHeightMap();
@@ -40,7 +39,6 @@ namespace OpenGLRenderer {
 
     void RecalculateAllHeightMapData() {
         BlitHeightMapWorld();
-        //GenerateHeightMapImageData();
         GenerateHeightMapVertexData();
         GeneratePhysXTextures();
         AStarMap::UpdateDebugMeshesFromHeightField();
@@ -74,25 +72,15 @@ namespace OpenGLRenderer {
         OpenGLFrameBuffer* worldFramebuffer = GetFrameBuffer("World");
         OpenGLFrameBuffer* heightMapBlitBuffer = GetFrameBuffer("HeightMapBlitBuffer");
         OpenGLTextureArray& heightmapTextureArray = HeightMapManager::GetGLTextureArray();
-        //MapCreateInfo* mapCreateInfo = World::GetCurrentMapCreateInfo();
 
-        int mapWidth = World::GetMapWidth();
-        int mapDepth = World::GetMapDepth();
-        int textureWidth = mapWidth * 256 + 1;
-        int textureHeight = mapDepth * 256 + 1;
+        unsigned int mapWidth = World::GetMapWidth();
+        unsigned int mapDepth = World::GetMapDepth();
+        unsigned int textureWidth = mapWidth * 256 + 1;
+        unsigned int textureHeight = mapDepth * 256 + 1;
 
         // Hack! write better error checking and handling:
-        textureWidth = std::max(textureWidth, 257);
-        textureHeight = std::max(textureHeight, 257);
-
-        // If invalid map, clear to black an empty 257*257 heightmap world
-        //if (!mapCreateInfo) {
-        //    if (worldFramebuffer->GetWidth() != textureWidth || worldFramebuffer->GetHeight() != textureHeight) {
-        //        worldFramebuffer->Resize(textureWidth, textureHeight);
-        //        worldFramebuffer->ClearAttachment("HeightMap", 0.0);
-        //    }
-        //    return;
-        //}
+        textureWidth = std::max(textureWidth, 257u);
+        textureHeight = std::max(textureHeight, 257u);
 
         if (worldFramebuffer->GetWidth() != textureWidth || worldFramebuffer->GetHeight() != textureHeight) {
             worldFramebuffer->Resize(textureWidth, textureHeight);
@@ -132,23 +120,6 @@ namespace OpenGLRenderer {
         }
         glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-    }
-
-
-    void GenerateHeightMapImageData() {
-        static bool runOnce = true;
-        if (!runOnce) return;
-        runOnce = false;
-        return;
-
-        OpenGLTextureArray& heightmapTextureArray = HeightMapManager::GetGLTextureArray();
-        OpenGLShader* shader = GetShader("HeightMapImageGeneration");
-
-        shader->Bind();
-
-        glBindImageTexture(0, heightmapTextureArray.GetHandle(), 0, GL_TRUE, 0, GL_READ_WRITE, GL_R16F);
-        glDispatchCompute(HEIGHT_MAP_SIZE / 16, HEIGHT_MAP_SIZE / 16, 1);
-        glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
     }
 
     void PaintHeightMap() {
@@ -239,8 +210,6 @@ namespace OpenGLRenderer {
         GLsizei numPixels = width * height * depth;
         GLsizei dataSize = numPixels * sizeof(float);
         std::vector<float> pixels(numPixels);
-
-        std::cout << "WorldFrameBufferSize: " << worldFramebuffer->GetWidth() << " x " << worldFramebuffer->GetHeight() << "\n";
 
         glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 

@@ -12,6 +12,5 @@ void Player::InitRagdoll() {
 
         ragdoll->SetFilterData(filterData);
         ragdoll->SetPhysicsData(GetPlayerId(), ObjectType::RAGDOLL_PLAYER);
-        std::cout << "initilzeded player ragdoll\n";
     }
 }

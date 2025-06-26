@@ -1,6 +1,6 @@
 #pragma once
-#include "Modelling/Types/ClippingCube.h";
-#include "Types/House/WallSegment.h";
+#include "Modelling/Types/ClippingCube.h"
+#include "Types/House/WallSegment.h"
 
 struct ClippingCubeRayResult {
     bool hitFound = false;

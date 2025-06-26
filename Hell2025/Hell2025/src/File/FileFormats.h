@@ -136,9 +136,9 @@ struct SkinnedModelData {
     uint32_t indexCount;
     uint64_t timestamp;
 
-    const uint32_t GetMeshCount() const { return meshes.size(); };
-    const uint32_t GetNodeCount() const { return nodes.size(); };
-    const uint32_t GetBoneCount() const { return boneOffsets.size(); };
+    const uint32_t GetMeshCount() const { return (uint32_t)meshes.size(); };
+    const uint32_t GetNodeCount() const { return (uint32_t)nodes.size(); };
+    const uint32_t GetBoneCount() const { return (uint32_t)boneOffsets.size(); };
 };
 
 struct HeightMapData {

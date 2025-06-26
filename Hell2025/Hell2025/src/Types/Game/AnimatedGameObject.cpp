@@ -31,10 +31,6 @@ void AnimatedGameObject::SetRagdoll(const std::string& ragdollName, float ragdol
     m_ragdollId = Physics::CreateRagdollByName(ragdollName, ragdollTotalWeight);
 }
 
-const size_t AnimatedGameObject::GetAnimatedTransformCount() {
-    return m_animatedTransforms.local.size();
-}
-
 void AnimatedGameObject::UpdateRenderItems() {
     if (!m_skinnedModel) return;
 
@@ -68,10 +64,6 @@ void AnimatedGameObject::UpdateRenderItems() {
     RenderDataManager::IncrementBaseSkinnedVertex(m_skinnedModel->GetVertexCount());
 }
 
-std::vector<RenderItem>& AnimatedGameObject::GetRenderItems() {
-    return m_renderItems;
-}
-
 const uint32_t AnimatedGameObject::GetVerteXCount() {
     if (m_skinnedModel) {
         return m_skinnedModel->GetVertexCount();
@@ -81,26 +73,20 @@ const uint32_t AnimatedGameObject::GetVerteXCount() {
     }
 }
 
-float AnimatedGameObject::GetBlendFactor() {
-    return m_blendFactor;
-}
-
 void AnimatedGameObject::UpdateBoneTransformsFromRagdoll() {
     Ragdoll* ragdoll = Physics::GetRagdollById(m_ragdollId);
     if (!ragdoll) return;
     if (!m_skinnedModel) return;
 
     int nodeCount = m_skinnedModel->m_nodes.size();
-    m_globalBlendedNodeTransforms.resize(nodeCount);
+    m_animator.m_globalBlendedNodeTransforms.resize(nodeCount);
 
-    SkinnedModel* skinnedModel = AssetManager::GetSkinnedModelByIndex(m_skinnedModelIndex);
-
-    for (int i = 0; i < skinnedModel->m_nodes.size(); i++) {
-        std::string NodeName = skinnedModel->m_nodes[i].name;
+    for (int i = 0; i < m_skinnedModel->m_nodes.size(); i++) {
+        std::string NodeName = m_skinnedModel->m_nodes[i].name;
         glm::mat4 nodeTransformation = glm::mat4(1);
-        nodeTransformation = skinnedModel->m_nodes[i].inverseBindTransform;
-        unsigned int parentIndex = skinnedModel->m_nodes[i].parentIndex;
-        glm::mat4 ParentTransformation = (parentIndex == -1) ? glm::mat4(1) : m_globalBlendedNodeTransforms[parentIndex];
+        nodeTransformation = m_skinnedModel->m_nodes[i].inverseBindTransform;
+        unsigned int parentIndex = m_skinnedModel->m_nodes[i].parentIndex;
+        glm::mat4 ParentTransformation = (parentIndex == -1) ? glm::mat4(1) : m_animator.m_globalBlendedNodeTransforms[parentIndex];
         glm::mat4 GlobalTransformation = ParentTransformation * nodeTransformation;
 
         for (int j = 0; j < ragdoll->m_correspondingBoneNames.size(); j++) {
@@ -111,8 +97,7 @@ void AnimatedGameObject::UpdateBoneTransformsFromRagdoll() {
             }
         }
 
-        m_animationLayer.m_globalBlendedNodeTransforms[i] = GlobalTransformation;             // one of these is overwritten by the other later, forget which atm
-        m_globalBlendedNodeTransforms[i] = AnimatedTransform(GlobalTransformation).to_mat4(); // one of these is overwritten by the other later, forget which atm
+        m_animator.m_globalBlendedNodeTransforms[i] = GlobalTransformation;
     }
 }
 
@@ -124,229 +109,26 @@ void AnimatedGameObject::Update(float deltaTime, std::unordered_map<std::string,
     }
     else {
         if (m_animationMode == AnimationMode::BINDPOSE) {
-            m_animationLayer.ClearAllAnimationStates();
+            //m_animationLayerOLD.ClearAllAnimationStates();
+            //m_animator.ClearAllAnimations();
         }
-
-        m_animationLayer.Update(deltaTime, additiveBoneTransforms);
+              
+        m_animator.UpdateAnimations(deltaTime);
+        //m_globalBlendedNodeTransforms = m_animator.m_globalBlendedNodeTransforms;
     }
 
-    m_LocalBlendedBoneTransforms.clear();
-    m_globalBlendedNodeTransforms.clear();
+    m_boneSkinningMatrices.clear();
 
     for (int i = 0; i < m_skinnedModel->GetBoneCount(); i++) {
-        m_LocalBlendedBoneTransforms.push_back(glm::mat4(1));
+        m_boneSkinningMatrices.push_back(glm::mat4(1));
     }
-
-    for (int i = 0; i < m_animationLayer.m_globalBlendedNodeTransforms.size(); i++) {
-        m_globalBlendedNodeTransforms.push_back(m_animationLayer.m_globalBlendedNodeTransforms[i]);
-    }
-        
-    // OVERWRITE WITH ANIMATOR
-
-    if (m_skinnedModel->GetName() == "Shark") {
-        if (m_animator.m_animationLayers.empty()) {
-            m_animator.SetSkinnedModel("Shark");
-            m_animator.CreateAnimationLayer("FullBody");
-            m_animator.PlayAndLoopAnimation("FullBody", "Shark_Swim");
-        }
-    }
-
-    if (m_skinnedModel->GetName() == "Kangaroo") {
-
-        if (Input::KeyPressed(HELL_KEY_N)) {
-            m_animator.PlayAnimation("UpperBody", "Kangaroo_Bite_UpperBody");
-        }
-
-        static std::unordered_set<std::string> upperBones = {
-                "RootNode",
-                "Armature" ,
-                //"def_root" ,
-                //"def_hip" ,
-                "def_spine_01" ,
-                "def_spine_02" ,
-                "def_chest" ,
-                "def_neck_01" ,
-                "def_neck_02" ,
-                "def_head" ,
-                "def_ear_01_L" ,
-                "def_ear_02_L" ,
-                "def_ear_03_L" ,
-                "def_ear_04_L" ,
-                "def_jaw" ,
-                "def_lower_lip_L" ,
-                "def_lower_lip_C" ,
-                "def_lower_lip_R" ,
-                "def_tongue_01" ,
-                "def_tongue_05" ,
-                "def_tongue_03" ,
-                "def_tongue_07" ,
-                "def_tongue_02" ,
-                "def_tongue_06" ,
-                "def_tongue_04" ,
-                "def_tongue_08" ,
-                "def_tongue_09" ,
-                "def_brow_L" ,
-                "def_eye_L" ,
-                "def_snout" ,
-                "def_upper_lip_L" ,
-                "def_upper_lip_C" ,
-                "def_brow_R" ,
-                "def_eye_R" ,
-                "def_upper_lip_R" ,
-                "def_ear_01_R" ,
-                "def_ear_02_R" ,
-                "def_ear_03_R" ,
-                "def_ear_04_R" ,
-                "def_upper_lid_L" ,
-                "def_upper_lid_tweak_L" ,
-                "def_lower_lid_L" ,
-                "def_lower_lid_tweak_L" ,
-                "def_upper_lid_R" ,
-                "def_upper_lid_tweak_R" ,
-                "def_lower_lid_R" ,
-                "def_lower_lid_tweak_R" ,
-                "def_corner_mouth_L" ,
-                "def_corner_mouth_R" ,
-                "def_collar_L" ,
-                "def_upper_arm_01_L" ,
-                "def_upper_arm_02_L" ,
-                "def_upper_arm_03_L" ,
-                "def_upper_arm_04_L" ,
-                "def_upper_arm_05_L" ,
-                "def_lower_arm_01_L" ,
-                "def_lower_arm_02_L" ,
-                "def_lower_arm_03_L" ,
-                "def_lower_arm_04_L" ,
-                "def_lower_arm_05_L" ,
-                "def_hand_L" ,
-                "def_pinky_finger_01_L" ,
-                "def_pinky_finger_02_L" ,
-                "def_pinky_finger_03_L" ,
-                "def_carpol_01_L" ,
-                "def_pointer_finger_01_L" ,
-                "def_pointer_finger_02_L" ,
-                "def_pointer_finger_03_L" ,
-                "def_carpol_02_L" ,
-                "def_middle_finger_01_L" ,
-                "def_middle_finger_02_L" ,
-                "def_middle_finger_03_L" ,
-                "def_carpol_03_L" ,
-                "def_ring_finger_01_L" ,
-                "def_ring_finger_02_L" ,
-                "def_ring_finger_03_L" ,
-                "def_carpol_04_L" ,
-                "def_carpol_05_L" ,
-                "def_thumb_01_L" ,
-                "def_thumb_02_L" ,
-                "def_thumb_03_L" ,
-                "def_pit_correction_L" ,
-                "def_collar_R" ,
-                "def_pit_correction_R" ,
-                "def_upper_arm_01_R" ,
-                "def_upper_arm_02_R" ,
-                "def_upper_arm_03_R" ,
-                "def_upper_arm_04_R" ,
-                "def_upper_arm_05_R" ,
-                "def_lower_arm_01_R" ,
-                "def_lower_arm_02_R" ,
-                "def_lower_arm_03_R" ,
-                "def_lower_arm_04_R" ,
-                "def_lower_arm_05_R" ,
-                "def_hand_R" ,
-                "def_pinky_finger_01_R" ,
-                "def_pinky_finger_02_R" ,
-                "def_pinky_finger_03_R" ,
-                "def_carpol_01_R" ,
-                "def_pointer_finger_01_R" ,
-                "def_pointer_finger_02_R" ,
-                "def_pointer_finger_03_R" ,
-                "def_carpol_02_R" ,
-                "def_middle_finger_01_R" ,
-                "def_middle_finger_02_R" ,
-                "def_middle_finger_03_R" ,
-                "def_carpol_03_R" ,
-                "def_ring_finger_01_R" ,
-                "def_ring_finger_02_R" ,
-                "def_ring_finger_03_R" ,
-                "def_carpol_04_R" ,
-                "def_carpol_05_R" ,
-                "def_thumb_01_R" ,
-                "def_thumb_02_R" ,
-                "def_thumb_03_R" ,
-                //"def_breathing" ,
-                //"def_tail_01" ,
-                //"def_tail_02" ,
-                //"def_tail_03" ,
-                //"def_tail_04" ,
-                //"def_tail_05" ,
-                //"def_tail_06" ,
-                //"def_tail_07" ,
-                //"def_tail_08" ,
-                //"def_tail_09" ,
-                //"def_trail_10" ,
-                //"def_trail_11" ,
-                //"def_upper_leg_L" ,
-                //"def_lower_leg_L" ,
-                //"def_foot_L" ,
-                //"def_toe_right_01_L" ,
-                //"def_toe_right_02_L" ,
-                //"def_toe_left_01_L" ,
-                //"def_toe_left_02_L" ,
-                //"def_toe_middle_01_L" ,
-                //"def_toe_middle_02_L" ,
-                //"def_upper_leg_R" ,
-                //"def_lower_leg_R" ,
-                //"def_foot_R" ,
-                //"def_toe_right_01_R" ,
-                //"def_toe_right_02_R" ,
-                //"def_toe_left_01_R" ,
-                //"def_toe_left_02_R" ,
-                //"def_toe_middle_01_R" ,
-                //"def_toe_middle_02_R" ,
-                "Body" ,
-                "LeftEye_Iris" ,
-                "LeftEye_Sclera" ,
-                "Mouth" ,
-                "Nails" ,
-                "RightEye_Iris" ,
-                "RightEye_Sclera",
-                "Teeth",
-                "Tongue"
-        };
-
-        if (m_animator.m_animationLayers.empty()) {
-            m_animator.SetSkinnedModel("Kangaroo");
-
-            m_animator.CreateAnimationLayer("FullBody");
-            m_animator.CreateAnimationLayer("UpperBody");
-
-            m_animator.PlayAndLoopAnimation("FullBody", "Kangaroo_Hop");
-            m_animator.PlayAnimation("UpperBody", "Kangaroo_Bite_UpperBody");
-
-            int nodeCount = m_skinnedModel->GetNodeCount();
-            std::vector<float> boneWeightsLowerBody(nodeCount);
-            std::vector<float> boneWeightsUpperBody(nodeCount);
-
-            for (int i = 0; i < nodeCount; ++i) {
-                const std::string& name = m_skinnedModel->m_nodes[i].name;
-                bool isUpper = upperBones.count(name) > 0;
-                boneWeightsUpperBody[i] = isUpper ? 100000.0f : 0.001f;
-                boneWeightsLowerBody[i] = isUpper ? 0.001f : 100000.0f;
-            }
-            m_animator.m_animationLayers["UpperBody"].m_boneWeights = boneWeightsUpperBody;
-            m_animator.m_animationLayers["FullBody"].m_boneWeights = boneWeightsLowerBody;
-        }
-    }
-
-    m_animator.UpdateAnimations(deltaTime);
-    m_globalBlendedNodeTransforms = m_animator.m_globalBlendedNodeTransforms;
 
     // Compute local bone matrices
     int boneCount = m_skinnedModel->GetBoneCount();
-    m_LocalBlendedBoneTransforms.resize(boneCount);
+    m_boneSkinningMatrices.resize(boneCount);
     for (int b = 0; b < boneCount; ++b) {
-        int nodeIdx = m_skinnedModel->m_boneNodeIndex[b];
-        m_LocalBlendedBoneTransforms[b] = m_globalBlendedNodeTransforms[nodeIdx] * m_skinnedModel->m_boneOffsets[b];
+        int nodeIdx = m_skinnedModel->m_boneNodeIndices[b];
+        m_boneSkinningMatrices[b] = m_animator.m_globalBlendedNodeTransforms[nodeIdx] * m_skinnedModel->m_boneOffsets[b];
     }
 
     // If it has a ragdoll
@@ -401,7 +183,6 @@ void AnimatedGameObject::Update(float deltaTime, std::unordered_map<std::string,
 
 void AnimatedGameObject::CleanUp() {
     if (m_ragdollId != 0) {
-        //std::cout << "AnimatedGameObject::CleanUp() ragdollId: " << m_ragdollId << "\n";
         Physics::MarkRagdollForRemoval(m_ragdollId);
     }
 }
@@ -481,6 +262,14 @@ void AnimatedGameObject::SetMeshEmissiveColorTextureByMeshName(const std::string
     }
 }
 
+void AnimatedGameObject::SetAdditiveTransform(const std::string& nodeName, const glm::mat4& matrix) {
+    m_animator.SetAdditiveTransform(nodeName, matrix);
+}
+
+void AnimatedGameObject::PauseAllAnimationLayers() {
+    m_animator.PauseAllLayers();
+}
+
 void AnimatedGameObject::EnableBlendingByMeshIndex(int meshIndex) {
     if (!m_skinnedModel) {
         return;
@@ -499,7 +288,7 @@ void AnimatedGameObject::SetAllMeshMaterials(const std::string& materialName) {
     }
 }
 
-glm::mat4 AnimatedGameObject::GetBindPoseByBoneName(const std::string& name) {
+const glm::mat4 AnimatedGameObject::GetBindPoseByBoneName(const std::string& name) {
     for (int i = 0; i < m_skinnedModel->m_nodes.size(); i++) {
         if (m_skinnedModel->m_nodes[i].name == name) {
             return m_skinnedModel->m_nodes[i].inverseBindTransform;
@@ -511,7 +300,7 @@ glm::mat4 AnimatedGameObject::GetBindPoseByBoneName(const std::string& name) {
 
 void AnimatedGameObject::SetAnimationModeToBindPose() {
     m_animationMode = AnimationMode::BINDPOSE;
-    m_animationLayer.ClearAllAnimationStates();
+    m_animator.ClearAllAnimations();
 }
 
 void AnimatedGameObject::SetAnimationModeToRagdoll() {
@@ -520,46 +309,10 @@ void AnimatedGameObject::SetAnimationModeToRagdoll() {
 
     if (m_animationMode != AnimationMode::RAGDOLL) {
         m_animationMode = AnimationMode::RAGDOLL;
-        m_animationLayer.ClearAllAnimationStates();
+        m_animator.ClearAllAnimations();
         ragdoll->ActivatePhysics();
     }
 }
-
-//void AnimatedGameObject::PlayAnimation(const std::string& animationName, float speed) {
-//    AnimationPlaybackParams params = AnimationPlaybackParams::GetDefaultPararms();
-//    params.animationSpeed = speed;
-//    m_animationMode = AnimationMode::ANIMATION;
-//    m_animationLayer.PlayAnimation(animationName, params);
-//}
-//
-//void AnimatedGameObject::PlayAnimation(const std::string& animationName, const AnimationPlaybackParams& playbackParams) {
-//    m_animationMode = AnimationMode::ANIMATION;
-//    m_animationLayer.PlayAnimation(animationName, playbackParams);
-//}
-//
-//void AnimatedGameObject::PlayAnimation(const std::vector<std::string>& animationNames, float speed) {
-//    AnimationPlaybackParams params = AnimationPlaybackParams::GetDefaultPararms();
-//    params.animationSpeed = speed;
-//    int rand = std::rand() % animationNames.size();
-//    m_animationLayer.PlayAnimation(animationNames[rand], params);
-//}
-//
-//void AnimatedGameObject::PlayAnimation(const std::vector<std::string>& animationNames, const AnimationPlaybackParams& playbackParams) {
-//    int rand = std::rand() % animationNames.size();
-//    m_animationLayer.PlayAnimation(animationNames[rand], playbackParams);
-//}
-//
-//void AnimatedGameObject::PlayAndLoopAnimation(const std::string& animationName, const AnimationPlaybackParams& playbackParams) {
-//    m_animationMode = AnimationMode::ANIMATION;
-//    m_animationLayer.PlayAndLoopAnimation(animationName, playbackParams);
-//}
-//
-//void AnimatedGameObject::PlayAndLoopAnimation(const std::string& animationName, float speed) {
-//    AnimationPlaybackParams params = AnimationPlaybackParams::GetDefaultPararms();
-//    params.animationSpeed = speed;
-//    m_animationMode = AnimationMode::ANIMATION;
-//    m_animationLayer.PlayAndLoopAnimation(animationName, params);
-//}
 
 void AnimatedGameObject::PlayAnimation(const std::string& layerName, const std::string& animationName, float speed) {
     m_animator.PlayAnimation(layerName, animationName, speed, false);
@@ -579,17 +332,8 @@ void AnimatedGameObject::PlayAndLoopAnimation(const std::string& layerName, std:
     PlayAndLoopAnimation(layerName, animationNames[rand], speed);
 }
 
-std::vector<glm::mat4>& AnimatedGameObject::GetLocalBlendedBoneTransforms() {
-    return m_LocalBlendedBoneTransforms;
-}
-
-std::vector<glm::mat4>& AnimatedGameObject::GetGlobalBlendedNodeTransforms() {
-    return m_globalBlendedNodeTransforms;
-}
-
 const glm::mat4 AnimatedGameObject::GetModelMatrix() {
-
-    if (useCameraMatrix) {
+    if (m_useCameraMatrix) {
         return m_cameraMatrix;
     }
 
@@ -597,19 +341,12 @@ const glm::mat4 AnimatedGameObject::GetModelMatrix() {
         return glm::mat4(1);
     }
     else {
-        return _transform.to_mat4();
+        return m_transform.to_mat4();
     }
 }
 
-bool AnimatedGameObject::IsAnimationComplete() {
-    if (m_animationLayer.m_animationStates.size()) {
-        return m_animationLayer.m_animationStates[0].IsComplete();
-    }
-    return true;
-}
-
-std::string AnimatedGameObject::GetName() {
-    return m_name;
+bool AnimatedGameObject::IsAllAnimationsComplete() {
+    return m_animator.AllAnimationsComplete();
 }
 
 void AnimatedGameObject::SetName(std::string name) {
@@ -619,8 +356,6 @@ void AnimatedGameObject::SetName(std::string name) {
 void AnimatedGameObject::SetSkinnedModel(std::string name) {
     SkinnedModel* ptr = AssetManager::GetSkinnedModelByName(name);
     if (ptr) {
-        m_skinnedModelIndex = AssetManager::GetSkinnedModelIndexByName(name);
-        m_animationLayer.SetSkinnedModel(name);
         m_skinnedModel = ptr;
         m_meshRenderingEntries.clear();
         m_woundMaskTextureIndices.resize(m_skinnedModel->GetMeshCount());
@@ -647,37 +382,39 @@ void AnimatedGameObject::SetSkinnedModel(std::string name) {
     }
 }
 
-glm::mat4 AnimatedGameObject::GetAnimatedTransformByBoneName(const std::string& name) {
-    int index = m_boneMapping[name];
-    if (index >= 0 && index < m_animationLayer.m_globalBlendedNodeTransforms.size()) {
-        return m_animationLayer.m_globalBlendedNodeTransforms[index];
+const glm::mat4 AnimatedGameObject::GetAnimatedTransformByBoneName(const std::string& name) {
+    auto it = m_skinnedModel->m_nodeMapping.find(name);
+    if (it == m_skinnedModel->m_nodeMapping.end()) {
+        //std::cout << "AnimatedGameObject::GetAnimatedTransformByBoneName() failed to find '" << name << "'\n";
+        return glm::mat4(1.0f);
     }
-    //std::cout << "AnimatedGameObject::GetAnimatedTransformByBoneName() FAILED, no matching bone name: " << name << "\n";
-    return glm::mat4(1);
-}
 
+    int index = it->second;
+    if (index < 0 || index >= int(m_animator.m_globalBlendedNodeTransforms.size())) {
+        //std::cout << "AnimatedGameObject::GetAnimatedTransformByBoneName() '" << name << "' index " << index << " out of range of " << m_animator.m_globalBlendedNodeTransforms.size() << "\n";
+        return glm::mat4(1.0f);
+    }
 
-glm::vec3 AnimatedGameObject::GetScale() {
-    return  _transform.scale;
+    return m_animator.m_globalBlendedNodeTransforms[index];
 }
 
 void AnimatedGameObject::SetScale(float scale) {
-    _transform.scale = glm::vec3(scale);
+    m_transform.scale = glm::vec3(scale);
 }
 void AnimatedGameObject::SetPosition(glm::vec3 position) {
-    _transform.position = position;
+    m_transform.position = position;
 }
 
 void AnimatedGameObject::SetRotationX(float rotation) {
-    _transform.rotation.x = rotation;
+    m_transform.rotation.x = rotation;
 }
 
 void AnimatedGameObject::SetRotationY(float rotation) {
-    _transform.rotation.y = rotation;
+    m_transform.rotation.y = rotation;
 }
 
 void AnimatedGameObject::SetRotationZ(float rotation) {
-    _transform.rotation.z = rotation;
+    m_transform.rotation.z = rotation;
 }
 
 void AnimatedGameObject::EnableDrawingForAllMesh() {
@@ -706,7 +443,7 @@ void AnimatedGameObject::DisableDrawingForMeshByMeshName(const std::string& mesh
     //std::cout << "DisableDrawingForMeshByMeshName() called but name " << meshName << " was not found!\n";
 }
 
-void AnimatedGameObject::PrintBoneNames() {
+void AnimatedGameObject::PrintNodeNames() {
     std::cout << m_skinnedModel->GetName() << "\n";
     for (int i = 0; i < m_skinnedModel->m_nodes.size(); i++) {
         std::cout << "-" << i << " " << m_skinnedModel->m_nodes[i].name << "\n";
@@ -720,7 +457,15 @@ void AnimatedGameObject::PrintMeshNames() {
     }
 }
 
-uint32_t AnimatedGameObject::GetAnimationFrameNumber(const std::string& animationLayerName) {
+void AnimatedGameObject::EnableCameraMatrix() {
+    m_useCameraMatrix = true;
+}
+
+void AnimatedGameObject::SetCameraMatrix(const glm::mat4& matrix) {
+    m_cameraMatrix = matrix;
+}
+
+const uint32_t AnimatedGameObject::GetAnimationFrameNumber(const std::string& animationLayerName) {
     return m_animator.GetAnimationFrameNumber(animationLayerName);
 }
 
@@ -729,19 +474,18 @@ bool AnimatedGameObject::AnimationIsPastFrameNumber(const std::string& animation
 }
 
 void AnimatedGameObject::DrawBones(int exclusiveViewportIndex) {
-    SkinnedModel* skinnedModel = AssetManager::GetSkinnedModelByIndex(m_skinnedModelIndex);
-    if (!skinnedModel) return;
+    if (!m_skinnedModel) return;
     
     // Traverse the tree
-    for (int i = 0; i < skinnedModel->m_nodes.size(); i++) {
+    for (int i = 0; i < m_skinnedModel->m_nodes.size(); i++) {
         glm::mat4 nodeTransformation = glm::mat4(1);
-        unsigned int parentIndex = skinnedModel->m_nodes[i].parentIndex;
-        std::string& nodeName = skinnedModel->m_nodes[i].name;
-        std::string& parentNodeName = skinnedModel->m_nodes[parentIndex].name;
+        unsigned int parentIndex = m_skinnedModel->m_nodes[i].parentIndex;
+        std::string& nodeName = m_skinnedModel->m_nodes[i].name;
+        std::string& parentNodeName = m_skinnedModel->m_nodes[parentIndex].name;
 
-        if (parentIndex != -1 && skinnedModel->BoneExists(nodeName) && skinnedModel->BoneExists(parentNodeName)) {
-            const glm::mat4& boneWorldMatrix = m_animationLayer.m_globalBlendedNodeTransforms[i];
-            const glm::mat4& parentBoneWorldMatrix = m_animationLayer.m_globalBlendedNodeTransforms[parentIndex];
+        if (parentIndex != -1 && m_skinnedModel->BoneExists(nodeName) && m_skinnedModel->BoneExists(parentNodeName)) {
+            const glm::mat4& boneWorldMatrix = m_animator.m_globalBlendedNodeTransforms[i];
+            const glm::mat4& parentBoneWorldMatrix = m_animator.m_globalBlendedNodeTransforms[parentIndex];
             glm::vec3 position = GetModelMatrix() * boneWorldMatrix * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
             glm::vec3 parentPosition = GetModelMatrix() * parentBoneWorldMatrix * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
             Renderer::DrawPoint(position, OUTLINE_COLOR, false, exclusiveViewportIndex);
@@ -757,7 +501,7 @@ void AnimatedGameObject::DrawBones(int exclusiveViewportIndex) {
 }
 
 void AnimatedGameObject::DrawBoneTangentVectors(float size, int exclusiveViewportIndex) {
-    for (const glm::mat4& boneWorldMatrix : m_animationLayer.m_globalBlendedNodeTransforms) {
+    for (const glm::mat4& boneWorldMatrix : m_animator.m_globalBlendedNodeTransforms) {
         glm::vec3 origin = GetModelMatrix() * boneWorldMatrix * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
         glm::vec3 right = glm::normalize(glm::vec3(boneWorldMatrix[0]));
         glm::vec3 up = glm::normalize(glm::vec3(boneWorldMatrix[1]));
@@ -780,26 +524,30 @@ bool AnimatedGameObject::AnimationByNameIsComplete(const std::string& name) {
     return m_animator.AnimationIsCompleteAnyLayer(name);
 }
 
-int AnimatedGameObject::GetBoneIndex(const std::string& boneName) {
+const uint32_t AnimatedGameObject::GetBoneIndex(const std::string& boneName) {
     auto it = m_boneMapping.find(boneName);
     return (it != m_boneMapping.end()) ? it->second : -1;
 }
 
-glm::mat4 AnimatedGameObject::GetBoneWorldMatrix(const std::string& boneName) {
+const glm::mat4 AnimatedGameObject::GetBoneWorldMatrix(const std::string& boneName) {
     int boneIndex = GetBoneIndex(boneName);
-    if (boneIndex == -1 || m_animationLayer.m_globalBlendedNodeTransforms.empty()) {
+    if (boneIndex == -1 || m_animator.m_globalBlendedNodeTransforms.empty()) {
         return glm::mat4(1.0f);
     }
     else {
-        return GetModelMatrix() * m_animationLayer.m_globalBlendedNodeTransforms[boneIndex];
+        return GetModelMatrix() * m_animator.m_globalBlendedNodeTransforms[boneIndex];
     }
 }
 
-glm::vec3 AnimatedGameObject::GetBoneWorldPosition(const std::string& boneName) {
+const glm::vec3 AnimatedGameObject::GetBoneWorldPosition(const std::string& boneName) {
     return GetBoneWorldMatrix(boneName)[3];
 }
 
 
 void AnimatedGameObject::SubmitForSkinning() {
     RenderDataManager::SubmitAnimatedGameObjectForSkinning(this);
+}
+
+void AnimatedGameObject::SetBaseTransfromIndex(int index) {
+    baseTransformIndex = index;
 }

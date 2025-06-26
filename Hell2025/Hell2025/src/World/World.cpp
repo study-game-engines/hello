@@ -813,7 +813,7 @@ namespace World {
     }
 
     const uint32_t GetChunkCount() {
-        return g_heightMapChunks.size();
+        return (uint32_t)g_heightMapChunks.size();
     }
 
     bool ChunkExists(int x, int z) {

@@ -264,8 +264,6 @@ namespace Editor {
     void UpdateHeightMapEditor() {
         int mapWidth = World::GetMapWidth();
         int mapDepth = World::GetMapDepth();
-        float worldWidth = World::GetWorldSpaceWidth();
-        float worldDepth = World::GetWorldSpaceDepth();
 
         int viewportIndex = Editor::GetHoveredViewportIndex();
         const Viewport* viewport = ViewportManager::GetViewportByIndex(viewportIndex);

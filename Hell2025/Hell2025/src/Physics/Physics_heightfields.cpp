@@ -135,6 +135,6 @@ namespace Physics {
     }
 
     int GetHeightFieldCount() {
-        return g_HeightFields.size();
+        return (int)g_HeightFields.size();
     }
 }

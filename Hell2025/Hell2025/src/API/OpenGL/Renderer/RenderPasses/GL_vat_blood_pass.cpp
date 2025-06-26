@@ -3,8 +3,8 @@
 #include "AssetManagement/AssetManager.h"
 #include "Core/Game.h"
 #include "Renderer/RenderDataManager.h"
-#include "Viewport/ViewportManager.h"`
-#include "World/World.h"`
+#include "Viewport/ViewportManager.h"
+#include "World/World.h"
 
 namespace OpenGLRenderer {
 

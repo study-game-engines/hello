@@ -64,7 +64,6 @@ void Kangaroo::Respawn() {
     CharacterController* characterController = GetCharacterController();
     if (characterController) {
         characterController->SetPosition(m_createInfo.position);
-        std::cout << "Set Kangaroo character controller position to " << m_createInfo.position << "\n";
     }
 }
 
@@ -103,7 +102,6 @@ void Kangaroo::CleanUp() {
     }
 }
 
-
 void Kangaroo::SetAgroState(KanagarooAgroState state) {
     m_agroState = state;
 }
@@ -129,7 +127,7 @@ void Kangaroo::PlayAndLoopAnimation(const std::string& animationName, float spee
 bool Kangaroo::AnimationIsComplete() {
     AnimatedGameObject* animatedGameObject = GetAnimatedGameObject();
     if (!animatedGameObject) return false;
-    return animatedGameObject->m_animator.AllAnimationsComplete();
+    return animatedGameObject->IsAllAnimationsComplete();
 }
 
 CharacterController* Kangaroo::GetCharacterController() {

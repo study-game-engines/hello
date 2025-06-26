@@ -68,7 +68,8 @@ namespace SectorManager {
             return sectorCreateInfo->heightMapName;
         } 
         else {
-            return "None";
+            static std::string empty = "None";
+            return empty;
         }
     }
 

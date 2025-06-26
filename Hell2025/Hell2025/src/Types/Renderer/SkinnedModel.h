@@ -28,7 +28,8 @@ public:
     std::vector<Node> m_nodes;
     std::vector<glm::mat4> m_boneOffsets;
     std::map<std::string, unsigned int> m_boneMapping;
-    std::vector<int> m_boneNodeIndex;
+    std::map<std::string, unsigned int> m_nodeMapping;
+    std::vector<int> m_boneNodeIndices;
 
 private:
     LoadingState m_loadingState = LoadingState::AWAITING_LOADING_FROM_DISK;

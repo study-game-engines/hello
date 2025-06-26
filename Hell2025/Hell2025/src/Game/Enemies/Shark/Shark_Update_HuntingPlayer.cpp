@@ -79,7 +79,6 @@ void Shark::UpdateHuntingLogic(float deltaTime) {
 
             float safeHeadDistance = 1.20;
 
-            float safePerpendicularDistance = 0.4f;
             if (GetAnimationFrameNumber() == 11) {
                 safeHeadDistance = 1.25f;
             }
@@ -156,7 +155,7 @@ void Shark::UpdateHuntingLogic(float deltaTime) {
     }
     // Is bite is over?
     if (m_huntingState == SharkHuntingState::BITING_PLAYER) {
-        if (animatedGameObject->IsAnimationComplete()) {
+        if (animatedGameObject->IsAllAnimationsComplete()) {
             m_huntingState = SharkHuntingState::CHARGE_PLAYER;
             PlayAndLoopAnimation("Shark_Swim", 1.0f);
         }

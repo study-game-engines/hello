@@ -1,5 +1,5 @@
 #pragma once
-#include "HellTypes.h"`
+#include "HellTypes.h"
 #include <string>
 
 struct SpriteSheetTexture {

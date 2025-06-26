@@ -113,26 +113,26 @@ namespace OpenGLRenderer {
         // Alignment
         switch (alignment) {
         case Alignment::TOP_LEFT:
-            location.x += texWidth * 0.5f;
-            location.y += texHeight * 0.5f;
+            location.x += int(texWidth * 0.5f);
+            location.y += int(texHeight * 0.5f);
             break;
         case Alignment::TOP_RIGHT:
-            location.x -= texWidth * 0.5f;
-            location.y += texHeight * 0.5f;
+            location.x -= int(texWidth * 0.5f);
+            location.y += int(texHeight * 0.5f);
             break;
         case Alignment::BOTTOM_LEFT:
-            location.x += texWidth * 0.5f;
-            location.y -= texHeight * 0.5f;
+            location.x += int(texWidth * 0.5f);
+            location.y -= int(texHeight * 0.5f);
             break;
         case Alignment::BOTTOM_RIGHT:
-            location.x -= texWidth * 0.5f;
-            location.y -= texHeight * 0.5f;
+            location.x -= int(texWidth * 0.5f);
+            location.y -= int(texHeight * 0.5f);
             break;
         case Alignment::CENTERED_HORIZONTAL:
-            location.x -= texWidth * 0.5f;
+            location.x -= int(texWidth * 0.5f);
             break;
         case Alignment::CENTERED_VERTICAL:
-            location.y -= texHeight * 0.5f;
+            location.y -= int(texHeight * 0.5f);
             break;
         }
 

@@ -46,7 +46,6 @@ void Player::FireGun() {
 }
 
 void Player::ReloadGun() {
-    AnimationPlaybackParams params = AnimationPlaybackParams::GetDefaultPararms();
     AnimatedGameObject* viewWeapon = GetViewWeaponAnimatedGameObject();
     WeaponState* weaponState = GetCurrentWeaponState();
     WeaponInfo* weaponInfo = GetCurrentWeaponInfo();

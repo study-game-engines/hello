@@ -254,7 +254,6 @@ namespace OpenGLRenderer {
         generationShader->SetFloat("u_waterHeight", Ocean::GetOceanOriginY());
         
         // Dispatch compute shader
-        const int workGroupSize = 16;
         int workGroupsX = BLADES_PER_TILE_AXIS / 16;
         int workGroupsY = BLADES_PER_TILE_AXIS / 16;
         glDispatchCompute(workGroupsX, workGroupsY, 1);

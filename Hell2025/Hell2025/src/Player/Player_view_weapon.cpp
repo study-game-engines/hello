@@ -8,13 +8,12 @@ void Player::UpdateViewWeapon(float deltaTime) {
     AnimatedGameObject* viewWeapon = GetViewWeaponAnimatedGameObject();
     if (!viewWeapon) return;
 
-    SkinnedModel* model = viewWeapon->m_skinnedModel;
+    SkinnedModel* model = viewWeapon->GetSkinnedModel();
 
     glm::mat4 dmMaster = glm::mat4(1);
     glm::mat4 cameraMatrix = glm::mat4(1);
     glm::mat4 cameraBindMatrix = glm::mat4(1);
     glm::mat4 root = glm::mat4(1);
-
 
     for (int i = 0; i < model->m_nodes.size(); i++) {
         if (model->m_nodes[i].name == "camera") {
@@ -24,11 +23,11 @@ void Player::UpdateViewWeapon(float deltaTime) {
 
     glm::mat4 cameraAnimation = inverse(cameraBindMatrix) * inverse(dmMaster) * cameraMatrix;
 
-    if (viewWeapon->m_skinnedModel->GetName() == "Knife" ||
-        viewWeapon->m_skinnedModel->GetName() == "Shotgun" ||
-        viewWeapon->m_skinnedModel->GetName() == "Smith" ||
-        viewWeapon->m_skinnedModel->GetName() == "P90" ||
-        viewWeapon->m_skinnedModel->GetName() == "SPAS") {
+    if (viewWeapon->GetSkinnedModel()->GetName() == "Knife" ||
+        viewWeapon->GetSkinnedModel()->GetName() == "Shotgun" ||
+        viewWeapon->GetSkinnedModel()->GetName() == "Smith" ||
+        viewWeapon->GetSkinnedModel()->GetName() == "P90" ||
+        viewWeapon->GetSkinnedModel()->GetName() == "SPAS") {
         cameraAnimation = inverse(cameraBindMatrix) * cameraMatrix;
     }
 
@@ -73,7 +72,8 @@ void Player::UpdateViewWeapon(float deltaTime) {
     transform.rotation.x = m_camera.GetEulerRotation().x;
     transform.rotation.y = m_camera.GetEulerRotation().y;
     transform.scale = glm::vec3(weaponScale);
-    viewWeapon->m_cameraMatrix = transform.to_mat4() * glm::inverse(cameraBindMatrix) * glm::inverse(dmMaster);
+    //viewWeapon->m_cameraMatrix = transform.to_mat4() * glm::inverse(cameraBindMatrix) * glm::inverse(dmMaster);
 
-    viewWeapon->useCameraMatrix = true;
+    viewWeapon->SetCameraMatrix(transform.to_mat4() * glm::inverse(cameraBindMatrix) * glm::inverse(dmMaster));
+    viewWeapon->EnableCameraMatrix();
 }

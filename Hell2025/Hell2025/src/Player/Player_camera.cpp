@@ -79,10 +79,10 @@ void Player::UpdateCamera(float deltaTime) {
     static float viewHeightModifer = 0.0f;
     if (!IsPlayingPiano()) {
         if (Input::KeyDown(HELL_KEY_EQUAL)) {
-            viewHeightModifer += 1.0 * deltaTime;
+            viewHeightModifer += 1.0f * deltaTime;
         }
         if (Input::KeyDown(HELL_KEY_MINUS)) {
-            viewHeightModifer -= 1.0 * deltaTime;
+            viewHeightModifer -= 1.0f * deltaTime;
         }
         if (Input::KeyDown(HELL_KEY_BACKSPACE)) {
             viewHeightModifer = 0.0f;
@@ -99,7 +99,7 @@ void Player::UpdateCamera(float deltaTime) {
    
     // Get view weapon camera matrix
     AnimatedGameObject* viewWeapon = GetViewWeaponAnimatedGameObject();
-    SkinnedModel* model = viewWeapon->m_skinnedModel;
+    SkinnedModel* model = viewWeapon->GetSkinnedModel();
 
     glm::mat4 cameraMatrix = viewWeapon->GetAnimatedTransformByBoneName("camera");
     glm::mat4 dmMaster = viewWeapon->GetAnimatedTransformByBoneName("Dm-Master");

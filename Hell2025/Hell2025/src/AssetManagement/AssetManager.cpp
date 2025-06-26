@@ -129,16 +129,6 @@ namespace AssetManager {
             BuildSpriteSheetTextures();
             CopyInAllLoadedModelBvhData();
 
-            // Print anim times
-            std::cout << "\nAnimation durations\n";
-            for (Animation& animation : g_animations) {
-                std::cout << " -" << animation.GetName() << ": " << animation.m_duration << "\n";
-            }
-            std::cout << "\n";
-
-            //CreateMeshBvhs();
-
-
             HeightMapManager::Init();
             HouseManager::Init();
             MapManager::Init();

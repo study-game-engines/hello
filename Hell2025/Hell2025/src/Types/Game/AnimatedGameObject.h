@@ -1,5 +1,4 @@
 #pragma once
-#include "Types/Animation/AnimationLayer.h"
 #include "Types/Animation/Animator.h"
 #include "Types/Renderer/SkinnedModel.h"
 #include <unordered_map>
@@ -17,53 +16,14 @@ struct MeshRenderingEntry {
     float furUVScale = 0.0f;
 };
 
-struct JointWorldMatrix {
-    const char* name;
-    glm::mat4 worldMatrix;
-};
-
-struct AnimatedTransforms {
-    std::vector<glm::mat4> local;
-    std::vector<glm::mat4> worldspace;
-
-    void Resize(int size) {
-        local.resize(size);
-        worldspace.resize(size);
-    }
-
-    const size_t GetSize() {
-        return local.size();
-    }
-};
-
 struct AnimatedGameObject {
-
     enum class AnimationMode { BINDPOSE, ANIMATION, RAGDOLL };
-
-private:
-    std::vector<RenderItem> m_renderItems;
 
 public:
     void Init();
-
+    void CleanUp();
     void SetMeshWoundMaskTextureIndex(const std::string& meshName, int32_t woundMaskTextureIndex);
-    std::vector<int32_t> m_woundMaskTextureIndices;
-
-
-    Animator m_animator;
-
-    std::unordered_map<std::string, unsigned int> m_boneMapping;
-    glm::mat4 GetAnimatedTransformByBoneName(const std::string& name);
-    AnimatedTransforms m_animatedTransforms;
-    const size_t GetAnimatedTransformCount();
     void UpdateRenderItems();
-    std::vector<RenderItem>& GetRenderItems();
-    const uint32_t GetVerteXCount();
-    std::vector<uint32_t> m_skinnedBufferIndices;
-    int GetBoneIndex(const std::string& boneName);
-    glm::mat4 GetBoneWorldMatrix(const std::string& boneName);
-    glm::vec3 GetBoneWorldPosition(const std::string& boneName);
-
 	void Update(float deltaTime, std::unordered_map<std::string, glm::mat4> additiveBoneTransforms = std::unordered_map<std::string, glm::mat4>());
 	void SetName(std::string name);
 	void SetSkinnedModel(std::string skinnedModelName);
@@ -72,18 +32,10 @@ public:
 	void SetRotationX(float rotation);
 	void SetRotationY(float rotation);
 	void SetRotationZ(float rotation);
-
     void PlayAnimation(const std::string& layerName, const std::string& animationName, float speed);
     void PlayAnimation(const std::string& layerName, std::vector<std::string>& animationNames, float speed);
     void PlayAndLoopAnimation(const std::string& layerName, const std::string& animationName, float speed);
     void PlayAndLoopAnimation(const std::string& layerName, std::vector<std::string>& animationNames, float speed);
-
-    //void PlayAnimation(const std::string& animationName, float speed);
-    //void PlayAnimation(const std::string& animationName, const AnimationPlaybackParams& playbackParams = AnimationPlaybackParams());
-    //void PlayAnimation(const std::vector<std::string>& animationNames, float speed);
-    //void PlayAnimation(const std::vector<std::string>& animationNames, const AnimationPlaybackParams& playbackParams);
-    //void PlayAndLoopAnimation(const std::string& animationName, float speed);
-    //void PlayAndLoopAnimation(const std::string& animationName, const AnimationPlaybackParams& playbackParams = AnimationPlaybackParams());
     void SetAnimationModeToBindPose();
     void SetAnimationModeToRagdoll();
     void SetMeshMaterialByMeshName(const std::string& meshName, const std::string& materialName);
@@ -91,109 +43,71 @@ public:
     void SetMeshToRenderAsGlassByMeshIndex(const std::string& materialName);
     void SetMeshFurLength(const std::string& meshName, float furLength);
     void SetMeshFurShellDistanceAttenuation(const std::string& meshName, float furShellDistanceAttenuation);
-    void SetMeshFurUVScale(const std::string& meshName, float uvScale);
-    
-
+    void SetMeshFurUVScale(const std::string& meshName, float uvScale);    
     void SetMeshEmissiveColorTextureByMeshName(const std::string& meshName, const std::string& textureName);
 	void SetAllMeshMaterials(const std::string& materialName);
-
-    // Ragdoll
     void SetRagdoll(const std::string& ragdollName, float ragdollTotalWeight);
-
-    void CleanUp();
-
-	std::string GetName();
-	const glm::mat4 GetModelMatrix();
-	bool IsAnimationComplete();
-    glm::vec3 GetScale();
-
-	SkinnedModel* m_skinnedModel = nullptr;
-    int m_skinnedModelIndex = -1;
-
-	Transform _transform;
-	float _currentAnimationTime = 0;
-	glm::mat4 _cameraMatrix = glm::mat4(1);
-	std::vector<MeshRenderingEntry> m_meshRenderingEntries;
-    AnimationMode m_animationMode = AnimationMode::BINDPOSE;
-
-    bool useCameraMatrix = false;
-    glm::mat4 m_cameraMatrix = glm::mat4(1);
-    glm::mat4 m_cameraSpawnMatrix = glm::mat4(1);
-
+    void EnableCameraMatrix();
+    void SetCameraMatrix(const glm::mat4& matrix);
+    void DrawBones(int exclusiveViewportIndex = -1);
+    void DrawBoneTangentVectors(float size = 0.1f, int exclusiveViewportIndex = -1);
+    void SubmitForSkinning();
+    void SetExclusiveViewportIndex(int index);
+    void SetIgnoredViewportIndex(int index);
+    void SetBaseTransfromIndex(int index);   
     void EnableDrawingForAllMesh();
     void EnableDrawingForMeshByMeshName(const std::string& meshName);
     void DisableDrawingForMeshByMeshName(const std::string& meshName);
-    void PrintBoneNames();
+    void PrintNodeNames();
     void PrintMeshNames();
     void EnableBlendingByMeshIndex(int index);
+    void SetAdditiveTransform(const std::string& nodeName, const glm::mat4& matrix);
+    void PauseAllAnimationLayers();
 
-    //std::vector<glm::mat4> _debugTransformsA;
-    //std::vector<glm::mat4> _debugTransformsB;
-    bool _hasRagdoll = false;
+    bool AnimationIsPastFrameNumber(const std::string& animationLayerName, int frameNumber);
+    bool AnimationByNameIsComplete(const std::string& name);
+    bool IsAllAnimationsComplete();
 
-    struct BoneDebugInfo {
-        const char* name;
-        const char* parentName;
-        glm::vec3 worldPos;
-        glm::vec3 parentWorldPos;
-    };
+    const glm::mat4 GetModelMatrix();
+    const glm::mat4 GetBindPoseByBoneName(const std::string& name);
+    const glm::mat4 GetAnimatedTransformByBoneName(const std::string& name);
+    const glm::mat4 GetBoneWorldMatrix(const std::string& boneName);
+    const glm::vec3 GetBoneWorldPosition(const std::string& boneName);
+    const uint32_t GetAnimationFrameNumber(const std::string& animationLayerName);
+    const uint32_t GetBoneIndex(const std::string& boneName);
+    const uint32_t GetVerteXCount();
 
-    std::vector<BoneDebugInfo> _debugBoneInfo;
-    bool _renderDebugBones = false;
-
-
-    //glm::vec3 FindClosestParentAnimatedNode(std::vector<JointWorldMatrix>& worldMatrices, int parentIndex);
-
-    void SetBaseTransfromIndex(int index) {
-        baseTransformIndex = index;
-    }
-    int GetBaseTransfromIndex() {
-        return baseTransformIndex;
-    }
-    ;
-    const uint64_t& GetObjectId() const     { return m_objectId; };
-    const uint64_t& GetRagdollId() const    { return m_ragdollId; }
+    SkinnedModel* GetSkinnedModel()                                 { return m_skinnedModel; }
+    const uint64_t& GetObjectId() const                             { return m_objectId; }
+    const uint64_t& GetRagdollId() const                            { return m_ragdollId; }
+    const uint32_t GetBaseTransfromIndex() const                    { return baseTransformIndex; }
+    const uint32_t& GetIgnoredViewportIndex() const                 { return m_ignoredViewportIndex; };
+    const uint32_t& GetExclusiveViewportIndex() const               { return m_exclusiveViewportIndex; };
+    const glm::vec3 GetScale() const                                { return m_transform.scale; }
+    const std::vector<RenderItem>& GetRenderItems()                 { return m_renderItems; }
+    const std::vector<glm::mat4>& GetGlobalBlendedNodeTransforms()  { return m_animator.m_globalBlendedNodeTransforms; }
+    const std::vector<glm::mat4>& GetBoneSkinningMatrices()         { return m_boneSkinningMatrices; }
+    const std::string& GetName() const                              { return m_name; }
 
 private:
-
-    uint64_t m_objectId = 0;
-    uint64_t m_ragdollId = 0;
-
     void UpdateBoneTransformsFromRagdoll();
 
-    float GetBlendFactor();
-
-	std::string m_name;
-    int baseTransformIndex = -1;
-    bool m_isGold = true;
-
-public:
-    float m_accumulatedBlendingTime = 0.0f;
-    float m_totalBlendDuration = 0.0f;
-    float m_blendFactor = 0.0f;
-    std::vector<glm::mat4> m_LocalBlendedBoneTransforms;
-    std::vector<glm::mat4> m_globalBlendedNodeTransforms;
-    std::vector<glm::mat4>& GetLocalBlendedBoneTransforms();
-    std::vector<glm::mat4>& GetGlobalBlendedNodeTransforms();
-    glm::mat4 GetBindPoseByBoneName(const std::string& name);
-
-
-    uint32_t GetAnimationFrameNumber(const std::string& animationLayerName);                     // the logic in here needs rethinking!!!
-    bool AnimationIsPastFrameNumber(const std::string& animationLayerName, int frameNumber);       // the logic in here needs rethinking!!!
-
-    AnimationLayerOLD m_animationLayer;
-
-    void DrawBones(int exclusiveViewportIndex = -1);
-    void DrawBoneTangentVectors(float size = 0.1f, int exclusiveViewportIndex = -1);
-
-    void SetExclusiveViewportIndex(int index);
-    void SetIgnoredViewportIndex(int index);
-
-    bool AnimationByNameIsComplete(const std::string& name);
-
-    int m_ignoredViewportIndex = -1;
-    int m_exclusiveViewportIndex = -1;
-
-    AnimationLayerOLD& GetAnimationLayer() { return m_animationLayer; }
-    void SubmitForSkinning();
+    AnimationMode m_animationMode = AnimationMode::BINDPOSE;
+    Animator m_animator;
+    SkinnedModel* m_skinnedModel = nullptr;
+    Transform m_transform;
+    glm::mat4 m_cameraMatrix = glm::mat4(1);
+    std::string m_name = "";
+    std::vector<MeshRenderingEntry> m_meshRenderingEntries;
+    std::vector<RenderItem> m_renderItems;
+    std::vector<glm::mat4> m_boneSkinningMatrices;
+    std::vector<uint32_t> m_skinnedBufferIndices;
+    std::vector<int32_t> m_woundMaskTextureIndices;
+    std::unordered_map<std::string, unsigned int> m_boneMapping;
+    uint64_t m_objectId = 0;
+    uint64_t m_ragdollId = 0;
+    uint32_t m_ignoredViewportIndex = -1;
+    uint32_t m_exclusiveViewportIndex = -1;
+    uint32_t baseTransformIndex = -1;
+    bool m_useCameraMatrix = false;
 };

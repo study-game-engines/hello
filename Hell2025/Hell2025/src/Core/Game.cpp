@@ -68,7 +68,6 @@ namespace Game {
         SetSplitscreenMode(SplitscreenMode::FULLSCREEN);
         //SetSplitscreenMode(SplitscreenMode::TWO_PLAYER);
 
-        std::cout << "Created players\n";
         Audio::PlayAudio("Glock_Equip.wav", 0.5f);
     }
 

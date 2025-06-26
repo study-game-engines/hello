@@ -48,8 +48,15 @@ void Animator::PlayAndLoopAnimation(const std::string& layerName, const std::str
 void Animator::CreateAnimationLayer(const std::string& name) {
     if (AnimationLayerExists(name)) return;
 
+    int nodeCount = m_skinnedModel->GetNodeCount();
+
     m_animationLayers[name] = AnimationLayer();
     m_animationLayers[name].m_AnimationWeight = 1.0f;
+    m_animationLayers[name].m_boneWeights.resize(nodeCount);
+
+    for (int i = 0; i < nodeCount; i++) {
+        m_animationLayers[name].m_boneWeights[i] = 1.0f;
+    }
 }
 
 void Animator::ClearAllAnimations() {
@@ -60,6 +67,10 @@ void Animator::PauseAllLayers() {
     for (auto& [name, animationLayer] : m_animationLayers) {
         animationLayer.m_paused = true;
     }
+}
+
+void Animator::SetAdditiveTransform(const std::string& nodeName, const glm::mat4& matrix) {
+    m_additiveNodeTransforms[nodeName] = matrix;
 }
 
 bool Animator::AnimationLayerExists(const std::string& name) const {
@@ -151,8 +162,8 @@ void Animator::UpdateAnimations(float deltaTime) {
 
         // Apply additive matrix
         std::string& nodeName = m_skinnedModel->m_nodes[i].name;
-        auto it = m_additiveBoneTransforms.find(nodeName);
-        if (it != m_additiveBoneTransforms.end()) {
+        auto it = m_additiveNodeTransforms.find(nodeName);
+        if (it != m_additiveNodeTransforms.end()) {
             localMatrix = it->second * localMatrix;
         }
 
