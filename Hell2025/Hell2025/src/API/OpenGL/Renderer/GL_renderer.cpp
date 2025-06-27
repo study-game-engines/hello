@@ -163,6 +163,8 @@ namespace OpenGLRenderer {
         g_ssbos["SkinningTransforms"] = OpenGLSSBO(sizeof(glm::mat4) * MAX_ANIMATED_TRANSFORMS, GL_DYNAMIC_STORAGE_BIT);
         g_ssbos["CSMLightProjViewMatrices"] = OpenGLSSBO(sizeof(glm::mat4) * MAX_VIEWPORT_COUNT * SHADOW_CASCADE_COUNT, GL_DYNAMIC_STORAGE_BIT);
         g_ssbos["Lights"] = OpenGLSSBO(sizeof(GPULight) * MAX_GPU_LIGHTS, GL_DYNAMIC_STORAGE_BIT);
+        g_ssbos["ScreenSpaceBloodDecals"] = OpenGLSSBO(sizeof(ScreenSpaceBloodDecalInstanceData) * MAX_SCREEN_SPACE_BLOOD_DECAL_COUNT, GL_DYNAMIC_STORAGE_BIT);
+
 
         //g_ssbos["ffth0"] = OpenGLSSBO(oceanSize.x * oceanSize.y * sizeof(std::complex<float>), staticFlags);
 
@@ -335,6 +337,10 @@ namespace OpenGLRenderer {
 
         const std::vector<glm::mat4>& oceanPatchTransforms = RenderDataManager::GetOceanPatchTransforms();
         g_ssbos["OceanPatchTransforms"].Update(oceanPatchTransforms.size() * sizeof(glm::mat4), (void*)&oceanPatchTransforms[0]);
+
+        const std::vector<ScreenSpaceBloodDecalInstanceData>& screenSpaceBloodDecalInstances = RenderDataManager::GetScreenSpaceBloodDecalInstanceData();
+        g_ssbos["ScreenSpaceBloodDecals"].Update(screenSpaceBloodDecalInstances.size() * sizeof(ScreenSpaceBloodDecalInstanceData), (void*)&screenSpaceBloodDecalInstances[0]);
+        g_ssbos["ScreenSpaceBloodDecals"].Bind(12);
     }
 
     void PreGameLogicComputePasses() {
@@ -345,7 +351,6 @@ namespace OpenGLRenderer {
 
     void RenderGame() {
         glDisable(GL_DITHER);
-
         ComputeSkinningPass();
         ClearRenderTargets();
         UpdateSSBOS();

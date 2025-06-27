@@ -1,17 +1,31 @@
 #version 450
 #extension GL_ARB_shader_texture_lod : require
 
+#ifndef ENABLE_BINDLESS
+    #define ENABLE_BINDLESS 1
+#endif
+
+#if ENABLE_BINDLESS == 1
+    #extension GL_ARB_bindless_texture : enable        
+    readonly restrict layout(std430, binding = 0) buffer textureSamplersBuffer {
+	    uvec2 textureSamplers[];
+    };        
+    in flat int TextureIndex;
+
+#else
+    layout (binding = 2) uniform sampler2D DecalTex0;
+    layout (binding = 3) uniform sampler2D DecalTex1;
+    layout (binding = 4) uniform sampler2D DecalTex2;
+    layout (binding = 5) uniform sampler2D DecalTex3;
+#endif
+
 layout (location = 0) out vec4 DecalMaskOut;
 
 layout (binding = 0) uniform sampler2D WorldPositionTexture;
 layout (binding = 1) uniform sampler2D GBufferNormalTexture;
-layout (binding = 2) uniform sampler2D DecalTex;
 
- uniform mat4 u_inverseModel;
-
-//in vec3 Normal;
-in mat3 TBN;
-in mat4 inverseModelMatrix;
+in flat int Type;
+in mat4 InverseModelMatrix;
 
 uniform vec3 _DecalForwardDirection;
 
@@ -19,10 +33,10 @@ float saturate(float value) {
 	return clamp(value, 0.0, 1.0);
 }
 
-//void main() {
-//    BaseColorOut = vec4(1, 0, 0, 1);
-//    RMAOut = vec4(0.5, 0.5, 1, 1);
-//}
+void main2() {
+    DecalMaskOut = vec4(1,0,0,1);
+
+}
 
 void main() {
     vec2 gbufferDimensions = textureSize(GBufferNormalTexture, 0);
@@ -57,7 +71,7 @@ void main() {
         // you almost certainly dont need this
     }
 
-	vec4 objectPosition = u_inverseModel * vec4(gbufferWorldPosition, 1.0);
+	vec4 objectPosition = InverseModelMatrix * vec4(gbufferWorldPosition, 1.0);
     vec3 stepVal = (vec3(0.5, 0.5, 0.5) - abs(objectPosition.xyz)) * 1000;
     stepVal.x = saturate(stepVal.x);
     stepVal.y = saturate(stepVal.y);
@@ -65,6 +79,29 @@ void main() {
     float projClipFade = stepVal.x * stepVal.y * stepVal.z;
 	// Add 0.5 to get texture coordinates.
 	vec2 decalTexCoord = vec2(objectPosition.x, objectPosition.z) + 0.5;
+
+    
+    #if ENABLE_BINDLESS == 1
+        vec4 textureData  = texture(sampler2D(textureSamplers[TextureIndex]), decalTexCoord);
+    #else
+        vec4 textureData = vec4(0);
+        if (Type == 0) {     
+            textureData = texture(DecalTex0, decalTexCoord); 
+        }
+        if (Type == 1) {     
+            textureData = texture(DecalTex1, decalTexCoord); 
+        }
+        if (Type == 2) {     
+            textureData = texture(DecalTex2, decalTexCoord); 
+        }
+        if (Type == 3) {     
+            textureData = texture(DecalTex3, decalTexCoord); 
+        }
+    #endif
+
+
+
+
 
      vec4 mask = vec4(0.0);
    //if (u_Type == 4)
@@ -84,48 +121,23 @@ void main() {
       //  discard;
     }
 
-   vec3 _TintColor = vec3(0.32, 0, 0);
-   float colorMask = (mask.a * 5) * res.a;
-   float alphaMask = (mask.a  * 20) * res.a;
-   alphaMask = clamp(alphaMask, 0, 1);
-   colorMask = clamp(colorMask , 0, 1);
-   colorMask = mask.a * 0.5;
-   res.a = mask.a;
-
-
-   decalTexCoord = clamp(decalTexCoord, 0, 1);
-
-  //f (decalTexCoord.x < 0 ||
-  //   decalTexCoord.y < 0 ||
-  //   decalTexCoord.x > 1 ||
-  //   decalTexCoord.y > 1) {
-  //discard;
-  //
-
-
-
+    vec3 _TintColor = vec3(0.32, 0, 0);
+    float colorMask = (mask.a * 5) * res.a;
+    float alphaMask = (mask.a  * 20) * res.a;
+    alphaMask = clamp(alphaMask, 0, 1);
+    colorMask = clamp(colorMask , 0, 1);
+    colorMask = mask.a * 0.5;
+    res.a = mask.a;
+    decalTexCoord = clamp(decalTexCoord, 0, 1);
     res.rgb = mix(_TintColor.rgb, _TintColor.rgb * 0.2, mask.z * colorMask * 0.75);
     float magic = 0.67;
 
-   //BaseColorOut.rgb = mix(vec3(magic), res.rgb * 1.45, res.a * projClipFade);
-   //BaseColorOut.rgb *= vec3(0.725);
-   //BaseColorOut.a = 1.0;
-   
-   // Roughness / metallic / ambient
-   // gAlbedo = vec4(0.125 , 0.25, 1, 0);
-    //RMAOut = vec4(0.125, 0.25, 1.0, 1.0);
-
-  // BaseColorOut.rgb  = worldNormal;
-  // BaseColorOut.rgb  = vec3(decalTexCoord, 0);
 
 
-     vec3 decalColor = texture(DecalTex, decalTexCoord).rgb;
-     
-     
-     float  decalAlpha = texture(DecalTex, decalTexCoord).a;
-   decalColor = vec3(decalAlpha * 1);
 
-//   decalColor = vec3(1,0,0);
+    vec3 decalColor = textureData.rgb;         
+    float decalAlpha = textureData.a;
 
-   DecalMaskOut.rgb  = vec3(decalColor);
+    decalColor = vec3(decalAlpha);
+    DecalMaskOut.rgb  = vec3(decalColor);
 }

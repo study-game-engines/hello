@@ -44,6 +44,8 @@ namespace RenderDataManager {
 
     std::vector<DecalPaintingInfo> g_decalPaintingInfo;
 
+    std::vector<ScreenSpaceBloodDecalInstanceData> g_screenSpaceBloodDecalInstances;
+
     uint32_t g_baseSkinnedVertex;
 
     std::vector<glm::mat4> g_oceanPatchTransforms;
@@ -59,7 +61,7 @@ namespace RenderDataManager {
     void CreateMultiDrawIndirectCommands(std::vector<DrawIndexedIndirectCommand>& commands, std::span<RenderItem> renderItems, int viewportIndex, int instanceOffset);
     void CreateMultiDrawIndirectCommandsSkinned(std::vector<DrawIndexedIndirectCommand>& commands, std::span<RenderItem> renderItems, int viewportIndex, int instanceOffset);
     void CreateShadowCubeMapMultiDrawIndirectCommands(std::vector<DrawIndexedIndirectCommand>& commands, uint32_t faceIndex, GPULight& gpuLight);
-
+    
     int EncodeBaseInstance(int playerIndex, int instanceOffset);
     void DecodeBaseInstance(int baseInstance, int& playerIndex, int& instanceOffset);
 
@@ -266,6 +268,28 @@ namespace RenderDataManager {
             }
         }
 
+        // Screenspace blood decals
+        std::sort(World::GetScreenSpaceBloodDecals().begin(), World::GetScreenSpaceBloodDecals().end(), [](const ScreenSpaceBloodDecal& a, const ScreenSpaceBloodDecal& b) {
+            return a.m_type < b.m_type;
+        });
+
+        int instanceCount = World::GetScreenSpaceBloodDecals().size();
+        g_screenSpaceBloodDecalInstances.resize(instanceCount);
+        
+        for (int i = 0; i < instanceCount; i++) {
+            ScreenSpaceBloodDecal& decal = World::GetScreenSpaceBloodDecals()[i];
+            g_screenSpaceBloodDecalInstances[i].modelMatrix = decal.GetModelMatrix();
+            g_screenSpaceBloodDecalInstances[i].inverseModelMatrix = decal.GetInverseModelMatrix();
+            g_screenSpaceBloodDecalInstances[i].type = decal.GetType();
+
+            switch (decal.GetType()) {
+                case 0: g_screenSpaceBloodDecalInstances[i].textureIndex = AssetManager::GetTextureIndexByName("BloodDecal4"); break;
+                case 1: g_screenSpaceBloodDecalInstances[i].textureIndex = AssetManager::GetTextureIndexByName("BloodDecal6"); break;
+                case 2: g_screenSpaceBloodDecalInstances[i].textureIndex = AssetManager::GetTextureIndexByName("BloodDecal7"); break;
+                case 3: g_screenSpaceBloodDecalInstances[i].textureIndex = AssetManager::GetTextureIndexByName("BloodDecal9"); break;
+                default: continue;
+            }
+        }
         UpdateOceanPatchTransforms();
     }
 
@@ -554,6 +578,10 @@ namespace RenderDataManager {
 
     const std::vector<DecalPaintingInfo>& GetDecalPaintingInfo() {
         return g_decalPaintingInfo;
+    }
+
+    const std::vector<ScreenSpaceBloodDecalInstanceData>& GetScreenSpaceBloodDecalInstanceData() {
+        return g_screenSpaceBloodDecalInstances;
     }
 
     // Submissions

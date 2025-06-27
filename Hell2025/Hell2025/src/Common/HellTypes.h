@@ -641,3 +641,12 @@ struct OceanReadbackData {
     float heightPlayer2 = 0.0f;
     float heightPlayer3 = 0.0f;
 };
+
+struct ScreenSpaceBloodDecalInstanceData {
+    glm::mat4 modelMatrix;
+    glm::mat4 inverseModelMatrix;
+    int type;
+    int textureIndex;
+    int padding1;
+    int padding2;
+};

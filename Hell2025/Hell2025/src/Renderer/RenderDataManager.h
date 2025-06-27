@@ -58,6 +58,7 @@ namespace RenderDataManager {
     const std::vector<RenderItem>& GetDecalRenderItems();
     const std::vector<RenderItem>& GetInstanceData();
     const std::vector<RenderItem>& GetOutlineRenderItems();
+    const std::vector<ScreenSpaceBloodDecalInstanceData>& GetScreenSpaceBloodDecalInstanceData();
     const std::vector<ViewportData>& GetViewportData();
     const DrawCommandsSet& GetDrawInfoSet();
     const FlashLightShadowMapDrawInfo& GetFlashLightShadowMapDrawInfo();

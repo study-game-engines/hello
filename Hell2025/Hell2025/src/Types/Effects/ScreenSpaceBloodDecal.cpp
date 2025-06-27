@@ -4,9 +4,7 @@
 void ScreenSpaceBloodDecal::Init(ScreenSpaceBloodDecalCreateInfo createInfo) {
     Transform transform;
     transform.position = createInfo.position;
-    //transform.rotation.x = Util::RandomFloat(0.0f, HELL_PI * 2);
     transform.rotation.y = Util::RandomFloat(0.0f, HELL_PI * 2);
-   // transform.rotation.z = Util::RandomFloat(0.0f, HELL_PI * 2);
     transform.scale = glm::vec3(2.0f);
 
     m_modelMatrix = transform.to_mat4();

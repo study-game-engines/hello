@@ -401,6 +401,8 @@ void main() {
     finalColor.rgb = finalColor.rgb * finalAlpha;    
     vec4 outputColor = vec4(finalColor, finalAlpha);
     
+
+
     // Output
     imageStore(outputImage, pixelCoords, outputColor);
 }

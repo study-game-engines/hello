@@ -30,6 +30,7 @@ namespace OpenGLRenderer {
             -0.5f, -0.5f, -0.5f, 
             -0.5f, -0.5f,  0.5f
         };
+
         unsigned int indices[] = {
             0, 1, 2,  2, 3, 0, // Top
             1, 5, 6,  6, 2, 1, // Back
@@ -56,13 +57,14 @@ namespace OpenGLRenderer {
         glEnableVertexAttribArray(0);
     }
 
-
     void MaskPass() {
         const std::vector<ViewportData>& viewportData = RenderDataManager::GetViewportData();
 
-        OpenGLFrameBuffer* miscFullSizeFBO = GetFrameBuffer("MiscFullSize"); 
+        OpenGLFrameBuffer* miscFullSizeFBO = GetFrameBuffer("MiscFullSize");
         OpenGLFrameBuffer* gBuffer = GetFrameBuffer("GBuffer");
         OpenGLShader* shader = GetShader("BloodScreenSpaceDecalsMask");
+
+        glFinish();
 
         if (!miscFullSizeFBO) return;
         if (!gBuffer) return;
@@ -70,8 +72,6 @@ namespace OpenGLRenderer {
 
         miscFullSizeFBO->Bind();
         miscFullSizeFBO->DrawBuffers({ "ScreenSpaceBloodDecalMask" });
-
-        shader->Bind();
 
         SetRasterizerState("GeometryPass_NonBlended");
 
@@ -81,6 +81,24 @@ namespace OpenGLRenderer {
         glDisable(GL_DEPTH_TEST);
         glDisable(GL_CULL_FACE);
 
+        glBindVertexArray(g_cubeVao);
+        glBindTextureUnit(2, AssetManager::GetTextureByName("BloodDecal4")->GetGLTexture().GetHandle());
+        glBindTextureUnit(3, AssetManager::GetTextureByName("BloodDecal6")->GetGLTexture().GetHandle());
+        glBindTextureUnit(4, AssetManager::GetTextureByName("BloodDecal7")->GetGLTexture().GetHandle());
+        glBindTextureUnit(5, AssetManager::GetTextureByName("BloodDecal9")->GetGLTexture().GetHandle());
+
+        glEnable(GL_BLEND);
+        glBlendEquation(GL_MAX);
+        glBlendFunc(GL_ONE, GL_ONE);
+
+
+       // OpenGLSSBO* ssbo = GetSSBO("ScreenSpaceBloodDecals");
+       // glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 12, ssbo->GetHandle());
+
+        shader->Bind();
+
+        int instanceCount = RenderDataManager::GetScreenSpaceBloodDecalInstanceData().size();
+
         for (int i = 0; i < 4; i++) {
             Viewport* viewport = ViewportManager::GetViewportByIndex(i);
 
@@ -88,32 +106,9 @@ namespace OpenGLRenderer {
                 OpenGLRenderer::SetViewport(gBuffer, viewport);
 
                 shader->SetMat4("u_projectionView", viewportData[i].projectionView);
-
-                glEnable(GL_BLEND);
-                glBlendEquation(GL_MAX);
-                glBlendFunc(GL_ONE, GL_ONE);
-
-                for (ScreenSpaceBloodDecal& screenSpaceBloodDecal : World::GetScreenSpaceBloodDecals()) {
-
-                    GLuint textureHandle = 0;
-                    switch (screenSpaceBloodDecal.GetType()) {
-                        case 0: textureHandle = AssetManager::GetTextureByName("BloodDecal4")->GetGLTexture().GetHandle(); break;
-                        case 1: textureHandle = AssetManager::GetTextureByName("BloodDecal6")->GetGLTexture().GetHandle(); break;
-                        case 2: textureHandle = AssetManager::GetTextureByName("BloodDecal7")->GetGLTexture().GetHandle(); break;
-                        case 3: textureHandle = AssetManager::GetTextureByName("BloodDecal9")->GetGLTexture().GetHandle(); break;
-                        default: continue;
-                    }
-                    glBindTextureUnit(2, textureHandle);
-
-                    shader->SetMat4("u_model", screenSpaceBloodDecal.GetModelMatrix());
-                    shader->SetMat4("u_inverseModel", screenSpaceBloodDecal.GetInverseModelMatrix());
-
-                    glBindVertexArray(g_cubeVao);
-                    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-                }
+                glDrawElementsInstanced(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0, instanceCount);
             }
         }    
-
         glBlendEquation(GL_FUNC_ADD);
     }
 
