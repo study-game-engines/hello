@@ -1,5 +1,5 @@
 #include "AssetManager.h"
-#include "Bvh/Bvh.h"
+#include "Bvh/Cpu/CpuBvh.h"
 #include "File/AssimpImporter.h"
 #include "Util/Util.h"
 #include <future>
@@ -134,14 +134,14 @@ namespace AssetManager {
                 }
 
                 // Swap data out of source MeshBvh and into the unordered map within BVH namespace, returning a new id
-                mesh->meshBvhId = BVH::CreateMeshBvhFromMeshBvh(sourceMeshBvh);
+                mesh->meshBvhId = Bvh::Cpu::CreateMeshBvhFromMeshBvh(sourceMeshBvh);
             }
 
             // Clean up
             model.m_modelBvhData.bvhs.clear();
         }
 
-        BVH::FlatternMeshBvhNodes();
+        Bvh::Cpu::FlatternMeshBvhNodes();
     }
 
     Model* CreateModel(const std::string& name) {

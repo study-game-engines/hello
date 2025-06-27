@@ -5,7 +5,7 @@
 #include "Util.h"
 #include "UniqueID.h"
 
-#include "Bvh/Bvh.h"
+#include "Bvh/Cpu/CpuBvh.h"
 
 GameObject::GameObject(GameObjectCreateInfo createInfo) {
     m_createInfo = createInfo;

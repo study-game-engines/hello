@@ -38,6 +38,7 @@ namespace OpenGLRenderer {
     void OceanHeightReadback();
     void PaintHeightMap();
     void UpdateGlobalIllumintation();
+    void PointCloudDirectLighting();
 
     // Init passes
     void InitGrass();
@@ -117,8 +118,9 @@ namespace OpenGLRenderer {
     std::vector<float>& GetShadowCascadeLevels();
 
     // SSBOs
-    void CreateSSBO(const std::string& name, float size, GLbitfield flags);
+    void CreateSSBO(const std::string& name, size_t size, GLbitfield flags);
     OpenGLSSBO* GetSSBO(const std::string& name);
+    void UpdateSSBO(const std::string& name, size_t size, const void* data);
 
     // Misc
     void CreateGrassGeometry();

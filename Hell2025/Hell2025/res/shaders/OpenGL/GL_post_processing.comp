@@ -8,6 +8,7 @@ layout (local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 layout(rgba16f, binding = 0) uniform image2D LightingImage;
 layout(rgba16f, binding = 1) uniform image2D NormalImage;
 layout (binding = 2) uniform usampler2D ViewportIndexTexture;
+layout(rgba8, binding = 3) uniform image2D RaytracedSceneImage;
 
 readonly restrict layout(std430, binding = 1) buffer rendererDataBuffer { RendererData rendererData; };
 readonly restrict layout(std430, binding = 2) buffer viewportDataBuffer { ViewportData viewportData[]; };
@@ -63,8 +64,21 @@ void main() {
 	float x = Rand(uv + Rand(vec2(int(time * noiseSpeed), int(-time * noiseSpeed))));
 	float noiseFactor = 0.035;
 	finalColor = finalColor + (x * -noiseFactor) + (noiseFactor / 2);
-        
+    
+    
+
+
 	imageStore(LightingImage, texCoord, vec4(finalColor, 1));
+
+    
+
+    
+    
+    vec3 raytracedSceneColor = imageLoad(RaytracedSceneImage, texCoord).rgb;
+	//imageStore(LightingImage, texCoord, vec4(raytracedSceneColor, 1));
+
+
+
 
     // Don't apply lighting to skybox
     //float skyboxFlag = float(normal.x == 0.0 && normal.y == 0.0 && normal.z == 0.0);

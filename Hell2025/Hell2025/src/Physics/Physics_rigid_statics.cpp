@@ -443,4 +443,13 @@ namespace Physics {
    bool RigidStaticExists(uint64_t rigidStaticId) {
        return (g_rigidStatics.find(rigidStaticId) != g_rigidStatics.end());
    }
+
+   RigidStatic* GetRigidStaitcById(uint64_t rigidStaticId) {
+       if (RigidStaticExists(rigidStaticId)) {
+           return &g_rigidStatics[rigidStaticId];
+       }
+       else {
+           return nullptr;
+       }
+   }
 }

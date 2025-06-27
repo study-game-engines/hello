@@ -14,6 +14,7 @@ struct Door {
 
     const bool MovedThisFrame() const                       { return m_movedThisFrame; }
     const uint64_t GetObjectId() const                      { return m_objectId; }
+    const uint64_t GetPhysicsId() const                     { return m_physicsId; }
     const uint64_t GetFrameObjectId() const                 { return m_frameObjectId; }
     const glm::vec3& GetPosition() const                    { return m_position; }
     const glm::vec3& GetRotation() const                    { return m_rotation; }

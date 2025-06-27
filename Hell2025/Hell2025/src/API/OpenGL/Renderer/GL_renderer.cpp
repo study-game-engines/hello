@@ -103,6 +103,7 @@ namespace OpenGLRenderer {
         g_frameBuffers["MiscFullSize"].CreateAttachment("GaussianFinalLightingIntermediate", GL_RGBA16F);
         g_frameBuffers["MiscFullSize"].CreateAttachment("GaussianFinalLighting", GL_RGBA16F);
         g_frameBuffers["MiscFullSize"].CreateAttachment("ScreenSpaceBloodDecalMask", GL_R8);
+        g_frameBuffers["MiscFullSize"].CreateAttachment("RaytracedScene", GL_RGBA8);
               
         g_frameBuffers["Water"] = OpenGLFrameBuffer("Water", resolutions.gBuffer);
         g_frameBuffers["Water"].CreateAttachment("Color", GL_RGBA16F);
@@ -184,6 +185,12 @@ namespace OpenGLRenderer {
         g_ssbos["fftGradZOutSSBO"] = OpenGLSSBO(oceanSize.x * oceanSize.y * sizeof(std::complex<float>), dynamicFlags);
         g_ssbos["OceanPatchTransforms"] = OpenGLSSBO(sizeof(glm::mat4(1.0f)), GL_DYNAMIC_STORAGE_BIT);
 
+        int dummySize = 64;
+        CreateSSBO("TriangleData", dummySize, GL_DYNAMIC_STORAGE_BIT);
+        CreateSSBO("SceneBvh", dummySize, GL_DYNAMIC_STORAGE_BIT);
+        CreateSSBO("MeshesBvh", dummySize, GL_DYNAMIC_STORAGE_BIT);
+        CreateSSBO("EntityInstances", dummySize, GL_DYNAMIC_STORAGE_BIT);
+
         g_tesselationPatch.Resize2(Ocean::GetTesslationMeshSize().x, Ocean::GetTesslationMeshSize().y);
 
         // Upload HO
@@ -248,6 +255,9 @@ namespace OpenGLRenderer {
     }
 
     void LoadShaders() {
+
+        g_shaders["RaytraceScene"] = OpenGLShader({ "GL_raytrace_scene.comp" });
+
         g_shaders["BlurHorizontal"] = OpenGLShader({ "GL_blur_horizontal.vert", "GL_blur.frag" });
         g_shaders["BlurVertical"] = OpenGLShader({ "GL_blur_vertical.vert", "GL_blur.frag" });
         g_shaders["BloodScreenSpaceDecalsComposite"] = OpenGLShader({ "GL_blood_screenspace_composite.comp" });
@@ -300,6 +310,7 @@ namespace OpenGLRenderer {
         g_shaders["Outline"] = OpenGLShader({ "GL_outline.vert", "GL_outline.frag" });
         g_shaders["OutlineComposite"] = OpenGLShader({ "GL_outline_composite.comp" });
         g_shaders["OutlineMask"] = OpenGLShader({ "GL_outline_mask.vert", "GL_outline_mask.frag" });
+        g_shaders["PointCloudLighting"] = OpenGLShader({ "GL_point_cloud_lighting.comp" });
         g_shaders["PostProcessing"] = OpenGLShader({ "GL_post_processing.comp" });
         g_shaders["ShadowMap"] = OpenGLShader({ "GL_shadow_map.vert", "GL_shadow_map.frag" });
         g_shaders["ShadowCubeMap"] = OpenGLShader({ "GL_shadow_cube_map.vert", "GL_shadow_cube_map.frag" });
@@ -354,8 +365,11 @@ namespace OpenGLRenderer {
         glDisable(GL_DITHER);
 
         UpdateGlobalIllumintation();
+        PointCloudDirectLighting();
+
         ComputeSkinningPass();
         ClearRenderTargets();
+
         UpdateSSBOS();
         RenderShadowMaps();
         SkyBoxPass();
@@ -632,7 +646,7 @@ namespace OpenGLRenderer {
         }
     }
 
-    void CreateSSBO(const std::string& name, float size, GLbitfield flags) {
+    void CreateSSBO(const std::string& name, size_t size, GLbitfield flags) {
         g_ssbos[name] = OpenGLSSBO(size, flags);
     }
 
@@ -721,6 +735,13 @@ namespace OpenGLRenderer {
 
     std::vector<float>& GetShadowCascadeLevels() {
         return g_shadowCascadeLevels;
+    }
+
+    void UpdateSSBO(const std::string& name, size_t size, const void* data) {
+        OpenGLSSBO* ssbo = GetSSBO(name);
+        if (ssbo && size > 0) {
+            ssbo->Update(size, data);
+        }
     }
 }
 

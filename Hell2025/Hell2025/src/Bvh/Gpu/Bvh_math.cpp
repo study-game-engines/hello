@@ -1,6 +1,6 @@
 #include "Bvh.h"
 
-namespace BVH {
+namespace Bvh::Gpu {
     uint32_t FloatToBits(float x);
     float BitsToFloat(uint32_t u);
     float AddUlpMagnitude(float x, unsigned ulps);

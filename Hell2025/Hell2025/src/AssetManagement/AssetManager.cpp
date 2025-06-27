@@ -331,8 +331,20 @@ namespace AssetManager {
     }
 
     Mesh* GetCubeMesh() {
-        // Clean me up
-        static Mesh* mesh = GetMeshByIndex(GetModelByIndex(GetModelIndexByName("Cube"))->GetMeshIndices()[0]);
+        static Mesh* mesh = nullptr;
+        
+        // Keep trying to get the cube mesh until you successfully get it.
+        // This prevents a crash on load when trying to retrieve the cube mesh before it has loaded the cube model file
+        if (!mesh) {
+            int modelIndex = GetModelIndexByName("Cube");
+            if (modelIndex != -1) {
+                Model* model = GetModelByIndex(modelIndex);
+                if (model) {
+                    int meshIndex =model->GetMeshIndices()[0];
+                    mesh = GetMeshByIndex(meshIndex);
+                }
+            }
+        }        
         return mesh;
     }
 

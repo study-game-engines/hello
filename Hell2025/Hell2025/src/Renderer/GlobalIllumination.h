@@ -9,13 +9,14 @@ struct CloudPoint {
 };
 
 namespace GlobalIllumination {
-    void CreatePointCloud();
     void Update();
-    void SetPointCloudDirtyState(bool state);
+    void SetGlobalIlluminationStructuresDirtyState(bool state);
     void SetPointCloudNeedsGpuUpdateState(bool state);
 
-    bool PointCloudIsDirty();
+    bool GlobalIlluminationStructuresAreDirty();
     bool PointCloudNeedsGpuUpdate();
 
+    uint64_t GetSceneBvhId();
+    const std::vector<BvhNode>& GetSceneNodes();
     std::vector<CloudPoint>& GetPointClound();
 }

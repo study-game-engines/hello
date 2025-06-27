@@ -9,6 +9,7 @@
 #include "Physics/Types/HeightField.h"
 #include "Physics/Types/Ragdoll.h"
 #include "Physics/Types/RigidDynamic.h"
+#include "Physics/Types/RigidStatic.h"
 #include "CollisionReports.h"
 #include "HellTypes.h"
 #include "Math/AABB.h"
@@ -117,7 +118,8 @@ namespace Physics {
     uint64_t CreateRigidStaticConvexMeshFromVertices(Transform transform, const std::span<Vertex>& vertices, PhysicsFilterData filterData);
     uint64_t CreateRigidStaticTriangleMeshFromVertexData(Transform transform, const std::span<Vertex>& vertices, const std::span<uint32_t>& indices, PhysicsFilterData filterData);
     uint64_t CreateRigidStaticTriangleMeshFromModel(Transform transform, const std::string& modelName, PhysicsFilterData filterData);
-    
+    RigidStatic* GetRigidStaitcById(uint64_t rigidStaticId);
+
     // D6Joints
     uint64_t CreateD6Joint(uint64_t parentRigidDynamicId, uint64_t childRigidDynamicId, glm::mat4 parentFrame, glm::mat4 childFrame);
     D6Joint* GetD6JointById(uint64_t d6JointId);

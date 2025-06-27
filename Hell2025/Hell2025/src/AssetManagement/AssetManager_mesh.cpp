@@ -1,5 +1,5 @@
 #include "AssetManager.h"
-#include "Bvh/Bvh.h"
+#include "Bvh/Cpu/CpuBvh.h"
 #include "Timer.hpp"
 #include <mutex>
 
@@ -149,9 +149,9 @@ namespace AssetManager {
                 indices.push_back(index);
             }
 
-            BVH::DestroyMeshBvh(mesh.meshBvhId);
-            mesh.meshBvhId = BVH::CreateMeshBvhFromVertexData(vertices, indices);
+            Bvh::Cpu::DestroyMeshBvh(mesh.meshBvhId);
+            mesh.meshBvhId = Bvh::Cpu::CreateMeshBvhFromVertexData(vertices, indices);
         }
-        BVH::FlatternMeshBvhNodes();
+        Bvh::Cpu::FlatternMeshBvhNodes();
     }
 }

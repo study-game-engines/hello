@@ -24,7 +24,7 @@ using MadmannBvhNode = bvh::v2::Node<float, 3>;
 using MadmannBvh = bvh::v2::Bvh<MadmannBvhNode>;
 using MadmannBvhBuilder = bvh::v2::DefaultBuilder<MadmannBvhNode>;
 
-namespace BVH {
+namespace Bvh::Gpu {
     std::unordered_map<uint64_t, MeshBvh> g_meshBvhs;
     std::unordered_map<uint64_t, SceneBvh> g_sceneBvhs;
     bvh::v2::ThreadPool g_threadPool;
@@ -299,7 +299,8 @@ namespace BVH {
                     gpuInstance.rootNodeIndex = g_meshBvhRootNodeOffsetMapping[instance.meshBvhId];
                     gpuInstance.worldTransform = instance.worldTransform;
                     gpuInstance.inverseWorldTransform = glm::inverse(gpuInstance.worldTransform);
-                    gpuInstance.objectType = Util::EnumToInt(instance.objectType);
+                    //gpuInstance.objectType = Util::EnumToInt(instance.objectType);
+                    gpuInstance.objectType = instance.objectId;
                     Util::PackUint64(instance.objectId, gpuInstance.objectIdLowerBit, gpuInstance.objectIdUpperBit);
                 }
                 // Update the leaf node's pointer so it now points into the new, contiguous instance array
@@ -331,7 +332,7 @@ namespace BVH {
         uint32_t rootNodeOffset = 0;
         uint32_t baseTriangleOffset = 0;
 
-        // Itereate each mesh bvh, and store its nodes and triangle data in the global ararys
+        // Iterate each mesh bvh, and store its nodes and triangle data in the global arrays
         for (auto it = g_meshBvhs.begin(); it != g_meshBvhs.end(); ++it) {
             uint64_t bvhId = it->first;
             MeshBvh& meshBvh = it->second;

@@ -1,6 +1,6 @@
 #include "File.h"
 #include <fstream>
-#include "Bvh/Bvh.h"
+#include "Bvh/Cpu/CpuBvh.h"
 #include "Util.h"
 
 #define PRINT_MODEL_BVH_HEADERS_ON_READ 0
@@ -35,8 +35,8 @@ namespace File {
 
         // Write the mesh data
         for (const MeshData& meshData : modelData.meshes) {
-            uint64_t meshbvhId = BVH::CreateMeshBvhFromVertexData(meshData.vertices, meshData.indices);
-            MeshBvh* meshBvh = BVH::GetMeshBvhById(meshbvhId);
+            uint64_t meshbvhId = Bvh::Cpu::CreateMeshBvhFromVertexData(meshData.vertices, meshData.indices);
+            MeshBvh* meshBvh = Bvh::Cpu::GetMeshBvhById(meshbvhId);
             
             MeshBvhHeader meshHeader;
             meshHeader.nodeCount = meshBvh->m_nodes.size();
@@ -54,7 +54,7 @@ namespace File {
             PrintMeshBvhHeader(meshHeader, "Wrote mesh bvh: " + meshData.name);
             #endif
             
-            BVH::DestroyMeshBvh(meshbvhId);
+            Bvh::Cpu::DestroyMeshBvh(meshbvhId);
         }
         file.close();
         std::cout << "Exported: " << outputPath << "\n";

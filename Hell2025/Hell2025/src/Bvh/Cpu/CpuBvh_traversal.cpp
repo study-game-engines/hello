@@ -1,10 +1,10 @@
-#include "Bvh.h"
+#include "CpuBvh.h"
 #include "Renderer/Renderer.h"
 #include "HellDefines.h"
 #include "HellTypes.h"
 #include "Util.h"
 
-namespace BVH {
+namespace Bvh::Cpu {
 
     bool IntersectNodeGpu(const RayData& rayData, const glm::vec3& aabbBoundsMin, const glm::vec3& aabbBoundsMax, float& t) {
         // Compute t values for the slabs defined by the AABB

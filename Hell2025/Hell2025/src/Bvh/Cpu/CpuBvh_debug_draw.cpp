@@ -1,7 +1,7 @@
-#include "Bvh.h"
+#include "CpuBvh.h"
 #include "Renderer/Renderer.h"
 
-namespace BVH {
+namespace Bvh::Cpu {
 
     void RenderMesh(uint64_t bvhId, glm::vec4 color, glm::mat4 worldTransform) {
         if (!MeshBvhExists(bvhId)) return;

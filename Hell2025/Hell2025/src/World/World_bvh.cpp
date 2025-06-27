@@ -1,6 +1,6 @@
 #include "World.h"
 #include "AssetManagement/AssetManager.h"
-#include "Bvh/Bvh.h";
+#include "Bvh/Cpu/CpuBvh.h";
 #include "Core/Game.h"
 #include "Editor/Editor.h"
 #include "Renderer/RenderDataManager.h"
@@ -111,9 +111,9 @@ namespace World {
 
             // Rebuild TLAS
             if (viewportBvhData.sceneBvhId == 0) {
-                viewportBvhData.sceneBvhId = BVH::CreateNewSceneBvh();
+                viewportBvhData.sceneBvhId = Bvh::Cpu::CreateNewSceneBvh();
             }
-            BVH::UpdateSceneBvh(viewportBvhData.sceneBvhId, viewportBvhData.instances);
+            Bvh::Cpu::UpdateSceneBvh(viewportBvhData.sceneBvhId, viewportBvhData.instances);
         }
 
         //BVH::RenderSceneBvh(g_viewportBvhData[0].sceneBvhId, BLUE);
@@ -126,6 +126,6 @@ namespace World {
         if (Util::IsNan(rayDir)) {
             return BvhRayResult();
         }
-        return BVH::ClosestHit(sceneBvhId, rayOrigin, rayDir, maxRayDistance);;
+        return Bvh::Cpu::ClosestHit(sceneBvhId, rayOrigin, rayDir, maxRayDistance);;
     }
 }

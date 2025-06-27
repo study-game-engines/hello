@@ -330,7 +330,7 @@ namespace World {
 
         AddHouse(*houseCreateInfo, SpawnOffset());
 
-        GlobalIllumination::SetPointCloudDirtyState(true);
+        GlobalIllumination::SetGlobalIlluminationStructuresDirtyState(true);
     }
 
     void AddSectorAtLocation(SectorCreateInfo& sectorCreateInfo, SpawnOffset spawnOffset, bool loadHouses) {
@@ -360,7 +360,7 @@ namespace World {
                 AddHouse(*houseCreateInfo, houseSpawnOffset);
             }
 
-            GlobalIllumination::SetPointCloudDirtyState(true);
+            GlobalIllumination::SetGlobalIlluminationStructuresDirtyState(true);
         }
     }
 

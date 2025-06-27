@@ -4,7 +4,7 @@
 
 #define MAX_BVH_STACK_SIZE 32
 
-namespace BVH {
+namespace Bvh::Cpu {
     uint64_t CreateMeshBvhFromVertexData(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices);
     uint64_t CreateMeshBvhFromMeshBvh(MeshBvh& sourceMeshBvh);
     uint64_t CreateNewSceneBvh();
