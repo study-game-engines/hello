@@ -10,8 +10,12 @@ struct CloudPoint {
 
 namespace GlobalIllumination {
     void CreatePointCloud();
-
     void Update();
+    void SetPointCloudDirtyState(bool state);
+    void SetPointCloudNeedsGpuUpdateState(bool state);
+
+    bool PointCloudIsDirty();
+    bool PointCloudNeedsGpuUpdate();
 
     std::vector<CloudPoint>& GetPointClound();
 }

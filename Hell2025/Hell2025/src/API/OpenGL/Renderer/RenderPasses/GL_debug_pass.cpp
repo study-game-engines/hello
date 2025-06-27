@@ -305,4 +305,8 @@ namespace OpenGLRenderer {
         g_pointsDepthAware.clear();
         g_linesDepthAware.clear();
     }
+
+    void RenderPointCloud() {
+
+    }
 }

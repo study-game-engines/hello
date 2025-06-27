@@ -37,6 +37,7 @@ namespace OpenGLRenderer {
     void ComputeOceanFFTPass();
     void OceanHeightReadback();
     void PaintHeightMap();
+    void UpdateGlobalIllumintation();
 
     // Init passes
     void InitGrass();
@@ -72,6 +73,9 @@ namespace OpenGLRenderer {
     void UIPass();
     void VatBloodPass();
     void WeatherBoardsPass();
+
+    // Debug passes
+    void DrawPointCloud();
 
     // Utility passes
     void RecalculateAllHeightMapData();

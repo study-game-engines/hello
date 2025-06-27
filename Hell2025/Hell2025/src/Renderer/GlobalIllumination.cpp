@@ -16,6 +16,8 @@ namespace GlobalIllumination {
     inline float RoundDown(float value, float spacing)  { return std::floor(value / spacing) * spacing; }
 
     std::vector<CloudPoint> g_pointCloud;
+    bool g_pointCloudDirty = false;
+    bool g_pointCloudNeedsGpuUpdate = false;
 
     void CreatePointCloud() {
 
@@ -124,23 +126,36 @@ namespace GlobalIllumination {
                 }
             }
         }
+
+        g_pointCloudDirty = false;
+        g_pointCloudNeedsGpuUpdate = true;
+
+        std::cout << "Recreated point cloud: " << g_pointCloud.size() << " points \n";
     }
         
-
     void Update() {
-
-        if (Input::KeyPressed(HELL_KEY_9)) {
+        if (g_pointCloudDirty) {
             GlobalIllumination::CreatePointCloud();
-        }
-
-
-        for (CloudPoint& cloudPound : g_pointCloud) {
-
-            Renderer::DrawPoint(cloudPound.position, cloudPound.normal);
         }
     }
 
     std::vector<CloudPoint>& GetPointClound() {
         return g_pointCloud;
+    }
+
+    void SetPointCloudDirtyState(bool state) {
+        g_pointCloudDirty = state;
+    }
+
+    bool PointCloudIsDirty() {
+        return g_pointCloudDirty;
+    }
+
+    void SetPointCloudNeedsGpuUpdateState(bool state) {
+        g_pointCloudNeedsGpuUpdate = state;
+    }
+
+    bool PointCloudNeedsGpuUpdate() {
+        return g_pointCloudNeedsGpuUpdate;
     }
 }

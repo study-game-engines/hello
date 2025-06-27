@@ -9,6 +9,7 @@
 #include "Audio/Audio.h"
 #include "Core/Game.h"
 #include "Input/Input.h"
+#include "Renderer/GlobalIllumination.h"
 #include "Renderer/Renderer.h"
 #include "Renderer/RenderDataManager.h"
 #include "Physics/Physics.h"
@@ -328,6 +329,8 @@ namespace World {
         g_mapDepth = 1;
 
         AddHouse(*houseCreateInfo, SpawnOffset());
+
+        GlobalIllumination::SetPointCloudDirtyState(true);
     }
 
     void AddSectorAtLocation(SectorCreateInfo& sectorCreateInfo, SpawnOffset spawnOffset, bool loadHouses) {
@@ -356,6 +359,8 @@ namespace World {
             if (houseCreateInfo) {
                 AddHouse(*houseCreateInfo, houseSpawnOffset);
             }
+
+            GlobalIllumination::SetPointCloudDirtyState(true);
         }
     }
 

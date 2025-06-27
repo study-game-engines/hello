@@ -253,6 +253,7 @@ namespace OpenGLRenderer {
         g_shaders["BloodScreenSpaceDecalsComposite"] = OpenGLShader({ "GL_blood_screenspace_composite.comp" });
         g_shaders["BloodScreenSpaceDecalsMask"] = OpenGLShader({ "GL_blood_screenspace_decals_mask.vert", "GL_blood_screenspace_decals_mask.frag" });
         g_shaders["ComputeSkinning"] = OpenGLShader({ "GL_compute_skinning.comp" });
+        g_shaders["DebugPointCloud"] = OpenGLShader({ "GL_debug_point_cloud.vert", "GL_debug_point_cloud.frag" });
         g_shaders["DebugSolidColor"] = OpenGLShader({ "GL_debug_solid_color.vert", "GL_debug_solid_color.frag" });
         g_shaders["DebugTextured"] = OpenGLShader({ "GL_debug_textured.vert", "GL_debug_textured.frag" });
         g_shaders["DebugView"] = OpenGLShader({ "GL_debug_view.comp" });
@@ -351,6 +352,8 @@ namespace OpenGLRenderer {
 
     void RenderGame() {
         glDisable(GL_DITHER);
+
+        UpdateGlobalIllumintation();
         ComputeSkinningPass();
         ClearRenderTargets();
         UpdateSSBOS();
@@ -382,6 +385,8 @@ namespace OpenGLRenderer {
         DebugPass();
         EditorPass();
         OutlinePass();
+
+        DrawPointCloud();
 
         OpenGLFrameBuffer& gBuffer = g_frameBuffers["GBuffer"];
         OpenGLFrameBuffer& hairFrameBuffer = g_frameBuffers["Hair"];

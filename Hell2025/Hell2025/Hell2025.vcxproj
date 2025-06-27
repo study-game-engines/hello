@@ -213,6 +213,7 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <ClCompile Include="src\API\OpenGL\Renderer\ComputePasses\GL_compute_skinning.cpp" />
     <ClCompile Include="src\API\OpenGL\Renderer\GL_renderer.cpp" />
     <ClCompile Include="src\API\OpenGL\Renderer\GL_renderer_util.cpp" />
+    <ClCompile Include="src\API\OpenGL\Renderer\ComputePasses\GL_global_illumination_passes.cpp" />
     <ClCompile Include="src\API\OpenGL\Renderer\RenderPasses\GL_screenspace_decals_pass.cpp" />
     <ClCompile Include="src\API\OpenGL\Renderer\RenderPasses\GL_decal_painting_pass.cpp" />
     <ClCompile Include="src\API\OpenGL\Renderer\RenderPasses\GL_decal_pass.cpp" />
@@ -495,6 +496,8 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <None Include="res\shaders\OpenGL\GL_blur.frag" />
     <None Include="res\shaders\OpenGL\GL_blur_horizontal.vert" />
     <None Include="res\shaders\OpenGL\GL_blur_vertical.vert" />
+    <None Include="res\shaders\OpenGL\GL_debug_point_cloud.frag" />
+    <None Include="res\shaders\OpenGL\GL_debug_point_cloud.vert" />
     <None Include="res\shaders\OpenGL\GL_debug_solid_color.frag" />
     <None Include="res\shaders\OpenGL\GL_debug_solid_color.vert" />
     <None Include="res\shaders\OpenGL\GL_debug_textured.frag" />
