@@ -24,7 +24,7 @@ public:
     void CleanUp();
     void SetMeshWoundMaskTextureIndex(const std::string& meshName, int32_t woundMaskTextureIndex);
     void UpdateRenderItems();
-	void Update(float deltaTime, std::unordered_map<std::string, glm::mat4> additiveBoneTransforms = std::unordered_map<std::string, glm::mat4>());
+	void Update(float deltaTime);
 	void SetName(std::string name);
 	void SetSkinnedModel(std::string skinnedModelName);
 	void SetScale(float scale);

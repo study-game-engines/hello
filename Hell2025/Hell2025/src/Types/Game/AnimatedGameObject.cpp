@@ -101,7 +101,7 @@ void AnimatedGameObject::UpdateBoneTransformsFromRagdoll() {
     }
 }
 
-void AnimatedGameObject::Update(float deltaTime, std::unordered_map<std::string, glm::mat4> additiveBoneTransforms) {
+void AnimatedGameObject::Update(float deltaTime) {
     if (!m_skinnedModel) return;
 
     if (m_animationMode == AnimationMode::RAGDOLL) {

@@ -70,7 +70,49 @@ void Animator::PauseAllLayers() {
 }
 
 void Animator::SetAdditiveTransform(const std::string& nodeName, const glm::mat4& matrix) {
+    // TODO: Make sure this bone name is valid
+    // TODO: Make sure this bone name is valid
+    // TODO: Make sure this bone name is valid
+    // TODO: Make sure this bone name is valid
+    // TODO: Make sure this bone name is valid
+    // TODO: Make sure this bone name is valid
+    // TODO: Make sure this bone name is valid
+    // TODO: Make sure this bone name is valid
+    // TODO: Make sure this bone name is valid
+    // TODO: Make sure this bone name is valid
+    // TODO: Make sure this bone name is valid
+    // TODO: Make sure this bone name is valid
+    // TODO: Make sure this bone name is valid
+    // TODO: Make sure this bone name is valid
+    // TODO: Make sure this bone name is valid
+    // TODO: Make sure this bone name is valid
+    // TODO: Make sure this bone name is valid
+    // TODO: Make sure this bone name is valid
+    // TODO: Make sure this bone name is valid
+    // TODO: Make sure this bone name is valid
+    // TODO: Make sure this bone name is valid
+    // TODO: Make sure this bone name is valid
     m_additiveNodeTransforms[nodeName] = matrix;
+    // TODO: Make sure this bone name is valid
+    // TODO: Make sure this bone name is valid
+    // TODO: Make sure this bone name is valid
+    // TODO: Make sure this bone name is valid
+    // TODO: Make sure this bone name is valid
+    // TODO: Make sure this bone name is valid
+    // TODO: Make sure this bone name is valid
+    // TODO: Make sure this bone name is valid
+    // TODO: Make sure this bone name is valid
+    // TODO: Make sure this bone name is valid
+    // TODO: Make sure this bone name is valid
+    // TODO: Make sure this bone name is valid
+    // TODO: Make sure this bone name is valid
+    // TODO: Make sure this bone name is valid
+    // TODO: Make sure this bone name is valid
+    // TODO: Make sure this bone name is valid
+    // TODO: Make sure this bone name is valid
+    // TODO: Make sure this bone name is valid
+    // TODO: Make sure this bone name is valid
+    // TODO: Make sure this bone name is valid
 }
 
 bool Animator::AnimationLayerExists(const std::string& name) const {

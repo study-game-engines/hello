@@ -10,6 +10,8 @@
 
 namespace GlobalIllumination {
 
+    float g_probeSpacing = 0.75f;
+
     struct Triangle {
         glm::vec3 v0;
         glm::vec3 v1;
@@ -20,8 +22,9 @@ namespace GlobalIllumination {
     void CreatePointCloud();
     void CreateDoorBvh();
     void CreateHouseBvh();
-    //void CreateWallSegmentBvhs();
     void UpdateSceneBVh();
+
+    void InitPointGrid(); // Rename me and put me somewhere better
 
     inline float RoundUp(float value, float spacing)    { return std::ceil(value / spacing) * spacing; }
     inline float RoundDown(float value, float spacing)  { return std::floor(value / spacing) * spacing; }
@@ -30,15 +33,22 @@ namespace GlobalIllumination {
     uint64_t g_doorBvhId = 0;
     uint64_t g_sceneBvhId = 0;
 
-   // std::vector<uint64_t> g_wallSegmentBvhIds;
-
     glm::vec3 g_houseMinBounds = glm::vec3(0.0f);
     glm::vec3 g_houseMaxBounds = glm::vec3(0.0f);
 
+    std::vector<LightVolume> g_lightVolumes;
     std::vector<Triangle> g_triangles;
     std::vector<CloudPoint> g_pointCloud;
     bool g_globalIlluminationStructuresDirty = false;
     bool g_pointCloudNeedsGpuUpdate = false;
+
+    std::vector<PointCloudOctrant> g_pointCloudOctrants;
+    std::vector<unsigned int> g_pointIndices;
+    constexpr float g_pointCloudOctrantSpacing = 5.0f;
+    glm::uvec3 g_pointCloudGridDimensions;
+    glm::vec3 g_pointGridWorldMin;
+    glm::vec3 g_pointGridWorldMax;
+    glm::vec3 g_pointCloudOctrantSize;
 
     void Update() {
         if (g_globalIlluminationStructuresDirty) {
@@ -55,52 +65,6 @@ namespace GlobalIllumination {
         }
 
         UpdateSceneBVh();
-
-        //Bvh::Gpu::RenderMeshBvh(g_houseBvh, YELLOW, glm::mat4(1.0f));
-
-        //for (Door& door : World::GetDoors()) {
-        //    glm::mat4 modelMatrix = door.GetDoorModelMatrix();
-        //    Bvh::Gpu::RenderMeshBvh(g_doorBvh, YELLOW, modelMatrix);
-        //}
-
-        //Bvh::Gpu::RenderSceneBvh(g_sceneBvhId, YELLOW);
-
-        Player* player = Game::GetLocalPlayerByIndex(0);
-        if (player) {
-
-            glm::vec3 rayOrigin = player->GetCameraPosition();
-            glm::vec3 rayDir = player->GetCameraForward();
-            float maxDistance = 10000.0f;
-
-            BvhRayResult result = Bvh::Gpu::ClosestHit(g_sceneBvhId, rayOrigin, rayDir, maxDistance);
-            if (result.hitFound) {
-
-               // Bvh::Gpu::RenderRayResultTriangle(result, GREEN);
-             //   Bvh::Gpu::RenderRayResultNode(result, YELLOW);
-
-              //  glm::vec3 color = RED;
-              //  if (result.objectId == 999) {
-              //      color = GREEN;
-              //  }
-
-               //AABB aabb(result.nodeBoundsMin, result.nodeBoundsMax);
-               //
-               //Renderer::DrawPoint(result.hitPosition, color);
-               //Renderer::DrawAABB(aabb, YELLOW, result.primitiveTransform);
-
-                //bool hitFound = false;
-                //size_t primtiviveId = 0;
-                //uint64_t objectId = 0;
-                //ObjectType objectType = ObjectType::NONE;
-                //float distanceToHit = std::numeric_limits<float>::max();
-                //glm::vec3 hitPosition = glm::vec3(0);
-                //glm::mat4 primitiveTransform = glm::mat4(1.0f);
-                //glm::vec3 nodeBoundsMin = glm::vec3(0.0f);
-                //glm::vec3 nodeBoundsMax = glm::vec3(0.0f);
-
-            }
-        }
-
     }
 
     void CreatePointCloud() {
@@ -123,14 +87,9 @@ namespace GlobalIllumination {
             }
         }
 
-        int wallSegmentCount = 0;
-
         // Store wall triangles
         for (Wall& wall : World::GetWalls()) {
             for (WallSegment& wallSegment : wall.GetWallSegments()) {
-
-                wallSegmentCount++;
-
                 for (uint32_t i = 0; i < wallSegment.GetIndices().size(); i += 3) {
                     Triangle& triangle = g_triangles.emplace_back();
                     
@@ -209,44 +168,11 @@ namespace GlobalIllumination {
         std::cout << "Recreated point cloud: " << g_pointCloud.size() << " points \n";
     }
 
-   //void CreateWallSegmentBvhs() {
-   //
-   //    // Destroy and old wall segment bvhs
-   //    for (uint64_t bvhId : g_wallSegmentBvhIds) {
-   //        Bvh::Gpu::DestroyMeshBvh(bvhId);
-   //    }
-   //
-   //    for (Wall& wall : World::GetWalls()) {
-   //        for (WallSegment& wallSegment : wall.GetWallSegments()) {
-   //
-   //           // std::cout << "wall segment\n";
-   //
-   //            const std::vector<Vertex>& vertices = wallSegment.GetVertices();
-   //            const std::vector<uint32_t>& indices = wallSegment.GetIndices();
-   //
-   //         //  for (const Vertex& vertex : vertices) {
-   //         //      std::cout << " - " << vertex.position << "     " << vertex.normal << "\n";
-   //         //  }
-   //
-   //            uint64_t bvhId = Bvh::Gpu::CreateMeshBvhFromVertexData(vertices, indices);
-   //            g_wallSegmentBvhIds.push_back(bvhId);
-   //
-   //        }
-   //    }
-   //
-   //}
-
     void CreateHouseBvh() {     
-
-        //CreateWallSegmentBvhs();
-        //return;
-
-
         // Destroy any previous house bvh
         if (g_houseBvhId != 0) {
             Bvh::Gpu::DestroyMeshBvh(g_houseBvhId);
         }
-
 
         g_houseMinBounds = glm::vec3(std::numeric_limits<float>::max());
         g_houseMaxBounds = glm::vec3(-std::numeric_limits<float>::max());
@@ -294,6 +220,16 @@ namespace GlobalIllumination {
         }
 
         g_houseBvhId = Bvh::Gpu::CreateMeshBvhFromVertexData(vertices, indices);
+
+        // For now you only have one light volume, for whatever house you just made.
+        for (LightVolume& lightVolume : g_lightVolumes) {
+            lightVolume.CleanUp();
+        }
+        g_lightVolumes.clear();
+        LightVolume& lightVolume = g_lightVolumes.emplace_back();
+        lightVolume.Init(vertices, g_houseMinBounds, g_houseMaxBounds);
+
+        InitPointGrid();
     }
 
     void CreateDoorBvh() {
@@ -319,96 +255,121 @@ namespace GlobalIllumination {
     void UpdateSceneBVh() {
 
         std::vector<Door>& doors = World::GetDoors();
-
         std::vector<PrimitiveInstance> instances;
 
-        //int instanceCount = 1 + doors.size(); 
-
-        bool addHouse = true;
-        bool addDoors = true;
-
-        //instances.reserve(instanceCount);
-
-
-        // Add wall segment bvhs as primitive instances
-       // for (int i = 0; i < g_wallSegmentBvhIds.size(); i++) {
-      // std::cout << "\n";
-      // std::cout << "Wall segment Bvh AABBs\n";
-      //  int i = 0;
-          // for (uint64_t bvhId : g_wallSegmentBvhIds) {
-          //
-          //     MeshBvh* meshBvh = Bvh::Gpu::GetMeshBvhById(bvhId);
-          //     glm::vec3 aabbMin = meshBvh->m_nodes[0].boundsMin;
-          //     glm::vec3 aabbMax = meshBvh->m_nodes[0].boundsMax;
-          //
-          //     PrimitiveInstance& instance = instances.emplace_back();
-          //     instance.worldAabbBoundsMin.x = aabbMin.x;
-          //     instance.worldAabbBoundsMin.y = aabbMin.y;
-          //     instance.worldAabbBoundsMin.z = aabbMin.z;
-          //     instance.worldAabbBoundsMax.x = aabbMax.x;
-          //     instance.worldAabbBoundsMax.y = aabbMax.y;
-          //     instance.worldAabbBoundsMax.z = aabbMax.z;
-          //     instance.objectId = 0;
-          //     instance.worldTransform = glm::mat4(1.0f);
-          //     instance.meshBvhId = bvhId;
-          //     instance.worldAabbCenter = (instance.worldAabbBoundsMin + instance.worldAabbBoundsMax) * 0.5f;
-          //
-          // //    std::cout << "i: " << i << " " << aabbMin << "  " << aabbMax << "\n";
-          //  //   i++;
-          // }
-      //  }
-
-
-
-
         // Add the house
-        if (addHouse) {
-            PrimitiveInstance& instance = instances.emplace_back();
-            instance.worldAabbBoundsMin.x = g_houseMinBounds.x;
-            instance.worldAabbBoundsMin.y = g_houseMinBounds.y;
-            instance.worldAabbBoundsMin.z = g_houseMinBounds.z;
-            instance.worldAabbBoundsMax.x = g_houseMaxBounds.x;
-            instance.worldAabbBoundsMax.y = g_houseMaxBounds.y;
-            instance.worldAabbBoundsMax.z = g_houseMaxBounds.z;
-            instance.objectId = 0;
-            instance.worldTransform = glm::mat4(1.0f);
-            instance.meshBvhId = g_houseBvhId;
-            instance.worldAabbCenter = (instance.worldAabbBoundsMin + instance.worldAabbBoundsMax) * 0.5f;
-        }
+        PrimitiveInstance& instance = instances.emplace_back();
+        instance.worldAabbBoundsMin.x = g_houseMinBounds.x;
+        instance.worldAabbBoundsMin.y = g_houseMinBounds.y;
+        instance.worldAabbBoundsMin.z = g_houseMinBounds.z;
+        instance.worldAabbBoundsMax.x = g_houseMaxBounds.x;
+        instance.worldAabbBoundsMax.y = g_houseMaxBounds.y;
+        instance.worldAabbBoundsMax.z = g_houseMaxBounds.z;
+        instance.objectId = 0;
+        instance.worldTransform = glm::mat4(1.0f);
+        instance.meshBvhId = g_houseBvhId;
+        instance.worldAabbCenter = (instance.worldAabbBoundsMin + instance.worldAabbBoundsMax) * 0.5f;
 
-        //AABB aabb(g_houseMinBounds, g_houseMaxBounds);
-        //Renderer::DrawAABB(aabb, BLUE);
-
-       // std::cout << g_houseMinBounds << " " << g_houseMaxBounds << "\n";
-
-        if (addDoors) {
-            int objectId = 1;
         // Add all the doors
-            for (Door& door : doors) {
-                uint64_t rigidStaticId = door.GetPhysicsId();
-                RigidStatic* rigidStatic = Physics::GetRigidStaitcById(rigidStaticId);
-                PxRigidStatic* pxRigidStatic = rigidStatic->GetPxRigidStatic();
-                PxRigidActor* pxRigidActor = static_cast<PxRigidActor*>(pxRigidStatic);
-                PxBounds3 bounds = pxRigidActor->getWorldBounds();
-                PxVec3 minBounds = bounds.minimum;
-                PxVec3 maxBounds = bounds.maximum;
+        int objectId = 1;
+        for (Door& door : doors) {
+            uint64_t rigidStaticId = door.GetPhysicsId();
+            RigidStatic* rigidStatic = Physics::GetRigidStaitcById(rigidStaticId);
+            PxRigidStatic* pxRigidStatic = rigidStatic->GetPxRigidStatic();
+            PxRigidActor* pxRigidActor = static_cast<PxRigidActor*>(pxRigidStatic);
+            PxBounds3 bounds = pxRigidActor->getWorldBounds();
+            PxVec3 minBounds = bounds.minimum;
+            PxVec3 maxBounds = bounds.maximum;
 
-                PrimitiveInstance& instance = instances.emplace_back();
-                instance.worldAabbBoundsMin.x = minBounds.x;
-                instance.worldAabbBoundsMin.y = minBounds.y;
-                instance.worldAabbBoundsMin.z = minBounds.z;
-                instance.worldAabbBoundsMax.x = maxBounds.x;
-                instance.worldAabbBoundsMax.y = maxBounds.y;
-                instance.worldAabbBoundsMax.z = maxBounds.z;
-                instance.objectId = objectId;// door.GetObjectId();
-                instance.worldTransform = door.GetDoorModelMatrix();
-                instance.meshBvhId = g_doorBvhId;
-                instance.worldAabbCenter = (instance.worldAabbBoundsMin + instance.worldAabbBoundsMax) * 0.5f;
-                objectId++;
-            }
+            PrimitiveInstance& instance = instances.emplace_back();
+            instance.worldAabbBoundsMin.x = minBounds.x;
+            instance.worldAabbBoundsMin.y = minBounds.y;
+            instance.worldAabbBoundsMin.z = minBounds.z;
+            instance.worldAabbBoundsMax.x = maxBounds.x;
+            instance.worldAabbBoundsMax.y = maxBounds.y;
+            instance.worldAabbBoundsMax.z = maxBounds.z;
+            instance.objectId = objectId;// door.GetObjectId();
+            instance.worldTransform = door.GetDoorModelMatrix();
+            instance.meshBvhId = g_doorBvhId;
+            instance.worldAabbCenter = (instance.worldAabbBoundsMin + instance.worldAabbBoundsMax) * 0.5f;
+            objectId++;
         }
 
         Bvh::Gpu::UpdateSceneBvh(g_sceneBvhId, instances);
+    }
+
+    void InitPointGrid() {
+
+        for (LightVolume& lightVolume : g_lightVolumes) {
+
+            g_pointGridWorldMin = lightVolume.m_offset;
+            g_pointGridWorldMax = lightVolume.m_offset + glm::vec3(lightVolume.m_worldSpaceWidth, lightVolume.m_worldSpaceHeight, lightVolume.m_worldSpaceDepth);
+
+            glm::vec3 worldSize = g_pointGridWorldMax - g_pointGridWorldMin;
+            g_pointCloudGridDimensions.x = static_cast<unsigned int>(glm::ceil(worldSize.x / g_pointCloudOctrantSpacing));
+            g_pointCloudGridDimensions.y = static_cast<unsigned int>(glm::ceil(worldSize.y / g_pointCloudOctrantSpacing));
+            g_pointCloudGridDimensions.z = static_cast<unsigned int>(glm::ceil(worldSize.z / g_pointCloudOctrantSpacing));
+
+            g_pointCloudOctrantSize = worldSize / glm::vec3(g_pointCloudGridDimensions);
+
+             // Bail if point cloud is empty
+            if (g_pointCloud.empty()) return;
+
+            // For each grid cell, count how many points fall inside it
+            unsigned int totalCells = g_pointCloudGridDimensions.x * g_pointCloudGridDimensions.y * g_pointCloudGridDimensions.z;
+            std::vector<unsigned int> cellCounts(totalCells, 0);
+
+            for (const auto& point : g_pointCloud) {
+                // Find out which grid cell this point belongs to
+                glm::vec3 relativePos = glm::vec3(point.position) - g_pointGridWorldMin;
+                glm::ivec3 cellCoords = glm::ivec3(relativePos / g_pointCloudOctrantSize);
+
+                // Make sure the coordinates are within the grid bounds, just in case
+                cellCoords = glm::clamp(cellCoords, glm::ivec3(0), glm::ivec3(g_pointCloudGridDimensions) - 1);
+
+                // Convert the 3D cell coordinate into a 1D array index and increment the counter
+                unsigned int cellIndex = (cellCoords.z * g_pointCloudGridDimensions.x * g_pointCloudGridDimensions.y) + (cellCoords.y * g_pointCloudGridDimensions.x) + cellCoords.x;
+                cellCounts[cellIndex]++;
+            }
+
+            // Create the final PointGridCell structures with the correct offsets
+            g_pointCloudOctrants.resize(totalCells);
+            unsigned int currentOffset = 0;
+            for (unsigned int i = 0; i < totalCells; ++i) {
+                g_pointCloudOctrants[i].m_cloudPointCount = cellCounts[i];
+                g_pointCloudOctrants[i].m_offset = currentOffset;
+                currentOffset += cellCounts[i]; // The next cell's offset starts after all of this cell's points
+            }
+
+            // Finally, we create the master list of sorted point indices
+            g_pointIndices.resize(g_pointCloud.size());
+            std::vector<unsigned int> tempOffsets(totalCells);
+            for (unsigned int i = 0; i < totalCells; ++i) {
+                tempOffsets[i] = g_pointCloudOctrants[i].m_offset;
+            }
+
+            // Go through the original points again...
+            for (unsigned int i = 0; i < g_pointCloud.size(); ++i) {
+                const auto& point = g_pointCloud[i];
+
+                // Find which cell it belongs to...
+                glm::vec3 relativePos = glm::vec3(point.position) - g_pointGridWorldMin;
+                glm::ivec3 cellCoords = glm::ivec3(relativePos / g_pointCloudOctrantSize);
+                cellCoords = glm::clamp(cellCoords, glm::ivec3(0), glm::ivec3(g_pointCloudGridDimensions) - 1);
+                unsigned int cellIndex = (cellCoords.z * g_pointCloudGridDimensions.x * g_pointCloudGridDimensions.y) + (cellCoords.y * g_pointCloudGridDimensions.x) + cellCoords.x;
+
+                // Use the write counter to place the point's original index i in the correct slot
+                unsigned int& insertionIndex = tempOffsets[cellIndex];
+                g_pointIndices[insertionIndex] = i;
+
+                // Increment the write counter for that cell
+                insertionIndex++;
+            }
+        }
+        std::cout << "Point cloud octrant grid created\n";
+        std::cout << "g_pointIndices:       " << g_pointIndices.size() << "\n";
+        std::cout << "g_pointCloudOctrants: " << g_pointCloudOctrants.size() << "\n";
+        
     }
 
     uint64_t GetSceneBvhId() {
@@ -431,6 +392,10 @@ namespace GlobalIllumination {
         return g_pointCloud;
     }
 
+    std::vector<LightVolume>& GetLightVolumes() {
+        return g_lightVolumes;
+    }
+
     void SetGlobalIlluminationStructuresDirtyState(bool state) {
         g_globalIlluminationStructuresDirty = state;
     }
@@ -446,4 +411,87 @@ namespace GlobalIllumination {
     bool PointCloudNeedsGpuUpdate() {
         return g_pointCloudNeedsGpuUpdate;
     }
+
+    float GetProbeSpacing() {
+        return g_probeSpacing;
+    }
+
+    std::vector<PointCloudOctrant>& GetPointCloudOctrants() {
+        return g_pointCloudOctrants;
+    }
+
+    std::vector<unsigned int>& GetPointIndices() {
+        return g_pointIndices;
+    }
+
+    glm::uvec3 GetPointCloudGridDimensions() {
+        return g_pointCloudGridDimensions;
+    }
+
+    glm::vec3 GetPointGridWorldMin() {
+        return g_pointGridWorldMin;
+    }
+
+    glm::vec3 GetPointGridWorldMax() {
+        return g_pointGridWorldMax;
+    }
+}
+
+void LightVolume::Init(const std::vector<Vertex>& vertices, const glm::vec3& aabbMin, const glm::vec3& aabbMax) {
+    glm::vec3 inflatedAabbMin = aabbMin - glm::vec3(1.0f);
+    glm::vec3 inflatedAabbMax = aabbMax + glm::vec3(2.0f);
+    m_offset = inflatedAabbMin;
+    m_worldSpaceWidth = inflatedAabbMax.x - inflatedAabbMin.x;
+    m_worldSpaceHeight = inflatedAabbMax.y - inflatedAabbMin.y;
+    m_worldSpaceDepth = inflatedAabbMax.z - inflatedAabbMin.z;
+    m_textureWidth = int(m_worldSpaceWidth / GlobalIllumination::GetProbeSpacing());
+    m_textureHeight = int(m_worldSpaceHeight / GlobalIllumination::GetProbeSpacing());
+    m_textureDepth = int(m_worldSpaceDepth / GlobalIllumination::GetProbeSpacing());
+
+    // Create the 3d textures
+    glGenTextures(1, &m_lightVolumeA);
+    glBindTexture(GL_TEXTURE_3D, m_lightVolumeA);
+    glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA16F, m_textureWidth, m_textureHeight, m_textureDepth, 0, GL_RGBA, GL_FLOAT, nullptr);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+    glGenTextures(1, &m_lightVolumeB);
+    glBindTexture(GL_TEXTURE_3D, m_lightVolumeB);
+    glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA16F, m_textureWidth, m_textureHeight, m_textureDepth, 0, GL_RGBA, GL_FLOAT, nullptr);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+    m_lightVolumeTextures[0] = m_lightVolumeA;
+    m_lightVolumeTextures[1] = m_lightVolumeB;
+
+    glGenTextures(1, &m_lightVolumeMaskTexture);
+    glBindTexture(GL_TEXTURE_3D, m_lightVolumeMaskTexture);
+    glTexImage3D(GL_TEXTURE_3D, 0, GL_R32UI, m_textureWidth, m_textureHeight, m_textureDepth, 0, GL_RED_INTEGER, GL_UNSIGNED_INT, nullptr);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+    glBindTexture(GL_TEXTURE_3D, 0);
+}
+
+void LightVolume::CleanUp() {
+    glDeleteTextures(1, &m_lightVolumeA);
+    glDeleteTextures(1, &m_lightVolumeB);
+    glDeleteTextures(1, &m_lightVolumeMaskTexture);
+}
+
+GLuint LightVolume::GetLightingTextureHandle() {
+    return m_lightVolumeTextures[m_pingPongReadIndex];
+}
+
+GLuint LightVolume::GetMaskTextureHandle() {
+    return m_lightVolumeMaskTexture;
 }

@@ -187,8 +187,7 @@ void main() {
 
     vec3 WorldPos = points[idx].position.xyz;
     vec3 Normal = points[idx].normal.xyz;
-
-    
+        
     vec3 directLight = vec3(0.0);
 
     for (int i = 0; i < u_lightCount; i++) {
@@ -208,11 +207,7 @@ void main() {
             float ndotl = dot(Normal, lightDir);
         
             vec3 color = vec3(lightAttenuation * ndotl) * lightcolor;
-          //  vec3 color =  lightcolor;
             points[idx].directLighting = vec4(color, 1.0);
         }
     }
-
-    
-      //  points[idx].directLighting = vec4(Normal, 1.0);
 }

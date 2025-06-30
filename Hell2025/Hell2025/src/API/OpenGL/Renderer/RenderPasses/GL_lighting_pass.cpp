@@ -1,6 +1,7 @@
 #include "../GL_renderer.h"
 #include "AssetManagement/AssetManager.h"
 #include "Core/Game.h"
+#include "Renderer/GlobalIllumination.h"
 #include "World/World.h"
 
 namespace OpenGLRenderer {
@@ -20,7 +21,7 @@ namespace OpenGLRenderer {
         shader->SetInt("u_lightCount", lightCount);
         shader->SetInt("u_tileXCount", gBuffer->GetWidth() / TILE_SIZE);
         shader->SetInt("u_tileYCount", gBuffer->GetHeight() / TILE_SIZE);
-        
+                
         glBindTextureUnit(0, gBuffer->GetColorAttachmentHandleByName("WorldPosition"));
         glBindTextureUnit(1, gBuffer->GetColorAttachmentHandleByName("Normal"));
 
@@ -72,6 +73,21 @@ namespace OpenGLRenderer {
 
         glActiveTexture(GL_TEXTURE9);
         glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, hiResShadowMaps->GetDepthTexture());
+
+
+        std::vector<LightVolume>& lightVolumes = GlobalIllumination::GetLightVolumes();
+        if (lightVolumes.size()) {
+            LightVolume& lightVolume = lightVolumes[0];
+
+            lightingShader->SetFloat("u_lightVolumeSpacing", GlobalIllumination::GetProbeSpacing());
+            lightingShader->SetVec3("u_lightVolumeOffset", lightVolume.m_offset);
+            lightingShader->SetVec3("u_lightVolumeWorldSize", glm::vec3(lightVolume.m_worldSpaceWidth, lightVolume.m_worldSpaceHeight, lightVolume.m_worldSpaceDepth));
+
+
+            glActiveTexture(GL_TEXTURE11);
+            glBindTexture(GL_TEXTURE_3D, lightVolume.GetLightingTextureHandle());
+
+        }
 
 
         OpenGLSSBO* lightProjViewSSBO = GetSSBO("CSMLightProjViewMatrices");

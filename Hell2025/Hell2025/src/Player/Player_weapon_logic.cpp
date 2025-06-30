@@ -317,30 +317,15 @@ void Player::UpdateWeaponSlide() {
     AnimatedGameObject* viewWeapon = GetViewWeaponAnimatedGameObject();
     WeaponInfo* weaponInfo = GetCurrentWeaponInfo();
     WeaponState* weaponState = GetCurrentWeaponState();
+
+    std::string& boneName = weaponInfo->pistolSlideBoneName;
+
     if (weaponState->requiresSlideOffset) {
-
-        //AnimationLayerOLD& animationLayer = viewWeapon->GetAnimationLayer();
-        std::string& boneName = weaponInfo->pistolSlideBoneName;
-        int boneIndex = viewWeapon->GetBoneIndex(boneName);
-
-        //if (boneIndex == -1 || viewWeapon->m_animator.m_globalBlendedNodeTransforms.empty()) {
-        //    std::cout << "Player::UpdateWeaponSlide() failed: bone name '" << boneName << "' not found!\n";
-        //}
-        //else {
-        //    std::cout << "found bone!\n";
-        //} 
-
-      
-        //  m_globalNodeTransforms
-        //
-        //  for (int j = 0; j < viewWeaponAnimatedGameObject->GetAnimatedTransformCount(); j++) {
-        //      if (viewWeaponAnimatedGameObject->_animatedTransforms.names[j] == weaponInfo->pistolSlideBoneName) {
-        //          auto& boneMatrix = viewWeaponAnimatedGameObject->_animatedTransforms.local[j];
-        //          Transform newTransform;
-        //          newTransform.position.z = weaponInfo->pistolSlideOffset;
-        //          boneMatrix = boneMatrix * newTransform.to_mat4();
-        //      }
-        //  }
+        Transform transform;
+        transform.position.z = -weaponInfo->pistolSlideOffset;
+        viewWeapon->SetAdditiveTransform(boneName, transform.to_mat4());
     }
-
+    else {
+        viewWeapon->SetAdditiveTransform(boneName, glm::mat4(1.0f));
+    }
 }

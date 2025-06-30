@@ -190,6 +190,8 @@ namespace OpenGLRenderer {
         CreateSSBO("SceneBvh", dummySize, GL_DYNAMIC_STORAGE_BIT);
         CreateSSBO("MeshesBvh", dummySize, GL_DYNAMIC_STORAGE_BIT);
         CreateSSBO("EntityInstances", dummySize, GL_DYNAMIC_STORAGE_BIT);
+        CreateSSBO("PointGridBuffer", dummySize, GL_DYNAMIC_STORAGE_BIT);
+        CreateSSBO("PointIndicesBuffer", dummySize, GL_DYNAMIC_STORAGE_BIT);
 
         g_tesselationPatch.Resize2(Ocean::GetTesslationMeshSize().x, Ocean::GetTesslationMeshSize().y);
 
@@ -255,7 +257,6 @@ namespace OpenGLRenderer {
     }
 
     void LoadShaders() {
-
         g_shaders["RaytraceScene"] = OpenGLShader({ "GL_raytrace_scene.comp" });
 
         g_shaders["BlurHorizontal"] = OpenGLShader({ "GL_blur_horizontal.vert", "GL_blur.frag" });
@@ -263,6 +264,7 @@ namespace OpenGLRenderer {
         g_shaders["BloodScreenSpaceDecalsComposite"] = OpenGLShader({ "GL_blood_screenspace_composite.comp" });
         g_shaders["BloodScreenSpaceDecalsMask"] = OpenGLShader({ "GL_blood_screenspace_decals_mask.vert", "GL_blood_screenspace_decals_mask.frag" });
         g_shaders["ComputeSkinning"] = OpenGLShader({ "GL_compute_skinning.comp" });
+        g_shaders["DebugLightVolume"] = OpenGLShader({ "GL_debug_light_volume.vert", "GL_debug_light_volume.frag" });
         g_shaders["DebugPointCloud"] = OpenGLShader({ "GL_debug_point_cloud.vert", "GL_debug_point_cloud.frag" });
         g_shaders["DebugSolidColor"] = OpenGLShader({ "GL_debug_solid_color.vert", "GL_debug_solid_color.frag" });
         g_shaders["DebugTextured"] = OpenGLShader({ "GL_debug_textured.vert", "GL_debug_textured.frag" });
@@ -297,6 +299,8 @@ namespace OpenGLRenderer {
         g_shaders["HeightMapVertexGeneration"] = OpenGLShader({ "GL_heightmap_vertex_generation.comp" });
         g_shaders["HeightMapPaint"] = OpenGLShader({ "GL_heightmap_paint.comp" });
         g_shaders["LightCulling"] = OpenGLShader({ "GL_light_culling.comp" });
+        g_shaders["LightVolumeLighting"] = OpenGLShader({ "GL_light_volume_lighting.comp" });
+        g_shaders["LightVolumeMask"] = OpenGLShader({ "GL_light_volume_mask.comp" });
         g_shaders["Lighting"] = OpenGLShader({ "GL_lighting.comp" });
         g_shaders["CSMLighting"] = OpenGLShader({ "GL_lighting.vert", "GL_lighting.frag"});
         g_shaders["OceanSurfaceComposite"] = OpenGLShader({ "GL_ocean_surface_composite.comp" });
@@ -366,6 +370,8 @@ namespace OpenGLRenderer {
 
         UpdateGlobalIllumintation();
         PointCloudDirectLighting();
+        ComputeLightVolumeMask();
+        ComputeProbeLighting();
 
         ComputeSkinningPass();
         ClearRenderTargets();
@@ -401,6 +407,7 @@ namespace OpenGLRenderer {
         OutlinePass();
 
         DrawPointCloud();
+        DrawLightVolume();
 
         OpenGLFrameBuffer& gBuffer = g_frameBuffers["GBuffer"];
         OpenGLFrameBuffer& hairFrameBuffer = g_frameBuffers["Hair"];

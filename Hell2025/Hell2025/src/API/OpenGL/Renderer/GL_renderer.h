@@ -33,8 +33,10 @@ namespace OpenGLRenderer {
     void RenderGame();
 
     // Compute passes
-    void ComputeSkinningPass();
+    void ComputeLightVolumeMask();
+    void ComputeProbeLighting();
     void ComputeOceanFFTPass();
+    void ComputeSkinningPass();
     void OceanHeightReadback();
     void PaintHeightMap();
     void UpdateGlobalIllumintation();
@@ -77,6 +79,7 @@ namespace OpenGLRenderer {
 
     // Debug passes
     void DrawPointCloud();
+    void DrawLightVolume();
 
     // Utility passes
     void RecalculateAllHeightMapData();
