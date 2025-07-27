@@ -36,6 +36,7 @@ public:
     void PlayAnimation(const std::string& layerName, std::vector<std::string>& animationNames, float speed);
     void PlayAndLoopAnimation(const std::string& layerName, const std::string& animationName, float speed);
     void PlayAndLoopAnimation(const std::string& layerName, std::vector<std::string>& animationNames, float speed);
+    void SetAnimationModeToAnimated();
     void SetAnimationModeToBindPose();
     void SetAnimationModeToRagdoll();
     void SetMeshMaterialByMeshName(const std::string& meshName, const std::string& materialName);

@@ -46,6 +46,17 @@ namespace World {
                     Player* player = Game::GetPlayerByPlayerId(objectId);
                     if (player) {
                         player->Kill();
+
+
+                        // Spawn volumetric blood
+                        glm::vec3 position = rayResult.hitPosition;
+                        glm::vec3 front = bullet.GetDirection() * glm::vec3(-1);
+                        World::AddVolumetricBlood(position, -bullet.GetDirection());
+
+                        // REMOVE ME!!!! you are already doing this below. figure out better force system
+                        float strength = 1000.0f;
+                        glm::vec3 force = bullet.GetDirection() * strength;
+                        Physics::AddFoceToRigidDynamic(physicsId, force);
                     }
                 }
 

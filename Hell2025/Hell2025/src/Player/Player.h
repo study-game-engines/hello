@@ -25,7 +25,6 @@ struct Player {
     const bool IsLocal() const;
     const bool IsOnline() const;
     const glm::vec3 GetFootPosition() const;
-    const glm::mat4& GetProjectionMatrix() const;
     const glm::mat4& GetViewMatrix() const;
     const glm::mat4& GetInverseViewMatrix() const;
     const glm::vec3& GetCameraPosition() const;

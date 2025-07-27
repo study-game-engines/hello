@@ -56,7 +56,7 @@ namespace OpenGLRenderer {
     int g_fftEditBand = 0;
     
     void LoadShaders();
-
+    
     IndirectBuffer g_indirectBuffer;
 
     struct Cubemaps {
@@ -89,7 +89,7 @@ namespace OpenGLRenderer {
         g_frameBuffers["GBuffer"] = OpenGLFrameBuffer("GBuffer", resolutions.gBuffer);
         g_frameBuffers["GBuffer"].CreateAttachment("BaseColor", GL_RGBA8);
         g_frameBuffers["GBuffer"].CreateAttachment("Normal", GL_RGBA16F);
-        g_frameBuffers["GBuffer"].CreateAttachment("RMA", GL_RGBA8);        // In alpha is screenspace blood decal mask
+        g_frameBuffers["GBuffer"].CreateAttachment("RMA", GL_RGBA8); // In alpha is screenspace blood decal mask
         g_frameBuffers["GBuffer"].CreateAttachment("FinalLighting", GL_RGBA16F);
         g_frameBuffers["GBuffer"].CreateAttachment("WorldPosition", GL_RGBA32F);
         g_frameBuffers["GBuffer"].CreateAttachment("Emissive", GL_RGBA8);
@@ -419,56 +419,12 @@ namespace OpenGLRenderer {
         // Blit to swapchain
         OpenGLRenderer::BlitToDefaultFrameBuffer(&finalImageBuffer, "Color", GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
-
         UIPass();
         ImGuiPass();
 
-        // World height map
-        if (false) {
-            OpenGLFrameBuffer& worldFramebuffer = g_frameBuffers["World"];
-            BlitRect srcRect;
-            srcRect.x0 = 0;
-            srcRect.y0 = 0;
-            srcRect.x1 = worldFramebuffer.GetWidth();
-            srcRect.y1 = worldFramebuffer.GetHeight();
-
-            BlitRect dstRect = srcRect;
-            dstRect.x1 = worldFramebuffer.GetWidth() * 2.5f;
-            dstRect.y1 = worldFramebuffer.GetHeight() * 2.5f;
-            OpenGLRenderer::BlitToDefaultFrameBuffer(&worldFramebuffer, "HeightMap", srcRect, dstRect, GL_COLOR_BUFFER_BIT, GL_LINEAR);
-        }
-
-        //OpenGLFrameBuffer& fftFramebuffer = g_frameBuffers["FFT"];
-        //BlitRect srcRect;
-        //srcRect.x0 = 0;
-        //srcRect.y0 = 0;
-        //srcRect.x1 = fftFramebuffer.GetWidth();
-        //srcRect.y1 = fftFramebuffer.GetHeight();
-        //
-        //BlitRect dstRect = srcRect;
-        //dstRect.x1 = BackEnd::GetCurrentWindowHeight();
-        //dstRect.y1 = BackEnd::GetCurrentWindowHeight();
-        //OpenGLRenderer::BlitToDefaultFrameBuffer(&fftFramebuffer, "Height", srcRect, dstRect, GL_COLOR_BUFFER_BIT, GL_LINEAR);
-
-
-        //BlitRect srcRect;
-        //srcRect.x0 = 0;
-        //srcRect.y0 = 0;
-        //srcRect.x1 = gBuffer.GetWidth();
-        //srcRect.y1 = gBuffer.GetHeight();
-        //BlitRect dstRect = srcRect;
-        //dstRect.x1 = gBuffer.GetWidth() * 0.6f;
-        //dstRect.y1 = gBuffer.GetHeight() * 0.6f;
-        //OpenGLRenderer::BlitToDefaultFrameBuffer(&gBuffer, "Glass", srcRect, dstRect, GL_COLOR_BUFFER_BIT, GL_LINEAR);
-
-
-
+        BlitDebugTextures();
 
         // DEBUG RENDER FFT TEXTURES TO THE SCREEN
-        static bool showNormals = false;
-        if (Input::KeyPressed(HELL_KEY_M)) {
-            showNormals = !showNormals;
-        }
         if (Input::KeyPressed(HELL_KEY_5)) {
             g_fftDisplayMode = 1;
             g_fftEditBand = 0;
@@ -479,62 +435,6 @@ namespace OpenGLRenderer {
         }
         if (Input::KeyPressed(HELL_KEY_7)) {
             g_fftDisplayMode = 0;
-        }
-
-
-        OpenGLFrameBuffer* fft_band0 = &g_frameBuffers["FFT_band0"];
-        OpenGLFrameBuffer* fft_band1 = &g_frameBuffers["FFT_band1"];
-        OpenGLFrameBuffer* waterFramebuffer = &g_frameBuffers["Water"];
-
-        int size = fft_band0->GetWidth() * 1.5f;
-
-        BlitRect blitRect;
-        blitRect.x1 = size;
-        blitRect.y1 = size;
-
-        if (GetFftDisplayMode() == 1 && !showNormals) {
-            OpenGLRenderer::BlitToDefaultFrameBuffer(fft_band0, "Displacement", blitRect, blitRect, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-        }
-        if (GetFftDisplayMode() == 1 && showNormals) {
-            OpenGLRenderer::BlitToDefaultFrameBuffer(fft_band0, "Normals", blitRect, blitRect, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-        }
-
-        if (GetFftDisplayMode() == 2 && !showNormals) {
-            OpenGLRenderer::BlitToDefaultFrameBuffer(fft_band1, "Displacement", blitRect, blitRect, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-        }
-        if (GetFftDisplayMode() == 2 && showNormals) {
-            OpenGLRenderer::BlitToDefaultFrameBuffer(fft_band1, "Normals", blitRect, blitRect, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-        }
-       // if (GetFftDisplayMode() == 0) {
-       //
-       //     blitRect.x1 = waterFramebuffer->GetWidth() * 1.0f;// 0.5f;
-       //     blitRect.y1 = waterFramebuffer->GetHeight() * 1.0f;//0.5f;
-       //     blitRect.x1 = BackEnd::GetFullScreenWidth();
-       //     blitRect.y1 = BackEnd::GetFullScreenHeight();
-       //     OpenGLRenderer::BlitToDefaultFrameBuffer(waterFramebuffer, "Color", blitRect, blitRect, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-       // }
-       //
-       // std::cout << "GetFftDisplayMode(): " << GetFftDisplayMode() << "\n";
-
-
-        // Render decal painting shit
-        if (false) {
-            OpenGLFrameBuffer* decalPaintingFBO = GetFrameBuffer("DecalPainting");
-            OpenGLFrameBuffer* decalMasksFBO = GetFrameBuffer("DecalMasks");
-
-            int blitSize = 480;
-
-            glBindFramebuffer(GL_READ_FRAMEBUFFER, decalPaintingFBO->GetHandle());
-            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-            glReadBuffer(decalPaintingFBO->GetColorAttachmentSlotByName("UVMap"));
-            glDrawBuffer(GL_BACK);
-            glBlitFramebuffer(0, 0, decalPaintingFBO->GetWidth(), decalPaintingFBO->GetHeight(), 0, 0, blitSize, blitSize, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-
-            glBindFramebuffer(GL_READ_FRAMEBUFFER, decalMasksFBO->GetHandle());
-            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-            glReadBuffer(decalMasksFBO->GetColorAttachmentSlotByName("DecalMask0"));
-            glDrawBuffer(GL_BACK);
-            glBlitFramebuffer(0, 0, decalMasksFBO->GetWidth(), decalMasksFBO->GetHeight(), 0, blitSize, blitSize, blitSize + blitSize, GL_COLOR_BUFFER_BIT, GL_NEAREST);
         }
     }
 

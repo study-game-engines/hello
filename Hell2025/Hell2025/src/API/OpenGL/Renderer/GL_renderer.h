@@ -98,6 +98,8 @@ namespace OpenGLRenderer {
     void DrawLine(glm::vec3 begin, glm::vec3 end, glm::vec3 color, bool obeyDepth = false, int exclusiveViewportIndex = -1, int ignoredViewportIndex = -1);
     void DrawAABB(const AABB& aabb, const glm::vec3& color);
     void DrawAABB(const AABB& aabb, const glm::vec3& color, const glm::mat4& worldTransform);
+    void DebugBlitFrameBufferTexture(const std::string& frameBufferName, const std::string& attachmentName, GLint dstX, GLint dstY, GLint width, GLint height);
+    void BlitDebugTextures();
 
     inline std::vector<DebugVertex> g_points;
     inline std::vector<DebugVertex> g_lines;
@@ -159,6 +161,7 @@ namespace OpenGLRenderer {
     RenderItem2D CreateRenderItem2D(const std::string& textureName, glm::ivec2 location, glm::ivec2 viewportSize, Alignment alignment, glm::vec3 colorTint = WHITE, glm::ivec2 size = glm::ivec2(-1, -1));
     BlitRect BlitRectFromFrameBufferViewport(OpenGLFrameBuffer* framebuffer, Viewport* viewport);
     GLint CreateQuadVAO();
+    void CopyDepthBuffer(OpenGLFrameBuffer* srcFrameBuffer, OpenGLFrameBuffer* dstFrameBuffer);
 
 
     int GetFftDisplayMode();

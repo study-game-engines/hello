@@ -42,6 +42,10 @@ void main() {
     vec2 gbufferDimensions = textureSize(GBufferNormalTexture, 0);
     vec2 screenCoords = gl_FragCoord.xy / gbufferDimensions;
 
+    
+    DecalMaskOut = vec4(1,0,0,1);
+    //return;
+
     // Discard if the pixel is in the blockout map 
     //float blockout = texture(GBufferNormalTexture, screenCoords).a;
     //if (blockout > 0.5)
@@ -54,22 +58,10 @@ void main() {
 
     // Prevents barcode effect
     if(abs(angle) < 0.125 && angleToFloor < 0.5) {
-     // discard;
-    }
-
-    // Backstab test. If world normal is facing away from original bullet angle.
-    if (angle < -0.5) {
         //discard;
-        // you almost certainly dont need this
     }
-        
-    vec3 gbufferWorldPosition = texture(WorldPositionTexture, screenCoords).rgb;
 
-    // Don't draw on ceiling
-	if (gbufferWorldPosition.y > 2.39) {
-	//	discard;
-        // you almost certainly dont need this
-    }
+    vec3 gbufferWorldPosition = texture(WorldPositionTexture, screenCoords).rgb;
 
 	vec4 objectPosition = InverseModelMatrix * vec4(gbufferWorldPosition, 1.0);
     vec3 stepVal = (vec3(0.5, 0.5, 0.5) - abs(objectPosition.xyz)) * 1000;
@@ -79,7 +71,8 @@ void main() {
     float projClipFade = stepVal.x * stepVal.y * stepVal.z;
 	// Add 0.5 to get texture coordinates.
 	vec2 decalTexCoord = vec2(objectPosition.x, objectPosition.z) + 0.5;
-
+    
+    decalTexCoord = clamp(decalTexCoord, 0, 1);
     
     #if ENABLE_BINDLESS == 1
         vec4 textureData  = texture(sampler2D(textureSamplers[TextureIndex]), decalTexCoord);
@@ -99,27 +92,14 @@ void main() {
         }
     #endif
 
-
-
-
-
-     vec4 mask = vec4(0.0);
-   //if (u_Type == 4)
-   //    mask = texture(DecalTex4, decalTexCoord);
-   //if (u_Type == 6)
-   //    mask = texture(DecalTex6, decalTexCoord);
-   //if (u_Type == 7)
-   //    mask = texture(DecalTex7, decalTexCoord);
-   //if (u_Type == 9)
-   //    mask = texture(DecalTex9, decalTexCoord);   
-   //    
+    vec4 mask = vec4(0.0);
     vec4 res = vec4(0); 
     res.a = saturate(mask.a * 2);
     res.a *= projClipFade;
 
-    if (mask.a * 2 * projClipFade < 0.1) {
-      //  discard;
-    }
+    //if (mask.a * 2 * projClipFade < 0.1) {
+    //  //discard;
+    //}
 
     vec3 _TintColor = vec3(0.32, 0, 0);
     float colorMask = (mask.a * 5) * res.a;
@@ -128,7 +108,6 @@ void main() {
     colorMask = clamp(colorMask , 0, 1);
     colorMask = mask.a * 0.5;
     res.a = mask.a;
-    decalTexCoord = clamp(decalTexCoord, 0, 1);
     res.rgb = mix(_TintColor.rgb, _TintColor.rgb * 0.2, mask.z * colorMask * 0.75);
     float magic = 0.67;
 

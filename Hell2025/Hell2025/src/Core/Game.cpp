@@ -57,13 +57,13 @@ namespace Game {
         // Create players
         AddLocalPlayer(glm::vec3(12.82, 0.5f, 18.27f), glm::vec3(-0.13f, -1.46f, 0.0f));
         AddLocalPlayer(glm::vec3(15.21, 0.5f, 19.57), glm::vec3(-0.49f, -0.74f, 0.0f));
-        AddLocalPlayer(glm::vec3(10, 0.5f, 22), glm::vec3(-0.30f, -4.5f, 0.0f));
-        AddLocalPlayer(glm::vec3(12, 0.5f, 22), glm::vec3(-0.30f, -4.5f, 0.0f));
+        //AddLocalPlayer(glm::vec3(10, 0.5f, 22), glm::vec3(-0.30f, -4.5f, 0.0f));
+        //AddLocalPlayer(glm::vec3(12, 0.5f, 22), glm::vec3(-0.30f, -4.5f, 0.0f));
 
         SetPlayerKeyboardAndMouseIndex(0, 0, 0);
         SetPlayerKeyboardAndMouseIndex(1, 1, 1);
-        SetPlayerKeyboardAndMouseIndex(2, 1, 1);
-        SetPlayerKeyboardAndMouseIndex(3, 1, 1);
+        //SetPlayerKeyboardAndMouseIndex(2, 1, 1);
+        //SetPlayerKeyboardAndMouseIndex(3, 1, 1);
 
         SetSplitscreenMode(SplitscreenMode::FULLSCREEN);
         //SetSplitscreenMode(SplitscreenMode::TWO_PLAYER);

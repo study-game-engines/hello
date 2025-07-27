@@ -19,7 +19,7 @@ uniform int u_worldSpaceDepth;
 uniform int u_showMask;
 
 void main() {
-    //discard;
+    discard;
     vec3 color = texelFetch(u_lightVolume, VoxelCoord, 0).rgb;
 
     vec3 lightVolumeWorldSize = vec3(u_worldSpaceWidth, u_worldSpaceHeight, u_worldSpaceDepth);

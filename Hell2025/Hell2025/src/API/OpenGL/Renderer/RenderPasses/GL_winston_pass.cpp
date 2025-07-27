@@ -46,6 +46,7 @@ namespace OpenGLRenderer {
             shader->SetBool("useUniformColor", false);
 
             Player* player = Game::GetLocalPlayerByIndex(i);
+            if (!player) continue;
 
             if (player->InteractFound()) {
 

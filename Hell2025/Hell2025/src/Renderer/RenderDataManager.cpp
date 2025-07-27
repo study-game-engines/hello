@@ -106,16 +106,20 @@ namespace RenderDataManager {
                 g_viewportData[i].fov = 1.0f;
             }
             else {
-                viewMatrix = Game::GetLocalPlayerCameraByIndex(i)->GetViewMatrix();
                 g_viewportData[i].orthoSize = 0.0f;
                 g_viewportData[i].isOrtho = false;
                 g_viewportData[i].fov = Game::GetLocalPlayerFovByIndex(i);
 
                 Player* player = Game::GetLocalPlayerByIndex(i);
-                if (player && player->IsDead()) {
-                    viewMatrix = player->m_deathCamViewMatrix;
-                    g_viewportData[i].colorTint = glm::vec4(player->GetViewportColorTint(), 1.0f);
-                    g_viewportData[i].colorContrast = player->GetViewportContrast();
+                if (player) {
+                    if (player->IsDead()) {
+                        viewMatrix = player->m_deathCamViewMatrix;
+                        g_viewportData[i].colorTint = glm::vec4(player->GetViewportColorTint(), 1.0f);
+                        g_viewportData[i].colorContrast = player->GetViewportContrast();
+                    }
+                    else {
+                        viewMatrix = Game::GetLocalPlayerCameraByIndex(i)->GetViewMatrix();
+                    }
                 }
             }
 
@@ -155,10 +159,12 @@ namespace RenderDataManager {
             }
             else {
                 Player* player = Game::GetLocalPlayerByIndex(i);
-                g_viewportData[i].flashlightProjectionView = player->GetFlashlightProjectionView();
-                g_viewportData[i].flashlightDir = glm::vec4(player->GetFlashlightDirection(), 0.0f);
-                g_viewportData[i].flashlightPosition = glm::vec4(player->GetFlashlightPosition(), 0.0f);
-                g_viewportData[i].flashlightModifer = player->GetFlashLightModifer();
+                if (player) {
+                    g_viewportData[i].flashlightProjectionView = player->GetFlashlightProjectionView();
+                    g_viewportData[i].flashlightDir = glm::vec4(player->GetFlashlightDirection(), 0.0f);
+                    g_viewportData[i].flashlightPosition = glm::vec4(player->GetFlashlightPosition(), 0.0f);
+                    g_viewportData[i].flashlightModifer = player->GetFlashLightModifer();
+                }
             }
         }
     }
@@ -419,8 +425,8 @@ namespace RenderDataManager {
         commands.reserve(renderItems.size());
 
         for (const RenderItem& renderItem : renderItems) {
-            if (renderItem.ignoredViewportIndex != -1 && renderItem.ignoredViewportIndex == viewportIndex) continue;
-            if (renderItem.exclusiveViewportIndex != -1 && renderItem.exclusiveViewportIndex != viewportIndex) continue;
+            //if (renderItem.ignoredViewportIndex != -1 && renderItem.ignoredViewportIndex == viewportIndex) continue;
+            //if (renderItem.exclusiveViewportIndex != -1 && renderItem.exclusiveViewportIndex != viewportIndex) continue;
 
             int meshIndex = renderItem.meshIndex;
             SkinnedMesh* mesh = AssetManager::GetSkinnedMeshByIndex(meshIndex);

@@ -11,7 +11,7 @@ namespace Physics {
 
         // Ignore player ragdolls
         auto playerRagdolls = Physics::GetIgnoreList(RaycastIgnoreFlags::PLAYER_RAGDOLLS);
-        ignoreList.insert(ignoreList.end(), playerRagdolls.begin(), playerRagdolls.end());
+       // ignoreList.insert(ignoreList.end(), playerRagdolls.begin(), playerRagdolls.end());
 
         // Prepare
         PxU32 nbActors = pxScene->getNbActors(PxActorTypeFlag::eRIGID_DYNAMIC | PxActorTypeFlag::eRIGID_STATIC);

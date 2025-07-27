@@ -184,15 +184,15 @@ namespace World {
         }
 
         for (Window& window : windows) {
-            float windowMidPointFromGround = 1.5f;
+            float windowMidPointFromGround = 1.4f;
 
             Transform& transform = transforms.emplace_back();
             transform.position = window.GetPosition();
             transform.position.y += windowMidPointFromGround;
             transform.rotation.y = window.GetRotation().y;
             transform.scale.x = 0.2f;
-            transform.scale.y = 1.12f;
-            transform.scale.z = 0.946f;
+            transform.scale.y = 1.2f;
+            transform.scale.z = 0.846f;
         }
     }
 

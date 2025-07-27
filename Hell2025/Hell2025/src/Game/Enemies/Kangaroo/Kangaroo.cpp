@@ -58,7 +58,9 @@ void Kangaroo::Respawn() {
         animatedGameObject->SetRotationY(m_rotation.y);
         animatedGameObject->SetRotationZ(m_rotation.z);
 
-        animatedGameObject->PlayAndLoopAnimation("MainLayer", "Kangaroo_Idle", 1.0f);
+        //animatedGameObject->PlayAndLoopAnimation("MainLayer", "Kangaroo_Idle", 1.0f);
+        animatedGameObject->SetAnimationModeToAnimated();
+        animatedGameObject->PlayAndLoopAnimation("MainLayer", "Kangaroo_Hop", 1.0f); 
     }
 
     CharacterController* characterController = GetCharacterController();

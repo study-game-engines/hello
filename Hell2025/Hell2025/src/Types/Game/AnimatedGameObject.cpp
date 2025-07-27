@@ -314,6 +314,11 @@ void AnimatedGameObject::SetAnimationModeToRagdoll() {
     }
 }
 
+void AnimatedGameObject::SetAnimationModeToAnimated() {
+    m_animationMode = AnimationMode::ANIMATION;
+    m_animator.ClearAllAnimations();
+}
+
 void AnimatedGameObject::PlayAnimation(const std::string& layerName, const std::string& animationName, float speed) {
     m_animator.PlayAnimation(layerName, animationName, speed, false);
 }

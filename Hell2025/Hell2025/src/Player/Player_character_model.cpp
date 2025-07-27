@@ -30,9 +30,7 @@ void Player::UpdateCharacterModelHacks() {
 
     m_characterModelAnimatedGameObject.EnableDrawingForAllMesh();
 
-    bool isAlive = true;
-
-    if (isAlive) {
+    if (IsAlive()) {
 
         if (weaponInfo->type == WeaponType::MELEE) {
             HideAKS74UMesh();

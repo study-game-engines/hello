@@ -13,9 +13,12 @@ namespace HeightMapManager {
 
     void AllocateMemory(int heightmapCount);
 
-
     // Warning, you probably can't create new heightmaps at runtime with the code below, allocate on load heightmaps from disk is solution
     // Actually no, that 16 is the total allowed size
+
+    // NOTE TO PRESENT SELF: you have no idea what the comment above is talking about
+    // NOTE TO PRESENT SELF: you have no idea what the comment above is talking about
+    // NOTE TO PRESENT SELF: you have no idea what the comment above is talking about
 
     void Init() {
         AllocateMemory(16);

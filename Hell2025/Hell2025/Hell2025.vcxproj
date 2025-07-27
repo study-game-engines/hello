@@ -5,12 +5,12 @@
       <Configuration>Debug</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="Profiling|x64">
-      <Configuration>Profiling</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
     <ProjectConfiguration Include="Release|x64">
       <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="EditAndContinue|x64">
+      <Configuration>EditAndContinue</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
@@ -29,7 +29,7 @@
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='EditAndContinue|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
@@ -37,7 +37,7 @@
     <CharacterSet>Unicode</CharacterSet>
     <EnableASAN>false</EnableASAN>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profiling|x64'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
@@ -53,10 +53,10 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='EditAndContinue|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Profiling|x64'" Label="PropertySheets">
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
@@ -66,15 +66,15 @@
     <CopyLocalDeploymentContent>false</CopyLocalDeploymentContent>
     <TargetName>Unloved</TargetName>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)\$(ProjectName)\Build\Release\</OutDir>
-    <IntDir>$(SolutionDir)\$(ProjectName)\Build\Intermediate\Release\</IntDir>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='EditAndContinue|x64'">
+    <OutDir>$(SolutionDir)\$(ProjectName)\Build\Profiling\</OutDir>
+    <IntDir>$(SolutionDir)\$(ProjectName)\Build\Intermediate\Profiling\</IntDir>
     <CopyLocalDeploymentContent>false</CopyLocalDeploymentContent>
     <TargetName>Hell2025</TargetName>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profiling|x64'">
-    <OutDir>$(SolutionDir)\$(ProjectName)\Build\Profiling\</OutDir>
-    <IntDir>$(SolutionDir)\$(ProjectName)\Build\Intermediate\Profiling\</IntDir>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(SolutionDir)\$(ProjectName)\Build\Release\</OutDir>
+    <IntDir>$(SolutionDir)\$(ProjectName)\Build\Intermediate\Release\</IntDir>
     <CopyLocalDeploymentContent>false</CopyLocalDeploymentContent>
     <TargetName>Hell2025</TargetName>
   </PropertyGroup>
@@ -115,7 +115,7 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='EditAndContinue|x64'">
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -161,7 +161,7 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profiling|x64'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -212,6 +212,7 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <ClCompile Include="src\API\OpenGL\Renderer\ComputePasses\GL_compute_ftt.cpp" />
     <ClCompile Include="src\API\OpenGL\Renderer\ComputePasses\GL_compute_skinning.cpp" />
     <ClCompile Include="src\API\OpenGL\Renderer\GL_renderer.cpp" />
+    <ClCompile Include="src\API\OpenGL\Renderer\GL_renderer_debug.cpp" />
     <ClCompile Include="src\API\OpenGL\Renderer\GL_renderer_util.cpp" />
     <ClCompile Include="src\API\OpenGL\Renderer\ComputePasses\GL_global_illumination_passes.cpp" />
     <ClCompile Include="src\API\OpenGL\Renderer\RenderPasses\GL_screenspace_decals_pass.cpp" />
@@ -279,8 +280,8 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <ClCompile Include="src\AssetManagement\AssetManager_vertex_data.cpp" />
     <ClCompile Include="src\Audio\MidiFile.cpp" />
     <ClCompile Include="src\Audio\MidiFileManager.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='EditAndContinue|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profiling|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="src\Audio\Synth.cpp" />
@@ -308,7 +309,7 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <ClCompile Include="src\Editor\Editor_objects.cpp" />
     <ClCompile Include="src\Editor\ObjectPlacement\Editor_object_placement.cpp" />
     <ClCompile Include="src\Editor\ObjectPlacement\Editor_window_placement.cpp" />
-    <ClCompile Include="src\Game\Enemies\Kangaroo\Kanagroo_attack_logic.cpp" />
+    <ClCompile Include="src\Game\Enemies\Kangaroo\Kanagaroo_attack_logic.cpp" />
     <ClCompile Include="src\Game\Enemies\Kangaroo\Kangaroo_animation_state_machine.cpp" />
     <ClCompile Include="src\Game\Enemies\Kangaroo\Kangaroo_audio.cpp" />
     <ClCompile Include="src\Game\Enemies\Kangaroo\Kangaroo_debug_draw.cpp" />

@@ -7,8 +7,8 @@ in vec4 v_directLighting;
 void main() {
     discard;
     if (v_directLighting.rgb == vec3(0,0,0)) {
-       discard;
-         // FragOut.rgb = vec3(1,0,0);;
+       //discard;
+       FragOut.rgb = vec3(1,0,0);;
     }    
     else {
         FragOut.rgb = v_directLighting.rgb;

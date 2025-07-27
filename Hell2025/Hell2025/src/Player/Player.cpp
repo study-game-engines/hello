@@ -75,6 +75,10 @@ void Player::Update(float deltaTime) {
         }
     }
 
+    //if (Input::MiddleMousePressed()) {
+    //    Kill();
+    //}
+
     if (World::HasOcean()) {
         float feetHeight = GetFootPosition().y;
         float waterHeight = Ocean::GetWaterHeightAtPlayer(m_viewportIndex);
@@ -136,6 +140,7 @@ void Player::Update(float deltaTime) {
     }
     else {
         m_timeSinceDeath += deltaTime;
+        SetFootPosition(glm::vec3(0, -10, 0));
     }
 
     //if (Input::KeyPressed(HELL_KEY_Q)) {
@@ -195,7 +200,6 @@ void Player::Respawn() {
                 }
             }
         }
-
         SetFootPosition(spawnPoint.position);
         GetCamera().SetEulerRotation(spawnPoint.camEuler);
     }
@@ -216,14 +220,15 @@ void Player::Respawn() {
 
     m_alive = true;
 
-   //if (m_viewportIndex == 0) {
-   //    SetFootPosition(glm::vec3(17.0f, 30.7f, 41.5f));
-   //    //SetFootPosition(glm::vec3(27.0f, 32.7f, 36.5f)); // roo
-   //}
-   //if (m_viewportIndex == 1) {
-   //    SetFootPosition(glm::vec3(12.5f, 30.6f, 45.5f));
-   //    m_camera.SetEulerRotation(glm::vec3(0, 0, 0));
-   //}
+   if (m_viewportIndex == 0) {
+       SetFootPosition(glm::vec3(17.0f, 30.7f, 41.5f));
+       //SetFootPosition(glm::vec3(27.0f, 32.7f, 36.5f)); // roo
+   }
+   if (m_viewportIndex == 1) {
+       SetFootPosition(glm::vec3(17.0f, 30.7f, 38.5f));
+       //SetFootPosition(glm::vec3(12.5f, 30.6f, 45.5f));
+       m_camera.SetEulerRotation(glm::vec3(0, 0, 0));
+   }
 
     m_weaponStates.clear();
     for (int i = 0; i < WeaponManager::GetWeaponCount(); i++) {
@@ -259,6 +264,13 @@ void Player::Respawn() {
         m_flashlightOn = true;
     }
 
+    // Make character model animated again (aka not ragdoll)
+    AnimatedGameObject* characterModel = GetCharacterModelAnimatedGameObject();
+    if (characterModel) {
+        characterModel->SetAnimationModeToAnimated();
+    }
+
+
     m_respawnCount++;
 }
 
@@ -285,12 +297,6 @@ const bool Player::IsLocal() const {
 
 const bool Player::IsOnline() const {
     return m_viewportIndex == -1;
-}
-
-const glm::mat4& Player::GetProjectionMatrix() const {
-    int width = BackEnd::GetCurrentWindowWidth();
-    int height = BackEnd::GetCurrentWindowHeight();
-    return glm::perspective(1.0f, float(width) / float(height), NEAR_PLANE, FAR_PLANE);
 }
 
 const glm::mat4& Player::GetViewMatrix() const {

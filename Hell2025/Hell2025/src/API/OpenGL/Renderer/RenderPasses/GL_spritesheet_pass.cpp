@@ -29,7 +29,10 @@ namespace OpenGLRenderer {
 
             OpenGLRenderer::SetViewport(gBuffer, viewport);
 
-            const std::vector<SpriteSheetRenderItem>& renderItems = Game::GetLocalPlayerByIndex(i)->GetSpriteSheetRenderItems();
+            Player* player = Game::GetLocalPlayerByIndex(i);
+            if (!player) continue;
+
+            const std::vector<SpriteSheetRenderItem>& renderItems = player->GetSpriteSheetRenderItems();
             for (const SpriteSheetRenderItem& renderItem : renderItems) {
 
                 Texture* texture = AssetManager::GetTextureByIndex(renderItem.textureIndex);

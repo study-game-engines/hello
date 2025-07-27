@@ -64,8 +64,6 @@ namespace OpenGLRenderer {
         OpenGLFrameBuffer* gBuffer = GetFrameBuffer("GBuffer");
         OpenGLShader* shader = GetShader("BloodScreenSpaceDecalsMask");
 
-        glFinish();
-
         if (!miscFullSizeFBO) return;
         if (!gBuffer) return;
         if (!shader) return;
@@ -78,8 +76,8 @@ namespace OpenGLRenderer {
         glBindTextureUnit(0, gBuffer->GetColorAttachmentHandleByName("WorldPosition"));
         glBindTextureUnit(1, gBuffer->GetColorAttachmentHandleByName("Normal"));
 
-        glDisable(GL_DEPTH_TEST);
         glDisable(GL_CULL_FACE);
+        glDisable(GL_DEPTH_TEST);
 
         glBindVertexArray(g_cubeVao);
         glBindTextureUnit(2, AssetManager::GetTextureByName("BloodDecal4")->GetGLTexture().GetHandle());
@@ -109,6 +107,8 @@ namespace OpenGLRenderer {
                 glDrawElementsInstanced(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0, instanceCount);
             }
         }    
+
+        // Clean up
         glBlendEquation(GL_FUNC_ADD);
     }
 

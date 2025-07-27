@@ -312,7 +312,8 @@ void main() {
 
     // Moon light
     vec3 moonColor = vec3(1.0, 0.9, 0.9);
-    moonColor = vec3(1, 0.7799999713897705, 0.5289999842643738);
+    moonColor = vec3(1, 0.7799999713897705, 0.5289999842643738);    
+
     vec3 moonLightDir = normalize(vec3(0.0, 0.2 , 0.5));
     float moonLightStrength = 0.025;
        
@@ -361,6 +362,9 @@ void main() {
         vec3 spotLightColor = vec3(0.9, 0.95, 1.1);
 
         spotLightColor - vec3(1.00, 0.7799999713897705, 0.5289999842643738);
+
+        
+    spotLightColor = mix(spotLightColor, vec3(1, 0.7799999713897705, 0.5289999842643738), 0.5);    
         
         //float spotLightRadius = 0.0765;
         float spotLightRadius = 0.165;
@@ -489,6 +493,7 @@ void main() {
     indirect *= fadeFactor;
                         
     float indirectStrength = 0.0035;
+    indirectStrength = 0.01;
     indirect *= indirectStrength;
         
 	float indirectHackFactor = min(1, 1 - metallic * 1.0);
@@ -508,8 +513,17 @@ void main() {
     //vec3 finalColor = directLighting. rgb + ambientLighting + moonLighting;
     vec3 finalColor = directLighting. rgb + moonLighting + indirect;
 
+
+    /// HACK FOR RAGDOL PRESENTATION
+    finalColor = directLighting. rgb + moonLighting + ambientLighting * 2;
+
+    
+
     // Ambient occlusion
     finalColor *= rma.b;
+
+
+    //finalColor = indirect;
 
     // Emissive
     vec3 emssiveColor = texture(EmissiveTexture, uv_screenspace).rgb;

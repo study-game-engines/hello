@@ -140,26 +140,91 @@ namespace OpenGLRenderer {
             }
         }
 
-        shader->Bind();
-        gBuffer->DrawBuffers({ "BaseColor", "Normal", "RMA", "WorldPosition", "Emissive" });
-        SetRasterizerState("GeometryPass_NonBlended");
-
-        glBindVertexArray(OpenGLBackEnd::GetSkinnedVertexDataVAO());
-        glBindBuffer(GL_ARRAY_BUFFER, OpenGLBackEnd::GetSkinnedVertexDataVBO());
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, OpenGLBackEnd::GetWeightedVertexDataEBO());
-
-        for (int i = 0; i < 4; i++) {
-            Viewport* viewport = ViewportManager::GetViewportByIndex(i);
-            if (viewport->IsVisible()) {
-                OpenGLRenderer::SetViewport(gBuffer, viewport);
-                if (BackEnd::RenderDocFound()) {
-                    SplitMultiDrawIndirect(shader, drawInfoSet.skinnedGeometry.perViewport[i]);
-                }
-                else {
-                    MultiDrawIndirect(drawInfoSet.skinnedGeometry.perViewport[i]);
-                }
-            }
-        }
+       shader->Bind();
+       gBuffer->DrawBuffers({ "BaseColor", "Normal", "RMA", "WorldPosition", "Emissive" });
+       SetRasterizerState("GeometryPass_NonBlended");
+       
+       glBindVertexArray(OpenGLBackEnd::GetSkinnedVertexDataVAO());
+       glBindBuffer(GL_ARRAY_BUFFER, OpenGLBackEnd::GetSkinnedVertexDataVBO());
+       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, OpenGLBackEnd::GetWeightedVertexDataEBO());
+       
+       for (int i = 0; i < 4; i++) {
+           Viewport* viewport = ViewportManager::GetViewportByIndex(i);
+           if (viewport->IsVisible()) {
+               OpenGLRenderer::SetViewport(gBuffer, viewport);
+               if (BackEnd::RenderDocFound()) {
+                   SplitMultiDrawIndirect(shader, drawInfoSet.skinnedGeometry.perViewport[i]);
+               }
+               else {
+                   MultiDrawIndirect(drawInfoSet.skinnedGeometry.perViewport[i]);
+               }
+           }
+       }
+//
+//
+//   OpenGLShader* shader2 = GetShader("GBuffer_DEBUG");
+//   shader2->Bind();
+//   gBuffer->DrawBuffers({ "BaseColor", "Normal", "RMA", "WorldPosition", "Emissive" });
+//   SetRasterizerState("GeometryPass_NonBlended");
+//
+//   glBindVertexArray(OpenGLBackEnd::GetSkinnedVertexDataVAO());
+//   glBindBuffer(GL_ARRAY_BUFFER, OpenGLBackEnd::GetSkinnedVertexDataVBO());
+//   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, OpenGLBackEnd::GetWeightedVertexDataEBO());
+//
+//   glFinish();
+//   for (int i = 0; i < 4; i++) {
+//       Viewport* viewport = ViewportManager::GetViewportByIndex(i);
+//       if (viewport->IsVisible()) {
+//           OpenGLRenderer::SetViewport(gBuffer, viewport);
+//
+//           const std::vector<RenderItem>& instanceData = RenderDataManager::GetInstanceData();
+//
+//           auto commands = drawInfoSet.skinnedGeometry.perViewport[i];
+//
+//           for (const DrawIndexedIndirectCommand& command : commands) {
+//               int viewportIndex = command.baseInstance >> VIEWPORT_INDEX_SHIFT;
+//               int instanceOffset = command.baseInstance & ((1 << VIEWPORT_INDEX_SHIFT) - 1);
+//
+//               for (GLuint j = 0; j < command.instanceCount; ++j) {
+//                   const RenderItem& renderItem = instanceData[instanceOffset + j];
+//
+//                   shader2->SetInt("u_viewportIndex", viewportIndex);
+//                   shader2->SetInt("u_globalInstanceIndex", instanceOffset + j);
+//                   shader2->SetMat4("u_modelMatrix", renderItem.modelMatrix);
+//                   shader2->SetMat4("u_inverseModelMatrix", renderItem.inverseModelMatrix);
+//
+//                   SkinnedMesh* mesh = AssetManager::GetSkinnedMeshByIndex(renderItem.meshIndex);
+//
+//
+//
+//                   std::cout << "[" << i << "] instance: " << j;
+//                   std::cout << " count: " << command.instanceCount << "";
+//                   std::cout << " viewportIndex: " << renderItem.exclusiveViewportIndex << "";
+//                   std::cout << " meshIdx: " << renderItem.meshIndex << " " << mesh->name << "\n";
+//
+//
+//                   glActiveTexture(GL_TEXTURE0);
+//                   glBindTexture(GL_TEXTURE_2D, AssetManager::GetTextureByIndex(renderItem.baseColorTextureIndex)->GetGLTexture().GetHandle());
+//                   glActiveTexture(GL_TEXTURE1);
+//                   glBindTexture(GL_TEXTURE_2D, AssetManager::GetTextureByIndex(renderItem.normalMapTextureIndex)->GetGLTexture().GetHandle());
+//                   glActiveTexture(GL_TEXTURE2);
+//                   glBindTexture(GL_TEXTURE_2D, AssetManager::GetTextureByIndex(renderItem.rmaTextureIndex)->GetGLTexture().GetHandle());
+//
+//                   glDrawElementsBaseVertex(GL_TRIANGLES, command.indexCount, GL_UNSIGNED_INT, (GLvoid*)(command.firstIndex * sizeof(GLuint)), command.baseVertex);
+//               }
+//           }
+//
+//
+//           //if (BackEnd::RenderDocFound()) {
+//           //    SplitMultiDrawIndirect(shader2, drawInfoSet.skinnedGeometry.perViewport[i]);
+//           //}
+//           //else {
+//           //    MultiDrawIndirect(drawInfoSet.skinnedGeometry.perViewport[i]);
+//           //}
+//       }
+//   }
+//
+//   std::cout << " \n";
 
         glBindVertexArray(0);
 
