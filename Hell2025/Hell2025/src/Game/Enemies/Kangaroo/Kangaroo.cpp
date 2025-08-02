@@ -31,7 +31,7 @@ void Kangaroo::Init(KangarooCreateInfo createInfo) {
             ragdoll->SetPhysicsData(animatedGameObject->GetRagdollId(), ObjectType::RAGDOLL_ENEMY);
         }
 
-        animatedGameObject->PlayAndLoopAnimation("MainLayer", "Kangaroo_Hop2", 1.0f);
+        animatedGameObject->PlayAndLoopAnimation("MainLayer", "Kangaroo_Idle", 1.0f);
 
         m_woundMaskIndex = 1;
 
@@ -58,9 +58,8 @@ void Kangaroo::Respawn() {
         animatedGameObject->SetRotationY(m_rotation.y);
         animatedGameObject->SetRotationZ(m_rotation.z);
 
-        //animatedGameObject->PlayAndLoopAnimation("MainLayer", "Kangaroo_Idle", 1.0f);
         animatedGameObject->SetAnimationModeToAnimated();
-        animatedGameObject->PlayAndLoopAnimation("MainLayer", "Kangaroo_Hop", 1.0f); 
+        animatedGameObject->PlayAndLoopAnimation("MainLayer", "Kangaroo_Idle", 1.0f);
     }
 
     CharacterController* characterController = GetCharacterController();

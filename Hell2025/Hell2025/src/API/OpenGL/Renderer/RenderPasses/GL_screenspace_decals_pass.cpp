@@ -4,18 +4,21 @@
 #include "Viewport/ViewportManager.h"
 #include "World/World.h"
 
+#include "Input/Input.h"
+
 namespace OpenGLRenderer {
 
     void InitDecalCube();
     void MaskPass();
     void CompositePass();
+    void DrawDecals();
 
     GLuint g_cubeVao = 0;
 
     void ScreenSpaceDecalsPass() {
         if (g_cubeVao == 0) InitDecalCube();
-
-        MaskPass();
+        
+        DrawDecals();
         CompositePass();
     }
 
@@ -89,10 +92,6 @@ namespace OpenGLRenderer {
         glBlendEquation(GL_MAX);
         glBlendFunc(GL_ONE, GL_ONE);
 
-
-       // OpenGLSSBO* ssbo = GetSSBO("ScreenSpaceBloodDecals");
-       // glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 12, ssbo->GetHandle());
-
         shader->Bind();
 
         int instanceCount = RenderDataManager::GetScreenSpaceBloodDecalInstanceData().size();
@@ -124,9 +123,46 @@ namespace OpenGLRenderer {
         glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
         shader->Bind();
+
         glBindImageTexture(0, gBuffer->GetColorAttachmentHandleByName("BaseColor"), 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA8);
         glBindImageTexture(1, gBuffer->GetColorAttachmentHandleByName("RMA"), 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA8);
         glBindTextureUnit(2, miscFullSizeFBO->GetColorAttachmentHandleByName("ScreenSpaceBloodDecalMask"));
         glDispatchCompute((gBuffer->GetWidth() + 7) / 8, (gBuffer->GetHeight() + 7) / 8, 1);
     }
+
+    // This was a compute pass, but you rewrote it to be a vert/frag quad style screenspace pass for the hardware mipmapping
+    // This was a compute pass, but you rewrote it to be a vert/frag quad style screenspace pass for the hardware mipmapping
+    // This was a compute pass, but you rewrote it to be a vert/frag quad style screenspace pass for the hardware mipmapping
+
+    void DrawDecals() {
+        OpenGLFrameBuffer* miscFullSizeFBO = GetFrameBuffer("MiscFullSize");
+        OpenGLShader* shader = GetShader("ScreenSpaceDecals");
+        OpenGLFrameBuffer* gBuffer = GetFrameBuffer("GBuffer");
+
+        if (!miscFullSizeFBO) return;
+        if (!shader) return;
+        if (!gBuffer) return;
+
+        miscFullSizeFBO->Bind();
+        miscFullSizeFBO->SetViewport();
+        miscFullSizeFBO->DrawBuffers({ "ScreenSpaceBloodDecalMask" });
+
+        shader->Bind();
+        shader->SetInt("u_decalCount", RenderDataManager::GetScreenSpaceBloodDecalInstanceData().size());
+
+        glBindTextureUnit(0, gBuffer->GetColorAttachmentHandleByName("RMA"));
+        glBindTextureUnit(1, gBuffer->GetColorAttachmentHandleByName("WorldPosition"));
+        glBindTextureUnit(2, gBuffer->GetColorAttachmentHandleByName("Normal"));
+
+        if (BackEnd::RenderDocFound()) {
+            glBindTextureUnit(3, AssetManager::GetTextureByName("BloodDecal4")->GetGLTexture().GetHandle());
+            glBindTextureUnit(4, AssetManager::GetTextureByName("BloodDecal6")->GetGLTexture().GetHandle());
+            glBindTextureUnit(5, AssetManager::GetTextureByName("BloodDecal7")->GetGLTexture().GetHandle());
+            glBindTextureUnit(6, AssetManager::GetTextureByName("BloodDecal9")->GetGLTexture().GetHandle());
+        }
+
+        // Draw full screen triangle
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+    }
+
 }

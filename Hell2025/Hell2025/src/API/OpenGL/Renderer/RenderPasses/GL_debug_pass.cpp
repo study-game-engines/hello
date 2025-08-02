@@ -175,14 +175,16 @@ namespace OpenGLRenderer {
     void DebugViewPass() {
         RendererSettings& rendererSettings = Renderer::GetCurrentRendererSettings();
 
+        OpenGLFrameBuffer* gBuffer = GetFrameBuffer("GBuffer");
+        OpenGLFrameBuffer* miscFullSizeFBO = GetFrameBuffer("MiscFullSize");
+
+        if (!miscFullSizeFBO) return;
+        if (!gBuffer) return;
+
         // Tile based deferred heat map
         if (rendererSettings.rendererOverrideState == RendererOverrideState::TILE_HEATMAP) {
-            OpenGLFrameBuffer* finalImageFBO = GetFrameBuffer("FinalImage");
-            OpenGLFrameBuffer* gBuffer = GetFrameBuffer("GBuffer");
-            OpenGLShader* shader = GetShader("DebugTileView");
 
-            if (!finalImageFBO) return;
-            if (!gBuffer) return;
+            OpenGLShader* shader = GetShader("DebugTileView");
             if (!shader) return;
 
             shader->Bind();
@@ -193,7 +195,7 @@ namespace OpenGLRenderer {
 
             glBindImageTexture(0, gBuffer->GetColorAttachmentHandleByName("FinalLighting"), 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F);
             glBindTextureUnit(1, gBuffer->GetDepthAttachmentHandle());
-            glBindTextureUnit(2, finalImageFBO->GetColorAttachmentHandleByName("ViewportIndex"));
+            glBindTextureUnit(2, miscFullSizeFBO->GetColorAttachmentHandleByName("ViewportIndex"));
 
             glDispatchCompute(gBuffer->GetWidth() / TILE_SIZE, gBuffer->GetHeight() / TILE_SIZE, 1);
         }
@@ -203,12 +205,7 @@ namespace OpenGLRenderer {
             rendererSettings.rendererOverrideState == RendererOverrideState::RMA ||
             rendererSettings.rendererOverrideState == RendererOverrideState::CAMERA_NDOTL) {
 
-            OpenGLFrameBuffer* finalImageFBO = GetFrameBuffer("FinalImage");
-            OpenGLFrameBuffer* gBuffer = GetFrameBuffer("GBuffer");
             OpenGLShader* shader = GetShader("DebugView");
-
-            if (!finalImageFBO) return;
-            if (!gBuffer) return;
             if (!shader) return;
 
             shader->Bind();
@@ -220,7 +217,7 @@ namespace OpenGLRenderer {
             glBindTextureUnit(2, gBuffer->GetColorAttachmentHandleByName("Normal"));
             glBindTextureUnit(3, gBuffer->GetColorAttachmentHandleByName("RMA"));
             glBindTextureUnit(4, gBuffer->GetColorAttachmentHandleByName("WorldPosition"));
-            glBindTextureUnit(5, finalImageFBO->GetColorAttachmentHandleByName("ViewportIndex"));
+            glBindTextureUnit(5, miscFullSizeFBO->GetColorAttachmentHandleByName("ViewportIndex"));
 
             glDispatchCompute(gBuffer->GetWidth() / TILE_SIZE, gBuffer->GetHeight() / TILE_SIZE, 1);
         }

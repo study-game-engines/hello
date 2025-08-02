@@ -215,6 +215,7 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <ClCompile Include="src\API\OpenGL\Renderer\GL_renderer_debug.cpp" />
     <ClCompile Include="src\API\OpenGL\Renderer\GL_renderer_util.cpp" />
     <ClCompile Include="src\API\OpenGL\Renderer\ComputePasses\GL_global_illumination_passes.cpp" />
+    <ClCompile Include="src\API\OpenGL\Renderer\RenderPasses\GL_fog_passes.cpp" />
     <ClCompile Include="src\API\OpenGL\Renderer\RenderPasses\GL_screenspace_decals_pass.cpp" />
     <ClCompile Include="src\API\OpenGL\Renderer\RenderPasses\GL_decal_painting_pass.cpp" />
     <ClCompile Include="src\API\OpenGL\Renderer\RenderPasses\GL_decal_pass.cpp" />
@@ -253,6 +254,7 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <ClCompile Include="src\API\OpenGL\Types\GL_shadow_map.cpp" />
     <ClCompile Include="src\API\OpenGL\Types\GL_shadow_map_array.cpp" />
     <ClCompile Include="src\API\OpenGL\Types\GL_texture.cpp" />
+    <ClCompile Include="src\API\OpenGL\Types\GL_texture_3d.cpp" />
     <ClCompile Include="src\API\OpenGL\Types\GL_texture_array.cpp" />
     <ClCompile Include="src\API\Vulkan\Managers\vk_command_manager.cpp" />
     <ClCompile Include="src\API\Vulkan\Managers\vk_device_manager.cpp" />
@@ -519,6 +521,8 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <None Include="res\shaders\OpenGL\GL_editor_mesh.frag" />
     <None Include="res\shaders\OpenGL\GL_editor_mesh.vert" />
     <None Include="res\shaders\OpenGL\GL_emissive_composite.comp" />
+    <None Include="res\shaders\OpenGL\GL_fog_composite.comp" />
+    <None Include="res\shaders\OpenGL\GL_fog_ray_march.comp" />
     <None Include="res\shaders\OpenGL\GL_fur.frag" />
     <None Include="res\shaders\OpenGL\GL_fur.vert" />
     <None Include="res\shaders\OpenGL\GL_fur_composite.comp" />
@@ -559,9 +563,13 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
     <None Include="res\shaders\OpenGL\GL_ocean_update_textures.comp" />
     <None Include="res\shaders\OpenGL\GL_outline.frag" />
     <None Include="res\shaders\OpenGL\GL_outline.vert" />
+    <None Include="res\shaders\OpenGL\GL_perlin_noise_3d.comp" />
     <None Include="res\shaders\OpenGL\GL_point_cloud_lighting.comp" />
     <None Include="res\shaders\OpenGL\GL_post_processing.comp" />
     <None Include="res\shaders\OpenGL\GL_raytrace_scene.comp" />
+    <None Include="res\shaders\OpenGL\GL_screenspace_decals.comp" />
+    <None Include="res\shaders\OpenGL\GL_screenspace_decals.frag" />
+    <None Include="res\shaders\OpenGL\GL_screenspace_decals.vert" />
     <None Include="res\shaders\OpenGL\GL_shadow_cube_map.frag" />
     <None Include="res\shaders\OpenGL\GL_shadow_cube_map.vert" />
     <None Include="res\shaders\OpenGL\GL_shadow_map_flashlight.frag" />
@@ -590,6 +598,7 @@ xcopy /Y /I "$(ProjectDir)vendor\DLLs\*.dll" "$(TargetDir)"
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\API\OpenGL\Types\GL_shadow_map_array.h" />
+    <ClInclude Include="src\API\OpenGL\Types\GL_texture_3d.h" />
     <ClInclude Include="src\Bvh\Gpu\Bvh.h" />
     <ClInclude Include="src\Common\HellGlm.h" />
     <ClInclude Include="src\API\OpenGL\GL_backend.h" />

@@ -21,7 +21,7 @@ namespace Util {
     glm::vec3 EulerRotationFromNormal(glm::vec3 normal, glm::vec3 forward = glm::vec3(0.0f, 0.0f, 1.0f));
     float YRotationBetweenTwoPoints(glm::vec3 a, glm::vec3 b);
     glm::mat4 GetRotationMat4FromForwardVector(glm::vec3 forward);
-    glm::vec3 GetMidPoint(const glm::vec3& a, const glm::vec3 b);
+    glm::vec3 GetMidPoint(const glm::vec3& a, const glm::vec3& b);
     float EulerYRotationBetweenTwoPoints(glm::vec3 a, glm::vec3 b);
     glm::mat4 RotationMatrixFromForwardVector(glm::vec3 forward, glm::vec3 worldForward, glm::vec3 worldUp);
     glm::vec2 ComputeCentroid2D(const std::vector<glm::vec2>& points);

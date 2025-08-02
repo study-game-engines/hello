@@ -1,0 +1,34 @@
+#version 430
+#include "../common/lighting.glsl"
+#include "../common/post_processing.glsl"
+
+layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
+layout(rgba16f, binding = 0) uniform image2D lightingImage;
+layout(binding = 1) uniform sampler2D fogTexture;
+
+void main() {
+	ivec2 pixelCoords = ivec2(gl_GlobalInvocationID.xy);   
+    ivec2 resolution = imageSize(lightingImage);
+    ivec2 fogTextureSize = textureSize(fogTexture, 0);
+
+    // Don't process out of bounds pixels
+    if (pixelCoords.x >= resolution.x || pixelCoords.y >= resolution.y) {
+        return;
+    }    
+    
+    vec2 uv_screenspace = (vec2(pixelCoords) + 0.5) / vec2(resolution);
+ 
+    vec4 fogColor = texture(fogTexture, uv_screenspace);
+    vec4 lightingColor = imageLoad(lightingImage, pixelCoords);
+
+    // Composite
+    //vec3 outRGB = lightingColor.rgb * (1.0 - fogColor.a) + fogColor.rgb;
+    vec3 outRGB = mix(lightingColor.rgb, fogColor.rgb + lightingColor.rgb * fogColor.a, fogColor.a);
+    vec4 finalColor = vec4(outRGB, lightingColor.a);
+
+//    finalColor = lightingColor;
+
+   // finalColor = fogColor;
+
+    imageStore(lightingImage, pixelCoords, finalColor);
+}

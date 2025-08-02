@@ -34,8 +34,10 @@ namespace OpenGLRenderer {
         OpenGLShadowMap* flashLightShadowMapsFBO = GetShadowMap("FlashlightShadowMaps");
         OpenGLShadowCubeMapArray* hiResShadowMaps = GetShadowCubeMapArray("HiRes");
         OpenGLShader* lightingShader = GetShader("Lighting");
+        OpenGLFrameBuffer* miscFullSizeFBO = GetFrameBuffer("MiscFullSize");
 
         if (!gBuffer) return;
+        if (!miscFullSizeFBO) return;
         if (!finalImageFBO) return;
         if (!lightingShader) return;
 
@@ -65,7 +67,7 @@ namespace OpenGLRenderer {
         glBindTextureUnit(2, gBuffer->GetColorAttachmentHandleByName("RMA"));
         glBindTextureUnit(3, gBuffer->GetDepthAttachmentHandle());
         glBindTextureUnit(4, gBuffer->GetColorAttachmentHandleByName("WorldPosition"));
-        glBindTextureUnit(5, finalImageFBO->GetColorAttachmentHandleByName("ViewportIndex"));
+        glBindTextureUnit(5, miscFullSizeFBO->GetColorAttachmentHandleByName("ViewportIndex"));
         glBindTextureUnit(6, gBuffer->GetColorAttachmentHandleByName("Emissive"));
         glBindTextureUnit(7, AssetManager::GetTextureByName("Flashlight2")->GetGLTexture().GetHandle());
         glBindTextureUnit(8, flashLightShadowMapsFBO->GetDepthTextureHandle());

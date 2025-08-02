@@ -51,16 +51,6 @@ void main() {
     //if (blockout > 0.5)
     //    discard;
 
-    // world normal
-    vec3 worldNormal = texture(GBufferNormalTexture, screenCoords).rgb;
-    float angleToFloor = abs(dot(worldNormal, vec3(0, 1, 0)));
-    float angle = dot(worldNormal, _DecalForwardDirection);  
-
-    // Prevents barcode effect
-    if(abs(angle) < 0.125 && angleToFloor < 0.5) {
-        //discard;
-    }
-
     vec3 gbufferWorldPosition = texture(WorldPositionTexture, screenCoords).rgb;
 
 	vec4 objectPosition = InverseModelMatrix * vec4(gbufferWorldPosition, 1.0);
@@ -69,9 +59,9 @@ void main() {
     stepVal.y = saturate(stepVal.y);
     stepVal.z = saturate(stepVal.z);
     float projClipFade = stepVal.x * stepVal.y * stepVal.z;
-	// Add 0.5 to get texture coordinates.
+
+	// Calculate texture coords
 	vec2 decalTexCoord = vec2(objectPosition.x, objectPosition.z) + 0.5;
-    
     decalTexCoord = clamp(decalTexCoord, 0, 1);
     
     #if ENABLE_BINDLESS == 1
@@ -91,32 +81,25 @@ void main() {
             textureData = texture(DecalTex3, decalTexCoord); 
         }
     #endif
-
-    vec4 mask = vec4(0.0);
-    vec4 res = vec4(0); 
-    res.a = saturate(mask.a * 2);
-    res.a *= projClipFade;
-
-    //if (mask.a * 2 * projClipFade < 0.1) {
-    //  //discard;
-    //}
-
-    vec3 _TintColor = vec3(0.32, 0, 0);
-    float colorMask = (mask.a * 5) * res.a;
-    float alphaMask = (mask.a  * 20) * res.a;
-    alphaMask = clamp(alphaMask, 0, 1);
-    colorMask = clamp(colorMask , 0, 1);
-    colorMask = mask.a * 0.5;
-    res.a = mask.a;
-    res.rgb = mix(_TintColor.rgb, _TintColor.rgb * 0.2, mask.z * colorMask * 0.75);
-    float magic = 0.67;
-
-
-
-
-    vec3 decalColor = textureData.rgb;         
+   
     float decalAlpha = textureData.a;
 
-    decalColor = vec3(decalAlpha);
-    DecalMaskOut.rgb  = vec3(decalColor);
+    // world normal
+    vec3 worldNormal = texture(GBufferNormalTexture, screenCoords).rgb;
+    float angleToFloor = abs(dot(worldNormal, vec3(0, 1, 0)));
+    float angle = dot(worldNormal, _DecalForwardDirection);  
+
+    // Prevents barcode effect
+    if(abs(angle) < 0.125 && angleToFloor < 0.5) {
+        //discard;
+    }
+
+    //float barcodeReject = step(0.125, abs(angle));        // 0 if abs(angle) < 0.125
+    //float floorReject   = step(0.5, angleToFloor);        // 0 if angleToFloor < 0.5
+    //float barcodeFade = barcodeReject * floorReject;      // only 1 if both conditions pass
+
+    float barcodeReject = 1.0 - (step(abs(angle), 0.125) * step(angleToFloor, 0.5));
+
+
+    DecalMaskOut.rgb  = vec3(decalAlpha * barcodeReject);
 }

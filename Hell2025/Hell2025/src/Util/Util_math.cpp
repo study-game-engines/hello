@@ -36,8 +36,8 @@ namespace Util {
         return rotation;
     }
 
-    glm::vec3 GetMidPoint(const glm::vec3& a, const glm::vec3 b) {
-        return a + b * 0.5f;
+    glm::vec3 GetMidPoint(const glm::vec3& a, const glm::vec3& b) {
+        return (a + b) * 0.5f;
     }
 
     float EulerYRotationBetweenTwoPoints(glm::vec3 a, glm::vec3 b) {

@@ -40,6 +40,7 @@ namespace OpenGLRenderer {
     std::unordered_map<std::string, OpenGLShadowCubeMapArray> g_shadowCubeMapArrays;
     std::unordered_map<std::string, OpenGLShadowMapArray> g_shadowMapArrays;
     std::unordered_map<std::string, OpenGLTextureArray> g_textureArrays;
+    std::unordered_map<std::string, OpenGLTexture3D> g_3dTextures;
 
     OpenGLMeshPatch g_tesselationPatch;
 
@@ -54,9 +55,9 @@ namespace OpenGLRenderer {
 
     int g_fftDisplayMode = 0;
     int g_fftEditBand = 0;
-    
+
     void LoadShaders();
-    
+
     IndirectBuffer g_indirectBuffer;
 
     struct Cubemaps {
@@ -73,6 +74,9 @@ namespace OpenGLRenderer {
         const Resolutions& resolutions = Config::GetResolutions();
 
         Ocean::Init();
+
+        g_3dTextures["PerlinNoise"] = OpenGLTexture3D();
+        g_3dTextures["PerlinNoise"].Create(128, GL_R32F);
 
         g_textureArrays["WoundMasks"] = OpenGLTextureArray();
         g_textureArrays["WoundMasks"].AllocateMemory(WOUND_MASK_TEXTURE_SIZE, WOUND_MASK_TEXTURE_SIZE, GL_RGBA8, 1, 6);
@@ -96,6 +100,9 @@ namespace OpenGLRenderer {
         g_frameBuffers["GBuffer"].CreateAttachment("Glass", GL_RGBA8);
         g_frameBuffers["GBuffer"].CreateDepthAttachment(GL_DEPTH_COMPONENT32F);
 
+        g_frameBuffers["Fog"] = OpenGLFrameBuffer("Fog", resolutions.gBuffer / 2);
+        g_frameBuffers["Fog"].CreateAttachment("Color", GL_RGBA16F, GL_LINEAR, GL_LINEAR);
+
         g_frameBuffers["QuarterSize"].Create("QuarterSize", resolutions.gBuffer.x / 4, resolutions.gBuffer.y / 4);
         g_frameBuffers["QuarterSize"].CreateAttachment("DownsampledFinalLighting", GL_RGBA16F);
 
@@ -104,7 +111,8 @@ namespace OpenGLRenderer {
         g_frameBuffers["MiscFullSize"].CreateAttachment("GaussianFinalLighting", GL_RGBA16F);
         g_frameBuffers["MiscFullSize"].CreateAttachment("ScreenSpaceBloodDecalMask", GL_R8);
         g_frameBuffers["MiscFullSize"].CreateAttachment("RaytracedScene", GL_RGBA8);
-              
+        g_frameBuffers["MiscFullSize"].CreateAttachment("ViewportIndex", GL_R8UI, GL_NEAREST, GL_NEAREST);
+
         g_frameBuffers["Water"] = OpenGLFrameBuffer("Water", resolutions.gBuffer);
         g_frameBuffers["Water"].CreateAttachment("Color", GL_RGBA16F);
         g_frameBuffers["Water"].CreateAttachment("UnderwaterMask", GL_R8);
@@ -127,7 +135,6 @@ namespace OpenGLRenderer {
 
         g_frameBuffers["FinalImage"] = OpenGLFrameBuffer("FinalImage", resolutions.finalImage);
         g_frameBuffers["FinalImage"].CreateAttachment("Color", GL_RGBA16F);
-        g_frameBuffers["FinalImage"].CreateAttachment("ViewportIndex", GL_R8UI);
 
         g_frameBuffers["UI"] = OpenGLFrameBuffer("UI", resolutions.ui);
         g_frameBuffers["UI"].CreateAttachment("Color", GL_RGBA8, GL_NEAREST, GL_NEAREST);
@@ -217,11 +224,12 @@ namespace OpenGLRenderer {
         g_shadowCubeMapArrays["HiRes"].Init(SHADOWMAP_HI_RES_COUNT, SHADOW_MAP_HI_RES_SIZE);
 
         // Moon light shadow maps
-        float depthMapResolution = SHADOW_MAP_CSM_SIZE; 
+        float depthMapResolution = SHADOW_MAP_CSM_SIZE;
         int layerCount = g_shadowCascadeLevels.size() + 1;
         g_shadowMapArrays["MoonlightPlayer1"] = OpenGLShadowMapArray();
         g_shadowMapArrays["MoonlightPlayer1"].Init(layerCount, depthMapResolution, GL_DEPTH_COMPONENT32F);
 
+        InitFog();
         InitGrass();
         InitOceanHeightReadback();
     }
@@ -275,6 +283,8 @@ namespace OpenGLRenderer {
         g_shaders["DecalPaintMask"] = OpenGLShader({ "gl_decal_paint_mask.comp" });
         g_shaders["Decals"] = OpenGLShader({ "GL_decals.vert", "GL_decals.frag" });
         g_shaders["EditorMesh"] = OpenGLShader({ "GL_editor_mesh.vert", "GL_editor_mesh.frag" });
+        g_shaders["FogRayMarch"] = OpenGLShader({ "GL_fog_ray_march.comp" });
+        g_shaders["FogComposite"] = OpenGLShader({ "GL_fog_composite.comp" });
         g_shaders["FttRadix64Vertical"] = OpenGLShader({ "GL_ftt_radix_64_vertical.comp" });
         g_shaders["FttRadix8Vertical"] = OpenGLShader({ "GL_ftt_radix_8_vertical.comp" });
         g_shaders["FttRadix64Horizontal"] = OpenGLShader({ "GL_ftt_radix_64_horizontal.comp" });
@@ -302,7 +312,7 @@ namespace OpenGLRenderer {
         g_shaders["LightVolumeLighting"] = OpenGLShader({ "GL_light_volume_lighting.comp" });
         g_shaders["LightVolumeMask"] = OpenGLShader({ "GL_light_volume_mask.comp" });
         g_shaders["Lighting"] = OpenGLShader({ "GL_lighting.comp" });
-        g_shaders["CSMLighting"] = OpenGLShader({ "GL_lighting.vert", "GL_lighting.frag"});
+        g_shaders["CSMLighting"] = OpenGLShader({ "GL_lighting.vert", "GL_lighting.frag" });
         g_shaders["OceanSurfaceComposite"] = OpenGLShader({ "GL_ocean_surface_composite.comp" });
         g_shaders["OceanGeometry"] = OpenGLShader({ "GL_ocean_geometry.vert", "GL_ocean_geometry.frag", "GL_ocean_geometry.tesc", "GL_ocean_geometry.tese" });
         g_shaders["OceanCalculateSpectrum"] = OpenGLShader({ "GL_ocean_calculate_spectrum.comp" });
@@ -315,6 +325,7 @@ namespace OpenGLRenderer {
         g_shaders["OutlineComposite"] = OpenGLShader({ "GL_outline_composite.comp" });
         g_shaders["OutlineMask"] = OpenGLShader({ "GL_outline_mask.vert", "GL_outline_mask.frag" });
         g_shaders["PointCloudLighting"] = OpenGLShader({ "GL_point_cloud_lighting.comp" });
+        g_shaders["PerlinNoise3D"] = OpenGLShader({ "GL_perlin_noise_3d.comp" });
         g_shaders["PostProcessing"] = OpenGLShader({ "GL_post_processing.comp" });
         g_shaders["ShadowMap"] = OpenGLShader({ "GL_shadow_map.vert", "GL_shadow_map.frag" });
         g_shaders["ShadowCubeMap"] = OpenGLShader({ "GL_shadow_cube_map.vert", "GL_shadow_cube_map.frag" });
@@ -326,6 +337,9 @@ namespace OpenGLRenderer {
         g_shaders["CSMDepth"] = OpenGLShader({ "GL_csm_depth.vert", "GL_csm_depth.frag", "GL_csm_depth.geom" });
         g_shaders["ZeroOut"] = OpenGLShader({ "GL_zero_out.comp" });
         g_shaders["VatBlood"] = OpenGLShader({ "GL_vat_blood.vert", "GL_vat_blood.frag" });
+
+        //g_shaders["ScreenSpaceDecals"] = OpenGLShader({ "GL_screenspace_decals.comp" });
+        g_shaders["ScreenSpaceDecals"] = OpenGLShader({ "GL_screenspace_decals.vert", "GL_screenspace_decals.frag" });
     }
 
     void UpdateSSBOS() {
@@ -397,6 +411,7 @@ namespace OpenGLRenderer {
         DecalPass();
         EmissivePass();
         HairPass();
+        RayMarchFog();
         OceanUnderwaterCompositePass();
         WinstonPass();
         PostProcessingPass();
@@ -418,6 +433,8 @@ namespace OpenGLRenderer {
 
         // Blit to swapchain
         OpenGLRenderer::BlitToDefaultFrameBuffer(&finalImageBuffer, "Color", GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+        //BlitFog();
 
         UIPass();
         ImGuiPass();
@@ -469,7 +486,7 @@ namespace OpenGLRenderer {
         for (unsigned int i = 0; i < 4; i++) {
             Viewport* viewport = ViewportManager::GetViewportByIndex(i);
             if (viewport->IsVisible()) {
-                OpenGLRenderer::ClearFrameBufferByViewportUInt(finalImageFBO, "ViewportIndex", viewport, i);
+                OpenGLRenderer::ClearFrameBufferByViewportUInt(miscFullSizeFBO, "ViewportIndex", viewport, i);
             }
         }
     }
@@ -589,6 +606,11 @@ namespace OpenGLRenderer {
     OpenGLTextureArray* GetTextureArray(const std::string& name) {
         auto it = g_textureArrays.find(name);
         return (it != g_textureArrays.end()) ? &it->second : nullptr;
+    }
+
+    OpenGLTexture3D* GetTexture3D(const std::string& name) {
+        auto it = g_3dTextures.find(name);
+        return (it != g_3dTextures.end()) ? &it->second : nullptr;
     }
 
     OpenGLFrameBuffer* GetBlurBuffer(int viewportIndex, int bufferIndex) {

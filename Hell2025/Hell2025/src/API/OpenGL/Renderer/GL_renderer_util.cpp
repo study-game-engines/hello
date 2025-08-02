@@ -232,6 +232,12 @@ namespace OpenGLRenderer {
         int yOffset = viewport->GetPosition().y * framebuffer->GetHeight();
         int width = viewport->GetSize().x * framebuffer->GetWidth();
         int height = viewport->GetSize().y * framebuffer->GetHeight();
+
+        float vx = viewport->GetPosition().x;
+        float vy = viewport->GetPosition().y;
+        float vw = viewport->GetSize().x;
+        float vh = viewport->GetSize().y;
+
         framebuffer->ClearAttachmenSubRegionUInt(attachmentName, xOffset, yOffset, width, height, r, g, b, a);
     }
 }

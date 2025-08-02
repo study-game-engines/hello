@@ -23,7 +23,15 @@ namespace Util {
         }
         std::filesystem::path oldPath = oldFilePath;
         std::filesystem::path newPath = newFilePath;
-        return std::filesystem::rename(oldPath, newPath), true;
+        //return std::filesystem::rename(oldPath, newPath), true;
+        try {
+            std::filesystem::rename(oldPath, newPath);
+            return true;
+        }
+        catch (const std::filesystem::filesystem_error& e) {
+            std::cout << "Util::RenameFile() failed: " << e.what() << "\n";
+            return false;
+        }
     }
 
     std::string GetFileName(const std::string& filepath) {

@@ -45,5 +45,4 @@ void main() {
     }
     
     imageStore(OutputImage, pixelCoords, vec4(blurredColor, 1.0));
-    //imageStore(OutputImage, pixelCoords, vec4(1,1,0, 1.0));
 }

@@ -6,6 +6,7 @@
 
 namespace World {
     void EvaluatePianoKeyBulletHit(Bullet& bullet);
+    void SpawnBlood(const glm::vec3& position, const glm::vec3& direction);
 
     void ProcessBullets() {
         std::vector<Bullet>& bullets = GetBullets();
@@ -41,17 +42,18 @@ namespace World {
                 uint64_t physicsId = rayResult.userData.physicsId;
                 uint64_t objectId = rayResult.userData.objectId;
 
+                // Blood
+                if (objectType == ObjectType::RAGDOLL_PLAYER ||
+                    objectType == ObjectType::RAGDOLL_ENEMY ||
+                    objectType == ObjectType::SHARK) {
+                    SpawnBlood(rayResult.hitPosition, bullet.GetDirection());
+                }
+
                 // Shot a player ragdoll?
                 if (objectType == ObjectType::RAGDOLL_PLAYER) {
                     Player* player = Game::GetPlayerByPlayerId(objectId);
                     if (player) {
                         player->Kill();
-
-
-                        // Spawn volumetric blood
-                        glm::vec3 position = rayResult.hitPosition;
-                        glm::vec3 front = bullet.GetDirection() * glm::vec3(-1);
-                        World::AddVolumetricBlood(position, -bullet.GetDirection());
 
                         // REMOVE ME!!!! you are already doing this below. figure out better force system
                         float strength = 1000.0f;
@@ -69,18 +71,6 @@ namespace World {
 
                 // Shot enemy ragdoll?
                 if (objectType == ObjectType::RAGDOLL_ENEMY && !rooDeath) {
-
-                    // Find screenspace blood decal spawn position
-                    glm::vec3 rayOrigin = rayResult.hitPosition;
-                    glm::vec3 rayDirection = glm::vec3(0.0f, -1.0f, 0.0f);
-                    float rayLength = 100;
-                    PhysXRayResult downwardRayResult = Physics::CastPhysXRayStaticEnviroment(rayOrigin, rayDirection, rayLength);
-                    
-                    if (downwardRayResult.hitFound) {
-                        ScreenSpaceBloodDecalCreateInfo decalCreateInfo;
-                        decalCreateInfo.position = downwardRayResult.hitPosition;
-                        World::AddScreenSpaceBloodDecal(decalCreateInfo);
-                    }
 
                     // Give damage to enemy
                     for (AnimatedGameObject& animatedGameObject : GetAnimatedGameObjects()) {
@@ -195,6 +185,22 @@ namespace World {
 
                 }
             }
+        }
+    }
+
+    void SpawnBlood(const glm::vec3& position, const glm::vec3& direction) {
+        World::AddVolumetricBlood(position, direction);
+
+        // Find screenspace blood decal spawn position
+        glm::vec3 rayOrigin = position;
+        glm::vec3 rayDirection = glm::vec3(0.0f, -1.0f, 0.0f);
+        float rayLength = 100;
+        PhysXRayResult downwardRayResult = Physics::CastPhysXRayStaticEnviroment(rayOrigin, rayDirection, rayLength);
+
+        if (downwardRayResult.hitFound) {
+            ScreenSpaceBloodDecalCreateInfo decalCreateInfo;
+            decalCreateInfo.position = downwardRayResult.hitPosition;
+            World::AddScreenSpaceBloodDecal(decalCreateInfo);
         }
     }
 

@@ -67,7 +67,6 @@ void main() {
     //float woundMask = texture(woundMaskTextureArray, vec3(TexCoord, layerIndex)).r;
     float woundMask = texture2D(woundMaskTexture, TexCoord).r;
 
-
     vec4 woundBaseColor = texture2D(woundBaseColorTexture, TexCoord);
     vec3 woundNormalMap = texture2D(woundNormalTexture, TexCoord).rgb;
     vec3 woundRma = texture2D(woundRmaTexture, TexCoord).rgb;

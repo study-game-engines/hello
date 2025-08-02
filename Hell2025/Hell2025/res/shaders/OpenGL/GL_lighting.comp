@@ -237,7 +237,7 @@ void main() {
         directLighting += sssColor * lightAttenuation * shadow;
     }
 
-    for (int i = 0; i < 1; i++) {    
+    for (int i = 0; i < 2; i++) {    
         if (fragDistance < 0.1) {
             continue;
         }
@@ -493,7 +493,7 @@ void main() {
     indirect *= fadeFactor;
                         
     float indirectStrength = 0.0035;
-    indirectStrength = 0.01;
+    indirectStrength = 0.5;
     indirect *= indirectStrength;
         
 	float indirectHackFactor = min(1, 1 - metallic * 1.0);
@@ -513,11 +513,13 @@ void main() {
     //vec3 finalColor = directLighting. rgb + ambientLighting + moonLighting;
     vec3 finalColor = directLighting. rgb + moonLighting + indirect;
 
+   // finalColor = indirect;
 
-    /// HACK FOR RAGDOL PRESENTATION
-    finalColor = directLighting. rgb + moonLighting + ambientLighting * 2;
+    vec3 ambientTerm = baseColor.rgb * vec3(0.0125);
 
-    
+    finalColor = directLighting. rgb + moonLighting  + ambientTerm;
+
+   //finalColor = ambientTerm;
 
     // Ambient occlusion
     finalColor *= rma.b;

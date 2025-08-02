@@ -457,9 +457,14 @@ namespace WeaponManager {
         spas.meshMaterials["ArmsFemale"] = "FemaleArms";
         spas.meshMaterials["Shells"] = "Shell";
         spas.meshMaterials["Shells.001"] = "Shell";
-        spas.meshMaterials["SPAS12_Main"] = "SPAS_Main";
-        spas.meshMaterials["SPAS12_Moving"] = "SPAS_Moving";
-        spas.meshMaterials["SPAS12_Stamped"] = "SPAS_Stamped";
+        
+        //spas.meshMaterials["SPAS12_Main"] = "SPAS_Main";
+        //spas.meshMaterials["SPAS12_Moving"] = "SPAS_Moving";
+        //spas.meshMaterials["SPAS12_Stamped"] = "SPAS_Stamped";
+        spas.meshMaterials["SPAS12_Main"] = "SPAS2_Main";
+        spas.meshMaterials["SPAS12_Moving"] = "SPAS2_Moving";
+        spas.meshMaterials["SPAS12_Stamped"] = "SPAS2_Stamped";
+
         spas.animationNames.idle = "SPAS_Idle";
         spas.animationNames.walk = "SPAS_Walk";
         spas.animationNames.melee = "SPAS_Melee";

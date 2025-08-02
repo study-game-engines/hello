@@ -21,6 +21,11 @@ namespace OpenGLRenderer {
             DebugBlitFrameBufferTexture("FFT_band1", "Displacement", 0, 300, 300, 300);
             DebugBlitFrameBufferTexture("FFT_band1", "Normals", 300, 300, 300, 300);
         }
+
+        // Fog
+        if (false) {
+            DebugBlitFrameBufferTexture("Fog", "Color", 0, 0, 1920 * 2, 1080 * 2);
+        }
     }
 
     void DebugBlitFrameBufferTexture(const std::string& frameBufferName, const std::string& attachmentName, GLint dstX, GLint dstY, GLint width, GLint height) {

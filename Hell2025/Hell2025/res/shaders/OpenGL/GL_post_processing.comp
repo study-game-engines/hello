@@ -7,7 +7,8 @@ layout (local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 
 layout(rgba16f, binding = 0) uniform image2D LightingImage;
 layout(rgba16f, binding = 1) uniform image2D NormalImage;
-layout (binding = 2) uniform usampler2D ViewportIndexTexture;
+layout(r8ui, binding = 2) uniform uimage2D  ViewportIndexImage;
+//layout (binding = 2) uniform usampler2D ViewportIndexTexture;
 layout(rgba8, binding = 3) uniform image2D RaytracedSceneImage;
 
 readonly restrict layout(std430, binding = 1) buffer rendererDataBuffer { RendererData rendererData; };
@@ -26,8 +27,9 @@ void main() {
 	ivec2 texCoord = ivec2(gl_GlobalInvocationID.xy);
     vec3 lighting = imageLoad(LightingImage, texCoord).rgb;
     vec3 normal = imageLoad(NormalImage, texCoord).rgb;
-    uint viewportIndex = texture(ViewportIndexTexture, uv_screenspace).r;
-    
+    uint viewportIndex = imageLoad(ViewportIndexImage, texCoord).r;
+    //uint viewportIndex = texture(ViewportIndexTexture, uv_screenspace).r;
+   
     vec3 finalColor = lighting;
 
     vec3 colorTint = viewportData[viewportIndex].colorTint.rgb;
@@ -67,8 +69,7 @@ void main() {
     
     
 
-
-	imageStore(LightingImage, texCoord, vec4(finalColor, 1));
+    imageStore(LightingImage, texCoord, vec4(finalColor, 1));
 
     
 
