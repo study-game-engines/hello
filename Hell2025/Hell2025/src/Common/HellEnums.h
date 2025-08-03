@@ -73,6 +73,7 @@ enum class ObjectType {
     DOOR,
     DOOR_FRAME,
     GAME_OBJECT,
+    GENERIC_BOUNCABLE,
     HEIGHT_MAP,
     PLANE,
     LIGHT,
@@ -348,6 +349,12 @@ enum class RaycastIgnoreFlags : uint32_t {
     NONE = 0,
     PLAYER_CHARACTER_CONTROLLERS = 1 << 0,
     PLAYER_RAGDOLLS = 1 << 1,
+};
+
+enum class ChristmasPresentType : uint32_t {
+    SMALL = 0,
+    MEDIUM,
+    LARGE
 };
 
 inline RaycastIgnoreFlags operator|(RaycastIgnoreFlags a, RaycastIgnoreFlags b) {

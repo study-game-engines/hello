@@ -28,6 +28,8 @@ namespace World {
     std::vector<ScreenSpaceBloodDecal> g_screenSpaceBloodDecals;
     std::vector<Bullet> g_bullets;
     std::vector<BulletCasing> g_bulletCasings;
+    std::vector<ChristmasPresent> g_christmasPresents;
+    std::vector<ChristmasTree> g_christmasTrees;
     std::vector<ClippingCube> g_clippingCubes;
     std::vector<Door> g_doors;
     std::vector<Decal> g_decals;
@@ -591,6 +593,15 @@ namespace World {
         for (BulletCasing& bulletCasing : g_bulletCasings) {
             bulletCasing.CleanUp();
         }
+
+        for (ChristmasPresent& christmasPresent : g_christmasPresents) {
+            christmasPresent.CleanUp();
+        }
+
+        for (ChristmasTree& christmasTree : g_christmasTrees) {
+            christmasTree.CleanUp();
+        }
+
         for (Door& door : g_doors) {
             door.CleanUp();
         }
@@ -627,7 +638,9 @@ namespace World {
 
         // Clear all containers
         g_screenSpaceBloodDecals.clear();
-        g_bulletCasings.clear();
+        g_christmasPresents.clear();
+        g_christmasTrees.clear();
+        g_decals.clear();
         g_decals.clear();
         g_doors.clear();
         g_gameObjects.clear();
@@ -705,6 +718,14 @@ namespace World {
     void AddKangaroo(const KangarooCreateInfo& createInfo) {
         Kangaroo& kangaroo = g_kangaroos.emplace_back();
         kangaroo.Init(createInfo);        
+    }
+
+    void AddChristmasPresent(ChristmasPresentCreateInfo createInfo, SpawnOffset spawnOffset) {
+        g_christmasPresents.push_back(ChristmasPresent(createInfo, spawnOffset));
+    }
+
+    void AddChristmasTree(ChristmasTreeCreateInfo createInfo, SpawnOffset spawnOffset) {
+        g_christmasTrees.push_back(ChristmasTree(createInfo, spawnOffset));
     }
 
     void AddHousePlane(PlaneCreateInfo createInfo, SpawnOffset spawnOffset) {
@@ -927,8 +948,10 @@ namespace World {
 
     std::vector<AnimatedGameObject>& GetAnimatedGameObjects()           { return g_animatedGameObjects; }
     std::vector<ScreenSpaceBloodDecal>& GetScreenSpaceBloodDecals()     { return g_screenSpaceBloodDecals; }
-    std::vector<Bullet>& GetBullets()                                   { return g_bullets; };
-    std::vector<BulletCasing>& GetBulletCasings()                       { return g_bulletCasings; };
+    std::vector<Bullet>& GetBullets()                                   { return g_bullets; }
+    std::vector<BulletCasing>& GetBulletCasings()                       { return g_bulletCasings; }
+    std::vector<ChristmasPresent>& GetChristmasPresents()               { return g_christmasPresents; }
+    std::vector<ChristmasTree>& GetChristmasTrees()                     { return g_christmasTrees; }
     std::vector<ClippingCube>& GetClippingCubes()                       { return g_clippingCubes; }
     std::vector<Decal>& GetDecals()                                     { return g_decals; }
     std::vector<Door>& GetDoors()                                       { return g_doors; }
@@ -937,12 +960,12 @@ namespace World {
     std::vector<Light>& GetLights()                                     { return g_lights; };
     std::vector<Kangaroo>& GetKangaroos()                               { return g_kangaroos; }
     std::vector<Mermaid>& GetMermaids()                                 { return g_mermaids; }
-    std::vector<Piano>& GetPianos()                                     { return g_pianos; };
-    std::vector<PickUp>& GetPickUps()                                   { return g_pickUps; };
-    std::vector<PictureFrame>& GetPictureFrames()                       { return g_pictureFrames; };
+    std::vector<Piano>& GetPianos()                                     { return g_pianos; }
+    std::vector<PickUp>& GetPickUps()                                   { return g_pickUps; }
+    std::vector<PictureFrame>& GetPictureFrames()                       { return g_pictureFrames; }
     std::vector<Transform>& GetDoorAndWindowCubeTransforms()            { return g_doorAndWindowCubeTransforms; }
     std::vector<Shark>& GetSharks()                                     { return g_sharks; }
-    std::vector<Tree>& GetTrees()                                       { return g_trees; };
+    std::vector<Tree>& GetTrees()                                       { return g_trees; }
     std::vector<Wall>& GetWalls()                                       { return g_walls; }
     std::vector<VolumetricBloodSplatter>& GetVolumetricBloodSplatters() { return g_volumetricBloodSplatters; }
     std::vector<Window>& GetWindows()                                   { return g_windows; }

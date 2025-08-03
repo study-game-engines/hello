@@ -8,6 +8,7 @@ struct OpenGLTextureArray {
     void SetWrapMode(TextureWrapMode wrapMode);
     void SetMinFilter(TextureFilter filter);
     void SetMagFilter(TextureFilter filter);
+    void Clear(float r, float g, float b, float a, int layerIndex);
 
     uint32_t GetHandle()           { return m_handle; }
     uint32_t GetWidth()            { return m_width; }
@@ -21,6 +22,7 @@ private:
     uint32_t m_width = 0;
     uint32_t m_height = 0;
     uint32_t m_count = 0;
+    uint32_t m_format = 0;
     uint32_t m_internalFormat = 0;
     uint32_t m_mipmapLevelCount = 0;
     bool m_memoryAllocated = false;

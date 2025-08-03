@@ -121,6 +121,15 @@ namespace World {
             RenderDataManager::SubmitRenderItems(wall.GetWeatherBoardstopRenderItems());
         }
 
+
+        for (ChristmasPresent& christmasPresent : GetChristmasPresents()) {
+            RenderDataManager::SubmitRenderItems(christmasPresent.GetRenderItems());
+        }
+
+        for (ChristmasTree& christmasTree : GetChristmasTrees()) {
+            RenderDataManager::SubmitRenderItemsAlphaDiscard(christmasTree.GetRenderItems());
+        }
+
         // Hack to render door and window cube transforms
         if (true && false) {
             int meshIndex = AssetManager::GetMeshIndexByModelNameMeshName("Primitives", "Cube");

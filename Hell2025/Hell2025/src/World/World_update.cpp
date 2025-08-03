@@ -76,6 +76,14 @@ namespace World {
             bulletCasing.Update(deltaTime);
         }
 
+        for (ChristmasPresent& christmasPresent : GetChristmasPresents()) {
+            christmasPresent.Update(deltaTime);
+        }
+
+        for (ChristmasTree& christmasTree : GetChristmasTrees()) {
+            christmasTree.Update(deltaTime);
+        }
+
         for (Door& door : doors) {
             door.Update(deltaTime);
         }

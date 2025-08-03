@@ -49,9 +49,12 @@ struct Kangaroo {
 
     CharacterController* GetCharacterController();
 
+    void MarkWoundTextureAsCleared();
+
     int GetHealth()                             { return m_health; }
     uint64_t GetCharacterControllerId ()        { return m_characterControllerId; }
     glm::vec3 GetPosition()                     { return m_position; }
+    bool WoundTextureNeedsClearing()            { return m_woundTextureNeedsClearing; }
 
 private:
     void UpdateAnimatedGameObjectPositionRotation();
@@ -66,6 +69,7 @@ private:
     bool AnimationIsComplete();
     
     void DebugDraw();
+
 
     // Audio wrappers
     void PlayFleshAudio();
@@ -94,6 +98,7 @@ private:
     bool m_awaitingHopStepAudio = false;
     bool m_grounded = false;
     float m_yVelocity = 0;
+    bool m_woundTextureNeedsClearing = false;
 
     uint64_t m_ambientLoopAudioHandle = 0;
     uint64_t m_characterControllerId = 0;
@@ -103,4 +108,5 @@ private:
     KanagarooAgroState m_agroState = KanagarooAgroState::CHILLING;
     KanagarooMovementState m_movementState = KanagarooMovementState::IDLE;
     KanagarooAnimationState m_animationState = KanagarooAnimationState::IDLE;
+
 };

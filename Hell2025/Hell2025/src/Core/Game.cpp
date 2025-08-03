@@ -246,7 +246,7 @@ namespace Game {
         // Under water loop
         bool playersUnderWater = false;
         for (Player& player : g_localPlayers) {
-            if (player.CameraIsUnderwater() && player.ViewportIsVisible()) {
+            if (player.CameraIsUnderwater() && player.ViewportIsVisible() && player.IsAlive()) {
                 playersUnderWater = true;
                 break;
             }

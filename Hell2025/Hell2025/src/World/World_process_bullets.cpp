@@ -101,6 +101,7 @@ namespace World {
                     float strength = 200.0f;
                     glm::vec3 force = bullet.GetDirection() * strength;
                     Physics::AddFoceToRigidDynamic(physicsId, force);
+                    std::cout << "Shot a rigid dynamic\n";
                 }
 
                 // Add decals for rigid static

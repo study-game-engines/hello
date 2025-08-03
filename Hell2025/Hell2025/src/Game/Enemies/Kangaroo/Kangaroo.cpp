@@ -50,6 +50,7 @@ void Kangaroo::Respawn() {
     m_agroState = KanagarooAgroState::CHILLING;
     m_movementState = KanagarooMovementState::IDLE;
     m_animationState = KanagarooAnimationState::IDLE;
+    m_woundTextureNeedsClearing = true;
 
     AnimatedGameObject* animatedGameObject = GetAnimatedGameObject();
     if (animatedGameObject) {
@@ -141,4 +142,8 @@ glm::vec2 Kangaroo::GetGridPosition() {
 
 std::vector<glm::ivec2> Kangaroo::GetPath() {
     return m_aStar.GetPath();
+}
+
+void Kangaroo::MarkWoundTextureAsCleared() {
+    m_woundTextureNeedsClearing = false;
 }

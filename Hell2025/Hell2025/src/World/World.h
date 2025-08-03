@@ -4,6 +4,8 @@
 #include "Game/Allies/Mermaid/Mermaid.h"
 #include "Game/Enemies/Kangaroo/Kangaroo.h"
 #include "Game/Enemies/Shark/Shark.h"
+#include "Types/Christmas/ChristmasPresent.h"
+#include "Types/Christmas/ChristmasTree.h"
 #include "Types/Game/AnimatedGameObject.h"
 #include "Types/Game/Bullet.h"
 #include "Types/Game/BulletCasing.h"
@@ -34,7 +36,7 @@ struct ViewportBvhData {
 };
 
 namespace World {
-    AnimatedGameObject* GetRooTest();
+    //AnimatedGameObject* GetRooTest();
 
     void Init();
     void BeginFrame();
@@ -66,6 +68,8 @@ namespace World {
     void AddBullet(BulletCreateInfo createInfo);
     void AddDoor(DoorCreateInfo createInfo, SpawnOffset spawnOffset = SpawnOffset());
     void AddBulletCasing(BulletCasingCreateInfo createInfo, SpawnOffset spawnOffset = SpawnOffset());
+    void AddChristmasPresent(ChristmasPresentCreateInfo createInfo, SpawnOffset spawnOffset = SpawnOffset());
+    void AddChristmasTree(ChristmasTreeCreateInfo createInfo, SpawnOffset spawnOffset = SpawnOffset());
     void AddDecal(const DecalCreateInfo& createInfo);
     void AddGameObject(GameObjectCreateInfo createInfo, SpawnOffset spawnOffset = SpawnOffset());
     void AddHousePlane(PlaneCreateInfo createInfo, SpawnOffset spawnOffset);
@@ -162,6 +166,8 @@ namespace World {
     std::vector<ScreenSpaceBloodDecal>& GetScreenSpaceBloodDecals();
     std::vector<Bullet>& GetBullets();
     std::vector<BulletCasing>& GetBulletCasings();
+    std::vector<ChristmasPresent>& GetChristmasPresents();
+    std::vector<ChristmasTree>& GetChristmasTrees();
     std::vector<ClippingCube>& GetClippingCubes();
     std::vector<Decal>& GetDecals();
     std::vector<Door>& GetDoors();

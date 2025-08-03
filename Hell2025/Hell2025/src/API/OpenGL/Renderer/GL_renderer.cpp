@@ -30,6 +30,8 @@
 #include "API/OpenGL/Types/GL_texture_readback.h"
 #include "Tools/ImageTools.h"
 
+#include "World/World.h"
+
 namespace OpenGLRenderer {
     std::unordered_map<std::string, OpenGLShader> g_shaders;
     std::unordered_map<std::string, OpenGLFrameBuffer> g_frameBuffers;
@@ -489,6 +491,24 @@ namespace OpenGLRenderer {
                 OpenGLRenderer::ClearFrameBufferByViewportUInt(miscFullSizeFBO, "ViewportIndex", viewport, i);
             }
         }
+
+        // Clear wound textures that need it
+        //std::vector<Kangaroo>& kangaroos = World::GetKangaroos();
+        //for (Kangaroo& kangaroo : kangaroos) {
+        //
+        //   // if (kangaroo.WoundTextureNeedsClearing()) {
+        //
+        //    if (Input::KeyPressed(HELL_KEY_P)) {
+        //        g_textureArrays["WoundMasks"].Clear(0.0f, 0.0f, 0.0f, 0.0f, 0);
+        //        kangaroo.MarkWoundTextureAsCleared();
+        //    }
+        //}
+
+        //std::vector<ChristmasTree>& christmasTrees = World::GetChristmasTrees();
+        //
+        //for (ChristmasTree& christmasTree : christmasTrees) {
+        //    DrawPoint(christmasTree.GetPosition(), RED);
+        //}
     }
 
     void MultiDrawIndirect(const std::vector<DrawIndexedIndirectCommand>& commands) {

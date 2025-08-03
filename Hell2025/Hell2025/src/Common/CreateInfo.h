@@ -4,6 +4,17 @@
 #include "HellDefines.h"
 #include <map>
 
+struct ChristmasTreeCreateInfo {
+    glm::vec3 position = glm::vec3(0.0f);
+    glm::vec3 rotation = glm::vec3(0.0f);
+};
+
+struct ChristmasPresentCreateInfo {
+    glm::vec3 position = glm::vec3(0.0f);
+    glm::vec3 rotation = glm::vec3(0.0f);
+    ChristmasPresentType type = ChristmasPresentType::SMALL;
+};
+
 struct DecalCreateInfo {
     DecalType decalType;
     PhysicsType parentPhysicsType = PhysicsType::UNDEFINED;

@@ -42,6 +42,16 @@ namespace World {
         UpdateWeatherBoardMeshBuffer();
 
         //GlobalIllumination::CreatePointCloud();
+
+        // Hack in a christmas tree
+        ChristmasTreeCreateInfo christmasTreeCreateInfo;
+        christmasTreeCreateInfo.position = glm::vec3(8.13f, 0.15f, 1.2f);
+        christmasTreeCreateInfo.rotation.y = Util::RandomFloat(0, HELL_PI);
+        AddChristmasTree(christmasTreeCreateInfo, spawnOffset);
+
+        christmasTreeCreateInfo.position = glm::vec3(0.78f, 0.15f, 2.25f);
+        christmasTreeCreateInfo.rotation.y = Util::RandomFloat(0, HELL_PI);
+        AddChristmasTree(christmasTreeCreateInfo, spawnOffset);
     }
 
     void SaveHouse() {
